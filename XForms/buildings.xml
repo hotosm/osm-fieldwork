@@ -1,0 +1,314 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>buildings_mapping_v1</h:title>
+    <model odk:xforms-version="1.0.0">
+      <instance>
+        <data id="buildings_mapping_v1">
+          <start/>
+          <end/>
+          <today/>
+          <username/>
+          <phonenumber/>
+          <deviceid/>
+          <title/>
+          <osm_building/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/data/start" type="dateTime"/>
+      <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/data/end" type="dateTime"/>
+      <bind jr:preload="date" jr:preloadParams="today" nodeset="/data/today" type="date"/>
+      <bind jr:preload="property" jr:preloadParams="username" nodeset="/data/username" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/data/phonenumber" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/data/deviceid" type="string"/>
+      <bind nodeset="/data/title" readonly="true()" type="string"/>
+      <bind nodeset="/data/osm_building" required="true()" type="binary"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/title">
+      <label>MM Building Facilities Form</label>
+      <hint>This is a MM building facilities survey used to collect information on buildings</hint>
+    </input>
+    <upload mediatype="osm/*" ref="/data/osm_building">
+      <label>MM Building Facilities Form</label>
+      <hint>Please select a building and tag it appropriately.</hint>
+      <tag key="addr:city">
+        <label>Name of city</label>
+        <item>
+          <label>Monrovia</label>
+          <value>monrovia</value>
+        </item>
+      </tag>
+      <tag key="addr:community">
+        <label>Name of community</label>
+        <item>
+          <label>Duala</label>
+          <value>duala</value>
+        </item>
+        <item>
+          <label>New Kru Town</label>
+          <value>new kru town</value>
+        </item>
+        <item>
+          <label>Tweh Farm</label>
+          <value>tweh farm</value>
+        </item>
+      </tag>
+      <tag key="addr:street">
+        <label>Name of street</label>
+      </tag>
+      <tag key="building">
+        <label>Type of building</label>
+        <item>
+          <label>Residential</label>
+          <value>residential</value>
+        </item>
+        <item>
+          <label>Commercial</label>
+          <value>commercial</value>
+        </item>
+        <item>
+          <label>Commercial and residential (mixed use)</label>
+          <value>commercial;residential</value>
+        </item>
+        <item>
+          <label>Apartments</label>
+          <value>apartments</value>
+        </item>
+        <item>
+          <label>Kitchen (small outbuilding used as a cooking area)</label>
+          <value>kitchen</value>
+        </item>
+        <item>
+          <label>Roof (building open on at least two sides)</label>
+          <value>roof</value>
+        </item>
+        <item>
+          <label>Under Construction</label>
+          <value>construction</value>
+        </item>
+        <item>
+          <label>School</label>
+          <value>school</value>
+        </item>
+        <item>
+          <label>Clinic</label>
+          <value>clinic</value>
+        </item>
+        <item>
+          <label>Hospital</label>
+          <value>hospital</value>
+        </item>
+        <item>
+          <label>Office</label>
+          <value>office</value>
+        </item>
+        <item>
+          <label>Public</label>
+          <value>public</value>
+        </item>
+        <item>
+          <label>Church</label>
+          <value>church</value>
+        </item>
+        <item>
+          <label>Mosque</label>
+          <value>mosque</value>
+        </item>
+        <item>
+          <label>Service (water, power, etc)</label>
+          <value>service</value>
+        </item>
+        <item>
+          <label>Warehouse</label>
+          <value>warehouse</value>
+        </item>
+        <item>
+          <label>Industrial</label>
+          <value>industrial</value>
+        </item>
+        <item>
+          <label>Kiosk</label>
+          <value>kiosk</value>
+        </item>
+        <item>
+          <label>Abandoned building</label>
+          <value>abandoned</value>
+        </item>
+        <item>
+          <label>Building does not exist on ground</label>
+          <value>none</value>
+        </item>
+      </tag>
+      <tag key="name">
+        <label>Name of building (if present)</label>
+      </tag>
+      <tag key="building:levels">
+        <label>Number of floors</label>
+        <item>
+          <label>Only ground floor</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Two</label>
+          <value>2</value>
+        </item>
+        <item>
+          <label>Three</label>
+          <value>3</value>
+        </item>
+        <item>
+          <label>Four</label>
+          <value>4</value>
+        </item>
+        <item>
+          <label>Five</label>
+          <value>5</value>
+        </item>
+        <item>
+          <label>Six</label>
+          <value>6</value>
+        </item>
+        <item>
+          <label>Seven</label>
+          <value>7</value>
+        </item>
+        <item>
+          <label>Eight</label>
+          <value>8</value>
+        </item>
+        <item>
+          <label>Nine</label>
+          <value>9</value>
+        </item>
+        <item>
+          <label>Ten</label>
+          <value>10</value>
+        </item>
+      </tag>
+      <tag key="building:material">
+        <label>Building material</label>
+        <item>
+          <label>Cement blocks</label>
+          <value>cement_block</value>
+        </item>
+        <item>
+          <label>Metal (Zinc)</label>
+          <value>metal</value>
+        </item>
+        <item>
+          <label>Bricks (fired clay)</label>
+          <value>brick</value>
+        </item>
+        <item>
+          <label>Concrete</label>
+          <value>concrete</value>
+        </item>
+        <item>
+          <label>Stone</label>
+          <value>stone</value>
+        </item>
+        <item>
+          <label>Glass</label>
+          <value>glass</value>
+        </item>
+        <item>
+          <label>Wood</label>
+          <value>wood</value>
+        </item>
+        <item>
+          <label>Tarpaulin</label>
+          <value>tarpaulin</value>
+        </item>
+        <item>
+          <label>Plaster</label>
+          <value>plaster</value>
+        </item>
+        <item>
+          <label>Plastic</label>
+          <value>plastic</value>
+        </item>
+        <item>
+          <label>Mixed</label>
+          <value>mixed</value>
+        </item>
+        <item>
+          <label>None (no walls)</label>
+          <value>none</value>
+        </item>
+      </tag>
+      <tag key="walls">
+        <label>Does the building have walls?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </tag>
+      <tag key="building:roof">
+        <label>Roof material</label>
+        <item>
+          <label>Metal (Corrugated iron sheets)</label>
+          <value>metal</value>
+        </item>
+        <item>
+          <label>Thatch</label>
+          <value>thatch</value>
+        </item>
+        <item>
+          <label>Concrete</label>
+          <value>concrete</value>
+        </item>
+        <item>
+          <label>Tiles</label>
+          <value>tiles</value>
+        </item>
+        <item>
+          <label>Wood</label>
+          <value>wood</value>
+        </item>
+        <item>
+          <label>Plastic</label>
+          <value>plastic</value>
+        </item>
+        <item>
+          <label>Mixed</label>
+          <value>mixed</value>
+        </item>
+        <item>
+          <label>None</label>
+          <value>none</value>
+        </item>
+      </tag>
+      <tag key="building:condition">
+        <label>Condition of building</label>
+        <item>
+          <label>Good</label>
+          <value>good</value>
+        </item>
+        <item>
+          <label>Average</label>
+          <value>average</value>
+        </item>
+        <item>
+          <label>Poor</label>
+          <value>poor</value>
+        </item>
+      </tag>
+      <tag key="operator">
+        <label>Name of operator (if a formal market structure)</label>
+      </tag>
+      <tag key="comment">
+        <label>Any other comments about this building</label>
+      </tag>
+    </upload>
+  </h:body>
+</h:html>

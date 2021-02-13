@@ -1,0 +1,246 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>highway_mapping_v3</h:title>
+    <model odk:xforms-version="1.0.0">
+      <instance>
+        <data id="highway_mapping_v3">
+          <start/>
+          <end/>
+          <today/>
+          <simserial/>
+          <subscriberid/>
+          <deviceid/>
+          <phonenumber/>
+          <note/>
+          <road_point/>
+          <feature_type/>
+          <highway_type/>
+          <highway_name_present/>
+          <bridge_name_present/>
+          <name/>
+          <surface/>
+          <smoothness/>
+          <oneway/>
+          <accessibility/>
+          <vehicle/>
+          <width/>
+          <picture/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/data/start" type="dateTime"/>
+      <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/data/end" type="dateTime"/>
+      <bind jr:preload="date" jr:preloadParams="today" nodeset="/data/today" type="date"/>
+      <bind jr:preload="property" jr:preloadParams="simserial" nodeset="/data/simserial" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="subscriberid" nodeset="/data/subscriberid" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/data/deviceid" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/data/phonenumber" type="string"/>
+      <bind nodeset="/data/note" readonly="true()" required="false()" type="string"/>
+      <bind nodeset="/data/road_point" required="true()" type="geopoint"/>
+      <bind nodeset="/data/feature_type" required="false()" type="string"/>
+      <bind nodeset="/data/highway_type" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
+      <bind nodeset="/data/highway_name_present" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
+      <bind nodeset="/data/bridge_name_present" relevant=" /data/feature_type  = 'bridge'" required="false()" type="string"/>
+      <bind nodeset="/data/name" relevant=" /data/highway_name_present  = 'yes' or  /data/bridge_name_present  = 'yes'" required="false()" type="string"/>
+      <bind nodeset="/data/surface" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
+      <bind nodeset="/data/smoothness" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
+      <bind nodeset="/data/oneway" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
+      <bind nodeset="/data/accessibility" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
+      <bind nodeset="/data/vehicle" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
+      <bind nodeset="/data/width" required="false()" type="int"/>
+      <bind nodeset="/data/picture" required="false()" type="binary"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/note">
+      <label>Please ask around the community for details especially ROAD NAMES and others.</label>
+    </input>
+    <input ref="/data/road_point">
+      <label>Please take a GPS point at the feature location.</label>
+      <hint>Try to keep your phone over the feature, or as near as possible to it.</hint>
+    </input>
+    <select1 ref="/data/feature_type">
+      <label>What feature is this?</label>
+      <item>
+        <label>Highway</label>
+        <value>highway</value>
+      </item>
+      <item>
+        <label>Bridge</label>
+        <value>bridge</value>
+      </item>
+    </select1>
+    <select1 ref="/data/highway_type">
+      <label>What type of road is this?</label>
+      <item>
+        <label>Trunk (like Tubman Boulevard)</label>
+        <value>trunk</value>
+      </item>
+      <item>
+        <label>Primary (like Somalia Drive)</label>
+        <value>primary</value>
+      </item>
+      <item>
+        <label>Secondary (major road within city)</label>
+        <value>secondary</value>
+      </item>
+      <item>
+        <label>Tertiary (commercial streets that are not a major road)</label>
+        <value>tertiary</value>
+      </item>
+      <item>
+        <label>Unclassified (minor roads connecting residential areas with commercial)</label>
+        <value>unclassified</value>
+      </item>
+      <item>
+        <label>Residential (streets with mostly residential buildings)</label>
+        <value>residential</value>
+      </item>
+      <item>
+        <label>Service (driveways, access roads)</label>
+        <value>service</value>
+      </item>
+      <item>
+        <label>Path (foot traffic only)</label>
+        <value>path</value>
+      </item>
+    </select1>
+    <select1 ref="/data/highway_name_present">
+      <label>Does this road have a name?</label>
+      <item>
+        <label>Yes</label>
+        <value>yes</value>
+      </item>
+      <item>
+        <label>No</label>
+        <value>no</value>
+      </item>
+    </select1>
+    <select1 ref="/data/bridge_name_present">
+      <label>Does this bridge have a name?</label>
+      <item>
+        <label>Yes</label>
+        <value>yes</value>
+      </item>
+      <item>
+        <label>No</label>
+        <value>no</value>
+      </item>
+    </select1>
+    <input ref="/data/name">
+      <label>What is the name?</label>
+    </input>
+    <select1 ref="/data/surface">
+      <label>What is the surface of this road?</label>
+      <item>
+        <label>Asphalt</label>
+        <value>asphalt</value>
+      </item>
+      <item>
+        <label>Concrete</label>
+        <value>concrete</value>
+      </item>
+      <item>
+        <label>Unpaved</label>
+        <value>unpaved</value>
+      </item>
+      <item>
+        <label>Cobblestone</label>
+        <value>cobblestone</value>
+      </item>
+      <item>
+        <label>Sand</label>
+        <value>sand</value>
+      </item>
+      <item>
+        <label>Gravel</label>
+        <value>gravel</value>
+      </item>
+    </select1>
+    <select1 ref="/data/smoothness">
+      <label>How smooth is this road?</label>
+      <item>
+        <label>Good (Possible to drive consistently at the speed limit without worrying about imperfections)</label>
+        <value>good</value>
+      </item>
+      <item>
+        <label>Intermediate (Occasional imperfections requiring caution or slow passage)</label>
+        <value>intermediate</value>
+      </item>
+      <item>
+        <label>Bad (Many imperfections, not possible to drive consistently at the speed limit)</label>
+        <value>bad</value>
+      </item>
+      <item>
+        <label>Very Bad (Impossible to ever drive at the speed limit, better to use 4-wheel drive)</label>
+        <value>very_bad</value>
+      </item>
+      <item>
+        <label>Horrible (You'll know it when you see it.)</label>
+        <value>horrible</value>
+      </item>
+    </select1>
+    <select1 ref="/data/oneway">
+      <label>Is it oneway?</label>
+      <hint>(direction of traffic, NOT the number of lane)</hint>
+      <item>
+        <label>yes</label>
+        <value>yes</value>
+      </item>
+      <item>
+        <label>no</label>
+        <value>no</value>
+      </item>
+    </select1>
+    <select1 ref="/data/accessibility">
+      <label>Is the road is accessible throughout the year?</label>
+      <item>
+        <label>yes</label>
+        <value>yes</value>
+      </item>
+      <item>
+        <label>no</label>
+        <value>no</value>
+      </item>
+      <item>
+        <label>Only on dry season</label>
+        <value>only_on_dry_season</value>
+      </item>
+    </select1>
+    <select ref="/data/vehicle">
+      <label>What type of vehicle can be used to access you area?</label>
+      <item>
+        <label>Motorbike</label>
+        <value>motor_bike</value>
+      </item>
+      <item>
+        <label>Car</label>
+        <value>car</value>
+      </item>
+      <item>
+        <label>Push cart</label>
+        <value>push_cart</value>
+      </item>
+      <item>
+        <label>Truck</label>
+        <value>truck</value>
+      </item>
+      <item>
+        <label>Pick up</label>
+        <value>pick_up</value>
+      </item>
+    </select>
+    <input ref="/data/width">
+      <label>What is the width?</label>
+      <hint>(in meters)</hint>
+    </input>
+    <upload mediatype="image/*" ref="/data/picture">
+      <label>Please take a picture.</label>
+      <hint>Please take a new picture, do not select "Choose Image"</hint>
+    </upload>
+  </h:body>
+</h:html>
