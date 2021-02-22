@@ -1,31 +1,64 @@
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
-    <h:title>highway_mapping_v3</h:title>
+    <h:title>Highways</h:title>
     <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation default="true()" lang="default">
+          <text id="/data/all/comments/audio:label">
+            <value>Audio Note</value>
+            <value form="audio">jr://audio/odktest.wav</value>
+          </text>
+          <text id="/data/all/comments/image:label">
+            <value>Take A Picture</value>
+            <value form="audio">jr://audio/odktest.png</value>
+          </text>
+        </translation>
+      </itext>
       <instance>
-        <data id="highway_mapping_v3">
+        <data id="2021-02-21 19:06:07">
           <start/>
           <end/>
           <today/>
-          <simserial/>
-          <subscriberid/>
           <deviceid/>
           <phonenumber/>
-          <note/>
-          <road_point/>
-          <feature_type/>
-          <highway_type/>
-          <highway_name_present/>
-          <bridge_name_present/>
-          <name/>
-          <surface/>
-          <smoothness/>
-          <oneway/>
-          <accessibility/>
-          <vehicle/>
-          <width/>
-          <picture/>
+          <all>
+            <feature>
+              <feature_type/>
+              <highway_type>residential</highway_type>
+              <highway_name/>
+            </feature>
+            <highway>
+              <surface>unpaved</surface>
+              <smoothness>good</smoothness>
+              <oneway/>
+              <accessibility>yes</accessibility>
+              <vehicle>car</vehicle>
+              <tracktype/>
+              <width/>
+            </highway>
+            <bridge>
+              <bridge_type>yes</bridge_type>
+              <bridge_name/>
+              <bridge_point/>
+            </bridge>
+            <barriers>
+              <barrier>yes</barrier>
+              <name/>
+              <barrier_point/>
+              <swing_gate>single</swing_gate>
+            </barriers>
+            <gps>
+              <gps_type>point</gps_type>
+              <highway_point/>
+              <track/>
+            </gps>
+            <comments>
+              <comment/>
+              <audio/>
+              <image/>
+            </comments>
+          </all>
           <meta>
             <instanceID/>
           </meta>
@@ -34,213 +67,459 @@
       <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/data/start" type="dateTime"/>
       <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/data/end" type="dateTime"/>
       <bind jr:preload="date" jr:preloadParams="today" nodeset="/data/today" type="date"/>
-      <bind jr:preload="property" jr:preloadParams="simserial" nodeset="/data/simserial" type="string"/>
-      <bind jr:preload="property" jr:preloadParams="subscriberid" nodeset="/data/subscriberid" type="string"/>
       <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/data/deviceid" type="string"/>
       <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/data/phonenumber" type="string"/>
-      <bind nodeset="/data/note" readonly="true()" required="false()" type="string"/>
-      <bind nodeset="/data/road_point" required="true()" type="geopoint"/>
-      <bind nodeset="/data/feature_type" required="false()" type="string"/>
-      <bind nodeset="/data/highway_type" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
-      <bind nodeset="/data/highway_name_present" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
-      <bind nodeset="/data/bridge_name_present" relevant=" /data/feature_type  = 'bridge'" required="false()" type="string"/>
-      <bind nodeset="/data/name" relevant=" /data/highway_name_present  = 'yes' or  /data/bridge_name_present  = 'yes'" required="false()" type="string"/>
-      <bind nodeset="/data/surface" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
-      <bind nodeset="/data/smoothness" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
-      <bind nodeset="/data/oneway" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
-      <bind nodeset="/data/accessibility" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
-      <bind nodeset="/data/vehicle" relevant=" /data/feature_type  = 'highway'" required="false()" type="string"/>
-      <bind nodeset="/data/width" required="false()" type="int"/>
-      <bind nodeset="/data/picture" required="false()" type="binary"/>
+      <bind nodeset="/data/all/feature/feature_type" required="1" type="string"/>
+      <bind nodeset="/data/all/feature/highway_type" relevant=" /data/all/feature/feature_type  = 'highway'" required="1" type="string"/>
+      <bind nodeset="/data/all/feature/highway_name" relevant=" /data/all/feature/feature_type  = 'highway'" required="0" type="string"/>
+      <bind nodeset="/data/all/highway" relevant=" /data/all/feature/feature_type  = 'highway'"/>
+      <bind nodeset="/data/all/highway/surface" required="1" type="string"/>
+      <bind nodeset="/data/all/highway/smoothness" required="1" type="string"/>
+      <bind nodeset="/data/all/highway/oneway" required="0" type="string"/>
+      <bind nodeset="/data/all/highway/accessibility" required="0" type="string"/>
+      <bind nodeset="/data/all/highway/vehicle" required="1" type="string"/>
+      <bind nodeset="/data/all/highway/tracktype" type="string"/>
+      <bind nodeset="/data/all/highway/width" required="0" type="int"/>
+      <bind nodeset="/data/all/bridge" relevant=" /data/all/feature/feature_type  = 'bridge'"/>
+      <bind nodeset="/data/all/bridge/bridge_type" required="1" type="string"/>
+      <bind nodeset="/data/all/bridge/bridge_name" type="string"/>
+      <bind nodeset="/data/all/bridge/bridge_point" type="geopoint"/>
+      <bind nodeset="/data/all/barriers" relevant=" /data/all/feature/feature_type  = 'barrier'"/>
+      <bind nodeset="/data/all/barriers/barrier" required="1" type="string"/>
+      <bind nodeset="/data/all/barriers/name" type="string"/>
+      <bind nodeset="/data/all/barriers/barrier_point" type="geopoint"/>
+      <bind nodeset="/data/all/barriers/swing_gate" relevant=" /data/all/barriers/barrier  = 'swing_gate'" required="0" type="string"/>
+      <bind nodeset="/data/all/gps" relevant=" /data/all/feature/feature_type  = 'highway'"/>
+      <bind nodeset="/data/all/gps/gps_type" required="1" type="string"/>
+      <bind nodeset="/data/all/gps/highway_point" relevant=" /data/all/gps/gps_type  = 'point'" type="geopoint"/>
+      <bind nodeset="/data/all/gps/track" relevant=" /data/all/gps/gps_type  = 'track'" type="geotrace"/>
+      <bind nodeset="/data/all/comments/comment" type="string"/>
+      <bind nodeset="/data/all/comments/audio" type="binary"/>
+      <bind nodeset="/data/all/comments/image" type="binary"/>
       <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
-    <input ref="/data/note">
+    <group appearance="field-list" ref="/data/all">
       <label>Please ask around the community for details especially ROAD NAMES and others.</label>
-    </input>
-    <input ref="/data/road_point">
-      <label>Please take a GPS point at the feature location.</label>
-      <hint>Try to keep your phone over the feature, or as near as possible to it.</hint>
-    </input>
-    <select1 ref="/data/feature_type">
-      <label>What feature is this?</label>
-      <item>
+      <group appearance="field-list" ref="/data/all/feature">
+        <label>Feature</label>
+        <select1 appearance="minimal" ref="/data/all/feature/feature_type">
+          <label>What feature is this?</label>
+          <item>
+            <label>Highway</label>
+            <value>highway</value>
+          </item>
+          <item>
+            <label>Bridge</label>
+            <value>bridge</value>
+          </item>
+          <item>
+            <label>Barrier</label>
+            <value>barrier</value>
+          </item>
+        </select1>
+        <select1 appearance="minimal" ref="/data/all/feature/highway_type">
+          <label>What type of road is this?</label>
+          <item>
+            <label>Trunk (The most important roads in a country's system that aren't motorways)</label>
+            <value>trunk</value>
+          </item>
+          <item>
+            <label>Primary (The next most important roads in a country's system, ften linking larger towns)</label>
+            <value>primary</value>
+          </item>
+          <item>
+            <label>Secondary (major road within city)</label>
+            <value>secondary</value>
+          </item>
+          <item>
+            <label>Tertiary (The next most important roads in a country's system, ften linking smaller towns and villages)</label>
+            <value>tertiary</value>
+          </item>
+          <item>
+            <label>Unclassified (The least important through roads in a country's system – i.e. minor roads of a lower classification than tertiary, but which serve a purpose other than access to properties)</label>
+            <value>unclassified</value>
+          </item>
+          <item>
+            <label>Residential (Roads which serve as an access to housing, without function of connecting settlements. Often lined with housing)</label>
+            <value>residential</value>
+          </item>
+          <item>
+            <label>Service (driveways, access roads)</label>
+            <value>service</value>
+          </item>
+          <item>
+            <label>Path (foot traffic only)</label>
+            <value>path</value>
+          </item>
+          <item>
+            <label>Track (jeep trail)</label>
+            <value>track</value>
+          </item>
+        </select1>
+        <input appearance="minimal" ref="/data/all/feature/highway_name">
+          <label>Does this road have a name?</label>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/data/all/highway">
         <label>Highway</label>
-        <value>highway</value>
-      </item>
-      <item>
-        <label>Bridge</label>
-        <value>bridge</value>
-      </item>
-    </select1>
-    <select1 ref="/data/highway_type">
-      <label>What type of road is this?</label>
-      <item>
-        <label>Trunk (like Tubman Boulevard)</label>
-        <value>trunk</value>
-      </item>
-      <item>
-        <label>Primary (like Somalia Drive)</label>
-        <value>primary</value>
-      </item>
-      <item>
-        <label>Secondary (major road within city)</label>
-        <value>secondary</value>
-      </item>
-      <item>
-        <label>Tertiary (commercial streets that are not a major road)</label>
-        <value>tertiary</value>
-      </item>
-      <item>
-        <label>Unclassified (minor roads connecting residential areas with commercial)</label>
-        <value>unclassified</value>
-      </item>
-      <item>
-        <label>Residential (streets with mostly residential buildings)</label>
-        <value>residential</value>
-      </item>
-      <item>
-        <label>Service (driveways, access roads)</label>
-        <value>service</value>
-      </item>
-      <item>
-        <label>Path (foot traffic only)</label>
-        <value>path</value>
-      </item>
-    </select1>
-    <select1 ref="/data/highway_name_present">
-      <label>Does this road have a name?</label>
-      <item>
-        <label>Yes</label>
-        <value>yes</value>
-      </item>
-      <item>
-        <label>No</label>
-        <value>no</value>
-      </item>
-    </select1>
-    <select1 ref="/data/bridge_name_present">
-      <label>Does this bridge have a name?</label>
-      <item>
-        <label>Yes</label>
-        <value>yes</value>
-      </item>
-      <item>
-        <label>No</label>
-        <value>no</value>
-      </item>
-    </select1>
-    <input ref="/data/name">
-      <label>What is the name?</label>
-    </input>
-    <select1 ref="/data/surface">
-      <label>What is the surface of this road?</label>
-      <item>
-        <label>Asphalt</label>
-        <value>asphalt</value>
-      </item>
-      <item>
-        <label>Concrete</label>
-        <value>concrete</value>
-      </item>
-      <item>
-        <label>Unpaved</label>
-        <value>unpaved</value>
-      </item>
-      <item>
-        <label>Cobblestone</label>
-        <value>cobblestone</value>
-      </item>
-      <item>
-        <label>Sand</label>
-        <value>sand</value>
-      </item>
-      <item>
-        <label>Gravel</label>
-        <value>gravel</value>
-      </item>
-    </select1>
-    <select1 ref="/data/smoothness">
-      <label>How smooth is this road?</label>
-      <item>
-        <label>Good (Possible to drive consistently at the speed limit without worrying about imperfections)</label>
-        <value>good</value>
-      </item>
-      <item>
-        <label>Intermediate (Occasional imperfections requiring caution or slow passage)</label>
-        <value>intermediate</value>
-      </item>
-      <item>
-        <label>Bad (Many imperfections, not possible to drive consistently at the speed limit)</label>
-        <value>bad</value>
-      </item>
-      <item>
-        <label>Very Bad (Impossible to ever drive at the speed limit, better to use 4-wheel drive)</label>
-        <value>very_bad</value>
-      </item>
-      <item>
-        <label>Horrible (You'll know it when you see it.)</label>
-        <value>horrible</value>
-      </item>
-    </select1>
-    <select1 ref="/data/oneway">
-      <label>Is it oneway?</label>
-      <hint>(direction of traffic, NOT the number of lane)</hint>
-      <item>
-        <label>yes</label>
-        <value>yes</value>
-      </item>
-      <item>
-        <label>no</label>
-        <value>no</value>
-      </item>
-    </select1>
-    <select1 ref="/data/accessibility">
-      <label>Is the road is accessible throughout the year?</label>
-      <item>
-        <label>yes</label>
-        <value>yes</value>
-      </item>
-      <item>
-        <label>no</label>
-        <value>no</value>
-      </item>
-      <item>
-        <label>Only on dry season</label>
-        <value>only_on_dry_season</value>
-      </item>
-    </select1>
-    <select ref="/data/vehicle">
-      <label>What type of vehicle can be used to access you area?</label>
-      <item>
-        <label>Motorbike</label>
-        <value>motor_bike</value>
-      </item>
-      <item>
-        <label>Car</label>
-        <value>car</value>
-      </item>
-      <item>
-        <label>Push cart</label>
-        <value>push_cart</value>
-      </item>
-      <item>
-        <label>Truck</label>
-        <value>truck</value>
-      </item>
-      <item>
-        <label>Pick up</label>
-        <value>pick_up</value>
-      </item>
-    </select>
-    <input ref="/data/width">
-      <label>What is the width?</label>
-      <hint>(in meters)</hint>
-    </input>
-    <upload mediatype="image/*" ref="/data/picture">
-      <label>Please take a picture.</label>
-      <hint>Please take a new picture, do not select "Choose Image"</hint>
-    </upload>
+        <select1 appearance="minimal" ref="/data/all/highway/surface">
+          <label>What is the surface of this road?</label>
+          <item>
+            <label>Paved (predominantly paved; i.e., it is covered with paving stones, concrete or bitumen)</label>
+            <value>paved</value>
+          </item>
+          <item>
+            <label>Asphalt (short for asphalt concrete - mineral aggregate bound by asphalt)</label>
+            <value>asphalt</value>
+          </item>
+          <item>
+            <label>Concrete (cement based concrete, forming a large surface, typically cast in place and may have predetermined breaking joints)</label>
+            <value>concrete</value>
+          </item>
+          <item>
+            <label>Unpaved (A feature that is predominantly unsealed (unpaved); i.e., it has a loose covering ranging from compacted stone chippings to earth)</label>
+            <value>unpaved</value>
+          </item>
+          <item>
+            <label>Cobblestone (raw cobblestone of natural, uncut, rounded stones. Unlike pebblestone firmly connected to the ground)</label>
+            <value>cobblestone</value>
+          </item>
+          <item>
+            <label>Sand (small to very small fractions (less than 2mm) of rock.)</label>
+            <value>sand</value>
+          </item>
+          <item>
+            <label>Gravel (broken/crushed rock with sharp edges, known as ballast on railways. Usually loosely arranged)</label>
+            <value>gravel</value>
+          </item>
+          <item>
+            <label>Compacted (mixture of larger (e.g., gravel) and smaller (e.g., sand) parts, compacted (e.g., with a roller), so the surface is more stable than loose gravel)</label>
+            <value>compacted</value>
+          </item>
+          <item>
+            <label>Dirt (gravel is sometimes mistakenly called dirt. Some compacted surfaces are sometimes called "dirt" too, please consider using  compacted)</label>
+            <value>dirt</value>
+          </item>
+          <item>
+            <label>Metal (used for metal surfaced bridges, or for temporary tracks over fields for normal road vehicles or site traffic)</label>
+            <value>metal</value>
+          </item>
+          <item>
+            <label>Grass (Grass covered ground. Mostly nice to walk. May turn into surface=dirt or become overgrown and disappear)</label>
+            <value>grass</value>
+          </item>
+          <item>
+            <label>Mud (most of the year wet which gives a soft ground with low carrying capacity. Mostly found on wetland like swamps or in tidal areas)</label>
+            <value>mud</value>
+          </item>
+        </select1>
+        <select1 appearance="minimal" ref="/data/all/highway/smoothness">
+          <label>How smooth is this road?</label>
+          <item>
+            <label>Good (Possible to drive consistently at the speed limit without worrying about imperfections)</label>
+            <value>good</value>
+          </item>
+          <item>
+            <label>Intermediate (Occasional imperfections requiring caution or slow passage)</label>
+            <value>intermediate</value>
+          </item>
+          <item>
+            <label>Bad (Many imperfections, not possible to drive consistently at the speed limit)</label>
+            <value>bad</value>
+          </item>
+          <item>
+            <label>Very Bad (Impossible to ever drive at the speed limit, better to use 4-wheel drive)</label>
+            <value>very_bad</value>
+          </item>
+          <item>
+            <label>Horrible (You'll know it when you see it.)</label>
+            <value>horrible</value>
+          </item>
+          <item>
+            <label>Impassable (In  wheeled vehicle)</label>
+            <value>impassable</value>
+          </item>
+        </select1>
+        <select1 appearance="minimal" ref="/data/all/highway/oneway">
+          <label>Is it oneway?</label>
+          <hint>(direction of traffic, NOT the number of lane)</hint>
+          <item>
+            <label>yes</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>no</label>
+            <value>no</value>
+          </item>
+        </select1>
+        <select1 appearance="minimal" ref="/data/all/highway/accessibility">
+          <label>Is the road is accessible throughout the year?</label>
+          <item>
+            <label>yes</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>no</label>
+            <value>no</value>
+          </item>
+          <item>
+            <label>Only in dry season</label>
+            <value>only_in_dry_season</value>
+          </item>
+        </select1>
+        <select appearance="minimal" ref="/data/all/highway/vehicle">
+          <label>What type of vehicle can be used to access your area?</label>
+          <item>
+            <label>Motorbike</label>
+            <value>motor_bike</value>
+          </item>
+          <item>
+            <label>Car</label>
+            <value>car</value>
+          </item>
+          <item>
+            <label>Push cart</label>
+            <value>push_cart</value>
+          </item>
+          <item>
+            <label>Truck</label>
+            <value>truck</value>
+          </item>
+          <item>
+            <label>Pick up</label>
+            <value>pick_up</value>
+          </item>
+        </select>
+        <select1 appearance="minimal" ref="/data/all/highway/tracktype">
+          <label>What is the quality of this highway ?</label>
+          <item>
+            <label>Grade 1 (usually a paved or sealed surface)</label>
+            <value>grade1</value>
+          </item>
+          <item>
+            <label>Grade 2 (solid but unpaved. Usually an unpaved track with surface of gravel)</label>
+            <value>grade2</value>
+          </item>
+          <item>
+            <label>Grade 3 (mostly solid. Even mixture of hard and soft materials)</label>
+            <value>grade3</value>
+          </item>
+          <item>
+            <label>Grade 4 (mostly soft. Almost always an unpaved track prominently with soil/sand/grass)</label>
+            <value>grade4</value>
+          </item>
+          <item>
+            <label>Grade 5 (almost always an unimproved track lacking hard materials, same as surrounding soil)</label>
+            <value>grade5</value>
+          </item>
+        </select1>
+        <input ref="/data/all/highway/width">
+          <label>What is the width?</label>
+          <hint>(in meters)</hint>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/data/all/bridge">
+        <label>Bridges</label>
+        <select1 appearance="minimal" ref="/data/all/bridge/bridge_type">
+          <label>What type of bridge is it ?</label>
+          <item>
+            <label>Aqueduct (longer structure for carrying a canal or fresh water)</label>
+            <value>aqueduct</value>
+          </item>
+          <item>
+            <label>Boardwalk (plank walkway over wet or otherwise difficult terrain  usually low to the ground and supported by posts. )</label>
+            <value>boardwalk</value>
+          </item>
+          <item>
+            <label>Cantilever (bridge where a span is supported at one end only. Usually  the free ends of two spans are fastened to one another  giving a longer) clear span between supports.</label>
+            <value>cantilever</value>
+          </item>
+          <item>
+            <label>Covered (covered bridge has a roof and fully or partly enclosed sides  usually to protect the bridge deck.</label>
+            <value>covered</value>
+          </item>
+          <item>
+            <label>Low Water Crossing (low bridge over a waterway suitable to cross with a vehicle)</label>
+            <value>low_water_crossing</value>
+          </item>
+          <item>
+            <label>Ford (shallow spot in a waterway suitable to cross with a vehicle)</label>
+            <value>ford</value>
+          </item>
+          <item>
+            <label>Trestle (composed of a series of short spans where each span is supported by a rigid frame  usually called a "bent" rather than a pier.</label>
+            <value>trestle</value>
+          </item>
+          <item>
+            <label>Viaduct (composed of a series of spans  often short relative to its overall length)</label>
+            <value>viaduct</value>
+          </item>
+          <item>
+            <label>Baily Bridge (often left over from WW2)</label>
+            <value>baily</value>
+          </item>
+          <item>
+            <label>Unknown bridge type</label>
+            <value>yes</value>
+          </item>
+        </select1>
+        <input ref="/data/all/bridge/bridge_name">
+          <label>Name of this bridge if it has one</label>
+        </input>
+        <input appearance="placement-map" ref="/data/all/bridge/bridge_point">
+          <label>Please take a GPS location on this bridge</label>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/data/all/barriers">
+        <label>Is there a barrier blocking this highway ?</label>
+        <select1 appearance="minimal" ref="/data/all/barriers/barrier">
+          <label>What type of barrier is it ?</label>
+          <item>
+            <label>Block (large  solid  immobile block that can be moved only with heavy machinery or great effort)</label>
+            <value>block</value>
+          </item>
+          <item>
+            <label>Bollard (usually concrete or metal) pillar or pillars in the middle of the road to prevent passage by some traffic</label>
+            <value>bollard</value>
+          </item>
+          <item>
+            <label>Border Control (control point at an international border between two countries)</label>
+            <value>border control</value>
+          </item>
+          <item>
+            <label>Cable Barrier (road side or median barrier made of steel wire ropes mounted on weak posts)</label>
+            <value>cable barrier</value>
+          </item>
+          <item>
+            <label>Cattle Grid (bars in the road surface that allow wheeled vehicles but not animals to cross)</label>
+            <value>cattle grid</value>
+          </item>
+          <item>
+            <label>Chain (chain used to prevent motorized vehicles)</label>
+            <value>chain</value>
+          </item>
+          <item>
+            <label>City Wall (A fortification used to defend a city or settlement from potential aggressors)</label>
+            <value>city wall</value>
+          </item>
+          <item>
+            <label>Debris (road is blocked by debris with or without ground)</label>
+            <value>debris</value>
+          </item>
+          <item>
+            <label>Ditch (trench,  ditch or ravine,  usually with a stream at the bottom  that is not easily crossed especially if not on foot)</label>
+            <value>ditch</value>
+          </item>
+          <item>
+            <label>Fence (structure supported by posts driven into the ground and designed to prevent movement across a boundary)</label>
+            <value>fence</value>
+          </item>
+          <item>
+            <label>Gate (entrance that can be opened or closed to get through the barrier)</label>
+            <value>gate</value>
+          </item>
+          <item>
+            <label>Guard Rail (also called a crash barrier)</label>
+            <value>guard rail</value>
+          </item>
+          <item>
+            <label>Hampshire Gate (section of wire fence which can be removed temporarily)</label>
+            <value>hampshire gate</value>
+          </item>
+          <item>
+            <label>Hedge (Is a line of closely spaced shrubs and bushes  planted and trained in such a way as to form a barrier or to mark the boundary of an area)</label>
+            <value>hedge</value>
+          </item>
+          <item>
+            <label>Jersey Barrier (consists of heavy prefabricated blocks to create a barrier)</label>
+            <value>jersey barrier</value>
+          </item>
+          <item>
+            <label>Kerb or Curb (short solid barrier, usually found at the edge of a road, path or sidewalk,  which prevents entrance by vehicles) wheelchair users</label>
+            <value>kerb</value>
+          </item>
+          <item>
+            <label>Lift Gate (bar,  or pole pivoted in such a way as to allow the boom to block vehicular access through a controlled point)</label>
+            <value>lift gate</value>
+          </item>
+          <item>
+            <label>Log (passage is closed by lumber, like the trunk of a tree)</label>
+            <value>log</value>
+          </item>
+          <item>
+            <label>Rope (flexible barrier made of fibers twisted or braided together to improve strength)</label>
+            <value>rope</value>
+          </item>
+          <item>
+            <label>Sliding Gate (Similar to a lift gate but slides sidewards to open)</label>
+            <value>sliding gate</value>
+          </item>
+          <item>
+            <label>Stile  (allows pedestrians to cross a wall or fence  but never actually "opens" the barrier )</label>
+            <value>stile</value>
+          </item>
+          <item>
+            <label>Unknown barrier type</label>
+            <value>yes</value>
+          </item>
+          <item>
+            <label>Swing Gate (single or double)</label>
+            <value>swing_gate</value>
+          </item>
+        </select1>
+        <input appearance="minimal" ref="/data/all/barriers/name">
+          <label>Name or reference on the barrier if there is one</label>
+        </input>
+        <input appearance="placement-map" ref="/data/all/barriers/barrier_point">
+          <label>Please take a GPS location of this barrier</label>
+        </input>
+        <select1 appearance="minimal" ref="/data/all/barriers/swing_gate">
+          <label>Type of swing gate</label>
+          <item>
+            <label>Double Wide</label>
+            <value>double</value>
+          </item>
+          <item>
+            <label>Single wide</label>
+            <value>single</value>
+          </item>
+        </select1>
+      </group>
+      <group appearance="field-list" ref="/data/all/gps">
+        <label>GPS Coordinates</label>
+        <select1 ref="/data/all/gps/gps_type">
+          <label>Type of GPS recording</label>
+          <item>
+            <label>Record a track while moving</label>
+            <value>track</value>
+          </item>
+          <item>
+            <label>Record a single point while stationary</label>
+            <value>point</value>
+          </item>
+        </select1>
+        <input appearance="placement-map" ref="/data/all/gps/highway_point">
+          <label>Please take a GPS point at the feature location.</label>
+          <hint>Where are we ?</hint>
+        </input>
+        <input ref="/data/all/gps/track">
+          <label>Please record a GPS tracks while you are walking for driving</label>
+        </input>
+      </group>
+      <group appearance="field-list" ref="/data/all/comments">
+        <label>Comments</label>
+        <input appearance="minimal" ref="/data/all/comments/comment">
+          <label>Any other comments about this feature</label>
+        </input>
+        <upload appearance="minimal" mediatype="audio/*" ref="/data/all/comments/audio">
+          <label ref="jr:itext('/data/all/comments/audio:label')"/>
+        </upload>
+        <upload appearance="minimal" mediatype="image/*" ref="/data/all/comments/image">
+          <label ref="jr:itext('/data/all/comments/image:label')"/>
+        </upload>
+      </group>
+    </group>
   </h:body>
 </h:html>
