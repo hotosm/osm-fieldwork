@@ -16,7 +16,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="2021-02-21 19:06:07">
+        <data id="2021-02-21 20:27:17">
           <start/>
           <end/>
           <today/>
@@ -37,6 +37,10 @@
               <tracktype/>
               <width/>
             </highway>
+            <sac>
+              <sac_scale>hiking</sac_scale>
+              <visibility>good</visibility>
+            </sac>
             <bridge>
               <bridge_type>yes</bridge_type>
               <bridge_name/>
@@ -80,6 +84,9 @@
       <bind nodeset="/data/all/highway/vehicle" required="1" type="string"/>
       <bind nodeset="/data/all/highway/tracktype" type="string"/>
       <bind nodeset="/data/all/highway/width" required="0" type="int"/>
+      <bind nodeset="/data/all/sac" relevant=" /data/all/feature/feature_type  = 'path'"/>
+      <bind nodeset="/data/all/sac/sac_scale" type="string"/>
+      <bind nodeset="/data/all/sac/visibility" type="string"/>
       <bind nodeset="/data/all/bridge" relevant=" /data/all/feature/feature_type  = 'bridge'"/>
       <bind nodeset="/data/all/bridge/bridge_type" required="1" type="string"/>
       <bind nodeset="/data/all/bridge/bridge_name" type="string"/>
@@ -89,7 +96,7 @@
       <bind nodeset="/data/all/barriers/name" type="string"/>
       <bind nodeset="/data/all/barriers/barrier_point" type="geopoint"/>
       <bind nodeset="/data/all/barriers/swing_gate" relevant=" /data/all/barriers/barrier  = 'swing_gate'" required="0" type="string"/>
-      <bind nodeset="/data/all/gps" relevant=" /data/all/feature/feature_type  = 'highway'"/>
+      <bind nodeset="/data/all/gps" relevant=" /data/all/feature/feature_type  = 'highway' or  /data/all/feature/feature_type  = 'path'"/>
       <bind nodeset="/data/all/gps/gps_type" required="1" type="string"/>
       <bind nodeset="/data/all/gps/highway_point" relevant=" /data/all/gps/gps_type  = 'point'" type="geopoint"/>
       <bind nodeset="/data/all/gps/track" relevant=" /data/all/gps/gps_type  = 'track'" type="geotrace"/>
@@ -109,6 +116,10 @@
           <item>
             <label>Highway</label>
             <value>highway</value>
+          </item>
+          <item>
+            <label>Path (foot traffic only)</label>
+            <value>path</value>
           </item>
           <item>
             <label>Bridge</label>
@@ -319,6 +330,63 @@
           <label>What is the width?</label>
           <hint>(in meters)</hint>
         </input>
+      </group>
+      <group ref="/data/all/sac">
+        <label>Path conditions</label>
+        <select1 appearance="minimal" ref="/data/all/sac/sac_scale">
+          <label>What is the difficulty of this path ?</label>
+          <item>
+            <label>Hiking (Can be hiked in ordinary sports shoes/trainers, no risk of falling)</label>
+            <value>hiking</value>
+          </item>
+          <item>
+            <label>Mountain Hking (terrain is steep in places and may have fall hazards)</label>
+            <value>mountain_hiking</value>
+          </item>
+          <item>
+            <label>Demanding Mountain Hiking (Portions of the route exposed with danger of falling. Trail may have unmarked portions and cross fields of loose scree or talus)</label>
+            <value>demanding_mountain_hiking</value>
+          </item>
+          <item>
+            <label>Alpine Hiking (terrain quite exposed. Trail may include steep grassy pitches, talus slopes, easy snowfields, or snow-free glacier crossings )</label>
+            <value>alpine_hiking</value>
+          </item>
+          <item>
+            <label>Demanding Alpine Hiking (exposed and demanding terrain. May include steep rock scrambles, glaciers and snowfields with risk of sliding.)</label>
+            <value>demanding_alpine_hiking</value>
+          </item>
+          <item>
+            <label>Difficult Alpine Hiking (severe exposure, difficult craggy terain, includes climbing pitches up to UIAA grade II.)</label>
+            <value>difficult_alpine_hiking</value>
+          </item>
+        </select1>
+        <select1 appearance="minimal" ref="/data/all/sac/visibility">
+          <label>How difficult is it to follow the path ?</label>
+          <item>
+            <label>Excellent (Unambiguous path or markers everywhere)</label>
+            <value>excellent</value>
+          </item>
+          <item>
+            <label>Good (Next marker always visible, but sometimes has to be searched for. Basic sense of direction recommended)</label>
+            <value>good</value>
+          </item>
+          <item>
+            <label>Intermediate (track mostly visible, Good sense of direction, map required)</label>
+            <value>intermediate</value>
+          </item>
+          <item>
+            <label>Bad (path sometimes invisible, route partly pathless, orienting skills recommended)</label>
+            <value>bad</value>
+          </item>
+          <item>
+            <label>Horrible (often pathless, advanced orientational skills recommended)</label>
+            <value>horrible</value>
+          </item>
+          <item>
+            <label>No (mostly pathless, excellent orientational skills recommended)</label>
+            <value>no</value>
+          </item>
+        </select1>
       </group>
       <group appearance="field-list" ref="/data/all/bridge">
         <label>Bridges</label>
