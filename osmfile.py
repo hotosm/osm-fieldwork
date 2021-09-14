@@ -1,18 +1,19 @@
+# Copyright (c) 2020, 2021 Humanitarian OpenStreetMap Team
 #
-# Copyright (C) 2020, Humanitarian OpenstreetMap Team
+# This file is part of odkconvert.
 #
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
+#     Underpass is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#     Underpass is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
 import logging
@@ -36,6 +37,7 @@ class OsmFile(object):
         if filespec is None:
             if 'outdir' in self.options:
                 self.file = self.options.get('outdir') + "foobar.osm"
+                filespec =  self.file
         else:
             self.file = open(filespec, 'w')
             # self.file = open(filespec + ".osm", 'w')
@@ -70,6 +72,15 @@ class OsmFile(object):
         if way is not None:
             for line in way:
                 self.file.write("%s\n" % line)
+
+    def createNode(self, attrs=None, tags=None):
+        """Create a data structure to hold an OSM node"""
+        node = dict()
+        if attrs:
+            node["attrs"] = attrs
+        if tags:
+            node["tags"] = tags
+        return node
 
     def createWay(self, way, modified=False, delete=False):
         """This creates a list with the nodes and tags of a way. Unlike
@@ -173,7 +184,6 @@ class OsmFile(object):
         #    return self.makeWay(modified=True)
 
     def makeNode(self, node, modified=False):
-        node.dump()
         """This creates a list with the nodes and tags of a way. Unlike
         the normal method of creating a way from a data import, this assumes
         all validation has been done, and the way is the result of an SQl
@@ -225,25 +235,10 @@ class OsmFile(object):
     def getCurrentID(self):
         return self.start
 
-    def writeNode(self, tags=list(), attrs=dict(), modified=False):
-        #        timestamp = ""  # LastUpdate
-        timestamp = datetime.now().strftime("%Y-%m-%dT%TZ")
-        # self.file.write("       <node id='" + str(self.osmid) + "\' visible='true'")
-
+    def writeNode(self, tags=dict(), attrs=dict(), modified=False):
         if not 'osmid' in attrs:
             attrs['id'] = str(self.osmid)
             self.osmid -= 1
-
-        if 'user' in attrs:
-            try:
-                x = str(attrs['user'])
-            except:
-                attrs['user'] = str(self.options.get('user'))
-        if 'uid' in attrs:
-            try:
-                x = str(attrs['uid'])
-            except:
-                attrs['uid'] = str(self.options.get('uid'))
 
         if len(attrs) > 0:
             self.file.write("    <node")
@@ -254,19 +249,9 @@ class OsmFile(object):
             else:
                 self.file.write("/>\n")
 
-        # for i in tags:
-        #     for name, value in i.items():
-        #         if name == "Ignore" or value == None:
-        #             continue
-        #         if str(value)[0] != 'b':
-        #             if value != 'None' or value != 'Ignore':
-        #                 tag = self.makeTag(name, value)
-        #                 for newname, newvalue in tag.items():
-        #                     # if newname == 'addr:street' or newname == 'addr:full' or newname == 'name' or newname == 'alt_name':
-        #                     #     newvalue = string.capwords(newvalue)
-        #                     self.file.write("    <tag k=\'" + newname + "\' v=\'" + str(newvalue) + "\'/>\n")
-
         if len(tags) > 0:
+            for key,value in tags.items():
+                self.file.write("    <tag k=\'" + key + "\' v=\'" + value + "\'/>\n")
             self.file.write("    </node>\n")
 
         return self.osmid
@@ -307,7 +292,7 @@ class OsmFile(object):
         return tag
 
     def makeWay(self, refs, tags=list(), attrs=dict(), modified=True):
-        if len(refs) is 0:
+        if len(refs) == 0:
             logging.error("No refs! %r" % tags)
             return
 
