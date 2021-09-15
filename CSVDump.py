@@ -24,6 +24,7 @@ import glob
 import yaml
 import logging
 import csv
+import argparse
 import epdb                      # FIXME: remove later
 from osmfile import OsmFile
 
@@ -36,30 +37,42 @@ class CSVDump(object):
 
     def parse(self, file):
         data = list()
-        tag = dict()
         print("Parsing csv files %r" % file)
         with open(file, newline='') as csvfile:
             spamreader = csv.DictReader(csvfile, delimiter=',')
             for row in spamreader:
+                tag = dict()
+                # print("XXX %r" % row)
                 for keyword,value in row.items():
-                    base = self.basename(keyword)
-                    if base == "SubmitterID":
+                    base = self.basename(keyword).lower()
+                    #epdb.st()
+                    if base == "latitude":
+                        key = "lat"
+                    elif base == "longitude":
+                        key = "lon"
+                    elif base == "altitude":
+                        key = "ele"
+                    elif base == "submitterid":
                         key = "uid"
-                    elif base == "SubmitterName":
+                    elif base == "submittername":
                         key = "user"
-                    elif base == "SubmissionDate":
+                    elif base == "submissiondate":
                         key = "timestamp"
-                    elif base == "AttachmentsPresent":
+                    elif base == "attachmentspresent":
                         continue
-                    elif base == "AttachmentsExpected":
+                    elif base == "attachmentsexpected":
                         continue
-                    elif base == "ReviewState":
+                    elif base == "reviewstate":
                         continue
-                    elif base == "Edits":
+                    elif base == "edits":
                         continue
-                    elif base == "DeviceID":
+                    elif base == "gps_type":
                         continue
-                    elif base == "KEY":
+                    elif base == "accuracy":
+                        continue
+                    elif base == "deviceid":
+                        continue
+                    elif base == "key":
                         continue
                     elif base == "start":
                         continue
@@ -67,9 +80,9 @@ class CSVDump(object):
                         continue
                     elif base == "today":
                         continue
-                    elif base == "Status":
+                    elif base == "status":
                         continue
-                    elif base == "instanceID":
+                    elif base == "instanceid":
                         continue
                     else:
                         key = base
@@ -77,7 +90,6 @@ class CSVDump(object):
                     if len(value) == 0:
                         continue
                     tag[key] = value
-                # epdb.st()
                 data.append(tag)
         return data
 
@@ -89,14 +101,40 @@ class CSVDump(object):
         return base
 
 if __name__ == '__main__':
-
+    parser = argparse.ArgumentParser(description='convert ODK CSV to OSM')
+    parser.add_argument("--infile", help='The input file from ODK Central')
+    parser.add_argument("--outfile", default='tmp.osm', help='The output file for JOSM')
+    args = parser.parse_args()
+    print(args)
+    
     infile = CSVDump()
-    outfile = "foo.osm"
+    outfile =  args.outfile
     osm = OsmFile(filespec=outfile)
     osm.header()
 
-    tmp = infile.parse("camping.csv")
-    print(tmp)
+    # These become attributes for the feature. Anything not listed
+    # here becomes a tag.
+    nottags = ("lat", "lon", "uid", "user", "timestamp")
+    attrs = dict()
+    tags = dict()
+    tmp = infile.parse(args.infile)
+    for item in tmp:            
+        for key,value in item.items():
+            try:
+                idx = nottags.index(key.lower())
+                attrs[key.lower()] = value.lower()
+            except:
+                logging.info("Not an attribute %r!" % key.lower())
+                tags[key.lower()] = value.lower()
+            # print("XXX %s" % key, value, )
+        try:
+            idx = nottags.index("lat")
+            node = osm.createNode(attrs, tags)
+            osm.writeNode(node)
+        except:
+            way = osm.createWay(attrs, tags)
+            osm.writeWay(way)
+            point = False
     
     osm.footer()
     
