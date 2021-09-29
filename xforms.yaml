@@ -1,0 +1,51 @@
+# These are translation for slext_multiple choices, which under
+# different keywords.
+validate:
+  - highway:
+      - smoothness
+      - surface
+      - tracktype
+      - smoothness
+  - leisure:
+      - firepit
+      - picnic_table
+tags:
+  - amenity:
+      - toilets
+      - toilets:disposal
+      - toilets:disposal
+      - pitlatrine
+      - water_point
+      - drinking_water
+      - townhall
+      - post_office
+      - police
+      - fire_station
+      - courthouse
+      - hospital
+      - clinic
+      - parking
+      - fuel
+      - bus_station
+      - school
+      - library
+      - pub
+      - restaurant
+      - fast_food
+      - cafe
+      - bar      
+  - tourism:
+      - picnic_table
+      - caravans
+      - camp_site
+      - camp_pitch
+  - bear box: yes
+  - barbeque_grill: yes
+  - power_supply: yes
+  - path:
+    - sac_scale
+    - mtb:scale
+    - mtb:scale:imba
+  - internet_access:
+    - wlan
+    - cellular
