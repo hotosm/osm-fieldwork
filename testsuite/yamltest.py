@@ -34,12 +34,17 @@ dj = DejaGnu()
 foo = data.getValues("validate")
 bar = foo[1]['leisure']
 if "firepit" in bar:
-    dj.passes("getValues()")
+    dj.passes("getValues(list)")
 else:
-    dj.fails("getValues()")
+    dj.fails("getValues(list)")
+
+if data.getValues("bear box") == True:
+    dj.passes("getValues(bool)")
+else:
+    dj.fails("getValues(bool)")
 
 if data.getKeyword("caravans") == "tourism":
     dj.passes("getKeyword()")
 else:
-    dj.fails("getKeyword()")
     # yaml.dump()
+    dj.fails("getKeyword()")
