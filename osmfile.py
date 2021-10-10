@@ -59,6 +59,7 @@ class OsmFile(object):
             self.file.write('<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n')
             #self.file.write('<osm version="0.6" generator="gosm 0.1" timestamp="2017-03-13T21:43:02Z">\n')
             self.file.write('<osm version="0.6" generator="gosm 0.1">\n')
+            self.file.flush()
 
     def footer(self):
         #logging.debug("FIXME: %r" % self.file)
@@ -307,7 +308,7 @@ class OsmFile(object):
         return tag
 
     def makeWay(self, refs, tags=list(), attrs=dict(), modified=True):
-        if len(refs) is 0:
+        if len(refs) == 0:
             logging.error("No refs! %r" % tags)
             return
 
