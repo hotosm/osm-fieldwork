@@ -31,17 +31,11 @@ args = parser.parse_args()
 
 data = YamlFile(args.infile)
 
-foo = data.getValues("validate")
-bar = foo[1]['leisure']
-
-
-# class Test(object):
-#     def test_bool(self)
-#         assert x is True
-# #x = Test()
-
-assert "firepit" in bar
-assert data.getKeyword("caravans") == "tourism"
+def test_validate():
+    """Tests for things under validate"""
+    foo = data.getValues("validate")
+    bar = foo[1]['leisure']
+    assert "firepit" in bar
 
 
 def test_bool_good():
@@ -54,4 +48,10 @@ def test_bool_bad():
 
 def test_value():
     assert data.getKeyword("caravans") == "tourism"
-    
+
+
+if __name__ == '__main__':
+    test_validate()
+    test_bool_good()
+    test_bool_bad()
+    test_value()
