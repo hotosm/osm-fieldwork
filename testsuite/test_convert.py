@@ -40,7 +40,7 @@ def test_get_keyword():
 
 
 def test_no_keyword():
-    """Convert a feature"""
+    """Convert a feature that doesn't exist"""
     result = csv.getKeyword("doesnt exist")
     assert result is None
 
@@ -54,9 +54,21 @@ def test_convert_list():
     result = csv.convertList(features)
     assert result[0]['leisure'] == "firepit" and result[1]['amenity'] == "parking" and result[2]['tourism'] == "viewpoint"
 
+def test_bool_keyword():
+    """Convert a feature"""
+    result = csv.getKeyword("bear box")
+    assert result == "bear box"
 
+
+def test_convert_tag():
+    tmp = csv.convertTag("altitude")
+    assert tmp == "ele"
+
+
+# Run standalone for easier debugging when not under pytest
 if __name__ == '__main__':
     test_get_keyword()
     test_no_keyword()
     test_convert_list()
-
+    test_bool_keyword()
+    test_convert_tag()
