@@ -61,8 +61,9 @@ def test_bool_keyword():
 
 
 def test_convert_tag():
-    tmp = csv.convertTag("altitude")
-    assert tmp == "ele"
+    tmp1 = csv.convertTag("altitude")
+    tmp2 = csv.convertTag("foobar")
+    assert tmp1 == "ele" and tmp2 == "foobar"
 
 
 # Run standalone for easier debugging when not under pytest

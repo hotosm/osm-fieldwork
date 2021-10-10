@@ -49,4 +49,4 @@ class Convert(YamlFile):
         for mod in self.yaml.getValues("convert"):
             if tag in mod:
                 return mod[tag]
-        return None
+        return tag
