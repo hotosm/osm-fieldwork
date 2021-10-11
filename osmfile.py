@@ -64,6 +64,7 @@ class OsmFile(object):
     def footer(self):
         #logging.debug("FIXME: %r" % self.file)
         self.file.write("</osm>\n")
+        self.file.flush()
         if self.file is False:
             self.file.close()
 
