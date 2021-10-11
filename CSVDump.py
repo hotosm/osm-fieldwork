@@ -58,14 +58,12 @@ class CSVDump(object):
             spamreader = csv.DictReader(csvfile, delimiter=',')
             for row in spamreader:
                 tags = dict()
-                # print("XXX %r" % row)
                 for keyword, value in row.items():
                     base = self.basename(keyword).lower()
                     if base not in self.ignore:
                         key = self.convert.convertTag(base)
                         if len(value) > 0:
-                            #print("XXX %r = %r" % (key, value))
-                            tags[key] = value
+                             tags[key] = value
                 all.append(tags)
         return all
 
@@ -80,7 +78,7 @@ class CSVDump(object):
         # print(line)
         obj = dict()
         tags = dict()
-        attributes = ("timestamp", "lat", "lon", "uid", "user", "timestamp")
+        attributes = ("id", "timestamp", "lat", "lon", "uid", "user", "timestamp", "version", "action")
         for key, value in line.items():
             if key in self.ignore:
                 continue
@@ -88,20 +86,25 @@ class CSVDump(object):
                 obj[key] = value
             else:
                 if value is not None:
-                    if value.isnumeric():
-                        tmp = self.convert.getKeyword(round(value))
-                    else:
-                        tmp = self.convert.getKeyword(value)
-                    print(tmp)
-                    if tmp != "none":
-                        tags[key] = tmp
+                    # a tag with a space is from a multiple selection, so break it into
+                    # each piece. FIXME: Most OSM tags have no embedded spaces, I think...
+                    for tag in value.split(' '):
+                        # First convert the tag to the approved OSM equivalent
+                        tmp = self.convert.convertTag(tag)
+                        # Get the keyword for the value
+                        keyword = self.convert.getKeyword(tmp)
+                        if keyword == tmp:
+                            tmp = tag
+                        # print("XXX %r - %r: %r = %r" % (key, tag, tmp, keyword))
+                        if key != "none":
+                            tags[key] = tmp
                 else:
                     continue
                     #rint(tmp, key, value)
             if len(tags) > 0:
                 obj['tags'] = tags
         tmp = self.osm.createNode(obj)
-        print(tmp)
+        #print(tmp)
         self.osm.write(tmp)
 
 
