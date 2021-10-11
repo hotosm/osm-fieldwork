@@ -1,3 +1,18 @@
+# gdb_history
+TAGS
+*~
+.deps
+.libs
+py-compile
+NEWS
+README.md
+*__pycache__/
+
+# output files
+*.csv
+*.osm
+*.txt
+
 # Prerequisites
 *.d
 
