@@ -18,13 +18,8 @@
 #     along with odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-import logging
-import string
-import epdb
-import argparse
 import yaml
 
-#from yaml import Reader
 
 class YamlFile(object):
     """Config file in YAML format"""
@@ -51,7 +46,6 @@ class YamlFile(object):
     def getKeyword(self, value=None):
         for tags in self.yaml['tags']:
             for key, val in tags.items():
-                # if key == val:
                 if type(val) == list:
                     for item in val:
                         #print(item)
@@ -66,6 +60,7 @@ class YamlFile(object):
                     print("DICT")
                     for item, entry in val.items():
                         print(item, entry)
+        return value
 
     def dump(self):
         print("YAML file: %s" % self.filespec)
