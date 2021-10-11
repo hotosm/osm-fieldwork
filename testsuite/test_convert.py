@@ -42,7 +42,7 @@ def test_get_keyword():
 def test_no_keyword():
     """Convert a feature that doesn't exist"""
     result = csv.getKeyword("doesnt exist")
-    assert result is None
+    assert result == "doesnt exist"
 
 
 def test_convert_list():
