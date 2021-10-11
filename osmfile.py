@@ -64,13 +64,16 @@ class OsmFile(object):
     def footer(self):
         #logging.debug("FIXME: %r" % self.file)
         self.file.write("</osm>\n")
-        if self.file != False:
+        if self.file is False:
             self.file.close()
 
-    def write(self, way=list()):
-        if way is not None:
-            for line in way:
-                self.file.write("%s\n" % line)
+    def write(self, data=None):
+        if type(data) == list:
+            if data is not None:
+                for line in data:
+                    self.file.write("%s\n" % line)
+        else:
+            self.file.write("%s\n" % data)            
 
     def createWay(self, way, modified=False):
         """This creates a string that is the OSM representation of a node"""
@@ -91,8 +94,11 @@ class OsmFile(object):
             attrs['version'] = "1"
         else:
             attrs['version'] = way['version'] + 1
-
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
+        # If the resulting file is publicly accessible without authentication, THE GDPR applies
+        # and the identifying fields should not be included
+        attrs['uid'] = way['uid']
+        attrs['user'] = way['user']
 
         # Processs atrributes
         line = ""
@@ -137,6 +143,10 @@ class OsmFile(object):
         attrs['lat'] = node['lat']
         attrs['lon'] = node['lon']
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
+        # If the resulting file is publicly accessible without authentication, THE GDPR applies
+        # and the identifying fields should not be included
+        attrs['uid'] = node['uid']
+        attrs['user'] = node['user']
 
         # Processs atrributes
         line = ""
