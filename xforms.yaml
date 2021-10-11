@@ -21,7 +21,7 @@ convert:
   - longitude: lon
   - altitude: ele
   - submitterid: uid
-  - submittername: name
+  - submittername: user
   - submissiondate: timestamp
   - comment: note
   - view: viewpoint
@@ -30,7 +30,7 @@ convert:
 # This section matches values to the correct keyword. Often a multiple
 # selection in the XLSXForm survey sheet may have values that don't
 # all share the same keyword. This corrects that.
- tags:
+tags:
   - leisure:
       - firepit
       - picnic_table
