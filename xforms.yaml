@@ -1,5 +1,5 @@
-# These are translation for slext_multiple choices, which under
-# different keywords.
+# This section corrently isn't being used yet, but will be used to
+# test for tag completeness for some features.
 validate:
   - highway:
       - smoothness
@@ -9,7 +9,34 @@ validate:
   - leisure:
       - firepit
       - picnic_table
-tags:
+
+# This section is for simple tag translation. Sometimes the value from
+# the choices sheet of the XLSXForm is very close, but not an exact
+# match to an approved OSM tags. Many XLSXForms that used OMK tried
+# hard to use the (almost) same value as the official OSM one. This
+# makes it easier to deal with older forms without having to edit the
+# raw data.
+convert:
+  - latitude: lat
+  - longitude: lon
+  - altitude: ele
+  - submitterid: uid
+  - submittername: name
+  - submissiondate: timestamp
+  - comment: note
+  - view: viewpoint
+  - cell: cellular
+
+# This section matches values to the correct keyword. Often a multiple
+# selection in the XLSXForm survey sheet may have values that don't
+# all share the same keyword. This corrects that.
+ tags:
+  - leisure:
+      - firepit
+      - picnic_table
+      - fishing
+      - park
+      - resort
   - amenity:
       - toilets
       - toilets:disposal
@@ -39,6 +66,7 @@ tags:
       - caravans
       - camp_site
       - camp_pitch
+      - viewpoint
   - bear box: yes
   - barbeque_grill: yes
   - power_supply: yes
@@ -49,3 +77,4 @@ tags:
   - internet_access:
     - wlan
     - cellular
+    - internet
