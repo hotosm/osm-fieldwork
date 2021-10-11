@@ -1,0 +1,7 @@
+xmltodict==0.12.0
+Shapely==1.7.1
+lxml==4.6.3
+epdb==0.15.1
+fastkml==0.11
+pytest==6.2.5
+PyYAML==5.4.1
