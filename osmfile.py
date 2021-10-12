@@ -88,11 +88,13 @@ class OsmFile(object):
             attrs['id'] = int(way['osm_way_id'])
         elif 'osm_id' in way:
             attrs['id'] = int(way['osm_id'])
+        elif 'id' in way:
+            attrs['id'] = int(way['id'])
         else:
             attrs['id'] = self.start
             self.start -= 1
         if 'version' not in way:
-            attrs['version'] = "1"
+            attrs['version'] = 1
         else:
             attrs['version'] = way['version'] + 1
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
@@ -101,18 +103,47 @@ class OsmFile(object):
         attrs['uid'] = way['uid']
         attrs['user'] = way['user']
 
+        # Make all the nodes first. The data in the track has 4 fields. The first two
+        # are the lat/lon, then the altitude, and finally the GPS accuracy.
+        i = 0
+        newrefs = list()
+        node = dict()
+        for ref in way['refs']:
+            node['timestamp'] = attrs['timestamp']
+            if 'user' in attrs:
+                node['user'] = attrs['user']
+            if 'uid' in attrs:
+                node['uid'] = attrs['uid']
+            node['version'] = 0
+            colon = ref.find(';')
+            if colon > 0:
+                newrefs.append(self.start)
+                osm += self.createNode(node) + '\n'
+                #node['accuracy'] = ref[:colon]
+                ref = ref[colon+1:]
+                i = 0
+            if i == 0:
+                node['lat'] = ref
+            if i == 1:
+                node['lon'] = ref
+            # if i == 2:
+            #     node[altitude] = ref
+            i += 1
+
         # Processs atrributes
         line = ""
         for ref, value in attrs.items():
             line += '%s=%r ' % (ref, str(value))
         osm += "  <way " + line + ">"
 
-        for ref in way['refs']:
+        for ref in newrefs:
             if ref != 'osm_id':
                 osm += '\n    <nd ref="%s"/>' % ref
 
         if 'tags' in way:
             for key, value in way['tags'].items():
+                if key == 'track':
+                    continue
                 if key not in attrs:
                     osm += "\n    <tag k='%s' v=%r/>" % (key, value)
                 if modified:
@@ -127,20 +158,19 @@ class OsmFile(object):
         """This creates a string that is the OSM representation of a node"""
         # print(node)
         attrs = dict()
-        osm = ""
         # Add default attributes
         if modified:
             attrs['action'] = 'modify'
 
-        if 'osm_id' in node:
-            attrs['id'] = int(node['osm_id'])
+        if 'id' in node:
+            attrs['id'] = int(node['id'])
         else:
-            attrs['id'] = str(self.start)
+            attrs['id'] = self.start
             self.start -= 1
         if 'version' not in node:
             attrs['version'] = "1"
         else:
-            attrs['version'] = node['version'] + 1
+            attrs['version'] = int(node['version']) + 1
         attrs['lat'] = node['lat']
         attrs['lon'] = node['lon']
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
@@ -151,9 +181,10 @@ class OsmFile(object):
 
         # Processs atrributes
         line = ""
+        osm = ""
         for ref, value in attrs.items():
             line += '%s=%r ' % (ref, str(value))
-        osm += "  <node " + line + ">"
+        osm += "  <node " + line
 
         if 'tags' in node:
             for key, value in node['tags'].items():
@@ -161,10 +192,9 @@ class OsmFile(object):
                     osm += "\n    <tag k='%s' v=%r/>" % (key, value)
                 if modified:
                     osm += '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
-            osm += '\n'
-            osm += "  </node>"
+            osm += "\n  </node>"
         else:
-            osm += " />>"
+            osm += "/>"
 
         return osm
 
