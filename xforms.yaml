@@ -26,6 +26,7 @@ convert:
   - comment: note
   - view: viewpoint
   - cell: cellular
+  - feature_type: highway
 
 # This section matches values to the correct keyword. Often a multiple
 # selection in the XLSXForm survey sheet may have values that don't
