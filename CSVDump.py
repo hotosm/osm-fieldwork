@@ -78,6 +78,8 @@ class CSVDump(object):
         # print(line)
         obj = dict()
         tags = dict()
+        refs = list()
+        out = ""
         attributes = ("id", "timestamp", "lat", "lon", "uid", "user", "timestamp", "version", "action")
         for key, value in line.items():
             if key in self.ignore:
@@ -98,14 +100,19 @@ class CSVDump(object):
                         # print("XXX %r - %r: %r = %r" % (key, tag, tmp, keyword))
                         if key != "none":
                             tags[key] = tmp
+                        if key == "track":
+                            refs.append(tag)
                 else:
                     continue
                     #rint(tmp, key, value)
             if len(tags) > 0:
                 obj['tags'] = tags
-        tmp = self.osm.createNode(obj)
-        #print(tmp)
-        self.osm.write(tmp)
+                obj['refs'] = refs
+        if 'lat' in obj:
+            out += self.osm.createNode(obj)
+        else:
+            out += self.osm.createWay(obj)
+        self.osm.write(out)
 
 
 if __name__ == '__main__':
