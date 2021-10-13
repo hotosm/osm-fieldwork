@@ -40,8 +40,9 @@ class CSVDump(object):
                 self.convert = Convert("xforms.yaml")
             else:
                 self.convert = Convert("../xforms.yaml")
-        self.ignore = ["attachmentsexpected",  "attachmentspresent", "reviewstate", "edits", "gps_type", "accuracy", "deviceid"]
-        self.ignore.extend(["key", "start", "end", "today", "status", "instanceid", "audio", "image", "phonenumber", "detail"])
+        self.ignore = self.convert.yaml.yaml['ignore']
+        # self.ignore = ["attachmentsexpected",  "attachmentspresent", "reviewstate", "edits", "gps_type", "accuracy", "deviceid"]
+        # self.ignore.extend(["key", "start", "end", "today", "status", "instanceid", "audio", "image", "phonenumber", "detail"])
         # self.convert.dump()
 
     def createOSM(self, file="tmp.osm"):
