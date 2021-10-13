@@ -187,6 +187,7 @@ class OsmFile(object):
         osm += "  <node " + line
 
         if 'tags' in node:
+            osm += ">"
             for key, value in node['tags'].items():
                 if key not in attrs:
                     osm += "\n    <tag k='%s' v=%r/>" % (key, value)
