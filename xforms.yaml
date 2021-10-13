@@ -26,7 +26,28 @@ convert:
   - comment: note
   - view: viewpoint
   - cell: cellular
-  - feature_type: highway
+  # This tag is the top level multiple selection menu
+  - highway_type: highway
+
+# All of these tags are in the CSV file, and can be ignored
+ignore:
+  - attachmentsexpected
+  - attachmentspresent
+  - reviewstate
+  - edits
+  - gps_type
+  - accuracy
+  - deviceid
+  - key
+  - start
+  - end
+  - today
+  - status
+  - instanceid
+  - audio
+  - image
+  - phonenumber
+  - detail
 
 # This section matches values to the correct keyword. Often a multiple
 # selection in the XLSXForm survey sheet may have values that don't
