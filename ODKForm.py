@@ -40,6 +40,8 @@ import os
 from lxml import etree
 import logging
 from lxml.etree import tostring
+import argparse
+import xmltodict
 
 
 class ODKForm(object):
@@ -47,93 +49,53 @@ class ODKForm(object):
     def __init__(self):
         self.fields = dict()
         self.nodesets = dict()
+        self.groups = dict()
 
-    def parse(self, file):
-        print("Parsing form %r" % file.name)
-        doc = etree.parse(file)
+    def parse(self, inform):
+        print("Parsing form %s" % inform)
 
-        head = list()
-        body = dict()
-        base = ""
-        title = ""
-        for docit in doc.getiterator():
-            if base == "":
-                base = docit.base
-                # print("BAR: %r" % (docit.tag))
-            if docit.prefix == 'h':
-                index = docit.tag.find('}') + 1
-                if docit.tag[index:] == 'title':
-                    title = docit.text
-                    # Process the header
-                elif docit.tag[index:] == 'head':
-                    for elit in docit.getiterator():
-                        try:
-                            index = elit.tag.find('}') + 1
-                        except:
-                            continue
-                        if elit.tag[index:] == 'text':
-                            # print("HEADY: %r" % elit)
-                            if elit.attrib != "":
-                                attr = dict(elit.attrib)
-                                # print("HEAD: %r" % (attr['id']))
-                                id = attr['id']
-                                head.append(id)
-                                index = id.find(':')
-                                field = id[6:index]
-                                index = index + 1
-                                opt = id[index:]
-                                print("FIELD %r %r" % (field, opt))
-                                if opt == 'hint':
-                                    continue
-                                elif opt == 'label':
-                                    item = field.split("/")
-                                    if len(item) > 1:
-                                        self.fields[item[0]] = item[1]
-                                if opt[0:6] == 'option':
-                                    text = str(etree.tostring(elit[0]))
-                                    start = text.find('>') + 1
-                                    end = text.find('<',start)
-                                    value = text[start:end]
-                                    print('OPTION %r' % value)
-                                    item = (field + ':' + opt, value)
-                                    # fields.append(item)
-                                   # import pdb; pdb.set_trace()
+        infile = open(inform)
+        data = infile.read()
+        html = xmltodict.parse(data)
+        for key, value in html['h:html'].items():
+            if key == "h:head":
+                for node in value['model']['bind']:
+                    #print("\nUUU %r" % node)
+                    key = node['@nodeset']
+                    key = key.replace("/data/", "")
+                    self.nodesets[key] = node['@type']
+        print(self.nodesets)
 
-                    #print("FIELDS1: %r" % fields)
-                # Process the body
-                elif docit.tag[index:] == 'body':
-                    for elit in docit.getiterator():
-                        # print("BODY TEXT: %r %r" % (elit.tag, elit.text))
-                        # mport epdb; epdb.st()
-                        for ref,datatype in elit.items():
-                            dtype = datatype[6:]
-                            # print("\tFOOBAR: %r , %r" % (ref, dtype))
-                            options = list()
-                            for select in elit.getiterator():
-                                if type(select.text) == str:
-                                    if select.text[0] != '\n':
-                                        # print("\tSELECT BODY: %r" % (select.text))
-                                        options.append(select.text)
-                                        #import pdb; pdb.set_trace()
-                                #value = l
-                                #body[dtype] = options
-                            if len(options) > 0:
-                                body[dtype] = options
+        for key, value in html['h:html']['h:body'].items():
+            for subval in value:
+                if subval['@appearance'] == "field-list":
+                    group = subval['@ref']
+                    group = group.replace("/data/", "")
+                    # print("\nXXX %r, %r" % (group, subval))
+                    # non selection fields like text or range use the input keyword
+                    entry = dict()
+                    if 'input' in subval:
+                        for val in subval['input']:
+                            tmp = val['@ref']
+                            tmp = tmp.replace("/data/" + group + "/", "")
+                            entry[tmp] = ""
+                            self.groups[group] = entry
 
-            try:
-                index = docit.tag.find('}') + 1
-            except:
-                continue
-            if docit.tag[index:] == 'bind':
-                # print("DOCIT.TAG: %r" % docit.tag)
-                try:
-                    # print("DOCIT.ATTRIB: %r" % docit.attrib)
-                    btype = docit.attrib['type']
-                    bname = docit.attrib['nodeset'].replace("/data/","")
-                except:
-                    btype = "unknown"
-                    bname = "unknown"
-                self.nodesets[bname] = btype
+                    # selection fields like select_one or select__multiple can havew multiple entries
+                    keywords = ("select", "select1", "select2", "select3", "select4")
+                    for selection in keywords:
+                        if selection in subval:
+                            entries = list()
+                            select = subval[selection]['@ref']
+                            select = select.replace("/data/" + group + "/", "")
+                            for item in subval[selection]['item']:
+                                # print("\nYYY %r, %r" % (select, item['value']))
+                                entries.append(item['value'])
+                                entry[select] = entries
+                                self.groups[group] = entry
+                            entry[select] = entries
+
+        print(self.groups)
 
     def getNodeType(self, name):
         if name in self.nodesets:
@@ -143,10 +105,10 @@ class ODKForm(object):
 
     def dump(self):
         print("Dumping Nodesets:")
-        for key,value in self.nodesets.items():
+        for key, value in self.nodesets.items():
             print("\tType of \'%s\' is \'%s\'" % (key, value))
         print("Dumping Data Fields:")
-        for key,value in self.fields.items():
+        for key, value in self.fields.items():
             print("\tField of \'%s\' is \'%s\'" % (key, value))
 
 
@@ -154,13 +116,11 @@ class ODKForm(object):
 # End of Class definitions
 #
 
-file = open("/home/rob/projects/gnu/gosm.git/ODK/IcePark.xml")
-odkform = ODKForm()
-xmlfile = odkform.parse(file)
-odkform.dump()
-# print("HEAD: %r" % xmlfile['head'])
-# print("BODY: %r" % xmlfile['body'])
-# print("BASE: %r" % xmlfile['base'])
-# print("FIELDS: %r" % xmlfile['fields'])
-# print("NODESETS: %r" % xmlfile['nodesets'])
-# print(odkform.getNodeType('name'))
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='convert ODK CSV to OSM')
+    parser.add_argument("--infile", required=True, help='The input file from ODK Central')
+    parser.add_argument("--outfile", default='tmp.osm', help='The output file for JOSM')
+    args = parser.parse_args()
+
+    odkform = ODKForm()
+    odkform.parse(args.infile)
