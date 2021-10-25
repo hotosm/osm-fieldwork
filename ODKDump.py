@@ -19,36 +19,29 @@
 
 import sys
 import ODKForm
-import ODKInstance
+from ODKInstance import ODKInstance
 import argparse
-# import csv
+from datetime import datetime
 from osmfile import OsmFile
-import glob
-import yaml
+from convert import Convert
 import logging
-from fastkml import kml
-#from shapely.geometry import Point, LineString, Polygon
-import epdb                      # FIXME: remove later
+import re
+from shapely.geometry import Point, LineString, Polygon
 
-#This program scans the top level directory for ODK data files as produced
-#by the ODKCollect app for Android. Each XLSForm type gets it's own output
-#file containing all the waypoints entered using that form.
-#        """)
-#        quit()
 
-# The logfile contains multiple runs, so add a useful delimiter
-logging.info("-----------------------\nStarting:")
+if __name__ != '__main__':
+    print("This is not a loadable python module!")
+    exit
 
-ap = argparse.ArgumentParser()
-ap.add_argument("-v", "--verbose",nargs="?",const="0",help="verbose output")
-ap.add_argument("-i", "--indir",default="/tmp/odk/",help="input Directory (defaults to /tmp/odk)")
-ap.add_argument("-x", "--xform",required=True,help="XForm filename ")
-ap.add_argument("-o", "--outdir",help="Output Directory (defaults to indir)")
-ap.add_argument("-f", "--format",help="Output format (defaults to osm)")
-args = vars(ap.parse_args())
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", nargs="?",const="0", help="verbose output")
+parser.add_argument("-x", "--xform", required=True, help="input xform file in XML format")
+parser.add_argument("-i", "--infile", required=True, help="input data in XML format")
+parser.add_argument("-o", "--outdir", help="Output Directory (defaults to $PWD)")
+args = parser.parse_args()
 
 # if verbose, dump to the terminal as well as the logfile.
-if not args['verbose']:
+if not args.verbose:
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
 
@@ -58,80 +51,99 @@ if not args['verbose']:
     ch.setFormatter(formatter)
     root.addHandler(ch)
 
+# Get the basename without the suffix
+xform = args.xform.replace(".xml", "")
+xinst = args.infile.replace(".xml", "")
 
+# This is the output file in OSM format
+osmfile = OsmFile(filespec=xinst + ".osm")
+osmfile.header()
 
-indir = args['indir']
-inform = indir + "forms/" + args['xform'] + ".xml"
-handle = open(inform)
-logging.info("Opened %s" % inform)
-if not args['outdir']:
-    outdir = args['indir']
-else:
-    outdir = args['outdir']
-indata = indir + "instances/" + args['xform']
-files = glob.glob(indata + "*.xml")
-print("FILES: %r" % files)
-outfile = outdir + args['xform'] + ".osm"
+# Read in the XML config file from ODK Collect
 odkform = ODKForm.ODKForm()
-xform = odkform.parse(handle)
-odkform.dump()
+odkform.parse(xform + ".xml")
 
-odkinst = ODKInstance.ODKInstance(files[0])
-data = odkinst.parse(files[0], odkform)
-# odkinst.dump()
-osm = OsmFile(filespec=outfile)
-osm.header()
+# Read the YAML config file for this XForm
+yaml = Convert(xform + ".yaml")
+yaml.dump()
 
-with open("icepark.yaml", "r") as ymlfile:
-    cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
-    print(yaml.dump(cfg))
-    
-for obj in data:
-    # obj.dump()
-    node = osm.createObject(obj)
-    osm.write(node)
+# Read the data instance
+inst = ODKInstance()
+data = inst.parse(args.infile)
 
-osm.footer()
+out = ""
+groups = dict()
+tags = dict()
+node = dict()
+way = dict()
+for x in data:
+    # print(data[x])
+    lat = ""
+    lon = ""
+    reg = re.compile("group*")
+    # There should be only one teimestamp we want, namely 'end'
+    if odkform.getNodeType(x) == "dateTime":
+        dt = data[x][:data[x].find(".")]
+        timestamp = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S")
+        groups['timestamp'] = timestamp
+        node['timestamp'] = timestamp
+        continue
+    elif reg.match(x):
+        groups[x] = data[x]
+        for key, value in data[x].items():
+            if odkform.getNodeType(x, key) == "geotrace":
+                ln = "LINESTRING("
+                ln += groups[x][key] + ")"
+                groups[x][key] = ln
+            if odkform.getNodeType(x, key) == "geoshape":
+                #print(odkform.getNodeType(x, key))
+                py = "POLYGON("
+                py += groups[x][key] + ")"
+                groups[x][key] = py
+            elif odkform.getNodeType(x, key) == "geopoint":
+                #print(odkform.getNodeType(x, key))
+                tmp = data[x][key].split(" ")
+                lat = tmp[0]
+                lon = tmp[1]
+                node['lat'] = tmp[0]
+                node['lon'] = tmp[1]
+            elif odkform.getNodeType(x, key) == "list":
+                space = data[x][key].find(" ")
+                if space <= 0:
+                    values = yaml.getKeyword(data[x][key])
+                    tags[key] = values
+                else:
+                    for item in data[x][key].split(" "):
+                        if key == "name" or key == "alt_name":
+                            tags[key] = data[x][key]
+                        else:
+                            values = yaml.getKeyword(item)
+                            if key in tags:
+                                tags[key] = tags[key] + ";" + item
+                            else:
+                                tags[key] = values
+            elif odkform.getNodeType(x, key) == "image":
+                pass
+            elif odkform.getNodeType(x, key) == "binary":
+                pass
+            elif odkform.getNodeType(x, key) == "int":
+                if data[x][key] is not None:
+                    tags[key] = data[x][key]
+            elif odkform.getNodeType(x, key) == "string":
+                if data[x][key] is not None:
+                    tags[key] = data[x][key]
+            #else:
+            #    tags[x] = key
 
-quit()
+node['lat'] = lat
+node['lon'] = lon
+node['tags'] = tags
+print("FOO: %r" % node)
+out += osmfile.createNode(node)
 
-# if format == 'osm':
-#     osm = OsmFile(args, outdir + '/' + outfile)
-#     osm.header()
-#     # elif format == 'csv':
-#     #     csvfile = open('/tmp/' + form + '.csv', 'w', newline='')
-#     #     outfile = open(outdir + '/' + form + ".csv", 'w')
-#     # elif format == 'kml':
-#     #     ns = '{http://www.opengis.net/kml/2.2}'
-#     #     kmlfile = kml.KML()
-#     #     outfile = open(outdir + '/' + form + ".kml", 'w')
+# We're done
+osmfile.write(out)
+osmfile.footer()
 
-#     pattern = fullpath + "/" + form[0] + "*"
-#     odkdirs = glob.glob(pattern)
-#     list.sort(odkdirs)
-#     import epdb; epdb.set_trace()
-#     for xmldir in odkdirs:
-#         logging.info("Opening directory " + xmldir)
-#         # FIXME: Ignore the *-media directories.
-#         for xmlfile in glob.glob(xmldir + "/*.xml"):
-#             if os.path.isfile(xmlfile):
-#                 logging.info("Opening XML file " + xmlfile)
-#                 data = parse(xmlfile, form)
-#                 print("DATA: " + data)
-#                 if data != False:
-#                     attrs = dict()
-#                     if len(data['GPS']):
-#                         attrs['lat'] = data['GPS'][0]
-#                         attrs['lon'] = data['GPS'][1]
-#                         attrs['ele'] = data['GPS'][2]
-#                         #osm.node(data['GPS'][0], data['GPS'][1], data['TAGS'])
-#                         entry = osm.createNode(attrs, modified=False)
-#                         osm.writeWay(entry[0])
-#                     else:
-#                         logging.warning(" has no GPS coordinates")
-
-#     if format == 'osm':
-#         osm.footer()
-
-print("Input files in directory: %s/{forms,instances}" % args.get('indir'))
-print("Output file: %s" % outfile)
+print("Output file: %s" % xinst + ".osm")
+#print(groups)
