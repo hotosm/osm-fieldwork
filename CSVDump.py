@@ -41,9 +41,6 @@ class CSVDump(object):
             else:
                 self.convert = Convert("../xforms.yaml")
         self.ignore = self.convert.yaml.yaml['ignore']
-        # self.ignore = ["attachmentsexpected",  "attachmentspresent", "reviewstate", "edits", "gps_type", "accuracy", "deviceid"]
-        # self.ignore.extend(["key", "start", "end", "today", "status", "instanceid", "audio", "image", "phonenumber", "detail"])
-        # self.convert.dump()
 
     def createOSM(self, file="tmp.osm"):
         self.osm = OsmFile(filespec=file)
@@ -60,6 +57,9 @@ class CSVDump(object):
             for row in spamreader:
                 tags = dict()
                 for keyword, value in row.items():
+                    # print(keyword,value)
+                    if keyword is None or keyword[:6] == 'warmup':
+                        continue
                     base = self.basename(keyword).lower()
                     if base not in self.ignore:
                         key = self.convert.convertTag(base)
@@ -105,7 +105,7 @@ class CSVDump(object):
                             refs.append(tag)
                 else:
                     continue
-                    #rint(tmp, key, value)
+                    # print(tmp, key, value)
             if len(tags) > 0:
                 obj['tags'] = tags
                 obj['refs'] = refs
