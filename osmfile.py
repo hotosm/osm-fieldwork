@@ -176,8 +176,10 @@ class OsmFile(object):
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, THE GDPR applies
         # and the identifying fields should not be included
-        attrs['uid'] = node['uid']
-        attrs['user'] = node['user']
+        if 'uid' in node:
+            attrs['uid'] = node['uid']
+        if 'user' in node:
+            attrs['user'] = node['user']
 
         # Processs atrributes
         line = ""
