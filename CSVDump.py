@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021 Humanitarian OpenStreetMap Team
+# Copyright (c) 2020, 2021, 2022 Humanitarian OpenStreetMap Team
 #
 # This file is part of Odkconvert.
 #
@@ -21,6 +21,7 @@
 import argparse
 import csv
 import os
+import logging
 from sys import argv
 from convert import Convert
 from osmfile import OsmFile
@@ -64,7 +65,11 @@ class CSVDump(object):
                     if base not in self.ignore:
                         key = self.convert.convertTag(base)
                         if len(value) > 0:
-                             tags[key] = value
+                            tmp = key.split('=')
+                            if len(tmp) == 1:
+                                tags[key] = value
+                            else:
+                                tags[tmp[0]] = tmp[1]
                 all.append(tags)
         return all
 
@@ -109,7 +114,7 @@ class CSVDump(object):
             if len(tags) > 0:
                 obj['tags'] = tags
                 obj['refs'] = refs
-        if 'lat' in obj:
+        if 'refs' not in obj or len(refs) == 0:
             out += self.osm.createNode(obj)
         else:
             out += self.osm.createWay(obj)
@@ -118,9 +123,21 @@ class CSVDump(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='convert ODK CSV to OSM')
-    parser.add_argument("--infile", help='The input file from ODK Central')
-    parser.add_argument("--outfile", default='tmp.osm', help='The output file for JOSM')
+    parser.add_argument("-v", "--verbose", nargs="?",const="0", help="verbose output")
+    parser.add_argument("-i", "--infile", help='The input file from ODK Central')
+    parser.add_argument("-o", "--outfile", default='tmp.osm', help='The output file for JOSM')
     args = parser.parse_args()
+
+    # if verbose, dump to the terminal.
+    if not args.verbose:
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
+
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        root.addHandler(ch)
 
     csvin = CSVDump()
     data = csvin.parse(args.infile)
