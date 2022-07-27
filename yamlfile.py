@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021 Humanitarian OpenStreetMap Team
+# Copyright (c) 2020, 2021, 2022 Humanitarian OpenStreetMap Team
 #
 # This file is part of odkconvert.
 #
-#     Underpass is free software: you can redistribute it and/or modify
+#     ODKConvert is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
