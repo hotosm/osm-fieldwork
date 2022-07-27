@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 #
-# Copyright (C) 2020, Humanitarian OpenstreetMap Team
+# Copyright (C) 2020, 2021, 2022 Humanitarian OpenstreetMap Team
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -81,7 +81,7 @@ for x in data:
     lat = ""
     lon = ""
     reg = re.compile("group*")
-    # There should be only one teimestamp we want, namely 'end'
+    # There should be only one timestamp we want, namely 'end'
     if odkform.getNodeType(x) == "dateTime":
         dt = data[x][:data[x].find(".")]
         timestamp = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S")

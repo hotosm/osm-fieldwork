@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 #
-#   Copyright (C) 2020, Humanitarian OpenstreetMap Team
+#   Copyright (C) 2020, 2021, 2022 Humanitarian OpenstreetMap Team
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,31 +17,14 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-# The ElementTree class has these fields:
-# .attrib       - A dictionary containing the element's
-#                 attributes. The keys are the attribute names, and
-#                 each corresponding value is the attribute's value.
-# .base         - The base URI from an xml:base attribute that this
-#                 element contains or inherits, if any; None
-#                 otherwise.
-# .prefix       - The namespace prefix of this element, if any, otherwise None.
-# .sourceline   - The line number of this element when parsed, if
-#                 known, otherwise None.
-# .tag          - The element's name.
-# .tail         - The text following this element's closing tag, up to
-#                 the start tag of the next sibling element. If there
-#                 was no text there, this attribute will have the
-#                 value None.
-# .text         - The text inside the element, up to the start tag of
-#                 the first child element. If there was no text there,
-#                 this attribute will have the value None.
-
-import os
-from lxml import etree
 import logging
-from lxml.etree import tostring
 import argparse
 import xmltodict
+import os
+import re
+import epdb
+import sys
+from collections import OrderedDict
 
 
 class ODKForm(object):
@@ -50,77 +33,81 @@ class ODKForm(object):
         self.fields = dict()
         self.nodesets = dict()
         self.groups = dict()
+        self.ignore = ('label', '@appearance', 'hint', 'upload')
 
-    def parse(self, inform):
-        print("Parsing form %s" % inform)
+    def parseSelect(self, select=dict()):
+        print("parseSelect %r" % type(select))
+        newsel = dict()
+        if 'item' in select:
+            data = self.parseItems(select['item'])
+            ref = os.path.basename(select['@ref'])
+            for key in data:
+                if key in self.ignore:
+                    continue
+                newsel[ref] = data
+            print("\tQQQQQ %r" % (newsel))
+        return newsel
 
-        infile = open(inform)
-        data = infile.read()
-        html = xmltodict.parse(data)
-        for key, value in html['h:html'].items():
-            if key == "h:head":
-                for node in value['model']['bind']:
-                    #print("\nUUU %r" % node)
-                    key = node['@nodeset']
-                    key = key.replace("/data/", "")
-                    self.nodesets[key] = node['@type']
-        print(self.nodesets)
+    def parseItems(self, items):
+        print("\tparseItems: %r: %r" % (type(items), items))
+        newitems = list()
+        newdata = dict()
+        group = None
+        subgroup = None
+        label = None
+        # if type(items) == OrderedDict:
+        #     data = list()
+        #     data.append(items)
+        # else:
+        #     data = items
 
-        for key, value in html['h:html']['h:body'].items():
-            for subval in value:
-                if subval['@appearance'] == "field-list":
-                    group = subval['@ref']
-                    group = group.replace("/data/", "")
-                    # print("\nXXX %r, %r" % (group, subval))
-                    # non selection fields like text or range use the input keyword
-                    entry = dict()
-                    if 'input' in subval:
-                        for val in subval['input']:
-                            tmp = val['@ref']
-                            tmp = tmp.replace("/data/" + group + "/", "")
-                            entry[tmp] = ""
-                            self.groups[group] = entry
+        for values in items:
+            newitems.append(values['value'])
 
-                    # selection fields like select_one or select__multiple can havew multiple entries
-                    keywords = ("select", "select1", "select2", "select3", "select4")
-                    for selection in keywords:
-                        if selection in subval:
-                            entries = list()
-                            select = subval[selection]['@ref']
-                            select = select.replace("/data/" + group + "/", "")
-                            for item in subval[selection]['item']:
-                                # print("\nYYY %r, %r" % (select, item['value']))
-                                entries.append(item['value'])
-                                entry[select] = entries
-                                self.groups[group] = entry
-                            entry[select] = entries
+            # if type(values) == str:
+            #     continue
 
-        print(self.groups)
+        #     val = values['label']['@ref'].replace("/data/", "")
+        #     tmp = val.split('/')
+        #     group = tmp[0].replace("jr:itext(\'", "")
+        #     fields = len(tmp)
+        #     if fields > 2:
+        #         subgroup = tmp[1]
+        #         label = tmp[2].replace(":label\')", "")
+        #     else:
+        #         subgroup = None
+        #         label = tmp[1].replace(":label\')", "")
+        #     # print("VALUES: %r / %r / %r" % (group, subgroup, label))
+        #     if subgroup not in newdata:
+        #         newdata[subgroup] = list()
+        #     #newdata[subgroup].append(label)
+        #     newitems.append(label)
+        # return group, subgroup, newitems
+        return newitems
 
-    def getNodeType(self, name):
-        if name in self.nodesets:
-            return self.nodesets[name]
-        else:
-            return None
-
-    def dump(self):
-        print("Dumping Nodesets:")
-        for key, value in self.nodesets.items():
-            print("\tType of \'%s\' is \'%s\'" % (key, value))
-        print("Dumping Data Fields:")
-        for key, value in self.fields.items():
-            print("\tField of \'%s\' is \'%s\'" % (key, value))
-
-
-#
-# End of Class definitions
-#
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='convert ODK CSV to OSM')
-    parser.add_argument("--infile", required=True, help='The input file from ODK Central')
-    parser.add_argument("--outfile", default='tmp.osm', help='The output file for JOSM')
-    args = parser.parse_args()
-
+    def parseGroup(self, group=dict()):
+        print("\tparseGroup %r" % (type(group)))
+        newgrp = dict()
+        if type(group) == list:
+            for val in group:
+                for k in group:
+                    print("\nZZZZ1 %r" % (k))
+        else:                   # it's a list
+            for keyword, data in group.items():
+                ref = None
+                # FIXME: for now,. ignore media files
+                if keyword in self.ignore:
+                    continue
+                print("WWW3 %r, %r" % (keyword, type(data)))
+                #pat = re.compile('select[0-9]*')
+                #if pat.match(keyword):
+                if keyword[0:6] == 'select':
+                    print("WWW4 select")
+                    select = self.parseSelect(data)
+                    #self.groups[] =
     odkform = ODKForm()
     odkform.parse(args.infile)
+
+    print("---------------------------")
+    odkform.dump()
+    print("---------------------------")

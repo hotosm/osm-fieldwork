@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021 Humanitarian OpenStreetMap Team
+# Copyright (c) 2020, 2021, 2022 Humanitarian OpenStreetMap Team
 #
 # This file is part of Odkconvert.
 #
@@ -28,6 +28,10 @@ class Convert(YamlFile):
             xform = "xforms.yaml"
         self.yaml = YamlFile(xform)
         # self.yaml.dump()
+
+    def escape(self, value):
+        tmp = value.replace(" ", "_")
+        return tmp.replace("'", "&apos;")
 
     def getKeyword(self, value):
         key = self.yaml.getValues(value)

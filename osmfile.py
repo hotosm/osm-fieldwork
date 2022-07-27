@@ -21,6 +21,7 @@ import epdb
 from datetime import datetime
 import ODKInstance
 from shapely.geometry import Point, LineString, Polygon, GeometryCollection
+from convert import Convert
 
 
 class OsmFile(object):
@@ -50,6 +51,7 @@ class OsmFile(object):
         self.addr = None
         # decrement the ID
         self.start = -1
+        # self.convert = Convert()
 
     def isclosed(self):
         return self.file.closed
@@ -100,8 +102,10 @@ class OsmFile(object):
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, THE GDPR applies
         # and the identifying fields should not be included
-        attrs['uid'] = way['uid']
-        attrs['user'] = way['user']
+        if 'uid' in way:
+            attrs['uid'] = way['uid']
+        if 'user' in way:
+            attrs['user'] = way['user']
 
         # Make all the nodes first. The data in the track has 4 fields. The first two
         # are the lat/lon, then the altitude, and finally the GPS accuracy.
@@ -145,7 +149,8 @@ class OsmFile(object):
                 if key == 'track':
                     continue
                 if key not in attrs:
-                    osm += "\n    <tag k='%s' v=%r/>" % (key, value)
+                    newkey = self.convert.escape(key)
+                    osm += "\n    <tag k='%s' v=%r/>" % (newkey, value)
                 if modified:
                     osm += '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
             osm += '\n'
@@ -176,8 +181,10 @@ class OsmFile(object):
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, THE GDPR applies
         # and the identifying fields should not be included
-        attrs['uid'] = node['uid']
-        attrs['user'] = node['user']
+        if 'uid' in node:
+            attrs['uid'] = node['uid']
+        if 'user' in node:
+            attrs['user'] = node['user']
 
         # Processs atrributes
         line = ""
@@ -190,7 +197,10 @@ class OsmFile(object):
             osm += ">"
             for key, value in node['tags'].items():
                 if key not in attrs:
-                    osm += "\n    <tag k='%s' v=%r/>" % (key, value)
+                    conv = Convert("../xforms.yaml")
+                    newkey = conv.escape(key)
+                    newkey = conv.convertTag(newkey)
+                    osm += "\n    <tag k='%s' v=%r/>" % (newkey, value)
                 if modified:
                     osm += '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
             osm += "\n  </node>"
