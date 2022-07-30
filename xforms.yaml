@@ -44,6 +44,7 @@ convert:
   - well: well=yes
   - borehole: borehole=yes
   - drinkable_water: amenity=drinking_water
+  - drinking_water: amenity=drinking_water
   - waterpoint_code: ref
   - pump_type: pump
   - waterpoint_access: access
