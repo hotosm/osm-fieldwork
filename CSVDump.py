@@ -79,7 +79,10 @@ class CSVDump(object):
         features = list()
         for item in self.features:
             poi = Point((float(item['attrs']['lon']), float(item['attrs']['lat'])))
-            props = {**item['tags'], **item['private']}
+            if 'private' in item:
+                props = {**item['tags'], **item['private']}
+            else:
+                props = item['tags']
             features.append(Feature(geometry=poi, properties=props))
         collection = FeatureCollection(features)
         dump(collection, self.json)
