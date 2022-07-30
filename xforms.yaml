@@ -17,6 +17,11 @@ validate:
 # makes it easier to deal with older forms without having to edit the
 # raw data.
 convert:
+   # From the Saint Lucia XForm
+  - _record_your_current_location_altitude: ele
+  - Record_your_current_location-Longitude: lon
+  - Record_your_current_location-Latitide: lat
+  # Other forms
   - latitude: lat
   - longitude: lon
   - altitude: ele
@@ -26,15 +31,43 @@ convert:
   - comment: note
   - view: viewpoint
   - cell: cellular
-  # This tag is the top level multiple selection menu
-  - highway_type: highway
+  - Monday: Mo
+  - Tuesday: Tu
+  - Wednesday: We
+  - Thursday: Th
+  - Friday: Fr
+  - Saturday: Sa
+  - Sunday: Su
+  - waterpoint_name: name
+  - waterpoint_type: man_made
+  - faucet: valve=yes
+  - well: well=yes
+  - borehole: borehole=yes
+  - drinkable_water: amenity=drinking_water
+  - waterpoint_code: ref
+  - pump_type: pump
+  - waterpoint_access: access
+  - fee: fee=yes
 
-# All of the data that is not for OSM
+# All of the data that goes in a different non-OSM file
 private:
   - income
   - age
   - gender
   - education
+  - waterpoint_type_other
+  - waterpoint_provider
+  - waterpoint_provider_other
+  - waterpoint_capacity
+  - waterpoint_quantity
+  - waterpoint_access
+  - waterpoint_access_other
+  - waterpoint_elevation
+  - waterpoint_mgmt
+  - fee_cost
+  - end_time
+  - locality
+  - municipality
   
 # All of these tags are in the CSV file, and can be ignored
 ignore:
@@ -55,262 +88,27 @@ ignore:
   - image
   - phonenumber
   - detail
+  - what_are_you_mapping
+  - highway_type
+  - waterpoint_img
+  - warmup
 
 # This section matches values to the correct keyword. Often a multiple
 # selection in the XLSXForm survey sheet may have values that don't
 # all share the same keyword. This corrects that.
 tags:
   - leisure:
-      - firepit
-      - picnic_table
-      - fishing
-      - park
-      - resort
-  - opening_hours:
-      - Mo
-      - Tu
-      - We
-      - Th
-      - Fr
-      - Sa
-      - Su
-  - building_material:
-      - brick
-      - cement_block
-      - plaster
-      - wood
-      - concrete
-      - hard
-      - block
-      - metal
-      - plastered
-      - glass
-      - stone
-      - mud
-      - steel
-      - traditional
-      - light
-      - mixed
-      - masonry
-      - plastic
-      - tin
-      - metal_plates
-      - semi-permanent
-      - timber_framing
-      - concrete␣masonry␣unit
-      - earth
-      - sandstone
-      - permanent
-  - building:
-      - apartments
-      - bakehouse
-      - barn
-      - barracks
-      - beach_hut
-      - bridge
-      - bungalow
-      - bunker
-      - cabin
-      - carport
-      - castle
-      - cathedral
-      - chapel
-      - church
-      - civic
-      - college
-      - commercial
-      - conservatory
-      - construction
-      - container
-      - cowshed
-      - detached
-      - digester
-      - dormitory
-      - farm
-      - farm_auxiliary
-      - fire_station
-      - garage
-      - garages
-      - gatehouse
-      - ger
-      - government
-      - grandstand
-      - greenhouse
-      - hangar
-      - hospital
-      - hotel
-      - house
-      - houseboat
-      - hut
-      - industrial
-      - kindergarten
-      - kingdom_hall
-      - kiosk
-      - military
-      - monastery
-      - mosque
-      - office
-      - parking
-      - pavilion
-      - presbytery
-      - public
-      - religious
-      - residential
-      - retail
-      - riding_hall
-      - roof
-      - ruins
-      - school
-      - semidetached_house
-      - service
-      - shed
-      - shrine
-      - slurry_tank
-      - sports_hall
-      - stable
-      - stadium
-      - static_caravan
-      - sty
-      - supermarket
-      - synagogue
-      - temple
-      - tent
-      - terrace
-      - toilets
-      - train_station
-      - transformer_tower
-      - transportation
-      - tree_house
-      - university
-      - user defined
-      - warehouse
-      - water_tower
-  - amenity:
-      - toilets:disposal
-      - bar
-      - animal_boarding
-      - animal_breeding
-      - animal_shelter
-      - arts_centre
-      - atm
-      - baby_hatch
-      - baking_oven
-      - bank
-      - bbq
-      - bench
-      - bicycle_parking
-      - bicycle_rental
-      - bicycle_repair_station
-      - biergarten
-      - boat_rental
-      - boat_sharing
-      - brothel
-      - bureau_de_change
-      - bus_station
-      - cafe
-      - car_rental
-      - car_sharing
-      - car_wash
-      - casino
-      - charging_station
-      - childcare
-      - cinema
-      - clinic
-      - clock
-      - college
-      - community_centre
-      - conference_centre
-      - courthouse
-      - crematorium
-      - dentist
-      - dive_centre
-      - doctors
-      - dog_toilet
-      - drinking_water
-      - driving_school
-      - embassy
-      - events_venue
-      - fast_food
-      - ferry_terminal
-      - fire_station
-      - food_court
-      - fountain
-      - fuel
-      - funeral_hall
-      - gambling
-      - give_box
-      - grave_yard
-      - grit_bin
-      - gym
-      - hospital
-      - hunting_stand
-      - ice_cream
-      - internet_cafe
-      - kindergarten
-      - kitchen
-      - kneipp_water_cure
-      - language_school
-      - library
-      - lounger
-      - love_hotel
-      - marketplace
-      - monastery
-      - motorcycle_parking
-      - music_school
-      - nightclub
-      - nursing_home
-      - parcel_locker
-      - parking
-      - parking_entrance
-      - parking_space
-      - pharmacy
-      - photo_booth
-      - place_of_mourning
-      - place_of_worship
-      - planetarium
-      - police
-      - post_box
-      - post_depot
-      - post_office
-      - prison
-      - pub
-      - public_bath
-      - public_bookcase
-      - public_building
-      - ranger_station
-      - recycling
-      - refugee_site
-      - restaurant
-      - sanitary_dump_station
-      - school
-      - shelter
-      - shower
-      - social_centre
-      - social_facility
-      - stripclub
-      - studio
-      - swingerclub
-      - taxi
-      - telephone
-      - theatre
-      - toilets
-      - townhall
-      - toy_library
-      - university
-      - vehicle_inspection
-      - vending_machine
-      - veterinary
-      - waste_basket
-      - waste_disposal
-      - waste_transfer_station
-      - water_point
-      - watering_place
-    - tourism:
-      - picnic_table
-      - caravans
-      - camp_site
-      - camp_pitch
-      - viewpoint
+    - firepit
+    - picnic_table
+    - fishing
+    - park
+    - resort
+  - tourism:
+    - picnic_table
+    - caravans
+    - camp_site
+    - camp_pitch
+    - viewpoint
   - bear box: yes
   - barbeque_grill: yes
   - power_supply: yes
