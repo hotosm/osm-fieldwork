@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2020, Humanitarian OpenstreetMap Team
+# Copyright (C) 2020, 2021, 2022 Humanitarian OpenstreetMap Team
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -87,25 +87,25 @@ class OsmFile(object):
         if modified:
             attrs['action'] = 'modify'
         if 'osm_way_id' in way:
-            attrs['id'] = int(way['osm_way_id'])
+            attrs['id'] = int(way['attrs']['osm_way_id'])
         elif 'osm_id' in way:
-            attrs['id'] = int(way['osm_id'])
+            attrs['id'] = int(way['attrs']['osm_id'])
         elif 'id' in way:
-            attrs['id'] = int(way['id'])
+            attrs['id'] = int(way['attrs']['id'])
         else:
             attrs['id'] = self.start
             self.start -= 1
         if 'version' not in way:
             attrs['version'] = 1
         else:
-            attrs['version'] = way['version'] + 1
+            attrs['version'] = way['attrs']['version'] + 1
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, THE GDPR applies
         # and the identifying fields should not be included
         if 'uid' in way:
-            attrs['uid'] = way['uid']
+            attrs['uid'] = way['attrs']['uid']
         if 'user' in way:
-            attrs['user'] = way['user']
+            attrs['user'] = way['attrs']['user']
 
         # Make all the nodes first. The data in the track has 4 fields. The first two
         # are the lat/lon, then the altitude, and finally the GPS accuracy.
@@ -161,23 +161,22 @@ class OsmFile(object):
 
     def createNode(self, node, modified=False):
         """This creates a string that is the OSM representation of a node"""
-        # print(node)
         attrs = dict()
         # Add default attributes
         if modified:
             attrs['action'] = 'modify'
 
         if 'id' in node:
-            attrs['id'] = int(node['id'])
+            attrs['id'] = int(node['attrs']['id'])
         else:
             attrs['id'] = self.start
             self.start -= 1
-        if 'version' not in node:
+        if 'version' not in node['attrs']:
             attrs['version'] = "1"
         else:
             attrs['version'] = int(node['version']) + 1
-        attrs['lat'] = node['lat']
-        attrs['lon'] = node['lon']
+        attrs['lat'] = node['attrs']['lat']
+        attrs['lon'] = node['attrs']['lon']
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, THE GDPR applies
         # and the identifying fields should not be included
@@ -197,10 +196,7 @@ class OsmFile(object):
             osm += ">"
             for key, value in node['tags'].items():
                 if key not in attrs:
-                    conv = Convert("../xforms.yaml")
-                    newkey = conv.escape(key)
-                    newkey = conv.convertTag(newkey)
-                    osm += "\n    <tag k='%s' v=%r/>" % (newkey, value)
+                    osm += "\n    <tag k='%s' v=%r/>" % (key, value)
                 if modified:
                     osm += '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
             osm += "\n  </node>"
