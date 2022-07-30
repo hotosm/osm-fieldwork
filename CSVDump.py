@@ -22,9 +22,11 @@ import argparse
 import csv
 import os
 import logging
+import sys
 from sys import argv
 from convert import Convert
 from osmfile import OsmFile
+from geojson import Point, Feature, FeatureCollection, dump
 
 
 class CSVDump(object):
@@ -34,6 +36,8 @@ class CSVDump(object):
         self.nodesets = dict()
         self.data = list()
         self.osm = None
+        self.json = None
+        self.features = list()
         if argv[0][0] == "/" and os.path.dirname(argv[0]) != "/usr/local/bin":
             self.convert = Convert(os.path.dirname(argv[0]) + "/xforms.yaml")
         else:
@@ -42,35 +46,72 @@ class CSVDump(object):
             else:
                 self.convert = Convert("../xforms.yaml")
         self.ignore = self.convert.yaml.yaml['ignore']
+        self.private = self.convert.yaml.yaml['private']
 
     def createOSM(self, file="tmp.osm"):
+        logging.debug("Creating OSM XML file: %s" % file)
         self.osm = OsmFile(filespec=file)
         self.osm.header()
+
+    def writeOSM(self, feature):
+        out = ""
+        if 'refs' not in feature:
+            out += self.osm.createNode(feature)
+        else:
+            out += self.osm.createWay(feature)
+        self.osm.write(out)
 
     def finishOSM(self):
         self.osm.footer()
 
+    def privateData(self, keyword):
+        return keyword in self.private
+
+    def createGeoJson(self, file="tmp.geojson"):
+        logging.debug("Creating GeoJson file: %s" % file)
+        self.json = open(file, 'w')
+
+    def writeGeoJson(self, feature):
+        # These written later when finishing , since we have to create a FeatureCollection
+        self.features.append(feature)
+
+    def finishGeoJson(self):
+        features = list()
+        for item in self.features:
+            poi = Point((float(item['attrs']['lon']), float(item['attrs']['lat'])))
+            props = {**item['tags'], **item['private']}
+            features.append(Feature(geometry=poi, properties=props))
+        collection = FeatureCollection(features)
+        dump(collection, self.json)
+
     def parse(self, file):
         all = list()
-        print("Parsing csv files %r" % file)
+        logging.debug("Parsing csv files %r" % file)
         with open(file, newline='') as csvfile:
-            spamreader = csv.DictReader(csvfile, delimiter=',')
-            for row in spamreader:
+            reader = csv.DictReader(csvfile, delimiter=',')
+            for row in reader:
                 tags = dict()
                 for keyword, value in row.items():
-                    # print(keyword,value)
-                    if keyword is None or keyword[:6] == 'warmup':
+                    if keyword is None or len(keyword) == 0:
                         continue
                     base = self.basename(keyword).lower()
-                    if base not in self.ignore:
+                    # There's many extraneous fields in the input file which we don't need.
+                    if base is None or base in self.ignore or value is None:
+                        continue
+                    selection = value.split(' ')
+                    if len(selection) > 1:
+                        for item in selection:
+                            tags[item] = "yes"
+                        continue
+                    else:
                         key = self.convert.convertTag(base)
-                        if len(value) > 0:
-                            tmp = key.split('=')
-                            if len(tmp) == 1:
-                                tags[key] = value
-                            else:
-                                tags[tmp[0]] = tmp[1]
-                all.append(tags)
+                        tmp = key.split('=')
+                        if len(tmp) == 1:
+                            tags[key] = self.convert.escape(value)
+                        else:
+                            tags[tmp[0]] = tmp[1]
+            print(tags)
+            all.append(tags)
         return all
 
     def basename(self, line):
@@ -80,56 +121,52 @@ class CSVDump(object):
         base = tmp[len(tmp)-1]
         return base
 
-    def createEntry(self, line=None):
+    def createEntry(self, entry=None):
         # print(line)
-        obj = dict()
+        feature = dict()
+        attrs = dict()
         tags = dict()
+        priv = dict()
         refs = list()
-        out = ""
-        attributes = ("id", "timestamp", "lat", "lon", "uid", "user", "timestamp", "version", "action")
-        for key, value in line.items():
-            if key in self.ignore:
-                continue
-            if key in attributes:
-                obj[key] = value
+
+        logging.debug("Creating entry")
+        # First convert the tag to the approved OSM equivalent
+        for key, value in entry.items():
+            attributes = ("id", "timestamp", "lat", "lon", "uid", "user", "version", "action")
+            if len(key) > 0 and key in attributes:
+                attrs[key] = value
+                logging.debug("Adding attribute %s with value %s" % (key, value))
             else:
                 if value is not None:
-                    # a tag with a space is from a multiple selection, so break it into
-                    # each piece. FIXME: Most OSM tags have no embedded spaces, I think...
-                    for tag in value.split(' '):
-                        # First convert the tag to the approved OSM equivalent
-                        tmp = self.convert.convertTag(tag)
-                        # Get the keyword for the value
-                        keyword = self.convert.getKeyword(tmp)
-                        if keyword == tmp:
-                            tmp = tag
-                        # print("XXX %r - %r: %r = %r" % (key, tag, tmp, keyword))
-                        if key != "none":
-                            tags[key] = tmp
-                        if key == "track":
-                            refs.append(tag)
-                else:
-                    continue
-                    # print(tmp, key, value)
+                    if key == "track":
+                        refs.append(tag)
+                        logging.debug("Adding reference %s" % tag)
+                        pass
+                    elif len(value) > 0:
+                        if self.privateData(key):
+                            priv[key] = value
+                        else:
+                            tags[key] = value
             if len(tags) > 0:
-                obj['tags'] = tags
-                obj['refs'] = refs
-        if 'refs' not in obj or len(refs) == 0:
-            out += self.osm.createNode(obj)
-        else:
-            out += self.osm.createWay(obj)
-        self.osm.write(out)
+                feature['attrs'] = attrs
+                feature['tags'] = tags
+            if len(refs) > 0:
+                feature['refs'] = refs
+            if len(priv) > 0:
+                feature['private'] = priv
+
+        return feature
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='convert ODK CSV to OSM')
     parser.add_argument("-v", "--verbose", nargs="?",const="0", help="verbose output")
     parser.add_argument("-i", "--infile", help='The input file from ODK Central')
-    parser.add_argument("-o", "--outfile", default='tmp.osm', help='The output file for JOSM')
+    parser.add_argument("-o", "--outfile", help='The output file for JOSM')
     args = parser.parse_args()
 
     # if verbose, dump to the terminal.
-    if not args.verbose:
+    if args.verbose is not None:
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
 
@@ -141,8 +178,20 @@ if __name__ == '__main__':
 
     csvin = CSVDump()
     data = csvin.parse(args.infile)
-    csvin.createOSM(args.outfile)
+    osmoutfile = os.path.basename(args.infile.replace(".csv", ".osm"))
+    csvin.createOSM(osmoutfile)
+
+    jsonoutfile = os.path.basename(args.infile.replace(".csv", ".geojson"))
+    csvin.createGeoJson(jsonoutfile)
     for entry in data:
-        csvin.createEntry(entry)
+        # This OSM XML file only has OSM appropriate tags and values 
+        feature = csvin.createEntry(entry)
+        csvin.writeOSM(feature)
+        # This GeoJson file has all the data values
+        csvin.writeGeoJson(feature)
+        print("FOO: %r" % feature['tags'])
 
     csvin.finishOSM()
+    csvin.finishGeoJson()
+    logging.info("Wrote OSM XML file: %r" % osmoutfile)
+    logging.info("Wrote GeoJson file: %r" % jsonoutfile)
