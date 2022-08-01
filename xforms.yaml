@@ -44,11 +44,15 @@ convert:
   - well: well=yes
   - borehole: borehole=yes
   - drinkable_water: amenity=drinking_water
-  - drinking_water: amenity=drinking_water
+  - drinking_water: menity=drinking_water
+  - irrigation: irrigation=yes
+  - livestock: drinking_water=no
   - waterpoint_code: ref
   - pump_type: pump
   - waterpoint_access: access
   - fee: fee=yes
+  - power_type: power_source
+  - provider: operator:type
 
 # All of the data that goes in a different non-OSM file
 private:
@@ -69,6 +73,9 @@ private:
   - end_time
   - locality
   - municipality
+  - district
+  - elevation
+  - area
   
 # All of these tags are in the CSV file, and can be ignored
 ignore:
