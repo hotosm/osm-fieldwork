@@ -94,6 +94,7 @@ class CSVDump(object):
             reader = csv.DictReader(csvfile, delimiter=',')
             for row in reader:
                 tags = dict()
+                print(row)
                 for keyword, value in row.items():
                     if keyword is None or len(keyword) == 0:
                         continue
@@ -113,8 +114,7 @@ class CSVDump(object):
                             tags[key] = self.convert.escape(value)
                         else:
                             tags[tmp[0]] = tmp[1]
-            print(tags)
-            all.append(tags)
+                all.append(tags)
         return all
 
     def basename(self, line):
@@ -141,10 +141,9 @@ class CSVDump(object):
                 logging.debug("Adding attribute %s with value %s" % (key, value))
             else:
                 if value is not None:
-                    if key == "track":
+                    if key == "track" or key == "geoline":
                         refs.append(tag)
                         logging.debug("Adding reference %s" % tag)
-                        pass
                     elif len(value) > 0:
                         if self.privateData(key):
                             priv[key] = value
@@ -180,12 +179,12 @@ if __name__ == '__main__':
         root.addHandler(ch)
 
     csvin = CSVDump()
-    data = csvin.parse(args.infile)
     osmoutfile = os.path.basename(args.infile.replace(".csv", ".osm"))
     csvin.createOSM(osmoutfile)
 
     jsonoutfile = os.path.basename(args.infile.replace(".csv", ".geojson"))
     csvin.createGeoJson(jsonoutfile)
+    data = csvin.parse(args.infile)
     for entry in data:
         # This OSM XML file only has OSM appropriate tags and values 
         feature = csvin.createEntry(entry)
