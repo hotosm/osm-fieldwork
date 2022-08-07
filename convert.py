@@ -19,6 +19,7 @@
 #
 
 from yamlfile import YamlFile
+import logging
 
 
 class Convert(YamlFile):
@@ -30,10 +31,12 @@ class Convert(YamlFile):
         # self.yaml.dump()
 
     def escape(self, value):
+        """Escape characters like embedded quotes in text fields"""
         tmp = value.replace(" ", "_")
         return tmp.replace("'", "&apos;")
 
     def getKeyword(self, value):
+        """Get the value for a keyword from the yaml file"""
         key = self.yaml.getValues(value)
         if type(key) == bool:
             return value
@@ -42,6 +45,7 @@ class Convert(YamlFile):
         return key
 
     def convertList(self, values=list()):
+        """Convert a python list of tags"""
         features = list()
         entry = dict()
         for value in values:
@@ -50,7 +54,9 @@ class Convert(YamlFile):
         return features
 
     def convertTag(self, tag):
+        """Convert a single tag"""
         for mod in self.yaml.getValues("convert"):
             if tag in mod:
+                logging.debug("Tag %s converted to %s" % (tag, mod[tag]))
                 return mod[tag]
         return tag

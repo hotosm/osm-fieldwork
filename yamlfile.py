@@ -20,6 +20,8 @@
 
 import yaml
 
+"""This parses a yaml file into a dictionary for easy access."""
+
 
 class YamlFile(object):
     """Config file in YAML format"""
@@ -30,6 +32,7 @@ class YamlFile(object):
         self.yaml = yaml.load(self.file, Loader=yaml.Loader)
 
     def getValues(self, value=None):
+        """Get the values for a primary key"""
         if value is not None:
             ret = dict()
             try:
@@ -44,6 +47,7 @@ class YamlFile(object):
             return None
 
     def getKeyword(self, value=None):
+        """Get the value for a keyword"""
         for tags in self.yaml['tags']:
             for key, val in tags.items():
                 if type(val) == list:
@@ -63,5 +67,6 @@ class YamlFile(object):
         return value
 
     def dump(self):
+        """Dump the contents of the yaml file"""
         print("YAML file: %s" % self.filespec)
         print(self.yaml)

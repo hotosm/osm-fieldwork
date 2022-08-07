@@ -105,6 +105,24 @@ class ODKForm(object):
                     print("WWW4 select")
                     select = self.parseSelect(data)
                     #self.groups[] =
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='convert CSV from ODK Central to OSM XML')
+    parser.add_argument("-v", "--verbose", nargs="?",const="0", help="verbose output")
+    parser.add_argument("-i", "--infile", help='The input file downloaded from ODK Central')
+    args = parser.parse_args()
+
+    # if verbose, dump to the terminal.
+    if args.verbose is not None:
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
+
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        root.addHandler(ch)
+
     odkform = ODKForm()
     odkform.parse(args.infile)
 

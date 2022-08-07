@@ -49,11 +49,13 @@ class CSVDump(object):
         self.private = self.convert.yaml.yaml['private']
 
     def createOSM(self, file="tmp.osm"):
+        """Create an OSM XML output files"""
         logging.debug("Creating OSM XML file: %s" % file)
         self.osm = OsmFile(filespec=file)
         self.osm.header()
 
     def writeOSM(self, feature):
+        """Write a feature to an OSM XML output file"""
         out = ""
         if 'refs' not in feature:
             out += self.osm.createNode(feature)
@@ -62,20 +64,25 @@ class CSVDump(object):
         self.osm.write(out)
 
     def finishOSM(self):
+        """Write the OSM XML file footer and close it"""
         self.osm.footer()
 
     def privateData(self, keyword):
+        """See is a keyword is in the private data category"""
         return keyword in self.private
 
     def createGeoJson(self, file="tmp.geojson"):
+        """Create a GeoJson output file"""
         logging.debug("Creating GeoJson file: %s" % file)
         self.json = open(file, 'w')
 
     def writeGeoJson(self, feature):
-        # These written later when finishing , since we have to create a FeatureCollection
+        """Write a feature to a GeoJson output file"""
+        # These get written later when finishing , since we have to create a FeatureCollection
         self.features.append(feature)
 
     def finishGeoJson(self):
+        """Write the GeoJson FeatureCollection to the output file and close it"""
         features = list()
         for item in self.features:
             poi = Point((float(item['attrs']['lon']), float(item['attrs']['lat'])))
@@ -88,6 +95,7 @@ class CSVDump(object):
         dump(collection, self.json)
 
     def parse(self, file):
+        """Parse the CSV file from ODK Central and convert it to a data structure"""
         all = list()
         logging.debug("Parsing csv files %r" % file)
         with open(file, newline='') as csvfile:
@@ -118,6 +126,7 @@ class CSVDump(object):
         return all
 
     def basename(self, line):
+        """Extract the basename of a path after the last -"""
         tmp = line.split('-')
         if len(tmp) == 0:
             return line
@@ -125,6 +134,7 @@ class CSVDump(object):
         return base
 
     def createEntry(self, entry=None):
+        """Create the feature data structure"""
         # print(line)
         feature = dict()
         attrs = dict()
@@ -161,10 +171,9 @@ class CSVDump(object):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='convert ODK CSV to OSM')
+    parser = argparse.ArgumentParser(description='convert CSV from ODK Central to OSM XML')
     parser.add_argument("-v", "--verbose", nargs="?",const="0", help="verbose output")
-    parser.add_argument("-i", "--infile", help='The input file from ODK Central')
-    parser.add_argument("-o", "--outfile", help='The output file for JOSM')
+    parser.add_argument("-i", "--infile", help='The input file downloaded from ODK Central')
     args = parser.parse_args()
 
     # if verbose, dump to the terminal.
