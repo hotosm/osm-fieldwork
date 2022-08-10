@@ -36,7 +36,10 @@ class YamlFile(object):
         if value is not None:
             ret = dict()
             try:
-                ret = self.yaml[value]
+                # Convert the list to a dictionary
+                for entry in self.yaml[value]:
+                    tmp = list(entry.keys())[0]
+                    ret[tmp] = entry[tmp]
             except KeyError:
                 for key in self.yaml['tags']:
                     for foo, bar in key.items():
