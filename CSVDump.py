@@ -32,6 +32,7 @@ from geojson import Point, Feature, FeatureCollection, dump
 class CSVDump(object):
     """A class to parse the CSV files from ODK Central"""
     def __init__(self):
+        """"""
         self.fields = dict()
         self.nodesets = dict()
         self.data = list()
@@ -104,24 +105,29 @@ class CSVDump(object):
                 tags = dict()
                 print(row)
                 for keyword, value in row.items():
+                    # logging.debug("Line: %r, %r" % (keyword, value))
                     if keyword is None or len(keyword) == 0:
                         continue
                     base = self.basename(keyword).lower()
                     # There's many extraneous fields in the input file which we don't need.
-                    if base is None or base in self.ignore or value is None:
+                    if base is None or base in self.ignore or value is None or len(value) == 0:
                         continue
                     selection = value.split(' ')
-                    if len(selection) > 1:
+                    if len(selection) > 5:  # FIXME: this test was for select_multiple,
+                        # but that screws up any value with a space.
                         for item in selection:
                             tags[item] = "yes"
                         continue
                     else:
-                        key = self.convert.convertTag(base)
-                        tmp = key.split('=')
-                        if len(tmp) == 1:
-                            tags[key] = self.convert.escape(value)
+                        tag = self.convert.convertTag(base, value)
+                        if type(tag) == tuple:
+                            tags[tag[0]] = tag[1]
                         else:
-                            tags[tmp[0]] = tmp[1]
+                            tmp = tag.split('=')
+                            if len(tmp) == 1:
+                                tags[tag] = self.convert.escape(value)
+                            else:
+                                tags[tmp[0]] = tmp[1]
                 all.append(tags)
         return all
 
@@ -200,7 +206,7 @@ if __name__ == '__main__':
         csvin.writeOSM(feature)
         # This GeoJson file has all the data values
         csvin.writeGeoJson(feature)
-        print("FOO: %r" % feature['tags'])
+        # print("TAGS: %r" % feature['tags'])
 
     csvin.finishOSM()
     csvin.finishGeoJson()
