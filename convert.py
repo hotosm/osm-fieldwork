@@ -53,10 +53,18 @@ class Convert(YamlFile):
             features.append(entry)
         return features
 
-    def convertTag(self, tag):
+    def convertTag(self, tag, value):
         """Convert a single tag"""
-        for mod in self.yaml.getValues("convert"):
-            if tag in mod:
-                logging.debug("Tag %s converted to %s" % (tag, mod[tag]))
-                return mod[tag]
-        return tag
+        values = self.yaml.getValues("convert")
+        if tag in values:
+            val = values[tag]
+            if type(val) == str:
+                logging.debug("\tTag %s converted to %s" % (tag, val))
+            else:
+                for item in val:
+                    key = list(item.keys())[0]
+                    if key == value:
+                        tmp = item[key].split("=")
+                        return tmp[0], tmp[1]
+            return val, value
+        return tag, value
