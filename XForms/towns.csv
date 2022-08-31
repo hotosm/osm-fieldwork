@@ -1,3 +1,4 @@
-name,label
-put_name_here,put_label_here
+name,label,towns
+put_town_name1_here,put_town_label1_here
+put_town_name2_here,put_town_label2_here
 
