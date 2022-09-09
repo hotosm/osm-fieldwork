@@ -35,6 +35,10 @@ import codecs
 import urllib
 from datetime import tzinfo, datetime
 import qrcode
+from base64 import b64encode
+import codecs
+import segno
+import zlib
 
 
 class OdkCentral(object):
@@ -226,14 +230,15 @@ class OdkForm(OdkCentral):
 
     def getSubmission(self, projectId=None, formId=None, disk=False):
         """Fetch a CSV file of the submissions without media to a survey form."""
-        url = self.base + f'projects/{projectId}/forms/{formId}/submissions.csv'
+        instanceId = "uuid:47bda2ec-c282-4cb7-9f37-03dc3bbdf96b: 2022-09-02T17:09:19.648Z"
+        url = self.base + f'projects/{projectId}/forms/{formId}/submissions'
         result = self.session.get(url, auth=self.auth)
         if result.status_code == 200:
             if disk:
                 now = datetime.now()
                 timestamp = f'{now.year}_{now.hour}_{now.minute}'
-                id = self.forms[0]['xmlFormId']
-                filespec = f'{id}_{timestamp}.csv'
+                # id = self.forms[0]['xmlFormId']
+                filespec = f'{formId}_{timestamp}.csv'
                 try:
                     file = open(filespec, "xb")
                     file.write(result.content)
@@ -297,7 +302,7 @@ class OdkForm(OdkCentral):
         self.media = result.content
         return self.media
 
-    def createForm(self, projectId=None, xmlFormId=None, filespec=None, draft=True):
+    def createForm(self, projectId=None, xmlFormId=None, filespec=None, draft=None):
         """Create a new form on an ODK Central server"""
         self.draft = draft
         headers = {
@@ -358,40 +363,50 @@ class OdkAppUser(OdkCentral):
     def __init__(self):
         """A Class for app user data"""
         super().__init__()
-        sell.user = None
+        self.user = None
+        self.qrcode = None
 
-    def create(self, name=None):
+    def create(self, name=None, projectId=None):
         """Create a new app-user for a form"""
-        url = f'{self.base}/v1/projects/{projectId}/app-users'
-        # result self.session.post(url, auth=self.auth, json={'displayName': name})
-        # return result
+        url = f'{self.base}projects/{projectId}/app-users'
+        result = self.session.post(url, auth=self.auth, json={'displayName': name})
+        return result
+
+    def delete(self, name=None, projectId=None, userId=None):
+        """Create a new app-user for a form"""
+        url = f'{self.base}projects/{projectId}/app-users/{userId}'
+        result = self.session.delete(url, auth=self.auth, json={'displayName': name})
+        return result
 
     def updateRole(self, projectId=None, formId=None, userId=None, roleId=None, actorId=None):
         """Update the role of an app user for a form"""
-        url = f'{self.base}/v1/projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}'
+        url = f'{self.base}projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}'
         result = self.session.post(url, auth=self.auth)
         return result
 
     def grantAccess(self, projectId=None, roleId=2, userId=None, formId=None, actorId=None):
         """Grant access to an app user for a form"""
         kwargs = { "formId": formId, "actorId": userId, }
-        url = f'{self.base}/v1/projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}'
+        url = f'{self.base}projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}'
         result = self.session.post(url, auth=self.auth)
         return result
 
-    def getQRCode(self, projectId=None, token=None):
+    def getQRCode(self, projectId=None, token=None, name="waterpoints"):
         """Get the QR Code for an app-user"""
-        url = f'{self.base}/v1/key/{token}/projects/{projectId}'
-        qr_data = { "general": general, "admin": admin, }
-        qr_data['general']['server_url'] = self.url
-        qr_data_bytes = json.dumps(qr_data).encode('utf-8') 
-        qr_data_comp = zlib.compress(qr_data_bytes)
-        qr_data_comp_utf = codecs.encode(qr_data_comp, 'base64_codec') 
-        qr_data_comp_str = qr_data_comp_utf.decode('utf-8').replace('\n', '')
-        img = qrcode.make(qr_data_comp_str)
-        img.save("check_this.png")
-        return img, 200
+        url = f'{self.base}key/{token}/projects/{projectId}'
 
+        self.settings = {"general":
+                    {"server_url":f'{self.base}key/{token}/projects/{projectId}',
+                     "form_update_mode":"manual",
+                     "basemap_source": "OpenStreetMap",
+                     "autosend":"wifi_and_cellular"},
+                    "project":{"name":f'{name}'},
+                    "admin":{}
+                    }
+        qr_data = (b64encode(zlib.compress(json.dumps(self.settings).encode("utf-8"))))
+        self.qrcode = segno.make(qr_data, micro=False)
+        # outpath = os.path.join(outdir, form)
+        self.qrcode.save(f'{name}.png', scale=5)
 
 # This following code is only for debugging purposes, since this is easier
 # to use a debugger with instead of pytest.
