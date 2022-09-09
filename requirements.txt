@@ -9,3 +9,4 @@ epdb==0.15.1
 fastkml==0.11
 pytest==6.2.5
 PyYAML==5.4.1
+segno==1.5.2
