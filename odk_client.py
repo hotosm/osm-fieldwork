@@ -22,24 +22,27 @@ import argparse
 import sys, os
 from datetime import tzinfo, datetime
 import json
-from OdkCentral import OdkCentral, OdkProject, OdkForm
+from OdkCentral import OdkCentral, OdkProject, OdkForm, OdkAppUser
 
 
+# FIXME: this classes isn;t used yet
 class OdkClient(object):
     def __init__(self, url=None, user=None, passwd=None):
-        """A Class for client side access to ODK Central"""
+        """A Class for higher-level client side access to ODK Central"""
         self.url = url
         self.user = user
         self.passwd = passwd
         self.cache = dict()
 
     def readCache(self, cache=".odkcentral"):
+        """FIXME: unimplemented"""
         file = open(cache, "rb")
         data = file.readline()
         print(json.load(data))
         file.close()
-        
+
     def writeCache(self, cache=".odkcentral", data=None):
+        """FIXME: unimplemented"""
         if args.cache:
             try:
                 file = open(cache, "xb")
@@ -56,21 +59,21 @@ parser.add_argument("-v", "--verbose", action="store_true", help="verbose output
 parser.add_argument("-s", "--server", choices=['projects', 'users'],
                     help="project operations")
 # This is for project specific requests
-parser.add_argument("-p", "--project", choices=['forms', 'submissions', 'app-users'],
+parser.add_argument("-p", "--project", choices=['forms', 'app-users', 'assignments'],
                     help="project operations")
 parser.add_argument('-i', '--id', type=int, help = 'Project ID nunmber')
 parser.add_argument("-f", "--form", help="XForm name")
 parser.add_argument("-u", "--uuid", help="Submission UUID, needed to download the data")
 # This is for form specific requests
-parser.add_argument('-x', '--xform', choices=['attachments', 'submissions', 'upload', 'download', 'create'],
+parser.add_argument('-x', '--xform', choices=['attachments', "csv", 'submissions', 'upload', 'download', 'create', 'assignments'],
                     help = 'XForm ID for operations with data files')
+parser.add_argument("-a", "--appuser", choices=['add', 'delete', 'update', 'qrcode', 'access'], help="App-User operations")
 parser.add_argument("-d", "--data", help="Data files for upload or download")
 parser.add_argument("-t", "--timestamp", help="Timestamp for submissions")
 
 # Caching isn't implemented yet. That's for fancier queries that require multiple
 # requests to the ODK server. Caching allows for data like names for IDs to
 # be more user friendly.
-
 # parser.add_argument('-c', '--cache', action="store_true", help = 'cache data from ODK Central')
 # For now read these from the $HOME/.odkcentral config file
 # parser.add_argument('-u', '--user', help = 'ODK Central username (usually email)')
@@ -79,14 +82,14 @@ parser.add_argument("-t", "--timestamp", help="Timestamp for submissions")
 # parser.add_argument("-d", "--download", choices=['xml', 'xlsx', 'attach', 'submit', 'zip'], help="Download files from ODK Central")
 # parser.add_argument("-u", "--upload", choices=['xml', 'xlsx', 'attach', 'submit', 'zip'], help="Upload files to ODK Central")
 
-args = parser.parse_args()
+# Any files we want to use are specified on the command line with an argument.
+# Multiple files are stored in a list.
+args, unknown = parser.parse_known_args()
 
 # Get any files for upload or download
 files = list()
-if args.data:
-    tmp = args.data.split(",")
-    for file in tmp:
-        files.append(file)
+if unknown:
+    files = unknown
 
 # if verbose, dump to the terminal.
 if args.verbose is not None:
@@ -131,17 +134,23 @@ elif args.project:
         ordered = sorted(forms, key=lambda item: item.get('xmlFormId'))
         for form in ordered:
             print("\t%r: %r" % (form['xmlFormId'], form['name']))
-    if args.project == "submissions":
-        submit = project.listSubmissions(args.id, "cemeteries")
-        # ordered = sorted(submit, key=lambda item: item.get('xmlFormId'))
-        for data in submit:
-            print("\t%s by user %s" % (data['instanceId'], data['submitterId']))
+    # if args.project == "submissions":
+    #     submit = project.listSubmissions(args.id, args.form)
+    #     # ordered = sorted(submit, key=lambda item: item.get('xmlFormId'))
+    #     for data in submit:
+    #         print("\t%s by user %s" % (data['instanceId'], data['submitterId']))
     if args.project == "app-users":
         users = project.listAppUsers(args.id)
         logging.info("There are %d app users on this ODK Central server" % len(users))
         ordered = sorted(users, key=lambda item: item.get('id'))
         for user in ordered:
-            print("\t%r: %s" % (user['id'], user['displayName']))
+            print("\t%r: %s (%s)" % (user['id'], user['displayName'], user['token']))
+    if args.project == "assignments":
+        assign = project.listAssignments(args.id)
+        logging.info("There are %d assignments  on this ODK Central server" % len(assign))
+        ordered = sorted(assign, key=lambda item: item.get('id'))
+        for role in ordered:
+            print("\t%r" % role)
 
 elif args.xform:
 # This downloads files from the ODK server
@@ -174,13 +183,25 @@ elif args.xform:
                 file = open(file, "wb")
             file.write(data)
             file.close()
-
+    elif args.xform == "assignments":
+        assign = form.listAssignments(args.id, args.form)
+        logging.info("There are %d assignments  on this ODK Central server" % len(assign))
+        # ordered = sorted(assign, key=lambda item: item.get('id'))
+        for role in assign:
+            print("\t%r" % role)
     elif args.xform == "submissions":
         submissions = form.listSubmissions(args.id, args.form)
         logging.info("There are %d submissions for XForm %s" % (len(submissions), args.form))
         for file in submissions:
             # form.submissions.append(file)
             print("%s: %s" % (file['instanceId'], file['createdAt']))
+
+    elif args.xform == "csv":
+        submissions = form.getSubmission(args.id, args.form, True)
+        logging.info("There are %d submissions for XForm %s" % (len(submissions), args.form))
+        #for file in submissions:
+            # form.submissions.append(file)
+        #    print("%s: %s" % (file['instanceId'], file['createdAt']))
 
     elif args.xform == "attachments":
         attachments = form.listMedia(args.id, args.form)
@@ -189,6 +210,33 @@ elif args.xform:
             print("\t%s exists ? %s" % (file['name'], file['exists']))
 
     elif args.xform == "create":
-        logging.info("Creating XForm %s" % (args.form))
-        # attachments = form.listMedia(args.id, args.form)
-#        logging.info("There are %d attachments for XForm %s" % (len(attachments), args.form))
+        logging.info("Creating XForm from %s" % (files[0]))
+        form.createForm(args.id, args.form, args.data,)
+
+elif args.appuser:
+# This downloads files from the ODK server
+    print("App User ops %s" % args.appuser)
+    if not args.id:
+        print("Need to specify a project ID using \"--id\" and an XForm id using \"--\"!")
+        quit()
+    if not args.form:
+        print("Need to specify a XForm id using \"--form\"!")
+        quit()
+
+    if not args.uuid:
+        print("Need to specify a XForm id using \"--uuid\"!")
+        quit()
+
+    user = OdkAppUser()
+    if args.appuser == "create":
+        user.create(args.uuid, args.id)
+    elif args.appuser == "delete":
+        user.delete(args.uuid, args.id, args.uuid)
+    elif args.appuser == "update":
+        # [{'actorId': 86, 'roleId': 5}]
+        user.updateRole(args.uuid, args.id, args.uuid)
+    elif args.appuser == "qrcode":
+        result = user.getQRCode(args.id, args.uuid, files[0])
+    elif args.appuser == "access":
+        # user.grantAccess(args.id, args.uuid)
+        pass
