@@ -211,7 +211,7 @@ elif args.xform:
 
     elif args.xform == "create":
         logging.info("Creating XForm from %s" % (files[0]))
-        form.createForm(args.id, args.form, args.data,)
+        result = form.createForm(args.id, args.form, files[0],)
 
 elif args.appuser:
 # This downloads files from the ODK server
