@@ -168,6 +168,12 @@ class OdkProject(OdkCentral):
         self.appusers = result.json()
         return self.appusers
 
+    def listAssignments(self, projectId=None):
+        """List the Role & Actor assignments for users on a project"""
+        url = f'{self.base}projects/{projectId}/assignments'
+        result = self.session.get(url, auth=self.auth)
+        return result.json()
+
     def dump(self):
         """Dump internal data structures, for debugging purposes only"""
         super().dump()
@@ -197,6 +203,7 @@ class OdkForm(OdkCentral):
         self.media = list()
         self.xml = None
         self.submissions = list()
+        self.appusers = dict()
         # self.xmlFormId = None
         # self.projectId = None
 
@@ -227,6 +234,12 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, auth=self.auth)
         self.submissions = result.json()
         return self.submissions
+
+    def listAssignments(self, projectId=None, xmlFormId=None):
+        """List the Role & Actor assignments for users on a project"""
+        url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/assignments'
+        result = self.session.get(url, auth=self.auth)
+        return result.json()
 
     def getSubmission(self, projectId=None, formId=None, disk=False):
         """Fetch a CSV file of the submissions without media to a survey form."""
@@ -305,10 +318,11 @@ class OdkForm(OdkCentral):
     def createForm(self, projectId=None, xmlFormId=None, filespec=None, draft=None):
         """Create a new form on an ODK Central server"""
         self.draft = draft
-        headers = {
-           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-           f'X-XlsForm-FormId-Fallback': filespec
-        }
+        # headers = {
+        #    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        #    f'X-XlsForm-FormId-Fallback': filespec
+        # }
+        headers = { 'Content-Type': 'application/xml' }
         if self.draft:
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft?ignoreWarnings=true'
         else:
@@ -365,11 +379,13 @@ class OdkAppUser(OdkCentral):
         super().__init__()
         self.user = None
         self.qrcode = None
+        self.id = None
 
     def create(self, name=None, projectId=None):
         """Create a new app-user for a form"""
         url = f'{self.base}projects/{projectId}/app-users'
         result = self.session.post(url, auth=self.auth, json={'displayName': name})
+        self.user = name
         return result
 
     def delete(self, name=None, projectId=None, userId=None):
@@ -378,8 +394,11 @@ class OdkAppUser(OdkCentral):
         result = self.session.delete(url, auth=self.auth, json={'displayName': name})
         return result
 
-    def updateRole(self, projectId=None, formId=None, userId=None, roleId=None, actorId=None):
+    def updateRole(self, projectId=None, formId=None, userId=None, roleId=2, actorId=None):
         """Update the role of an app user for a form"""
+        # Administrator (admin), Project Manager (manager),
+        # Data Collector (formfill), and App User (app-user).
+        # {'actorId': 336, 'roleId': 2}
         url = f'{self.base}projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}'
         result = self.session.post(url, auth=self.auth)
         return result
@@ -391,7 +410,7 @@ class OdkAppUser(OdkCentral):
         result = self.session.post(url, auth=self.auth)
         return result
 
-    def getQRCode(self, projectId=None, token=None, name="waterpoints"):
+    def getQRCode(self, projectId=None, token=None, name=None):
         """Get the QR Code for an app-user"""
         url = f'{self.base}key/{token}/projects/{projectId}'
 
@@ -405,7 +424,6 @@ class OdkAppUser(OdkCentral):
                     }
         qr_data = (b64encode(zlib.compress(json.dumps(self.settings).encode("utf-8"))))
         self.qrcode = segno.make(qr_data, micro=False)
-        # outpath = os.path.join(outdir, form)
         self.qrcode.save(f'{name}.png', scale=5)
 
 # This following code is only for debugging purposes, since this is easier
