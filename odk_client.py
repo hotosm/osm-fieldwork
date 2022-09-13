@@ -23,6 +23,7 @@ import sys, os
 from datetime import tzinfo, datetime
 import json
 from OdkCentral import OdkCentral, OdkProject, OdkForm, OdkAppUser
+from pathlib import Path
 
 
 # FIXME: this classes isn;t used yet
@@ -65,9 +66,9 @@ parser.add_argument('-i', '--id', type=int, help = 'Project ID nunmber')
 parser.add_argument("-f", "--form", help="XForm name")
 parser.add_argument("-u", "--uuid", help="Submission UUID, needed to download the data")
 # This is for form specific requests
-parser.add_argument('-x', '--xform', choices=['attachments', "csv", 'submissions', 'upload', 'download', 'create', 'assignments'],
+parser.add_argument('-x', '--xform', choices=['attachments', "csv", 'submissions', 'upload', 'download', 'create', 'assignments', 'delete'],
                     help = 'XForm ID for operations with data files')
-parser.add_argument("-a", "--appuser", choices=['add', 'delete', 'update', 'qrcode', 'access'], help="App-User operations")
+parser.add_argument("-a", "--appuser", choices=['create', 'delete', 'update', 'qrcode', 'access'], help="App-User operations")
 parser.add_argument("-d", "--data", help="Data files for upload or download")
 parser.add_argument("-t", "--timestamp", help="Timestamp for submissions")
 
@@ -199,9 +200,9 @@ elif args.xform:
     elif args.xform == "csv":
         submissions = form.getSubmission(args.id, args.form, True)
         logging.info("There are %d submissions for XForm %s" % (len(submissions), args.form))
-        #for file in submissions:
-            # form.submissions.append(file)
-        #    print("%s: %s" % (file['instanceId'], file['createdAt']))
+        for file in submissions:
+            form.submissions.append(file)
+            print("%s: %s" % (file['instanceId'], file['createdAt']))
 
     elif args.xform == "attachments":
         attachments = form.listMedia(args.id, args.form)
@@ -210,33 +211,44 @@ elif args.xform:
             print("\t%s exists ? %s" % (file['name'], file['exists']))
 
     elif args.xform == "create":
-        logging.info("Creating XForm from %s" % (files[0]))
-        result = form.createForm(args.id, args.form, files[0],)
+        for file in files:
+            path = Path(file)
+            if path.suffix == ".xml":
+                logging.info("Creating XForm from %s" % file)
+                result = form.createForm(args.id, args.form, file, True)
+            elif path.suffix == ".csv":
+                logging.info("Uploading media file %r for XForm %s" % (file, file))
+                result = form.uploadMedia(args.id, args.form, file)
+        result = form.publishForm(args.id, args.form)
+
+    elif args.xform == "delete":
+        logging.info("Deleting XForm from %s" % args.form)
+        result = form.deleteForm(args.id, args.form)
 
 elif args.appuser:
-# This downloads files from the ODK server
+# This handles app-users
     print("App User ops %s" % args.appuser)
     if not args.id:
         print("Need to specify a project ID using \"--id\" and an XForm id using \"--\"!")
         quit()
-    if not args.form:
-        print("Need to specify a XForm id using \"--form\"!")
-        quit()
+    # if not args.form:
+    #     print("Need to specify a XForm id using \"--form\"!")
+    #     quit()
 
-    if not args.uuid:
-        print("Need to specify a XForm id using \"--uuid\"!")
-        quit()
-
+    role = 2                # seems to be the default value
     user = OdkAppUser()
     if args.appuser == "create":
-        user.create(args.uuid, args.id)
+        for appuser in files:
+            result = user.create(args.id, appuser)
     elif args.appuser == "delete":
-        user.delete(args.uuid, args.id, args.uuid)
+        for appuser in files:
+            result = user.delete(args.id, appuser)
     elif args.appuser == "update":
-        # [{'actorId': 86, 'roleId': 5}]
-        user.updateRole(args.uuid, args.id, args.uuid)
+        for appuser in files:
+            result = user.updateRole(args.id, args.form, role, appuser)
     elif args.appuser == "qrcode":
-        result = user.getQRCode(args.id, args.uuid, files[0])
+        result = user.getQRCode(args.id, args.uuid, args.form)
     elif args.appuser == "access":
-        # user.grantAccess(args.id, args.uuid)
-        pass
+        for appuser in files:
+            result = user.grantAccess(args.id, role, appuser, )
+    print(result)

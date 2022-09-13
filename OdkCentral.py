@@ -195,7 +195,7 @@ class OdkForm(OdkCentral):
         super().__init__()
         self.name = None
         # Draft is for a form that isn't published yet
-        self.draft = False
+        self.draft = True
         # this is only populated if self.getDetails() is called first.
         self.data = dict()
         self.attach = list()
@@ -286,17 +286,17 @@ class OdkForm(OdkCentral):
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments'
         else:
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/attachments'
-        print(url)
         result = self.session.get(url, auth=self.auth)
         self.media = result.json()
         return self.media
 
     def uploadMedia(self, projectId=None, xmlFormId=None, filespec=None):
         """Upload an attachement to the ODK Central server"""
+        file = os.path.basename(filespec)
         if self.draft:
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments/{filespec}'
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments/{file}'
         else:
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/attachments/{filespec}'
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/attachments/{file}'
 
         headers = { 'Content-Type': '*/*' }
         file = open(filespec, "rb")
@@ -317,7 +317,8 @@ class OdkForm(OdkCentral):
 
     def createForm(self, projectId=None, xmlFormId=None, filespec=None, draft=None):
         """Create a new form on an ODK Central server"""
-        self.draft = draft
+        if draft is not None:
+            self.draft = draft
         # headers = {
         #    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         #    f'X-XlsForm-FormId-Fallback': filespec
@@ -335,10 +336,11 @@ class OdkForm(OdkCentral):
         logging.info("Read %d bytes from %s" % (len(xml), filespec))
 
         result = self.session.post(url, auth=self.auth,  data=xml, headers=headers)
+        # epdb.st()
         # FIXME: should update self.forms with the new form
         return result
 
-    def deleteForm(self, projectId=None, formId=None):
+    def deleteForm(self, projectId=None, xmlFormId=None):
         """Delete a form from an ODK Central server"""
         # FIXME: If your goal is to prevent it from showing up on survey clients like ODK Collect, consider
         # setting its state to closing or closed
@@ -346,21 +348,20 @@ class OdkForm(OdkCentral):
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft'
         else:
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}'
+        print(url)
         result = self.session.delete(url, auth=self.auth)
         return result
 
-    def publish(self, projectId=None, xmlFormId=None, filespec=None):
+    def publishForm(self, projectId=None, xmlFormId=None):
         """Publish a draft form. When creating a form that isn't a draft, it can get publised then"""
-        # Read the file
-        file = open(filespec, "rb")
-        xml = file.read()
-        file.close()
+        version = "090122022_v20"
         if self.draft:
-            version = "09_04_2022v1a"
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version={version}'
+            #url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version={version}'
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish'
         else:
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish?version={version}'
-        result = self.session.get(url, auth=self.auth, data=xml, headers=headers)
+            # url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish?version={version}'
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish'
+        result = self.session.get(url, auth=self.auth)
         return result
 
     def dump(self):
@@ -381,20 +382,20 @@ class OdkAppUser(OdkCentral):
         self.qrcode = None
         self.id = None
 
-    def create(self, name=None, projectId=None):
+    def create(self, projectId=None, name=None):
         """Create a new app-user for a form"""
         url = f'{self.base}projects/{projectId}/app-users'
         result = self.session.post(url, auth=self.auth, json={'displayName': name})
         self.user = name
         return result
 
-    def delete(self, name=None, projectId=None, userId=None):
+    def delete(self, projectId=None, userId=None):
         """Create a new app-user for a form"""
         url = f'{self.base}projects/{projectId}/app-users/{userId}'
-        result = self.session.delete(url, auth=self.auth, json={'displayName': name})
+        result = self.session.delete(url, auth=self.auth)
         return result
 
-    def updateRole(self, projectId=None, formId=None, userId=None, roleId=2, actorId=None):
+    def updateRole(self, projectId=None, formId=None, roleId=2, actorId=None):
         """Update the role of an app user for a form"""
         # Administrator (admin), Project Manager (manager),
         # Data Collector (formfill), and App User (app-user).
@@ -413,7 +414,7 @@ class OdkAppUser(OdkCentral):
     def getQRCode(self, projectId=None, token=None, name=None):
         """Get the QR Code for an app-user"""
         url = f'{self.base}key/{token}/projects/{projectId}'
-
+        logging.info("Generating QR Code for app-user %s for project %s" % (name, projectId))
         self.settings = {"general":
                     {"server_url":f'{self.base}key/{token}/projects/{projectId}',
                      "form_update_mode":"manual",
