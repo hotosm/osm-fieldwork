@@ -71,6 +71,7 @@ parser.add_argument('-x', '--xform', choices=['attachments', "csv", 'submissions
 parser.add_argument("-a", "--appuser", choices=['create', 'delete', 'update', 'qrcode', 'access'], help="App-User operations")
 parser.add_argument("-d", "--data", help="Data files for upload or download")
 parser.add_argument("-t", "--timestamp", help="Timestamp for submissions")
+parser.add_argument("-b", "--bulk", choices=['qrcodes', 'update'], help="Bulk operations")
 
 # Caching isn't implemented yet. That's for fancier queries that require multiple
 # requests to the ODK server. Caching allows for data like names for IDs to
@@ -252,3 +253,19 @@ elif args.appuser:
         for appuser in files:
             result = user.grantAccess(args.id, role, appuser, )
     print(result)
+
+elif args.bulk:
+    project = OdkProject()
+    appuser = OdkAppUser()
+    if not args.form:
+        print("Need to specify a XForm id using \"--form\"!")
+        quit()
+    if args.bulk == "qrcodes":
+        users = project.listAppUsers(args.id)
+        for user in users:
+            name = "%s-%s" % (args.form, user['displayName'])
+            result = appuser.getQRCode(args.id, user['token'], name)
+    elif args.bulk == "update":
+        users = project.listAppUsers(args.id)
+        for user in users:
+            result = appuser.updateRole(args.id, user['id'], user['displayName'])
