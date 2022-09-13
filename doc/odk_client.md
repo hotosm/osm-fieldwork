@@ -49,4 +49,38 @@ project command.
 * --id 1 --form formid --xform upload file1,file2,.. - upload
                        attachments for this XForm
 
+# Create a new XForm, and upload these two attachments
+
+These two attachements are input for *select_from_file* in the survey
+sheet. For odkconvert, they are usually a list of municipalities and
+towns. 
+
+	./odk_client.py --id 4 --form waterpoints --xform create XForms/waterpoints.xml XForms/towns.csv XForms/municipality.csv
+
 # App-user Requests
+
+## Create a new app-user for a project
+	./odk_client.py --appuser create --id 4 ---form waterpoints foobar
+
+## create a QR code for the app-user to access ODK Central
+	./odk_client.py -i 4 -f waterpoints -a qrcode -u 'jhAbIwHmYCBObnR45l!I3yi$LbCL$q$saJHkDvgwgtKs2F6sso3eepySJ5tyyyAX'
+
+## Delete an app-user from a project
+	./odk_client.py --appuser delete --id 4 378
+
+## List all app-users for a project
+	./odk_client.py  --id 4 --form waterpoints --project app-users
+
+## Generate a QR code for this app-user for this project
+	./odk_client.py -a qrcode -i 4 foobar -f waterpoints -u 'nWYLS1HJ...XDFe'
+
+# Bulk operations
+
+Some commands require multiple queries to ODK Central, and are mostly
+limited to the app-users for a project.
+
+## Generate QRcodes for all registered app-users
+	./odk_client.py --id 4 --bulk qrcodes --form waterpoints
+which generates a png file for each app-user, limited to that
+project. 
+
