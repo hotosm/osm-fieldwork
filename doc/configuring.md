@@ -16,7 +16,7 @@ lists. For example:
  
 There are 3 section in the config file, *ignore*, *convert*, and
 *private*. Anything in the *ignore* section gets left out of all data
-processing and output files. ANything in the *private* section is kept
+processing and output files. Anything in the *private* section is kept
 out of the OXM output file, but included in a separate GeoJson
 formatted file. That file contains all the data by whomever is
 organizing this mapping campaign. There are often data items like
