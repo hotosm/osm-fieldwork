@@ -110,7 +110,6 @@ if __name__ == '__main__':
                         tags[i] = j
         rows.append(tags)
 
-    print(os.path.dirname(instance))
     xml = os.path.basename(instance)
     tmp = xml.split("_")
     now = datetime.now()
@@ -122,3 +121,4 @@ if __name__ == '__main__':
         for row in rows:
             csv.writerow(row)
 
+    print("Wrote: %s" % outfile)
