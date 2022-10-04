@@ -32,7 +32,7 @@ from geojson import Point, Feature, FeatureCollection, dump
 
 class CSVDump(Convert):
     """A class to parse the CSV files from ODK Central"""
-    def __init__(self):
+    def __init__(self, yaml=None):
         """"""
         self.fields = dict()
         self.nodesets = dict()
@@ -40,14 +40,14 @@ class CSVDump(Convert):
         self.osm = None
         self.json = None
         self.features = list()
-        if os.path.exists("xforms.yaml"):
-            yaml = "xforms.yaml"
-        elif os.path.exists("../xforms.yaml"):
-            yaml = "../xforms.yaml"
-        elif argv[0][0] == "/" and os.path.dirname(argv[0]) != "/usr/local/bin":
-            yaml = os.path.dirname(argv[0]) + "/xforms.yaml"
+        if yaml is None:
+            if os.path.exists("xforms.yaml"):
+                yaml = "xforms.yaml"
+            elif os.path.exists("../xforms.yaml"):
+                yaml = "../xforms.yaml"
+            elif argv[0][0] == "/" and os.path.dirname(argv[0]) != "/usr/local/bin":
+                yaml = os.path.dirname(argv[0]) + "/xforms.yaml"
         self.config = super().__init__(yaml)
-        pass
 
     def createOSM(self, file="tmp.osm"):
         """Create an OSM XML output files"""
@@ -166,6 +166,7 @@ class CSVDump(Convert):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='convert CSV from ODK Central to OSM XML')
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
+    parser.add_argument("-y", "--yaml", help="Alternate YAML file")
     parser.add_argument("-i", "--infile", help='The input file downloaded from ODK Central')
     args = parser.parse_args()
 
@@ -180,7 +181,10 @@ if __name__ == '__main__':
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
-    csvin = CSVDump()
+    if args.yaml:
+        csvin = CSVDump(args.yaml)
+    else:
+        csvin = CSVDump()
     osmoutfile = os.path.basename(args.infile.replace(".csv", ".osm"))
     csvin.createOSM(osmoutfile)
 
@@ -194,6 +198,9 @@ if __name__ == '__main__':
             entry = csvin.parse(row)
             # This OSM XML file only has OSM appropriate tags and values
             feature = csvin.createEntry(entry)
+            # Sometimes bad entries, usually from debugging XForm design, sneak in
+            if len(feature['attrs']) == 0:
+                continue
             if len(feature) > 0:
                 csvin.writeOSM(feature)
                 # This GeoJson file has all the data values
