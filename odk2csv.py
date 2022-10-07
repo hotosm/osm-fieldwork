@@ -110,7 +110,7 @@ if __name__ == '__main__':
                         tags[i] = j
         rows.append(tags)
 
-    xml = os.path.basename(instance)
+    xml = os.path.basename(xmlfiles[0])
     tmp = xml.split("_")
     now = datetime.now()
     timestamp = f'_{now.year}_{now.hour}_{now.minute}'
