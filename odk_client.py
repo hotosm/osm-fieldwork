@@ -66,7 +66,7 @@ parser.add_argument('-i', '--id', type=int, help = 'Project ID nunmber')
 parser.add_argument("-f", "--form", help="XForm name")
 parser.add_argument("-u", "--uuid", help="Submission UUID, needed to download the data")
 # This is for form specific requests
-parser.add_argument('-x', '--xform', choices=['attachments', "csv", 'submissions', 'upload', 'download', 'create', 'assignments', 'delete'],
+parser.add_argument('-x', '--xform', choices=['attachments', "csv", 'submissions', 'upload', 'download', 'create', 'assignments', 'delete', 'publish'],
                     help = 'XForm ID for operations with data files')
 parser.add_argument("-a", "--appuser", choices=['create', 'delete', 'update', 'qrcode', 'access'], help="App-User operations")
 parser.add_argument("-d", "--data", help="Data files for upload or download")
@@ -226,6 +226,10 @@ elif args.xform:
         logging.info("Deleting XForm from %s" % args.form)
         result = form.deleteForm(args.id, args.form)
 
+    elif args.xform == "publish":
+        logging.info("Publishing XForm from %s" % args.form)
+        result = form.publishForm(args.id, args.form)
+
 elif args.appuser:
 # This handles app-users
     print("App User ops %s" % args.appuser)
@@ -255,17 +259,20 @@ elif args.appuser:
     print(result)
 
 elif args.bulk:
-    project = OdkProject()
+    central = OdkProject()
+    # project = central.getDetails(args.id)
     appuser = OdkAppUser()
+    role = 2                    # thise seems to be the default value
     if not args.form:
         print("Need to specify a XForm id using \"--form\"!")
         quit()
     if args.bulk == "qrcodes":
-        users = project.listAppUsers(args.id)
+        users = central.listAppUsers(args.id)
         for user in users:
+            # name = "%s-%s" % (project['name'], user['displayName'])
             name = "%s-%s" % (args.form, user['displayName'])
             result = appuser.getQRCode(args.id, user['token'], name)
     elif args.bulk == "update":
-        users = project.listAppUsers(args.id)
+        users = central.listAppUsers(args.id)
         for user in users:
-            result = appuser.updateRole(args.id, user['id'], user['displayName'])
+            result = appuser.updateRole(args.id, args.form, role, user['id'])
