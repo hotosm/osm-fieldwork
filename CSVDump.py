@@ -105,9 +105,12 @@ class CSVDump(Convert):
             if base is None or base in self.ignore or value is None or len(value) == 0:
                 continue
             if keyword in self.multiple:
-                epdb.st()
-                for item in selection:
-                    tags[item] = "yes"
+                # epdb.st()
+                entry = eval(row[base])
+                for key, val in entry.items():
+                    print(key)
+                    if key == "name":
+                        tags['name'] = val
                 continue
             else:
                 tag, val = self.convertEntry(base, value)
