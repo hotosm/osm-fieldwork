@@ -174,6 +174,13 @@ class OdkProject(OdkCentral):
         result = self.session.get(url, auth=self.auth)
         return result.json()
 
+    def getDetails(self, projectId=None):
+        """Get all the details for a project on an ODK Central server"""
+        url = f'{self.base}projects/{projectId}'
+        result = self.session.get(url, auth=self.auth)
+        self.data = result.json()
+        return self.data
+
     def dump(self):
         """Dump internal data structures, for debugging purposes only"""
         super().dump()
@@ -227,7 +234,7 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, auth=self.auth)
         self.data = result.json()
         return result
-        
+
     def listSubmissions(self, projectId, formId):
         """Fetch a list of submission instances for a given form."""
         url = f'{self.base}projects/{projectId}/forms/{formId}/submissions'
@@ -354,13 +361,13 @@ class OdkForm(OdkCentral):
 
     def publishForm(self, projectId=None, xmlFormId=None):
         """Publish a draft form. When creating a form that isn't a draft, it can get publised then"""
-        version = "090122022_v20"
+        version = "newversion"
         if self.draft:
-            #url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version={version}'
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish'
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version={version}'
+            # url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish'
         else:
-            # url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish?version={version}'
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish'
+            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish?version={version}'
+            # url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish'
         result = self.session.get(url, auth=self.auth)
         return result
 
@@ -395,18 +402,16 @@ class OdkAppUser(OdkCentral):
         result = self.session.delete(url, auth=self.auth)
         return result
 
-    def updateRole(self, projectId=None, formId=None, roleId=2, actorId=None):
+    def updateRole(self, projectId=None, xmlFormId=None, roleId=2, actorId=None):
         """Update the role of an app user for a form"""
-        # Administrator (admin), Project Manager (manager),
-        # Data Collector (formfill), and App User (app-user).
-        # {'actorId': 336, 'roleId': 2}
-        url = f'{self.base}projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}'
+        logging.info("Update access to XForm %s for %s" % (xmlFormId, actorId))
+        url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/assignments/{roleId}/{actorId}'
         result = self.session.post(url, auth=self.auth)
         return result
 
-    def grantAccess(self, projectId=None, roleId=2, userId=None, formId=None, actorId=None):
+    def grantAccess(self, projectId=None, roleId=2, userId=None, xmlFormId=None, actorId=None):
         """Grant access to an app user for a form"""
-        kwargs = { "formId": formId, "actorId": userId, }
+        kwargs = { "formId": xmlFormId, "actorId": userId, }
         url = f'{self.base}projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}'
         result = self.session.post(url, auth=self.auth)
         return result
@@ -414,7 +419,7 @@ class OdkAppUser(OdkCentral):
     def getQRCode(self, projectId=None, token=None, name=None):
         """Get the QR Code for an app-user"""
         url = f'{self.base}key/{token}/projects/{projectId}'
-        logging.info("Generating QR Code for app-user %s for project %s" % (name, projectId))
+        logging.info("Generating QR Code for app-user \"%s\" for project %s" % (name, projectId))
         self.settings = {"general":
                     {"server_url":f'{self.base}key/{token}/projects/{projectId}',
                      "form_update_mode":"manual",
