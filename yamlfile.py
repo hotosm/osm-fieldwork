@@ -19,6 +19,11 @@
 #
 
 import yaml
+import epdb
+import argparse
+import logging
+import sys
+from pprint import pprint
 
 """This parses a yaml file into a dictionary for easy access."""
 
@@ -30,46 +35,45 @@ class YamlFile(object):
         self.file = open(filespec, 'rb').read()
         #print(self.file)
         self.yaml = yaml.load(self.file, Loader=yaml.Loader)
+        # pprint(self.yaml)
 
-    def getValues(self, value=None):
-        """Get the values for a primary key"""
-        if value is not None:
-            ret = dict()
-            try:
-                # Convert the list to a dictionary
-                for entry in self.yaml[value]:
-                    tmp = list(entry.keys())[0]
-                    ret[tmp] = entry[tmp]
-            except KeyError:
-                for key in self.yaml['tags']:
-                    for foo, bar in key.items():
-                        if foo == value:
-                            return bar
-            return ret
-        else:
-            return None
+    def privateData(self, keyword):
+        """See if a keyword is in the private data category"""
+        return keyword in self.yaml['private']
 
-    def getKeyword(self, value=None):
-        """Get the value for a keyword"""
+    def ignoreData(self, keyword):
+        """See if a keyword is in the ignore data category"""
+        return keyword in self.yaml['ignore']
+
+    def tagsData(self, keyword):
+        """See if a keyword is in the tags complteness section"""
+        return keyword in self.yaml['tags']
+
+    def hasList(self, keyword=None):
         for tags in self.yaml['tags']:
-            for key, val in tags.items():
-                if type(val) == list:
-                    for item in val:
-                        #print(item)
-                        if item == value:
-                            return key
-                elif type(val) == bool:
-                    if val == value:
-                        # can't search for a boolean value. In that case
-                        # you check the value of the keyword instead.
-                        pass
-                elif type(val) == dict:
-                    print("DICT")
-                    for item, entry in val.items():
-                        print(item, entry)
-        return value
+            logging.debug(type(tags))
 
     def dump(self):
         """Dump the contents of the yaml file"""
         print("YAML file: %s" % self.filespec)
-        print(self.yaml)
+
+#
+# This script can be run standalone for debugging purposes. It's easier to debug
+# this way than using pytest,
+#
+if __name__ == '__main__':
+    # Enable logging to the terminal by default
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
+
+    parser = argparse.ArgumentParser(description='Read and parse a YAML file')
+    parser.add_argument("-i", "--infile", default="./xforms.yaml", help='The YAML input file')
+    args = parser.parse_args()
+
+    yaml = YamlFile(args.infile)
