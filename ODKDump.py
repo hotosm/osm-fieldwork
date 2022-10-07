@@ -34,7 +34,7 @@ if __name__ != '__main__':
     exit
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-v", "--verbose", nargs="?",const="0", help="verbose output")
+parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
 parser.add_argument("-x", "--xform", required=True, help="input xform file in XML format")
 parser.add_argument("-i", "--infile", required=True, help="input data in XML format")
 parser.add_argument("-o", "--outdir", help="Output Directory (defaults to $PWD)")

@@ -108,7 +108,7 @@ class ODKForm(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='convert CSV from ODK Central to OSM XML')
-    parser.add_argument("-v", "--verbose", nargs="?",const="0", help="verbose output")
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-i", "--infile", help='The input file downloaded from ODK Central')
     args = parser.parse_args()
 
