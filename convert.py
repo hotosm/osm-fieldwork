@@ -118,6 +118,11 @@ class Convert(YamlFile):
         newval = self.convertValue(newtag, value)
         if newval != value:
             logging.debug("Converted Value for entry \'%s\' to \'%s\'" % (value, newval))
+            # epdb.st()
+            for i in newval:
+                key = list(i.keys())[0]
+                newtag = key
+                newval = i[key]
 
         # if newtag not in self.tags:
         #     tmp = { newtag: None }
