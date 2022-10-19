@@ -34,7 +34,6 @@ from OSMPythonTools.api import Api
 class OutputFile(object):
     def __init__(self, filespec=None):
         """Initialize OGR output layer"""
-        # filespec += "foo"
         outdrv = ogr.GetDriverByName("GeoJson")
         if os.path.exists(filespec):
             outdrv.DeleteDataSource(filespec)
@@ -49,36 +48,24 @@ class OutputFile(object):
         self.filespec = filespec
 
     def addFeature(self, feature=None):
+        """Add an OGR feature to the output layer"""
         self.outlayer.CreateFeature(feature)
 
-class PostgresClient(object):
+class PostgresClient(OutputFile):
     """Class to handle SQL queries for the categories"""
     def __init__(self, dbhost=None, dbname=None, output=None):
         """Initialize the postgres handler"""
+        OutputFile.__init__( self, output)
         logging.info("Opening database connection to: %s" % dbhost)
         connect = "PG: dbname=" + dbname
         connect += " host=" + dbhost
         self.pg = ogr.Open(connect)
         self.boundary = None
 
-        outdrv = ogr.GetDriverByName("GeoJson")
-        if os.path.exists(output):
-            outdrv.DeleteDataSource(output)
-        outdata  = outdrv.CreateDataSource(output)
-        self.outlayer = outdata.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
-
     def getBuildings(self, boundary=None, filespec=None):
         """Extract buildings from Postgres"""
         logging.info("Extracting buildings...")
 
-        # Create output file, delete it first if it already exists
-        jsondrv = ogr.GetDriverByName("GeoJSON")
-        if os.path.exists(filespec):
-            jsondrv.DeleteDataSource(filespec)
-        
-        outfile  = jsondrv.CreateDataSource(filespec)
-        outlayer = outfile.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
-        
         osm = self.pg.GetLayerByName("ways_poly")
         # logging.info("There are %d buildings in the output file" % osm.GetFeatureCount())
         osm.SetAttributeFilter("tags->>'building' IS NOT NULL")
@@ -98,7 +85,7 @@ class PostgresClient(object):
             poly = feature.GetGeometryRef()
             center = poly.Centroid()
             feature.SetGeometry(center)
-            outlayer.CreateFeature(feature)
+            self.outlayer.CreateFeature(feature)
 
         #logging.info("There are %r buildings in the output file" % memlayer.GetFeatureCount())
         osm = self.pg.GetLayerByName("relations")
@@ -115,9 +102,9 @@ class PostgresClient(object):
             poly = feature.GetGeometryRef()
             center = poly.Centroid()
             feature.SetGeometry(center)
-            outlayer.CreateFeature(feature)
+            self.outlayer.CreateFeature(feature)
 
-        outfile.Destroy()
+        self.outdata.Destroy()
 
 class OverpassClient(OutputFile):
     """Class to handle Overpass queries"""
@@ -157,20 +144,11 @@ class OverpassClient(OutputFile):
         logging.info("Wrote data extract to: %s" % self.filespec)
         self.outdata.Destroy()
 
-class FileClient(object):
+class FileClient(OutputFile):
     """Class to handle Overpass queries"""
     def __init__(self, output=None):
         """Initialize Overpass handler"""
-        outdrv = ogr.GetDriverByName("GeoJson")
-        if os.path.exists(output):
-            outdrv.DeleteDataSource(output)
-        outdata  = outdrv.CreateDataSource(output)
-        self.outlayer = outdata.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
-        fields = self.outlayer.GetLayerDefn()
-        newid = ogr.FieldDefn("id", ogr.OFTInteger)
-        self.outlayer.CreateField(newid)
-        bld = ogr.FieldDefn("tags", ogr.OFTString)
-        self.outlayer.CreateField(bld)
+        OutputFile.__init__( self, output)
 
     def getBuildings(self, boundary=None, infile=None, outfile=None):
         """Extract buildings from a disk file"""
