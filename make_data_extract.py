@@ -85,6 +85,9 @@ class Postgres(object):
 
         logging.info("Writing to output file %s" % filespec)
         for feature in memlayer:
+            poly = feature.GetGeometryRef()
+            center = poly.Centroid()
+            feature.SetGeometry(center)
             outlayer.CreateFeature(feature)
 
         logging.info("There are %r buildings in the output file" % memlayer.GetFeatureCount())
@@ -99,8 +102,11 @@ class Postgres(object):
         logging.info("There are %r relations in the output file" % memlayer.GetFeatureCount())
         logging.info("Writing to output file %s" % filespec)
         for feature in memlayer:
+            poly = feature.GetGeometryRef()
+            center = poly.Centroid()
+            feature.SetGeometry(center)
             outlayer.CreateFeature(feature)
-
+            
         outfile.Destroy()
 
 if __name__ == '__main__':
