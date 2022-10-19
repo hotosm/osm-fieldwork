@@ -26,10 +26,11 @@ import epdb
 from sys import argv
 from osgeo import ogr
 from shapely.geometry import shape
-from geojson import Point, Polygon, Feature, FeatureCollection, dump
+from geojson import Point, Polygon, Feature
+from OSMPythonTools.overpass import Overpass
+from OSMPythonTools.api import Api
 
-
-class Postgres(object):
+class PostgresClient(object):
     """Class to handle SQL queries for the categories"""
     def __init__(self, dbhost=None, dbname=None, output=None):
         logging.info("Opening database connection to: %s" % dbhost)
@@ -43,19 +44,6 @@ class Postgres(object):
             outdrv.DeleteDataSource(output)
         outdata  = outdrv.CreateDataSource(output)
         self.outlayer = outdata.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
-        fields = self.outlayer.GetLayerDefn()
-
-        newid = ogr.FieldDefn("id", ogr.OFTInteger)
-        self.outlayer.CreateField(newid)
-        bld = ogr.FieldDefn("building", ogr.OFTString)
-        self.outlayer.CreateField(bld)
-        src = ogr.FieldDefn("source", ogr.OFTString)
-        self.outlayer.CreateField(src)
-        status = ogr.FieldDefn("status", ogr.OFTString)
-        self.outlayer.CreateField(status)
-        
-        # memdrv = ogr.GetDriverByName("MEMORY")
-        # mem = memdrv.CreateDataSource('msmem')
 
     def getBuildings(self, boundary=None, filespec=None):
         """Extract buildings from Postgres"""
@@ -106,9 +94,63 @@ class Postgres(object):
             center = poly.Centroid()
             feature.SetGeometry(center)
             outlayer.CreateFeature(feature)
-            
+
         outfile.Destroy()
 
+class OverpassClient(object):
+    """Class to handle Overpass queries"""
+    def __init__(self, output=None):
+        self.overpass = Overpass()
+        outdrv = ogr.GetDriverByName("GeoJson")
+        if os.path.exists(output):
+            outdrv.DeleteDataSource(output)
+            outdata  = outdrv.CreateDataSource(output)
+            self.outlayer = outdata.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
+        self.api = Api()
+
+    def getBuildings(self, boundary=None, filespec=None):
+        logging.info("Extracting buildings...")
+        # Create output file, delete it first if it already exists
+        jsondrv = ogr.GetDriverByName("GeoJSON")
+        if os.path.exists(filespec):
+            jsondrv.DeleteDataSource(filespec)
+        
+        outfile  = jsondrv.CreateDataSource(filespec)
+        outlayer = outfile.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
+
+        memdrv = ogr.GetDriverByName("MEMORY")
+        mem = memdrv.CreateDataSource('buildings')
+        memlayer = mem.CreateLayer('buildings', geom_type=ogr.wkbMultiPolygon)
+
+        poly = ogr.Open(boundary)
+        layer = poly.GetLayer()
+
+        logging.info("There are %r polygons in the boundary file" % layer.GetFeatureCount())
+        extent = layer.GetExtent()
+        bbox = f"{extent[2]},{extent[0]},{extent[3]},{extent[1]}"
+        query = f'(way["building"]({bbox}); ); out body; >; out skel qt;'
+        logging.debug(query)
+        result = self.overpass.query(query)
+        print(result.countElements())
+        defn = outlayer.GetLayerDefn()
+        feature = ogr.Feature(defn)
+        nodes = dict()
+        for node in result.nodes():
+            wkt = "POINT(%f %f)" %  (float(node.lon()) , float(node.lat()))
+            center = ogr.CreateGeometryFromWkt(wkt)
+            nodes[node.id()] = center
+        
+        ways = result.ways()
+        for way in ways:
+            for ref in way.nodes():
+                nd = ref._queryString.split('/')[1]
+                #print(nodes[float(nd)])
+                feature = ogr.Feature(defn)
+                feature.SetGeometry(nodes[float(nd)])
+                outlayer.CreateFeature(feature)
+        logging.info("Wrote data extract to: %s" % filespec)
+        outfile.Destroy()
+    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Make GeoJson data file for ODK from OSM')
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
@@ -135,14 +177,12 @@ if __name__ == '__main__':
 
 if args.postgres:
     logging.info("Using a Postgres database for the data source")
-    pg = Postgres(args.dbhost, args.dbname, args.geojson)
-    pg.getBuildings(args.boundary, args.geojson)
-    #for building in buildings:
-        # outfile.CreateFeature(building)
-    #    print(building)
-    
+    pg = PostgresClient(args.dbhost, args.dbname, args.geojson)
+    pg.getBuildings(args.boundary, args.geojson)    
 elif args.overpass:
     logging.info("Using Overpass Turbo for the data source")
+    op = OverpassClient(args.geojson)
+    op.getBuildings(args.boundary, args.geojson)        
 elif args.infile:
     logging.info("Using file %s for the data source" % args.infile)
 else:
