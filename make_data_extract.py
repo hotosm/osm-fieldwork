@@ -90,7 +90,7 @@ class Postgres(object):
             feature.SetGeometry(center)
             outlayer.CreateFeature(feature)
 
-        logging.info("There are %r buildings in the output file" % memlayer.GetFeatureCount())
+        #logging.info("There are %r buildings in the output file" % memlayer.GetFeatureCount())
         osm = self.pg.GetLayerByName("relations")
         memlayer = mem.CreateLayer('relations', geom_type=ogr.wkbMultiPolygon)
         if boundary:
@@ -99,7 +99,7 @@ class Postgres(object):
             ogr.Layer.Clip(osm, layer, memlayer)
         else:
             memlayer = osm
-        logging.info("There are %r relations in the output file" % memlayer.GetFeatureCount())
+        #logging.info("There are %r relations in the output file" % memlayer.GetFeatureCount())
         logging.info("Writing to output file %s" % filespec)
         for feature in memlayer:
             poly = feature.GetGeometryRef()
