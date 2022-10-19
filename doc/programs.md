@@ -4,6 +4,41 @@ ODK Convert contains a few standalone utility programs for converting
 data from ODK Collect and the ODK Central server, and a few support
 modules.
 
+## make_data_extract.py
+
+To use the new select_one_from_file for editing existing OSM data you
+need to produce a data extract from OSM. This can be done several
+ways, but needed to be automated to be used for FMTM.
+
+	options:
+		-h, --help            show this help message and exit
+		-v, --verbose         verbose output
+		-o, --overpass        Use Overpass Turbo
+		-p, --postgres        Use a postgres database
+		-g GEOJSON, --geojson GEOJSON Name of the GeoJson output file
+	    -i INFILE, --infile INFILE  Use a data file
+		-dn DBNAME, --dbname DBNAME Database name
+		-dh DBHOST, --dbhost DBHOST Database host
+		-b BOUNDARY, --boundary BOUNDARY  Boundary polygon to limit the data size
+		-c {buildings,amenities}, --category {buildings,amenities}
+                        Which category to extract
+
+For example,
+
+	./make_data_extract.py --overpass --boundary mycounty.geojson
+
+will use Overpass Turbo to extract data within the boundary. By
+default, buildings are extracted.
+
+Or this example:
+
+	./make_data_extract.py --postgres -dn colorado --category amenities --boundary mycounty.geojson
+
+Which will extract the data from postgres. By default *localhost* is
+used, but that can be changed with --dbhost. This will use the
+database *colorado*, and extract all the amenities.
+
+
 ## File Formats
 
 OpenDataKit has 3 file formats. The primary one is the source file,
