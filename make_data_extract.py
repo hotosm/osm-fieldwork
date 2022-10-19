@@ -26,14 +26,35 @@ import epdb
 from sys import argv
 from osgeo import ogr
 import json
-from shapely.geometry import shape
 from geojson import Point, Polygon, Feature
 from OSMPythonTools.overpass import Overpass
 from OSMPythonTools.api import Api
 
+
+class OutputFile(object):
+    def __init__(self, filespec=None):
+        """Initialize OGR output layer"""
+        # filespec += "foo"
+        outdrv = ogr.GetDriverByName("GeoJson")
+        if os.path.exists(filespec):
+            outdrv.DeleteDataSource(filespec)
+
+        self.outdata  = outdrv.CreateDataSource(filespec)
+        self.outlayer = self.outdata.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
+        self.fields = self.outlayer.GetLayerDefn()
+        newid = ogr.FieldDefn("id", ogr.OFTInteger)
+        self.outlayer.CreateField(newid)
+        bld = ogr.FieldDefn("tags", ogr.OFTString)
+        self.outlayer.CreateField(bld)
+        self.filespec = filespec
+
+    def addFeature(self, feature=None):
+        self.outlayer.CreateFeature(feature)
+
 class PostgresClient(object):
     """Class to handle SQL queries for the categories"""
     def __init__(self, dbhost=None, dbname=None, output=None):
+        """Initialize the postgres handler"""
         logging.info("Opening database connection to: %s" % dbhost)
         connect = "PG: dbname=" + dbname
         connect += " host=" + dbhost
@@ -98,47 +119,24 @@ class PostgresClient(object):
 
         outfile.Destroy()
 
-class OverpassClient(object):
+class OverpassClient(OutputFile):
     """Class to handle Overpass queries"""
     def __init__(self, output=None):
+        """Initialize Overpass handler"""
         self.overpass = Overpass()
-        outdrv = ogr.GetDriverByName("GeoJson")
-        if os.path.exists(output):
-            outdrv.DeleteDataSource(output)
-            outdata  = outdrv.CreateDataSource(output)
-            self.outlayer = outdata.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
-        self.api = Api()
+        OutputFile.__init__( self, output)
 
     def getBuildings(self, boundary=None, filespec=None):
+        """Extract buildings from Overpass"""
         logging.info("Extracting buildings...")
-        # Create output file, delete it first if it already exists
-        jsondrv = ogr.GetDriverByName("GeoJSON")
-        if os.path.exists(filespec):
-            jsondrv.DeleteDataSource(filespec)
-        
-        outfile  = jsondrv.CreateDataSource(filespec)
-        outlayer = outfile.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
-        fields = outlayer.GetLayerDefn()
-        newid = ogr.FieldDefn("id", ogr.OFTInteger)
-        outlayer.CreateField(newid)
-        bld = ogr.FieldDefn("tags", ogr.OFTString)
-        outlayer.CreateField(bld)
-
-        # memdrv = ogr.GetDriverByName("MEMORY")
-        # mem = memdrv.CreateDataSource('buildings')
-        # memlayer = mem.CreateLayer('buildings', geom_type=ogr.wkbMultiPolygon)
-
         poly = ogr.Open(boundary)
         layer = poly.GetLayer()
 
-        logging.info("There are %r polygons in the boundary file" % layer.GetFeatureCount())
         extent = layer.GetExtent()
         bbox = f"{extent[2]},{extent[0]},{extent[3]},{extent[1]}"
         query = f'(way["building"]({bbox}); ); out body; >; out skel qt;'
-        logging.debug(query)
+        # logging.debug(query)
         result = self.overpass.query(query)
-        print(result.countElements())
-        defn = outlayer.GetLayerDefn()
 
         nodes = dict()
         for node in result.nodes():
@@ -149,15 +147,36 @@ class OverpassClient(object):
         ways = result.ways()
         for way in ways:
             for ref in way.nodes():
+                # FIXME: There's probably a better way to get the node ID.
                 nd = ref._queryString.split('/')[1]
-                feature = ogr.Feature(defn)
+                feature = ogr.Feature(self.fields)
                 feature.SetGeometry(nodes[float(nd)])
                 feature.SetField("id", way.id())
                 feature.SetField('tags', json.dumps(way.tags()))
-                outlayer.CreateFeature(feature)
-        logging.info("Wrote data extract to: %s" % filespec)
-        outfile.Destroy()
-    
+                self.addFeature(feature)
+        logging.info("Wrote data extract to: %s" % self.filespec)
+        self.outdata.Destroy()
+
+class FileClient(object):
+    """Class to handle Overpass queries"""
+    def __init__(self, output=None):
+        """Initialize Overpass handler"""
+        outdrv = ogr.GetDriverByName("GeoJson")
+        if os.path.exists(output):
+            outdrv.DeleteDataSource(output)
+        outdata  = outdrv.CreateDataSource(output)
+        self.outlayer = outdata.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
+        fields = self.outlayer.GetLayerDefn()
+        newid = ogr.FieldDefn("id", ogr.OFTInteger)
+        self.outlayer.CreateField(newid)
+        bld = ogr.FieldDefn("tags", ogr.OFTString)
+        self.outlayer.CreateField(bld)
+
+    def getBuildings(self, boundary=None, infile=None, outfile=None):
+        """Extract buildings from a disk file"""
+        logging.info("Extracting buildings from %s..." % infile)
+        
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Make GeoJson data file for ODK from OSM')
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
@@ -191,6 +210,7 @@ elif args.overpass:
     op = OverpassClient(args.geojson)
     op.getBuildings(args.boundary, args.geojson)        
 elif args.infile:
+    # FileClient()
     logging.info("Using file %s for the data source" % args.infile)
 else:
     logging.error("You need to supply either --overpass or --postgres")
