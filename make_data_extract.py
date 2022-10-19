@@ -25,6 +25,7 @@ import sys
 import epdb
 from sys import argv
 from osgeo import ogr
+import json
 from shapely.geometry import shape
 from geojson import Point, Polygon, Feature
 from OSMPythonTools.overpass import Overpass
@@ -120,7 +121,7 @@ class OverpassClient(object):
         fields = outlayer.GetLayerDefn()
         newid = ogr.FieldDefn("id", ogr.OFTInteger)
         outlayer.CreateField(newid)
-        bld = ogr.FieldDefn("building", ogr.OFTString)
+        bld = ogr.FieldDefn("tags", ogr.OFTString)
         outlayer.CreateField(bld)
 
         # memdrv = ogr.GetDriverByName("MEMORY")
@@ -152,9 +153,7 @@ class OverpassClient(object):
                 feature = ogr.Feature(defn)
                 feature.SetGeometry(nodes[float(nd)])
                 feature.SetField("id", way.id())
-                for key,value in way.tags().items():
-                    print(key, value)
-                    feature.SetField(key, value)
+                feature.SetField('tags', json.dumps(way.tags()))
                 outlayer.CreateFeature(feature)
         logging.info("Wrote data extract to: %s" % filespec)
         outfile.Destroy()
