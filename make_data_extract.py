@@ -117,10 +117,15 @@ class OverpassClient(object):
         
         outfile  = jsondrv.CreateDataSource(filespec)
         outlayer = outfile.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
+        fields = outlayer.GetLayerDefn()
+        newid = ogr.FieldDefn("id", ogr.OFTInteger)
+        outlayer.CreateField(newid)
+        bld = ogr.FieldDefn("building", ogr.OFTString)
+        outlayer.CreateField(bld)
 
-        memdrv = ogr.GetDriverByName("MEMORY")
-        mem = memdrv.CreateDataSource('buildings')
-        memlayer = mem.CreateLayer('buildings', geom_type=ogr.wkbMultiPolygon)
+        # memdrv = ogr.GetDriverByName("MEMORY")
+        # mem = memdrv.CreateDataSource('buildings')
+        # memlayer = mem.CreateLayer('buildings', geom_type=ogr.wkbMultiPolygon)
 
         poly = ogr.Open(boundary)
         layer = poly.GetLayer()
@@ -133,7 +138,7 @@ class OverpassClient(object):
         result = self.overpass.query(query)
         print(result.countElements())
         defn = outlayer.GetLayerDefn()
-        feature = ogr.Feature(defn)
+
         nodes = dict()
         for node in result.nodes():
             wkt = "POINT(%f %f)" %  (float(node.lon()) , float(node.lat()))
@@ -144,9 +149,12 @@ class OverpassClient(object):
         for way in ways:
             for ref in way.nodes():
                 nd = ref._queryString.split('/')[1]
-                #print(nodes[float(nd)])
                 feature = ogr.Feature(defn)
                 feature.SetGeometry(nodes[float(nd)])
+                feature.SetField("id", way.id())
+                for key,value in way.tags().items():
+                    print(key, value)
+                    feature.SetField(key, value)
                 outlayer.CreateFeature(feature)
         logging.info("Wrote data extract to: %s" % filespec)
         outfile.Destroy()
