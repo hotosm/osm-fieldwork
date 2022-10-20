@@ -30,12 +30,8 @@ all: $(XMLFILES)
 	cd lib/ && xls2xform --pretty_print ../$<
 
 upload: $(XMLFILES)
-	echo "Do nothing yet"
-	echo $<
-	echo $?
-	echo $*
-	echo $@
-	cd lib && ../../odk_client.py -i 4 -f toilets -x create ../$< l $(DATAFILES)
+	target=$(?:.xml=); \
+	cd lib && ../../odk_client.py -i 4 -f $${target} -x create ../$< l $(DATAFILES)
 
 force:
 .PHONEY: upload
