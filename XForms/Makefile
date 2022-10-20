@@ -17,10 +17,19 @@
 #
 
 XLSFILES = toilets.xls
+# We could also use a wildcard to get all the XLS files in the directory, but instead
+# we're defining the variable manually since many of the XKLSForms aren't being worked
+# on yet.
+# XLSFILES = cemeteries.xls regilious.xls school.xls toilets.xls transportation.xls waterpoints.xls waterways.xls
+
 XMLFILES = $(XLSFILES:.xls=.xml)
 
 # these are used by select_one_from_file or select_multiple_from_file
-DATAFILES = towns.csv municipality.csv provider.csv opening_hours.csv
+DATAFILES = towns.csv \
+	municipality.csv \
+	provider.csv \
+	opening_hours.csv \
+	operational_status.csv
 
 .SUFFIXES: .xls .xml
 
