@@ -31,7 +31,7 @@ from OSMPythonTools.overpass import Overpass
 from OSMPythonTools.api import Api
 
 # all possible queries
-choices = ["buildings", "amenities", "toilets", "landuse", "emergency"]
+choices = ["buildings", "amenities", "toilets", "landuse", "emergency", "shops", "waste", "water"]
 
 class OutputFile(object):
     def __init__(self, filespec=None):
@@ -68,29 +68,38 @@ class PostgresClient(OutputFile):
         """Extract buildings from Postgres"""
         logging.info("Extracting buildings...")
 
-        if category not in choices:
-            pass
-        else:
-            pass
-
         tables = list()
         if category == 'buildings':
-            tables.append("ways_poly")
-            tables.append("relations")
+            tables = ("ways_poly", "relations")
             filter = "tags->>'building' IS NOT NULL"
-        elif category == 'amenity':
-            tables.append("nodes", "ways_poly")
+        elif category == 'amenities':
+            tables = ("nodes", "ways_poly")
             filter = "tags->>'amenity' IS NOT NULL"
         elif category == 'toilets':
-            tables.append("nodes", "ways_poly")            
+            tables = ("nodes", "ways_poly")
             filter = "tags->>'amenity'='toilets'"
+        elif category == 'emergency':
+            tables = ("nodes", "ways_poly")
+            filter = "tags->>'emergency' IS NOT NULL"
+        elif category == 'shops':
+            tables = ("nodes", "ways_poly")
+            filter = "tags->>'shop' IS NOT NULL"
+        elif category == 'waste':
+            tables = ("nodes", "ways_poly")
+            filter = "tags->>'amenity'='waste_disposal'"
+        elif category == 'water':
+            tables = ("nodes")
+            filter = "tags->>'water_source' IS NOT NULL"
+        elif category == 'toilets':
+            tables = ("ways_poly")
+            filter = "tags->>'landuse' IS NOT NULL"
 
         # Clip the large file using the supplied boundary
         memdrv = ogr.GetDriverByName("MEMORY")
         mem = memdrv.CreateDataSource('buildings')
         memlayer = mem.CreateLayer('buildings', geom_type=ogr.wkbMultiPolygon)
         for table in tables:
-            logging.debug("Querying table %s..." % table)
+            logging.debug("Querying table %s with conditional %s" % (table, filter))
             osm = self.pg.GetLayerByName(table)
             osm.SetAttributeFilter(filter)
             if boundary:
@@ -100,7 +109,7 @@ class PostgresClient(OutputFile):
             else:
                 memlayer = osm
 
-            logging.info("There are %d buildings in the table" % osm.GetFeatureCount())
+            logging.info("There are %d in the %s table" % (memlayer.GetFeatureCount(), table))
             for feature in memlayer:
                 poly = feature.GetGeometryRef()
                 center = poly.Centroid()
