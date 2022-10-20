@@ -38,9 +38,21 @@ all: $(XMLFILES)
 %.xml : %.xls
 	cd lib/ && xls2xform --pretty_print ../$<
 
+# A simple naming convention is used to make it possible to automate as
+# much as possible. The basename of the XLSForm file matches the form_id
+# column in the settings sheet. The make_data_extract.py also uses the
+# same value in the category options.
+# Any associated data extract file from OSM is uploaded as well if it
+# exists. Note that when using an external geojson file, Enketo doesn't
+# support that. It only works on a device.
 upload: $(XMLFILES)
-	target=$(?:.xml=); \
-	cd lib && ../../odk_client.py -i 4 -f $${target} -x create ../$< l $(DATAFILES)
+	@target=$(?:.xml=); \
+	if test -e $${target}.geojson; then \
+	datafiles="$(DATAFILES) $${target}.geojson"; \
+	else \
+	datafiles="$(DATAFILES)"; \
+	fi; \
+	cd lib && ../../odk_client.py -i 4 -f $${target} -x create ../$< l $${datafiles}
 
 force:
 .PHONEY: upload
