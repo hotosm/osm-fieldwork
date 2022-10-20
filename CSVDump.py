@@ -94,24 +94,24 @@ class CSVDump(Convert):
     def parse(self, row):
         """Parse the CSV file from ODK Central and convert it to a data structure"""
         all = list()
-        logging.debug("Row: %r" % row)
+        # logging.debug("Row: %r" % row)
         tags = dict()
         for keyword, value in row.items():
-            #logging.debug("Line: %r, %r" % (keyword, value))
+            # logging.debug("Line: %r, %r" % (keyword, value))
             if keyword is None or len(keyword) == 0:
                 continue
             base = self.basename(keyword).lower()
             # There's many extraneous fields in the input file which we don't need.
             if base is None or base in self.ignore or value is None or len(value) == 0:
                 continue
-            if keyword in self.multiple:
-                # epdb.st()
-                entry = eval(row[base])
-                for key, val in entry.items():
-                    print(key)
-                    if key == "name":
-                        tags['name'] = val
-                continue
+            # if base in self.multiple:
+            #     epdb.st()
+            #     entry = row[keyword]
+            #     for key, val in entry.items():
+            #         print(key)
+            #         if key == "name":
+            #             tags['name'] = val
+            #     continue
             else:
                 tag, val = self.convertEntry(base, value)
                 tags[tag] = val
@@ -138,14 +138,25 @@ class CSVDump(Convert):
 
         logging.debug("Creating entry")
         # First convert the tag to the approved OSM equivalent
-        if type(entry) is list:
-            epdb.st()
         for key, value in entry.items():
             attributes = ("id", "timestamp", "lat", "lon", "uid", "user", "version", "action")
             if key is not None and len(key) > 0 and key in attributes:
                 attrs[key] = value
                 logging.debug("Adding attribute %s with value %s" % (key, value))
             else:
+                if key in self.multiple:
+                    for item in value:
+                        if key in item:
+                            for entry in item[key].split():
+                                vals = self.getValues(key)
+                                if entry in vals:
+                                    if vals[entry].find("="):
+                                        tmp = vals[entry].split("=")
+                                        tags[tmp[0]] = tmp[1]
+                                else:
+                                    tags[entry] = "yes"
+                    continue
+
                 if value is not None:
                     if key == "track" or key == "geoline":
                         refs.append(tag)
