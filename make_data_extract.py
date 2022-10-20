@@ -40,8 +40,9 @@ class OutputFile(object):
         if os.path.exists(filespec):
             outdrv.DeleteDataSource(filespec)
 
+        logging.info("Creating output data file: %s" % filespec)
         self.outdata  = outdrv.CreateDataSource(filespec)
-        self.outlayer = self.outdata.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
+        self.outlayer = self.outdata.CreateLayer("data", geom_type=ogr.wkbPolygon)
         self.fields = self.outlayer.GetLayerDefn()
         newid = ogr.FieldDefn("id", ogr.OFTInteger)
         self.outlayer.CreateField(newid)
@@ -66,7 +67,7 @@ class PostgresClient(OutputFile):
 
     def getFeature(self, boundary=None, filespec=None, category='buildings'):
         """Extract buildings from Postgres"""
-        logging.info("Extracting buildings...")
+        logging.info("Extracting buildings from POstgres...")
 
         tables = list()
         if category == 'buildings':
@@ -116,7 +117,6 @@ class PostgresClient(OutputFile):
                 feature.SetGeometry(center)
                 self.outlayer.CreateFeature(feature)
 
-        logging.info("Wrote output file %s" % filespec)
         self.outdata.Destroy()
 
 class OverpassClient(OutputFile):
@@ -154,7 +154,6 @@ class OverpassClient(OutputFile):
                 feature.SetField("id", way.id())
                 feature.SetField('tags', json.dumps(way.tags()))
                 self.addFeature(feature)
-        logging.info("Wrote data extract to: %s" % self.filespec)
         self.outdata.Destroy()
 
 class FileClient(OutputFile):
@@ -203,13 +202,18 @@ if __name__ == '__main__':
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
+if args.geojson == "tmp.geojson":
+    outfile = args.category + ".geojson"
+else:
+    outfile = args.geojson
+
 if args.postgres:
     logging.info("Using a Postgres database for the data source")
-    pg = PostgresClient(args.dbhost, args.dbname, args.geojson)
+    pg = PostgresClient(args.dbhost, args.dbname, outfile)
     pg.getFeature(args.boundary, args.geojson, args.category)
 elif args.overpass:
     logging.info("Using Overpass Turbo for the data source")
-    op = OverpassClient(args.geojson)
+    op = OverpassClient(outfile)
     op.getFeature(args.boundary, args.geojson, args.category)
 elif args.infile:
     f = FileClient(args.infile)
@@ -217,4 +221,6 @@ elif args.infile:
     logging.info("Using file %s for the data source" % args.infile)
 else:
     logging.error("You need to supply either --overpass or --postgres")
-    
+
+logging.info("Wrote output data file to: %s" % outfile)
+
