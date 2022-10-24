@@ -52,7 +52,7 @@ upload: $(XMLFILES)
 	else \
 	datafiles="$(DATAFILES)"; \
 	fi; \
-	cd lib && ../../odk_client.py -i 4 -f $${target} -x create ../$< l $${datafiles}
+	cd lib && ../../odk_client.py -i 4 -f $${target} -x create ../$< $${datafiles}
 
 force:
 .PHONEY: upload
