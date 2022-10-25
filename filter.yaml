@@ -66,3 +66,24 @@ shops:
       - internet_access
       - opening_hours
       - delivery
+
+education:
+  - keep:
+      - operator
+      - operator:type
+      - addr:full
+      - phone
+      - capacity
+      - grades
+      - isced:level
+      - fee
+      - school:gender
+      - toilets
+      - toilets:access
+      - wheelchair
+      - pedagogy
+      - religion
+      - generator:source
+      - amenity
+      - landuse
+      - water_supply
