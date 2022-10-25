@@ -132,21 +132,28 @@ class OverpassClient(OutputFile):
 
         filter = None
         if category == 'buildings':
-            pass
+            tags = ('name', 'building:material', 'building:levels', 'building:roof', 'building:condition', 'historic')
+            filter = "building"
         elif category == 'amenities':
-            pass
+            tags = ('amenity', 'brand', 'name')
+            filter = "amenities"
         elif category == 'landuse':
-            pass
+            tags = ('name', 'landuse', 'natural', 'leisure', 'amenity')
+            filter = "landuse"
         elif category == 'emergency':
-            pass
+            tags = ('name', 'access', 'fire_hydrant', 'fire_hydrant:type', 'ambulance_station', 'water', 'man_made', 'water_tank:volume')
+            filter = "emergency"
         elif category == 'shops':
-            pass
+            tags = ('phone', 'wheelchair', 'internet_access', 'opening_hours', 'delivery')
+            filter = "shop"
         elif category == 'waste':
-            pass
+            tags = ('waste', 'access', 'fee', 'operator', 'capacity', 'location', 'man_made', 'recycling', 'water')
+            filter = "~amenity~\"waste_*\""
         elif category == 'water':
-            pass
+            tags= ('drinking_water', 'name', 'man_made', 'pump', 'operational_status', 'seasonal')
+            filter = "amenity=water_point"
         elif category == 'toilets':
-            tags = ('access', 'changing_table', 'fee', 'opening_hours', 'operator', 'toilets:disposal', 'toilets:handwashing', 'toilets:position', 'unisex', 'wheelchair')
+            tags = ('name', 'access', 'changing_table', 'fee', 'opening_hours', 'operator', 'toilets:disposal', 'toilets:handwashing', 'toilets:position', 'unisex', 'wheelchair')
             filter = "amenity=toilets"
 
         if len(tags) > 0:
@@ -161,6 +168,10 @@ class OverpassClient(OutputFile):
         result = self.overpass.query(query)
 
         nodes = dict()
+        if result.nodes() is None:
+            logging.warning("No data found in this boundary!")
+            return
+
         for node in result.nodes():
             wkt = "POINT(%f %f)" %  (float(node.lon()) , float(node.lat()))
             center = ogr.CreateGeometryFromWkt(wkt)
