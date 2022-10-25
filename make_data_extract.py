@@ -29,24 +29,43 @@ import json
 from geojson import Point, Polygon, Feature
 from OSMPythonTools.overpass import Overpass
 from OSMPythonTools.api import Api
+from yamlfile import YamlFile
+
 
 # all possible queries
 choices = ["buildings", "amenities", "toilets", "landuse", "emergency", "shops", "waste", "water"]
 
+
 class OutputFile(object):
-    def __init__(self, filespec=None):
+    def __init__(self, outfile=None):
         """Initialize OGR output layer"""
         outdrv = ogr.GetDriverByName("GeoJson")
-        if os.path.exists(filespec):
-            outdrv.DeleteDataSource(filespec)
+        if os.path.exists(outfile):
+            outdrv.DeleteDataSource(outfile)
 
-        logging.info("Creating output data file: %s" % filespec)
-        self.outdata  = outdrv.CreateDataSource(filespec)
+        logging.info("Creating output data file: %s" % outfile)
+        self.outdata  = outdrv.CreateDataSource(outfile)
         self.outlayer = self.outdata.CreateLayer("data", geom_type=ogr.wkbPolygon)
         self.fields = self.outlayer.GetLayerDefn()
         newid = ogr.FieldDefn("id", ogr.OFTInteger)
         self.outlayer.CreateField(newid)
-        self.filespec = filespec
+        self.filespec = outfile
+
+        # Read the YAML config file that tells
+        self.yaml = YamlFile("filter.yaml")
+        keys = list(self.yaml.yaml.keys())
+        self.tags = dict()
+        for key in keys:
+            values = list()
+            for value in self.yaml.yaml[key][0]['keep']:
+                values.append(value)
+            self.tags[key] = values
+
+    def getTags(self, keyword=None):
+        if keyword in self.tags:
+            return self.tags[keyword]
+        else:
+            return None
 
     def addFeature(self, feature=None):
         """Add an OGR feature to the output layer"""
@@ -132,29 +151,22 @@ class OverpassClient(OutputFile):
 
         filter = None
         if category == 'buildings':
-            tags = ('name', 'building:material', 'building:levels', 'building:roof', 'building:condition', 'historic')
             filter = "building"
         elif category == 'amenities':
-            tags = ('amenity', 'brand', 'name')
             filter = "amenities"
         elif category == 'landuse':
-            tags = ('name', 'landuse', 'natural', 'leisure', 'amenity')
             filter = "landuse"
         elif category == 'emergency':
-            tags = ('name', 'access', 'fire_hydrant', 'fire_hydrant:type', 'ambulance_station', 'water', 'man_made', 'water_tank:volume')
             filter = "emergency"
         elif category == 'shops':
-            tags = ('phone', 'wheelchair', 'internet_access', 'opening_hours', 'delivery')
             filter = "shop"
         elif category == 'waste':
-            tags = ('waste', 'access', 'fee', 'operator', 'capacity', 'location', 'man_made', 'recycling', 'water')
             filter = "~amenity~\"waste_*\""
         elif category == 'water':
-            tags= ('drinking_water', 'name', 'man_made', 'pump', 'operational_status', 'seasonal')
             filter = "amenity=water_point"
         elif category == 'toilets':
-            tags = ('name', 'access', 'changing_table', 'fee', 'opening_hours', 'operator', 'toilets:disposal', 'toilets:handwashing', 'toilets:position', 'unisex', 'wheelchair')
             filter = "amenity=toilets"
+        tags = self.getTags(category)
 
         if len(tags) > 0:
             for tag in tags:
