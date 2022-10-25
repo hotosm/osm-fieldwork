@@ -46,8 +46,6 @@ class OutputFile(object):
         self.fields = self.outlayer.GetLayerDefn()
         newid = ogr.FieldDefn("id", ogr.OFTInteger)
         self.outlayer.CreateField(newid)
-        bld = ogr.FieldDefn("tags", ogr.OFTString)
-        self.outlayer.CreateField(bld)
         self.filespec = filespec
 
     def addFeature(self, feature=None):
@@ -91,7 +89,7 @@ class PostgresClient(OutputFile):
         elif category == 'water':
             tables = ("nodes")
             filter = "tags->>'water_source' IS NOT NULL"
-        elif category == 'toilets':
+        elif category == 'landuse':
             tables = ("ways_poly")
             filter = "tags->>'landuse' IS NOT NULL"
 
@@ -126,16 +124,40 @@ class OverpassClient(OutputFile):
         self.overpass = Overpass()
         OutputFile.__init__( self, output)
 
-    def getFeature(self, boundary=None, filespec=None):
+    def getFeature(self, boundary=None, filespec=None, category='buildings'):
         """Extract buildings from Overpass"""
         logging.info("Extracting buildings...")
         poly = ogr.Open(boundary)
         layer = poly.GetLayer()
 
+        filter = None
+        if category == 'buildings':
+            pass
+        elif category == 'amenities':
+            pass
+        elif category == 'landuse':
+            pass
+        elif category == 'emergency':
+            pass
+        elif category == 'shops':
+            pass
+        elif category == 'waste':
+            pass
+        elif category == 'water':
+            pass
+        elif category == 'toilets':
+            tags = ('access', 'changing_table', 'fee', 'opening_hours', 'operator', 'toilets:disposal', 'toilets:handwashing', 'toilets:position', 'unisex', 'wheelchair')
+            filter = "amenity=toilets"
+
+        if len(tags) > 0:
+            for tag in tags:
+                self.outlayer.CreateField(ogr.FieldDefn(tag, ogr.OFTString))
+        self.fields = self.outlayer.GetLayerDefn()
+
         extent = layer.GetExtent()
         bbox = f"{extent[2]},{extent[0]},{extent[3]},{extent[1]}"
-        query = f'(way["building"]({bbox}); ); out body; >; out skel qt;'
-        # logging.debug(query)
+        query = f'(way[{filter}]({bbox}); node[{filter}]({bbox}); relation[{filter}]({bbox}); ); out body; >; out skel qt;'
+        logging.debug(query)
         result = self.overpass.query(query)
 
         nodes = dict()
@@ -152,7 +174,9 @@ class OverpassClient(OutputFile):
                 feature = ogr.Feature(self.fields)
                 feature.SetGeometry(nodes[float(nd)])
                 feature.SetField("id", way.id())
-                feature.SetField('tags', json.dumps(way.tags()))
+                for tag,val in way.tags().items():
+                    if tag in tags:
+                        feature.SetField(tag, val)
                 self.addFeature(feature)
         self.outdata.Destroy()
 
