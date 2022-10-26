@@ -87,3 +87,5 @@ education:
       - amenity
       - landuse
       - water_supply
+      - training
+      - library
