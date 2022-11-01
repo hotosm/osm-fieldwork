@@ -29,25 +29,43 @@ import json
 from geojson import Point, Polygon, Feature
 from OSMPythonTools.overpass import Overpass
 from OSMPythonTools.api import Api
+from yamlfile import YamlFile
+
 
 # all possible queries
-choices = ["buildings", "amenities", "toilets", "landuse", "emergency"]
+choices = ["buildings", "amenities", "toilets", "landuse", "emergency", "shops", "waste", "water"]
+
 
 class OutputFile(object):
-    def __init__(self, filespec=None):
+    def __init__(self, outfile=None):
         """Initialize OGR output layer"""
         outdrv = ogr.GetDriverByName("GeoJson")
-        if os.path.exists(filespec):
-            outdrv.DeleteDataSource(filespec)
+        if os.path.exists(outfile):
+            outdrv.DeleteDataSource(outfile)
 
-        self.outdata  = outdrv.CreateDataSource(filespec)
-        self.outlayer = self.outdata.CreateLayer("buildings", geom_type=ogr.wkbPolygon)
+        logging.info("Creating output data file: %s" % outfile)
+        self.outdata  = outdrv.CreateDataSource(outfile)
+        self.outlayer = self.outdata.CreateLayer("data", geom_type=ogr.wkbPolygon)
         self.fields = self.outlayer.GetLayerDefn()
         newid = ogr.FieldDefn("id", ogr.OFTInteger)
         self.outlayer.CreateField(newid)
-        bld = ogr.FieldDefn("tags", ogr.OFTString)
-        self.outlayer.CreateField(bld)
-        self.filespec = filespec
+        self.filespec = outfile
+
+        # Read the YAML config file that tells
+        self.yaml = YamlFile("filter.yaml")
+        keys = list(self.yaml.yaml.keys())
+        self.tags = dict()
+        for key in keys:
+            values = list()
+            for value in self.yaml.yaml[key][0]['keep']:
+                values.append(value)
+            self.tags[key] = values
+
+    def getTags(self, keyword=None):
+        if keyword in self.tags:
+            return self.tags[keyword]
+        else:
+            return None
 
     def addFeature(self, feature=None):
         """Add an OGR feature to the output layer"""
@@ -66,31 +84,40 @@ class PostgresClient(OutputFile):
 
     def getFeature(self, boundary=None, filespec=None, category='buildings'):
         """Extract buildings from Postgres"""
-        logging.info("Extracting buildings...")
-
-        if category not in choices:
-            pass
-        else:
-            pass
+        logging.info("Extracting buildings from POstgres...")
 
         tables = list()
         if category == 'buildings':
-            tables.append("ways_poly")
-            tables.append("relations")
+            tables = ("ways_poly", "relations")
             filter = "tags->>'building' IS NOT NULL"
-        elif category == 'amenity':
-            tables.append("nodes", "ways_poly")
+        elif category == 'amenities':
+            tables = ("nodes", "ways_poly")
             filter = "tags->>'amenity' IS NOT NULL"
         elif category == 'toilets':
-            tables.append("nodes", "ways_poly")            
+            tables = ("nodes", "ways_poly")
             filter = "tags->>'amenity'='toilets'"
+        elif category == 'emergency':
+            tables = ("nodes", "ways_poly")
+            filter = "tags->>'emergency' IS NOT NULL"
+        elif category == 'shops':
+            tables = ("nodes", "ways_poly")
+            filter = "tags->>'shop' IS NOT NULL"
+        elif category == 'waste':
+            tables = ("nodes", "ways_poly")
+            filter = "tags->>'amenity'='waste_disposal'"
+        elif category == 'water':
+            tables = ("nodes")
+            filter = "tags->>'water_source' IS NOT NULL"
+        elif category == 'landuse':
+            tables = ("ways_poly")
+            filter = "tags->>'landuse' IS NOT NULL"
 
         # Clip the large file using the supplied boundary
         memdrv = ogr.GetDriverByName("MEMORY")
         mem = memdrv.CreateDataSource('buildings')
         memlayer = mem.CreateLayer('buildings', geom_type=ogr.wkbMultiPolygon)
         for table in tables:
-            logging.debug("Querying table %s..." % table)
+            logging.debug("Querying table %s with conditional %s" % (table, filter))
             osm = self.pg.GetLayerByName(table)
             osm.SetAttributeFilter(filter)
             if boundary:
@@ -100,14 +127,13 @@ class PostgresClient(OutputFile):
             else:
                 memlayer = osm
 
-            logging.info("There are %d buildings in the table" % osm.GetFeatureCount())
+            logging.info("There are %d in the %s table" % (memlayer.GetFeatureCount(), table))
             for feature in memlayer:
                 poly = feature.GetGeometryRef()
                 center = poly.Centroid()
                 feature.SetGeometry(center)
                 self.outlayer.CreateFeature(feature)
 
-        logging.info("Wrote output file %s" % filespec)
         self.outdata.Destroy()
 
 class OverpassClient(OutputFile):
@@ -117,19 +143,47 @@ class OverpassClient(OutputFile):
         self.overpass = Overpass()
         OutputFile.__init__( self, output)
 
-    def getFeature(self, boundary=None, filespec=None):
+    def getFeature(self, boundary=None, filespec=None, category='buildings'):
         """Extract buildings from Overpass"""
         logging.info("Extracting buildings...")
         poly = ogr.Open(boundary)
         layer = poly.GetLayer()
 
+        filter = None
+        if category == 'buildings':
+            filter = "building"
+        elif category == 'amenities':
+            filter = "amenities"
+        elif category == 'landuse':
+            filter = "landuse"
+        elif category == 'emergency':
+            filter = "emergency"
+        elif category == 'shops':
+            filter = "shop"
+        elif category == 'waste':
+            filter = "~amenity~\"waste_*\""
+        elif category == 'water':
+            filter = "amenity=water_point"
+        elif category == 'toilets':
+            filter = "amenity=toilets"
+        tags = self.getTags(category)
+
+        if len(tags) > 0:
+            for tag in tags:
+                self.outlayer.CreateField(ogr.FieldDefn(tag, ogr.OFTString))
+        self.fields = self.outlayer.GetLayerDefn()
+
         extent = layer.GetExtent()
         bbox = f"{extent[2]},{extent[0]},{extent[3]},{extent[1]}"
-        query = f'(way["building"]({bbox}); ); out body; >; out skel qt;'
-        # logging.debug(query)
+        query = f'(way[{filter}]({bbox}); node[{filter}]({bbox}); relation[{filter}]({bbox}); ); out body; >; out skel qt;'
+        logging.debug(query)
         result = self.overpass.query(query)
 
         nodes = dict()
+        if result.nodes() is None:
+            logging.warning("No data found in this boundary!")
+            return
+
         for node in result.nodes():
             wkt = "POINT(%f %f)" %  (float(node.lon()) , float(node.lat()))
             center = ogr.CreateGeometryFromWkt(wkt)
@@ -143,9 +197,10 @@ class OverpassClient(OutputFile):
                 feature = ogr.Feature(self.fields)
                 feature.SetGeometry(nodes[float(nd)])
                 feature.SetField("id", way.id())
-                feature.SetField('tags', json.dumps(way.tags()))
+                for tag,val in way.tags().items():
+                    if tag in tags:
+                        feature.SetField(tag, val)
                 self.addFeature(feature)
-        logging.info("Wrote data extract to: %s" % self.filespec)
         self.outdata.Destroy()
 
 class FileClient(OutputFile):
@@ -194,13 +249,18 @@ if __name__ == '__main__':
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
+if args.geojson == "tmp.geojson":
+    outfile = args.category + ".geojson"
+else:
+    outfile = args.geojson
+
 if args.postgres:
     logging.info("Using a Postgres database for the data source")
-    pg = PostgresClient(args.dbhost, args.dbname, args.geojson)
+    pg = PostgresClient(args.dbhost, args.dbname, outfile)
     pg.getFeature(args.boundary, args.geojson, args.category)
 elif args.overpass:
     logging.info("Using Overpass Turbo for the data source")
-    op = OverpassClient(args.geojson)
+    op = OverpassClient(outfile)
     op.getFeature(args.boundary, args.geojson, args.category)
 elif args.infile:
     f = FileClient(args.infile)
@@ -208,4 +268,6 @@ elif args.infile:
     logging.info("Using file %s for the data source" % args.infile)
 else:
     logging.error("You need to supply either --overpass or --postgres")
-    
+
+logging.info("Wrote output data file to: %s" % outfile)
+
