@@ -33,7 +33,7 @@ from yamlfile import YamlFile
 
 
 # all possible queries
-choices = ["buildings", "amenities", "toilets", "landuse", "emergency", "shops", "waste", "water"]
+choices = ["buildings", "amenities", "toilets", "landuse", "emergency", "shops", "waste", "water", "education", "healthcare"]
 
 
 class OutputFile(object):
@@ -99,6 +99,12 @@ class PostgresClient(OutputFile):
         elif category == 'emergency':
             tables = ("nodes", "ways_poly")
             filter = "tags->>'emergency' IS NOT NULL"
+        elif category == 'healthcare':
+            tables = ("nodes", "ways_poly")
+            filter = "tags->>'healthcare' IS NOT NULL or tags->>'social_facility' IS NOT NULL OR tags->>'healthcare:speciality' IS NOT NULL"
+        elif category == 'education':
+            tables = ("nodes", "ways_poly")
+            filter = "tags->>'amenity'='school' OR tags->>'amenity'='kindergarden' OR tags->>'amenity'='college' OR tags->>'amenity'='university' OR tags->>'amenity'='music_school' OR tags->>'amenity'='language_school' OR tags->>'amenity'='childcare'"
         elif category == 'shops':
             tables = ("nodes", "ways_poly")
             filter = "tags->>'shop' IS NOT NULL"
@@ -145,7 +151,7 @@ class OverpassClient(OutputFile):
 
     def getFeature(self, boundary=None, filespec=None, category='buildings'):
         """Extract buildings from Overpass"""
-        logging.info("Extracting buildings...")
+        logging.info("Extracting features...")
         poly = ogr.Open(boundary)
         layer = poly.GetLayer()
 
@@ -156,8 +162,12 @@ class OverpassClient(OutputFile):
             filter = "amenities"
         elif category == 'landuse':
             filter = "landuse"
+        elif category == 'healthcare':
+            filter = "healthcare='*'][social_facility='*'][healthcare:speciality='*'"
         elif category == 'emergency':
             filter = "emergency"
+        elif category == 'education':
+            filter = "amenity=school][amenity=kindergarden"
         elif category == 'shops':
             filter = "shop"
         elif category == 'waste':
@@ -166,8 +176,11 @@ class OverpassClient(OutputFile):
             filter = "amenity=water_point"
         elif category == 'toilets':
             filter = "amenity=toilets"
-        tags = self.getTags(category)
 
+        # Create a field in the output file for each tag from the yaml config file
+        tags = self.getTags(category)
+        if tags is None:
+            logging.error("No data returned from Overpass!")
         if len(tags) > 0:
             for tag in tags:
                 self.outlayer.CreateField(ogr.FieldDefn(tag, ogr.OFTString))
