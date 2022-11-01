@@ -124,8 +124,13 @@ class PostgresClient(OutputFile):
         memlayer = mem.CreateLayer('buildings', geom_type=ogr.wkbMultiPolygon)
         for table in tables:
             logging.debug("Querying table %s with conditional %s" % (table, filter))
-            osm = self.pg.GetLayerByName(table)
-            osm.SetAttributeFilter(filter)
+            tags = self.getTags(category)
+            # osm = self.pg.GetLayerByName(table)
+            # tmp = self.pg.GetLayerByName(table)
+            query = f"SELECT * FROM {table} WHERE {filter}"
+            logging.debug(query)
+            osm = self.pg.ExecuteSQL(query)
+            # osm.SetAttributeFilter(filter)
             if boundary:
                 poly = ogr.Open(boundary)
                 layer = poly.GetLayer()
