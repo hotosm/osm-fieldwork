@@ -22,6 +22,7 @@ import argparse
 import os
 import logging
 import sys
+import re
 import epdb
 from sys import argv
 from osgeo import ogr
@@ -253,7 +254,6 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--postgres", action="store_true", help='Use a postgres database')
     parser.add_argument("-g", "--geojson", default="tmp.geojson", help='Name of the GeoJson output file')
     parser.add_argument("-i", "--infile", help='Input data file')
-    parser.add_argument("-ou", "--outfile", help='Output file name')
     parser.add_argument("-dn", "--dbname", help='Database name')
     parser.add_argument("-dh", "--dbhost", default="localhost", help='Database host')
     parser.add_argument("-b", "--boundary", help='Boundary polygon to limit the data size')
@@ -271,11 +271,16 @@ if __name__ == '__main__':
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
-if args.outfile:
-    outfile = args.outfile
-else:
     if args.geojson == "tmp.geojson":
-        outfile = args.category + ".geojson"
+        # The data file name is in the XML file
+        regex = r'jr://file.*\.geojson'
+        filename = args.category + ".xml"
+        with open(filename, 'r') as f:
+            txt = f.read()
+            match = re.search(regex, txt)
+            if match:
+                tmp = match.group().split('/')
+        outfile = tmp[3]
     else:
         outfile = args.geojson
 
