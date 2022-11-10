@@ -18,22 +18,15 @@
 #     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-# This uses https://github.com/kivy/python-for-android to produce apks for Android,
-# and a zip file for python pip.
-
-PACKAGE := org.odkconvert.py
-NAME := ODKConvert
-VERSION := 0.1
-
 XLSFILES = healthcare.xls
 XMLFILES = $(XLSFILES:.xls=.xml)
 
-all: healthcare
+all: $(XMLFILES)
+
+EXTRACT = make_data_extract.py
 
 %.xml : %.xls
 	xls2xform --pretty_print $<
-
-healthcare: healthcare.xml
-	make_data_extract.py -p -dn colorado -c healthcare -ou health.geojson
+	@xml=$(subst .xls,.xml,$<);
 
 force:
