@@ -47,8 +47,8 @@ class OutputFile(object):
         self.outdata  = outdrv.CreateDataSource(outfile)
         self.outlayer = self.outdata.CreateLayer("data", geom_type=ogr.wkbPolygon)
         self.fields = self.outlayer.GetLayerDefn()
-        newid = ogr.FieldDefn("id", ogr.OFTInteger)
-        self.outlayer.CreateField(newid)
+        # newid = ogr.FieldDefn("id", ogr.OFTInteger)
+        # self.outlayer.CreateField(newid)
         self.filespec = outfile
 
         # Read the YAML config file that tells
@@ -87,6 +87,7 @@ class PostgresClient(OutputFile):
         logging.info("Extracting buildings from POstgres...")
 
         tables = list()
+        select = '*'
         if category == 'buildings':
             tables = ("ways_poly", "relations")
             filter = "tags->>'building' IS NOT NULL"
@@ -101,6 +102,7 @@ class PostgresClient(OutputFile):
             filter = "tags->>'emergency' IS NOT NULL"
         elif category == 'healthcare':
             tables = ("nodes", "ways_poly")
+            select = "osm_id AS id,tags->>'name' AS title, tags->>'name' AS label, tags->>'healthcare' AS healthcareX, tags->>'healthcare:speciality' AS healthcare_speciality, tags->>'generator:source' AS generator_source, tags->'amenity' AS amenity, tags->>'operator:type' AS operator_type, geom "
             filter = "tags->>'healthcare' IS NOT NULL or tags->>'social_facility' IS NOT NULL OR tags->>'healthcare:speciality' IS NOT NULL"
         elif category == 'education':
             tables = ("nodes", "ways_poly")
@@ -126,8 +128,7 @@ class PostgresClient(OutputFile):
             logging.debug("Querying table %s with conditional %s" % (table, filter))
             tags = self.getTags(category)
             # osm = self.pg.GetLayerByName(table)
-            # tmp = self.pg.GetLayerByName(table)
-            query = f"SELECT * FROM {table} WHERE {filter}"
+            query = f"SELECT {select} FROM {table} WHERE {filter}"
             logging.debug(query)
             osm = self.pg.ExecuteSQL(query)
             # osm.SetAttributeFilter(filter)
@@ -141,6 +142,8 @@ class PostgresClient(OutputFile):
             logging.info("There are %d in the %s table" % (memlayer.GetFeatureCount(), table))
             for feature in memlayer:
                 poly = feature.GetGeometryRef()
+                if poly is None:
+                    epdb.st()
                 center = poly.Centroid()
                 feature.SetGeometry(center)
                 self.outlayer.CreateFeature(feature)
@@ -214,7 +217,7 @@ class OverpassClient(OutputFile):
                 nd = ref._queryString.split('/')[1]
                 feature = ogr.Feature(self.fields)
                 feature.SetGeometry(nodes[float(nd)])
-                feature.SetField("id", way.id())
+                # feature.SetField("id", way.id())
                 for tag,val in way.tags().items():
                     if tag in tags:
                         feature.SetField(tag, val)
@@ -249,7 +252,8 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--overpass", action="store_true", help='Use Overpass Turbo')
     parser.add_argument("-p", "--postgres", action="store_true", help='Use a postgres database')
     parser.add_argument("-g", "--geojson", default="tmp.geojson", help='Name of the GeoJson output file')
-    parser.add_argument("-i", "--infile", help='Use a data file')
+    parser.add_argument("-i", "--infile", help='Input data file')
+    parser.add_argument("-ou", "--outfile", help='Output file name')
     parser.add_argument("-dn", "--dbname", help='Database name')
     parser.add_argument("-dh", "--dbhost", default="localhost", help='Database host')
     parser.add_argument("-b", "--boundary", help='Boundary polygon to limit the data size')
@@ -267,10 +271,13 @@ if __name__ == '__main__':
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
-if args.geojson == "tmp.geojson":
-    outfile = args.category + ".geojson"
+if args.outfile:
+    outfile = args.outfile
 else:
-    outfile = args.geojson
+    if args.geojson == "tmp.geojson":
+        outfile = args.category + ".geojson"
+    else:
+        outfile = args.geojson
 
 if args.postgres:
     logging.info("Using a Postgres database for the data source")
