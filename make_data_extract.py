@@ -274,7 +274,11 @@ if __name__ == '__main__':
     if args.geojson == "tmp.geojson":
         # The data file name is in the XML file
         regex = r'jr://file.*\.geojson'
+        outfile = None
         filename = args.category + ".xml"
+        if not os.path.exists(filename):
+            logging.error("Please run xls2xform to produce %s" % filename)
+            quit()
         with open(filename, 'r') as f:
             txt = f.read()
             match = re.search(regex, txt)
