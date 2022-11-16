@@ -25,9 +25,10 @@ import sys
 import re
 import epdb
 from sys import argv
-from osgeo import ogr
+from osgeo import ogr, gdal
 import json
-from geojson import Point, Polygon, Feature
+from geojson import Point, Polygon, Feature, FeatureCollection
+import geojson
 from OSMPythonTools.overpass import Overpass
 from OSMPythonTools.api import Api
 from yamlfile import YamlFile
@@ -62,6 +63,11 @@ class OutputFile(object):
                 values.append(value)
             self.tags[key] = values
 
+        # FIXME: neither of these seems to work to keep the extra ID field out
+        # out of the output file, which screws up ODK Collect.
+        gdal.SetConfigOption('ID_GENERATE', 'NO')
+        os.environ['ID_GENERATE'] = 'NO'
+
     def getTags(self, keyword=None):
         if keyword in self.tags:
             return self.tags[keyword]
@@ -71,6 +77,23 @@ class OutputFile(object):
     def addFeature(self, feature=None):
         """Add an OGR feature to the output layer"""
         self.outlayer.CreateFeature(feature)
+
+    # FIXME: This is really ugly, but needed to cleanup the output file till
+    # I figure out how to make OGR stop generating IDs in the FeatureCollection,
+    # which screw up ODk COllect.
+    def cleanup(self, filespec=None):
+        if not filespec:
+            return False
+        os.rename(filespec, 'tmp.geojson')
+        infile = open('tmp.geojson', 'r')
+        outfile = open(filespec, 'w')
+        data = geojson.load(infile)
+        for feature in data['features']:
+            feature.pop('id')
+            tmp = feature['properties']['amenity']
+            if tmp:
+                feature['properties']['amenity'] = tmp.replace('\"', '')
+        geojson.dump(data, outfile)
 
 class PostgresClient(OutputFile):
     """Class to handle SQL queries for the categories"""
@@ -103,8 +126,8 @@ class PostgresClient(OutputFile):
             filter = "tags->>'emergency' IS NOT NULL"
         elif category == 'healthcare':
             tables = ("nodes", "ways_poly")
-            select = "osm_id AS id,tags->>'name' AS title, tags->>'name' AS label, tags->>'healthcare' AS healthcareX, tags->>'healthcare:speciality' AS healthcare_speciality, tags->>'generator:source' AS generator_source, tags->'amenity' AS amenity, tags->>'operator:type' AS operator_type, geom "
-            filter = "tags->>'healthcare' IS NOT NULL or tags->>'social_facility' IS NOT NULL OR tags->>'healthcare:speciality' IS NOT NULL"
+            select = "osm_id AS id,tags->>'name' AS title, tags->>'name' AS label, tags->>'healthcare' AS healthcare, tags->>'healthcare:speciality' AS speciality, tags->>'generator:source' AS power_source, tags->'amenity' AS amenity, tags->>'operator:type' AS operator_type, tags->>'opening_hours' AS hours, geom"
+            filter = "(tags->>'healthcare' IS NOT NULL or tags->>'social_facility' IS NOT NULL OR tags->>'healthcare:speciality' IS NOT NULL) AND tags->>'opening_hours' IS NOT NULL"
         elif category == 'education':
             tables = ("nodes", "ways_poly")
             filter = "tags->>'amenity'='school' OR tags->>'amenity'='kindergarden' OR tags->>'amenity'='college' OR tags->>'amenity'='university' OR tags->>'amenity'='music_school' OR tags->>'amenity'='language_school' OR tags->>'amenity'='childcare'"
@@ -123,8 +146,8 @@ class PostgresClient(OutputFile):
 
         # Clip the large file using the supplied boundary
         memdrv = ogr.GetDriverByName("MEMORY")
-        mem = memdrv.CreateDataSource('buildings')
-        memlayer = mem.CreateLayer('buildings', geom_type=ogr.wkbMultiPolygon)
+        mem = memdrv.CreateDataSource(category)
+        memlayer = mem.CreateLayer(category, geom_type=ogr.wkbMultiPolygon)
         for table in tables:
             logging.debug("Querying table %s with conditional %s" % (table, filter))
             tags = self.getTags(category)
@@ -143,13 +166,13 @@ class PostgresClient(OutputFile):
             logging.info("There are %d in the %s table" % (memlayer.GetFeatureCount(), table))
             for feature in memlayer:
                 poly = feature.GetGeometryRef()
-                if poly is None:
-                    epdb.st()
                 center = poly.Centroid()
                 feature.SetGeometry(center)
+                # feature.DumpReadable()
                 self.outlayer.CreateFeature(feature)
 
         self.outdata.Destroy()
+        self.cleanup()
 
 class OverpassClient(OutputFile):
     """Class to handle Overpass queries"""
@@ -277,7 +300,7 @@ if __name__ == '__main__':
         outfile = None
         filename = args.category + ".xml"
         if not os.path.exists(filename):
-            logging.error("Please run xls2xform to produce %s" % filename)
+            logging.error("Please run xls2xform or make to produce %s" % filename)
             quit()
         with open(filename, 'r') as f:
             txt = f.read()
@@ -292,6 +315,7 @@ if args.postgres:
     logging.info("Using a Postgres database for the data source")
     pg = PostgresClient(args.dbhost, args.dbname, outfile)
     pg.getFeature(args.boundary, args.geojson, args.category)
+    pg.cleanup(outfile)
 elif args.overpass:
     logging.info("Using Overpass Turbo for the data source")
     op = OverpassClient(outfile)
