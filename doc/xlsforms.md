@@ -153,7 +153,7 @@ Which then looks like this when the XForm is opened.
 multiple questions are on the same screen.
 * The screen can be scrolled if there are more input fields than fit.
 
-![XPath Error](xlsimages/image3.jpg){width=300}
+![XPath Error](xlsimages/image3.jpg)
 
 # Conditionals
 
@@ -311,9 +311,6 @@ required. Anything else becomes a column in the XLSForm.
 
 An example CSV data file would look like this:
 
-# Markdown does not support table borders, so we have to use HTML.
-# instead. Since this is an example of a spreadsheet, the borders are.
-# an important visual.
 <table>
   <tr>
    <td><strong>label</strong>
@@ -374,9 +371,6 @@ data. Whenever the value of **test** is changed, the trigger goes off,
 and the value is recalculated and becomes the default value for the
 survey question. 
 
-# Markdown does not support table borders, so we have to use HTML.
-# instead. Since this is an example of a spreadsheet, the borders are.
-# an important visual.
 <table>
   <tr>
    <td><strong>type</strong>
@@ -492,9 +486,9 @@ can use **AS** in the query to rename the column to whatever you
 want. I’ve taken to using abbreviations or the OSM tags name. Those
 variable names are only used internally.
 
-![Placement Map](xlsimages/image2.jpg){width=300}
+![Placement Map](xlsimages/image2.jpg){width=90%}
 
-![XPath Error](xlsimages/image1.jpg){width=300}
+![XPath Error](xlsimages/image1.jpg)
 
 
 # Converting from OMK to ODK
@@ -522,9 +516,6 @@ this table, **building_tags** is the variable. When looking at the
 choices sheet, every row using the **building_tag** keyword now has to
 become a question on the **survey** sheet.
 
-# Markdown does not support table borders, so we have to use HTML.
-# instead. Since this is an example of a spreadsheet, the borders are.
-# an important visual.
 <table>
   <tr>
    <td><strong>type</strong>
@@ -551,9 +542,6 @@ become a question on the **survey** sheet.
 
 In the **choices** sheet, we see this existing data.
 
-# Markdown does not support table borders, so we have to use HTML.
-# instead. Since this is an example of a spreadsheet, the borders are.
-# an important visual.
 <table>
   <tr>
    <td><strong>list_name</strong>
@@ -596,9 +584,6 @@ the **survey** sheet. Then prefix the variable with selct_one or
 select_multiple. Drop the prefix used in the **choices** sheet and
 simplify it.
 
-# Markdown does not support table borders, so we have to use HTML.
-# instead. Since this is an example of a spreadsheet, the borders are.
-# an important visual.
 <table>
   <tr>
    <td><strong>type</strong>
