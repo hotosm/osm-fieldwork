@@ -18,7 +18,9 @@
 
 PANDOC = /usr/bin/pandoc
 PFLAGS = --from=markdown_mmd+yaml_metadata_block+smart \
-	--standalone
+	--standalone \
+	--metadata keywords='ODK OpenDataKit OSM OpenStreetMap ODKCollect' \
+	--metadata author='Rob Savoye'
 WK = /usr/bin/wkhtmltopdf
 WKFLAGS = -B 25mm -T 25mm -L 25mm -R 25mm -q -s Letter
 CSS ?= /home/slowe/Documents/std-styles.css
@@ -31,11 +33,13 @@ all: $(HTML) $(PDF)
 	@echo "Producing output files..."
 
 %.html: %.md
-	@$(PANDOC) $(PFLAGS) --to=html $< -o $*.html
+	@title="$(shell grep "^#" xlsforms.md | head -1 | tr -d '#')"; \
+	$(PANDOC) $(PFLAGS) --to=html --toc $< -N --metadata title=="\"$${title}\"" -o $*.html
 	@echo "Wrote $*.html"
 
 %.pdf: %.md
-	@$(PANDOC) $(PFLAGS) --toc --to=pdf $< -o $*.pdf
+	@title="$(shell grep "^#" xlsforms.md | head -1 | tr -d '#')"; \
+	$(PANDOC) $(PFLAGS) --toc --to=pdf $<  --metadata title="$${title}" -o $*.pdf
 	@echo "Wrote $*.pdf"
 
 clean: force
