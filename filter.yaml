@@ -89,3 +89,13 @@ education:
       - water_supply
       - training
       - library
+healthcare:
+  - keep:
+      - amenity
+      - healthcare
+      - specialty
+      - water_supply
+      - opening_hours
+      - generator:source
+      - operator:type
+      

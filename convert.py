@@ -115,10 +115,14 @@ class Convert(YamlFile):
             if newtag != tag:
                 logging.debug("Converted Tag for entry \'%s\' to \'%s\'" % (tag, newtag))
 
+        if newtag is None:
+            newtag = tag
+        # Truncate the elevation, as it's really long
+        if newtag == 'ele':
+            value = value[:7]
         newval = self.convertValue(newtag, value)
         if newval != value:
             logging.debug("Converted Value for entry \'%s\' to \'%s\'" % (value, newval))
-            # epdb.st()
             for i in newval:
                 key = list(i.keys())[0]
                 newtag = key

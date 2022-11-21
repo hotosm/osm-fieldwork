@@ -157,7 +157,7 @@ class CSVDump(Convert):
                                     tags[entry] = "yes"
                     continue
 
-                if value is not None:
+                if value is not None and value != 'no' and value != 'unknown':
                     if key == "track" or key == "geoline":
                         refs.append(tag)
                         logging.debug("Adding reference %s" % tag)
@@ -216,6 +216,9 @@ if __name__ == '__main__':
             if len(feature['attrs']) == 0:
                 continue
             if len(feature) > 0:
+                if 'lat' not in feature['attrs']:
+                    logging.warning("Bad record! %r" % feature)
+                    continue
                 csvin.writeOSM(feature)
                 # This GeoJson file has all the data values
                 csvin.writeGeoJson(feature)
