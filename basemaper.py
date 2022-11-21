@@ -26,13 +26,14 @@ import epdb
 import geojson
 from sys import argv
 import mercantile
-from osgeo import ogr
+from osgeo import ogr, gdal
 from pySmartDL import SmartDL
 from cpuinfo import get_cpu_info
 from codetiming import Timer
 import queue
 import concurrent.futures
 import threading
+import glob
 
 
 def dlthread(dest, mirrors, tiles):
@@ -63,20 +64,21 @@ def dlthread(dest, mirrors, tiles):
                         logging.debug("Made %s" % tmp)
 
         try:
-            if not os.path.exists(dest + "/" + filespec):
-                dl = SmartDL(remote, dest=dest + "/" + filespec, connect_default_logger=False)
+            outfile = dest + "/" + filespec
+            if not os.path.exists(outfile):
+                dl = SmartDL(remote, dest=outfile, connect_default_logger=False)
                 dl.start()
             else:
-                logging.debug("%s exists!" % (dest + "/" + filespec))
+                logging.debug("%s exists!" % (outfile))
         except:
             logging.error("Couldn't download from %r: %s" %  (filespec, dl.get_errors()))
+
         #     errors += 1
         #     continue
-
-    #         if dl.isSuccessful():
-    #             if dl.get_speed() > 0.0:
-    #                 logging.info("Speed: %s" % dl.get_speed(human=True))
-    #                 logging.info("Download time: %r" % dl.get_dl_time(human=True))
+        # if dl.isSuccessful():
+        #     if dl.get_speed() > 0.0:
+        #              logging.info("Speed: %s" % dl.get_speed(human=True))
+        #              logging.info("Download time: %r" % dl.get_dl_time(human=True))
     #             totaltime +=  dl.get_dl_time()
     #             # ERSI does't append the filename
     #             totaltime +=  dl.get_dl_time()
@@ -109,15 +111,18 @@ class BaseMapper(object):
         # sources for imagery
         self.source = source
         self.sources = dict()
-        # quad ?
+        # Bing hybrid imagery
         url = "http://ecn.t0.tiles.virtualearth.net/tiles/h%s.png?g=129&mkt=en&stl=H"
         source = {'name': "Bing Maps Hybrid", 'url': url}
         self.sources['bing'] = source
-
-        # zoom, y, x
+        # ERSI imagery
         url = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/%d/%d/%d.png"
         source = {'name': "ESRI World Imagery", 'url': url}
-        self.sources['ersi'] = source
+        # USGS Topographical map
+        self.sources['topo'] = source
+        url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%d/%d/%s"
+        source = {'name': "USGS Topographic Map", 'url': url}
+        self.sources['topo'] = source
         
     def getTiles(self, zoom=None):
         """Get a list of tiles for the specifed zoom level"""
@@ -147,6 +152,11 @@ class BaseMapper(object):
             # logging.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), os.path.basename(self.base)))
 
         return True
+
+    def createVRT(self, top=None, outfile=None):
+        for files in glob.glob(top + '*'):
+            print(files)
+        # vrt = gdal.BuildVRT(filespec,  )
 
     def downloadTile(self, source=None, tile=list()):
         pass        
