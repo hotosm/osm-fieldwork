@@ -118,12 +118,18 @@ class BaseMapper(object):
         # ERSI imagery
         url = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/%d/%d/%d.png"
         source = {'name': "ESRI World Imagery", 'url': url}
+        self.sources['ersi'] = source
         # USGS Topographical map
-        self.sources['topo'] = source
         url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%d/%d/%s"
         source = {'name': "USGS Topographic Map", 'url': url}
         self.sources['topo'] = source
+        # Google Hybrid
+        url = "https://mt0.google.com/vt?lyrs=h&x={x}&s=&y={y}&z={z}"
+        source = {'name': "Google Hybrid", 'url': url}
+        self.sources['google'] = source
         
+
+
     def getTiles(self, zoom=None):
         """Get a list of tiles for the specifed zoom level"""
         if not zoom:
@@ -193,7 +199,7 @@ if __name__ == '__main__':
     parser.add_argument("-z", "--zooms", default="12-17", help='The Zoom levels')
     parser.add_argument("-t", "--tiles", help='Top level directory for tile cache')
     parser.add_argument("-o", "--outfile", help='Output file name')
-    parser.add_argument("-s", "--source", default="ersi", choices=["ersi", "bing", "topo"], help='Imagery source')
+    parser.add_argument("-s", "--source", default="ersi", choices=["ersi", "bing", "topo", "google"], help='Imagery source')
     args = parser.parse_args()
 
     # if verbose, dump to the terminal.
