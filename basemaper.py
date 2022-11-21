@@ -50,7 +50,7 @@ def dlthread(dest, mirrors, tiles):
         for site in mirrors:
             url = site['url']
             remote = url % (tile[2], tile[1], tile[0])
-            print("FIXME: %s" % remote)
+            # print("FIXME: %s" % remote)
             # Create the subdirectories as pySmartDL doesn't do it for us
             if os.path.isdir(dest) is False:
                 tmp = ""
@@ -199,6 +199,7 @@ if __name__ == '__main__':
     parser.add_argument("-z", "--zooms", default="12-17", help='The Zoom levels')
     parser.add_argument("-t", "--tiles", help='Top level directory for tile cache')
     parser.add_argument("-o", "--outfile", help='Output file name')
+    parser.add_argument("-d", "--outdir", help='Output directory name for tile cache')
     parser.add_argument("-s", "--source", default="ersi", choices=["ersi", "bing", "topo", "google"], help='Imagery source')
     args = parser.parse_args()
 
@@ -236,7 +237,12 @@ if not args.boundary:
     parser.print_help()
     quit()
 
-base = "/tmp/foo"
+if not args.outdir:
+    base = "/var/www/html"
+else:
+    base = args.outdir
+base = f"{base}/{args.source}tiles"
+
 if args.source:
     basemap = BaseMapper(args.boundary, base, args.source)
 else:
