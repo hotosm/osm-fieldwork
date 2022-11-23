@@ -90,9 +90,17 @@ class OutputFile(object):
         data = geojson.load(infile)
         for feature in data['features']:
             feature.pop('id')
-            tmp = feature['properties']['amenity']
-            if tmp:
+            if 'amenity' in feature['properties']:
+                tmp = feature['properties']['amenity']
+                # amenity is in the query, and is often null, so
+                # ignore that.
+                if tmp is None:
+                    continue
                 feature['properties']['amenity'] = tmp.replace('\"', '')
+            else:
+                tmp = feature['properties']
+                if type(tmp) == str:
+                    feature['properties'] = tmp.replace('\"', '')
         geojson.dump(data, outfile)
 
 class PostgresClient(OutputFile):
@@ -108,13 +116,14 @@ class PostgresClient(OutputFile):
 
     def getFeature(self, boundary=None, filespec=None, category='buildings'):
         """Extract buildings from Postgres"""
-        logging.info("Extracting buildings from POstgres...")
+        logging.info("Extracting features from Postgres...")
 
         tables = list()
         select = '*'
         if category == 'buildings':
-            tables = ("ways_poly", "relations")
-            filter = "tags->>'building' IS NOT NULL"
+            tables = ("nodes", "ways_poly", "relations")
+            select = "geom, osm_id AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'building' AS build, tags->>'building:levels' AS levels, tags->>'building:material' AS material,  tags->>'building:roof' AS roof, tags->>'building:levels:underground' AS underground, tags->>'building:prefabricated' AS prefabricated"
+            filter = "tags->>'building' IS NOT NULL OR tags->>'building:levels' IS NOT NULL OR tags->>'building:material' IS NOT NULL OR tags->>'building:roof' IS NOT NULL OR tags->>'building:flats' IS NOT NULL OR tags->>'building:levels:underground' IS NOT NULL OR tags->>'building:prefabricated' IS NOT NULL OR tags->>'building:condition' IS NOT NULL"
         elif category == 'amenities':
             tables = ("nodes", "ways_poly")
             filter = "tags->>'amenity' IS NOT NULL"
