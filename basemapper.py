@@ -50,7 +50,7 @@ def dlthread(dest, mirrors, tiles):
         for site in mirrors:
             url = site['url']
             remote = url % (tile[2], tile[1], tile[0])
-            # print("FIXME: %s" % remote)
+            print("FIXME: %s" % remote)
             # Create the subdirectories as pySmartDL doesn't do it for us
             if os.path.isdir(dest) is False:
                 tmp = ""
