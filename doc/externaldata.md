@@ -37,7 +37,7 @@ prefer using the datafile from GeoFabrik, and importing it into a
 database.
 
 There is a translation between the column names one gets when querying the
-data and how ODK Collect see it. There is following translation from
+data and how ODK Collect see it. There is the following translation from
 ODK to OSM as well, and they all have to work together for a clean
 data flow. I like to keep all the tag and values as similar as
 possible, cause otherwise it's easy to get lost. The rough rule of
