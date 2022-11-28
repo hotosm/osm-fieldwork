@@ -33,12 +33,12 @@ all: $(HTML) $(PDF)
 	@echo "Producing output files..."
 
 %.html: %.md
-	@title="$(shell grep "^#" xlsforms.md | head -1 | tr -d '#')"; \
-	$(PANDOC) $(PFLAGS) --to=html --toc $< -N --metadata title=="\"$${title}\"" -o $*.html
+	@title="$(shell grep "^#" $< | head -1 | tr -d '#')"; \
+	$(PANDOC) $(PFLAGS) --to=html --toc $< -N --metadata title="$${title}" -o $*.html
 	@echo "Wrote $*.html"
 
 %.pdf: %.md
-	@title="$(shell grep "^#" xlsforms.md | head -1 | tr -d '#')"; \
+	@title="$(shell grep "^#" $< | head -1 | tr -d '#')"; \
 	$(PANDOC) $(PFLAGS) --toc --to=pdf $<  --metadata title="$${title}" -o $*.pdf
 	@echo "Wrote $*.pdf"
 
