@@ -37,8 +37,8 @@ prefer using the datafile from GeoFabrik, and importing it into a
 database.
 
 There is a translation between the column names one gets when querying the
-data and how ODK Collect see it. There is the following translation from
-ODK to OSM as well, and they all have to work together for a clean
+data and how ODK Collect sees it. There is the following translation
+from ODK to OSM as well, and they all have to work together for a clean
 data flow. I like to keep all the tag and values as similar as
 possible, cause otherwise it's easy to get lost. The rough rule of
 thumb is to make sure that all names are unique. As I'm using
@@ -49,12 +49,12 @@ can.
 
 For my database SQL queries, I use the *AS* keyword to redefine the
 output column name, so I can use the OSM standard name in the survey
-and choices sheets. Thayt makes the next translation step much
+and choices sheets. That makes the next translation step much
 cleaner. I try to be consistent so it's easier to follow the data
 flow. My currrent technique is to append an x to the end of each
 column, so *healthcare* becomes *healthcarex*.
 
-Then in the XLSForm, I can use *healthcarex* for the the instance, and
+Then in the XLSForm, I can use *healthcarex* for the instance, and
 then I'll use *xhealthcare* as the value for the *calculation* column
 in the survey sheet. Then the value in the *name* column of the survey
 sheet is just *healthcare*, as that'll translate directly into it's
@@ -77,9 +77,10 @@ in a YAML file, but I'm not there yet.
 
 ## Debugging select_from file with GeoJson
 
- Debugging complex interactions between the XLSForm, my
+Debugging complex interactions between the XLSForm, my
 external data files, and ODK Collect often has left me scratching my
-head. Here's a few tricks to help debug what is going on.
+head more than once. Here's a few tricks to help debug what is going
+on.
 
 ### Disable the map appearance
 
@@ -88,7 +89,7 @@ the *appearance* column of the survey sheet. That's how we want to use
 it in the field. But it slows down the repetitious process of
 debugging everything. I turn off *map* values, and then I just have
 the select menu, which is more efficient. That works especially well
-if yiou have a small data file for testing, because then it's easy to
+if you have a small data file for testing, because then it's easy to
 cycle between them.
 
 To use the placement map, here's an example.
@@ -98,7 +99,7 @@ To use the placement map, here's an example.
 |select_one_from_file camp_sites.geojson|existing|Existing Campsites|map|
 
 And an example were there values in the data file are an inline select
-menu.
+menu instead.
 
 | type|name|label|appearance|
 |-----|----|-----|----------|
@@ -129,7 +130,7 @@ question, whose entire purpose is to display any of the values
 
 Assuming xls2xform is happy, sometimes you get this error message in
 ODK Collect when switching screens. You'll see this when you have a
-value in your data file for a select_one survey question, but that
+value in your data file for a *select_one* survey question, but that
 value not in the list of values in the choices sheet for that tag. In
 this example, there is no *doctor* value in the *healthcare*
 selection in the choices sheet.

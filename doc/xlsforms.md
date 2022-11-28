@@ -255,7 +255,7 @@ survey question.
 |----|----|-----|-----------|-------|------|
 |select_one_from_file test.csv|test|CSV test|||true()|
 |calculate|xname|Name|instance('test')/root/item[name=${test}]/label|${test}|
-|text|debug|Name is|${xname|${test}|
+|text|debug|Name is|${xname}|${test}|
 
 ### GeoJson Files 
 
