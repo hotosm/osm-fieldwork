@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # Copyright (c) 2020, 2021 Humanitarian OpenStreetMap Team
 #
 # This file is part of Odkconvert.
@@ -18,7 +16,20 @@
 #     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-XLSFILES = healthcare.xls
+XLSFILES = \
+    buildings.xls \
+    cemeteries.xls \
+    education.xls \
+    healthcare.xls \
+    landuse.xls \
+    natural.xls \
+    place.xls \
+    regilious.xls \
+    school.xls \
+    toilets.xls \
+    waste.xls \
+    waterways.xls
+
 XMLFILES = $(XLSFILES:.xls=.xml)
 
 all: $(XMLFILES)
