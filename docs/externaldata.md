@@ -23,8 +23,8 @@ cleaning that mess up for over a decade. But an old import may have a
 weird value for an OSM tag, and it's usually better to update to a
 more community approved data model. The beauty and the curse of OSM
 data is it's wonderful flexibility. People do invent new tags for a
-specific mapping campaign or import that escape being reviewed. And
-there are also typographical mistakes, weird capitalization, embedded
+specific mapping campaign or import that and escape being reviewed.
+There are also typographical mistakes, weird capitalization, embedded
 quote marks, all sorts of weird values worth correcting.
 
 ## Creating the GeoJson file
