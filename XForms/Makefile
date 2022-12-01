@@ -41,3 +41,6 @@ EXTRACT = make_data_extract.py
 	@xml=$(subst .xls,.xml,$<);
 
 force:
+
+clean:
+	rm -f *.xml
