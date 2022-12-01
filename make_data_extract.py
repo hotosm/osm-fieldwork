@@ -122,20 +122,22 @@ class PostgresClient(OutputFile):
         select = '*'
         if category == 'buildings':
             tables = ("nodes", "ways_poly", "relations")
-            select = "geom, osm_id AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'building' AS build, tags->>'building:levels' AS levels, tags->>'building:material' AS material,  tags->>'building:roof' AS roof, tags->>'building:levels:underground' AS underground, tags->>'building:prefabricated' AS prefabricated"
-            filter = "tags->>'building' IS NOT NULL OR tags->>'building:levels' IS NOT NULL OR tags->>'building:material' IS NOT NULL OR tags->>'building:roof' IS NOT NULL OR tags->>'building:flats' IS NOT NULL OR tags->>'building:levels:underground' IS NOT NULL OR tags->>'building:prefabricated' IS NOT NULL OR tags->>'building:condition' IS NOT NULL"
+            select = "geom, osm_id AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'building' AS build, tags->>'building:levels' AS levels, tags->>'building:material' AS material,  tags->>'building:roof' AS roof, tags->>'building:levels:underground' AS underground, tags->>'building:prefabricated' AS prefabricated, tags->>'building:condition' AS condition, tags->>'amenity' AS amenity, tags->>'religion'AS religion, tags->>'operator' AS operator, tags->>'cusine' AS cusine, tags->>'amenity' AS amenity, tags->>'shop' AS shop"
+            filter = "tags->>'building' IS NOT NULL"
         elif category == 'amenities':
             tables = ("nodes", "ways_poly")
-            filter = "tags->>'amenity' IS NOT NULL"
+            select = "geom, osm_id::varchar AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'amenity' AS amenity, tags->>'cusine' AS cusine, tags->>'operator' AS operator, tags->>'takeaway' AS takeaway, tags->>'religion' AS religion, tags->>'addr:street' AS addr_street, tags->>'addr:housenumber' AS addr_housenumber, tags->>'wheelchair' AS wheelchair, tags->>'opening_hours' AS opening_hours, tags->>'shelter_type' AS shelter_type, tags->>'brewery' AS brewery, tags->>'microbrewery' AS microbrewery"
+            filter = "tags->>'amenity' IS NOT NULL AND tags->>'parking' IS NULL;"
         elif category == 'toilets':
             tables = ("nodes", "ways_poly")
+            select = "ST_Centroid(geom), osm_id AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'access' AS access, tags->>'female' AS female, tags->>'male' AS male, tags->>'unisex' AS unisex, tags->>'opening_hours' AS hours, tags->>'toilets:disposal' AS disposal, tags->>'wheelchair' AS chair, tags->>'toilets:position' AS position, tags->>'fee' AS fee"
             filter = "tags->>'amenity'='toilets'"
         elif category == 'emergency':
             tables = ("nodes", "ways_poly")
             filter = "tags->>'emergency' IS NOT NULL"
         elif category == 'healthcare':
             tables = ("nodes", "ways_poly")
-            select = "osm_id AS id,tags->>'name' AS title, tags->>'name' AS label, tags->>'healthcare' AS healthcare, tags->>'healthcare:speciality' AS speciality, tags->>'generator:source' AS power_source, tags->'amenity' AS amenity, tags->>'operator:type' AS operator_type, tags->>'opening_hours' AS hours, geom"
+            select = "osm_id AS id,tags->>'name' AS title, tags->>'name' AS label, tags->>'healthcare' AS healthcare, tags->>'healthcare:speciality' AS speciality, tags->>'generator:source' AS power_source, tags->'amenity' AS amenity, tags->>'operator:type' AS operator_type, tags->>'opening_hours' AS hours, ST_Centroid(geom)"
             filter = "(tags->>'healthcare' IS NOT NULL or tags->>'social_facility' IS NOT NULL OR tags->>'healthcare:speciality' IS NOT NULL) AND tags->>'opening_hours' IS NOT NULL"
         elif category == 'education':
             tables = ("nodes", "ways_poly")
@@ -158,7 +160,7 @@ class PostgresClient(OutputFile):
         mem = memdrv.CreateDataSource(category)
         memlayer = mem.CreateLayer(category, geom_type=ogr.wkbMultiPolygon)
         for table in tables:
-            logging.debug("Querying table %s with conditional %s" % (table, filter))
+            # logging.debug("Querying table %s with conditional %s" % (table, filter))
             tags = self.getTags(category)
             # osm = self.pg.GetLayerByName(table)
             query = f"SELECT {select} FROM {table} WHERE {filter}"
