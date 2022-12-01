@@ -90,7 +90,6 @@ server, and it will convert it.
 
     The **name** and **label** column headers also support different languages by using a postfix of **::[language](abbreviation) **appended to it, for example **label::Nepali(np)**.
 
-
     These are the optional column headers in the survey sheet:
 
 * [Hint](https://xlsform.org/en/#hints) - Optional value display with the question with further information
@@ -165,38 +164,31 @@ the current mapping task.
 ## Using Conditionals: 
 
 * Conditionals go in the **relevant** column on the **survey** sheet.
-* A conditional has two parts, the variable from the **name** column of a question, and the value to test against, which is one of the select values.
+* A conditional has two parts, the variable from the **name** column
+of a question, and the value to test against, which is one of the
+select values.
 
-In the XLSXForm, the spreadsheet should look like this. The amenity menu is only displayed if the answer to the “what type of building is this” is “commercial”. 
+In the XLSXForm, the spreadsheet should look like this. The amenity
+menu is only displayed if the answer to the “what type of building is
+this” is “commercial”.  
 
-<table>
-  <tr>
-   <td><strong>type</strong>
-   </td>
-   <td><strong>name</strong>
-   </td>
-   <td><strong>label</strong>
-   </td>
-   <td><strong>relevant</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>select_one amenity
-   </td>
-   <td>amenity
-   </td>
-   <td>Type of Amenity
-   </td>
-   <td>${building}=’commercial’
-   </td>
-  </tr>
-</table>
+|type|name|label|relevant|
+|----|----|-----|--------|
+|select_one amenity|amenity|Type of Amenity|${building}=’commercial’|
 
-Using conditionals allows for a more dynamic interface, as only relevant questions are displayed. Some questions may have answers that only require a few more questions before being complete. Other answers may generate more questions, for example a commercial building instead of a residence.
+Using conditionals allows for a more dynamic interface, as only
+relevant questions are displayed. Some questions may have answers that
+only require a few more questions before being complete. Other answers
+may generate more questions, for example a commercial building instead
+of a residence.
 
 ## Grouping
 
-ODK supports grouping survey questions together, which when used with conditionals in the **relevant** column, and attributes from the **appearance** column, creates a more dynamic user interface. Groups allow more than one question on the screen, which is more efficient than one question per screen, which is the default.
+ODK supports grouping survey questions together, which when used with
+conditionals in the **relevant** column, and attributes from the
+**appearance** column, creates a more dynamic user interface. Groups
+allow more than one question on the screen, which is more efficient
+than one question per screen, which is the default.
 
 ## Using Grouping
 
@@ -220,79 +212,14 @@ for each question.
 
 An example grouping would look like this, and the conditional says to only display this group for commercial buildings.
 
-<table>
-  <tr>
-   <td><strong>type</strong>
-   </td>
-   <td><strong>name</strong>
-   </td>
-   <td><strong>label</strong>
-   </td>
-   <td><strong>relevant</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>select_one
-   </td>
-   <td>building
-   </td>
-   <td>What type of building ?
-   </td>
-   <td>
-   </td>
-  </tr>
-  <tr>
-   <td>
-   </td>
-   <td>
-   </td>
-   <td>
-   </td>
-   <td>
-   </td>
-  </tr>
-  <tr>
-   <td>begin_group
-   </td>
-   <td>amenity
-   </td>
-   <td>
-   </td>
-   <td>${building}=’commercial’
-   </td>
-  </tr>
-  <tr>
-   <td>select_one amenity
-   </td>
-   <td>amenity
-   </td>
-   <td>Type of Amenity
-   </td>
-   <td>
-   </td>
-  </tr>
-  <tr>
-   <td>text
-   </td>
-   <td>name
-   </td>
-   <td>What is the name ?
-   </td>
-   <td>
-   </td>
-  </tr>
-  <tr>
-   <td>End_group
-   </td>
-   <td>
-   </td>
-   <td>
-   </td>
-   <td>
-   </td>
-  </tr>
-</table>
-
+|type|name|label|relevant|
+|----|----|-----|--------|
+|select_one type|building|What type of building ?||
+|||||
+|begin_group|amenity||${building}=’commercial’|
+|select_one amenity|amenity|Type of Amenity||
+|text|name|What is the name ?||
+|end_group|||
 
 In this example, the conditional is applied to the entire group of
 questions, and not just any individual question. Different questions
@@ -311,57 +238,10 @@ required. Anything else becomes a column in the XLSForm.
 
 An example CSV data file would look like this:
 
-<table>
-  <tr>
-   <td><strong>label</strong>
-   </td>
-   <td><strong>name</strong>
-   </td>
-   <td><strong>backcountry</strong>
-   </td>
-   <td><strong>Id</strong>
-   </td>
-   <td><strong>ref</strong>
-   </td>
-   <td><strong>tourism</strong>
-   </td>
-   <td><strong>openfire</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>Test 1
-   </td>
-   <td>Site 1
-   </td>
-   <td>yes
-   </td>
-   <td>5483233147
-   </td>
-   <td>1
-   </td>
-   <td>camp_site
-   </td>
-   <td>yes
-   </td>
-  </tr>
-  <tr>
-   <td>Test 2
-   </td>
-   <td>Site 35
-   </td>
-   <td>no
-   </td>
-   <td>6764555904
-   </td>
-   <td>35
-   </td>
-   <td>camp_site
-   </td>
-   <td>yes
-   </td>
-  </tr>
-</table>
-
+|label|name|backcountry|id|ref|tourism|openfire|
+|-----|----|-----------|--|----|-------|--------|
+|Test 1|Site 1|yes|5483233147|1|camp_pitch|yes|
+|Test 2|Site 35|no|6764555904|35|camp_pitch|yes|
 
 For example, these rows in the survey sheet will load the data from
 the CSV file. The instance is the name of the data file, minus the
@@ -371,64 +251,11 @@ data. Whenever the value of **test** is changed, the trigger goes off,
 and the value is recalculated and becomes the default value for the
 survey question. 
 
-<table>
-  <tr>
-   <td><strong>type</strong>
-   </td>
-   <td><strong>name</strong>
-   </td>
-   <td><strong>label</strong>
-   </td>
-   <td><strong>calculation</strong>
-   </td>
-   <td><strong>trigger</strong>
-   </td>
-   <td><strong>choice_filter</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>select_one_from_file test.csv
-   </td>
-   <td>test
-   </td>
-   <td>CSV Test
-   </td>
-   <td>
-   </td>
-   <td>
-   </td>
-   <td>true()
-   </td>
-  </tr>
-  <tr>
-   <td>calculate
-   </td>
-   <td>xname
-   </td>
-   <td>Name
-   </td>
-   <td>instance('test')/root/item[name=${test}]/label
-   </td>
-   <td>${test}
-   </td>
-   <td>
-   </td>
-  </tr>
-  <tr>
-   <td>text
-   </td>
-   <td>debug
-   </td>
-   <td>Name is
-   </td>
-   <td>${xname}
-   </td>
-   <td>${test}
-   </td>
-   <td>
-   </td>
-  </tr>
-</table>
+|type|name|label|calculation|trigger|choice|
+|----|----|-----|-----------|-------|------|
+|select_one_from_file test.csv|test|CSV test|||true()|
+|calculate|xname|Name|instance('test')/root/item[name=${test}]/label|${test}|
+|text|debug|Name is|${xname}|${test}|
 
 ### GeoJson Files 
 
@@ -486,7 +313,7 @@ can use **AS** in the query to rename the column to whatever you
 want. I’ve taken to using abbreviations or the OSM tags name. Those
 variable names are only used internally.
 
-![Placement Map](xlsimages/image2.jpg){width=90%}
+![Placement Map](xlsimages/image2.jpg)
 
 ![XPath Error](xlsimages/image1.jpg)
 
@@ -516,116 +343,34 @@ this table, **building_tags** is the variable. When looking at the
 choices sheet, every row using the **building_tag** keyword now has to
 become a question on the **survey** sheet.
 
-<table>
-  <tr>
-   <td><strong>type</strong>
-   </td>
-   <td><strong>name</strong>
-   </td>
-   <td><strong>label</strong>
-   </td>
-   <td><strong>required</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>osm building_tags
-   </td>
-   <td>osm_building
-   </td>
-   <td>Building Form
-   </td>
-   <td>yes
-   </td>
-  </tr>
-</table>
 
+|type|name|label|required|
+|----|----|-----|--------|
+|osm building_tags|osm_building|Building Form|yes|
 
 In the **choices** sheet, we see this existing data.
 
-<table>
-  <tr>
-   <td><strong>list_name</strong>
-   </td>
-   <td><strong>name</strong>
-   </td>
-   <td><strong>Label</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>building_tags
-   </td>
-   <td>name
-   </td>
-   <td>Name of this building
-   </td>
-  </tr>
-  <tr>
-   <td>building_tags
-   </td>
-   <td>building:material
-   </td>
-   <td>What is it made from ?
-   </td>
-  </tr>
-  <tr>
-   <td>building_tags
-   </td>
-   <td>building:roof
-   </td>
-   <td>Is there a building  roof ?
-   </td>
-  </tr>
-</table>
-
-
+|list_name|name|label|
+|---------|----|-----|
+|building_tags|name|Name of this building|
+|building_tags|building:material|What is it made from ?|
+|building_tags|building:roof|What is the roof made of ?|
 
 Cut & paste these rows from the **choices** sheet, and paste them into
 the **survey** sheet. Then prefix the variable with selct_one or
 select_multiple. Drop the prefix used in the **choices** sheet and
 simplify it.
 
-<table>
-  <tr>
-   <td><strong>type</strong>
-   </td>
-   <td><strong>name</strong>
-   </td>
-   <td><strong>label</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>text
-   </td>
-   <td>name
-   </td>
-   <td>Name of this building
-   </td>
-  </tr>
-  <tr>
-   <td>select_one building:material
-   </td>
-   <td>material
-   </td>
-   <td>What is it made from ?
-   </td>
-  </tr>
-  <tr>
-   <td>select_one building:roof
-   </td>
-   <td>roof
-   </td>
-   <td>Is there a building  roof ?
-   </td>
-  </tr>
-</table>
-
+|type|name|label|
+|---------|----|-----|
+|text|name|Name of this building|
+|select_one building:material|material|What is it made from ?|
+|select_one building:roof|roof|What is the roof made of ?|
 
 
 ## Step 3 - Get Coordinates
 
 The last step is replacing the keyword that used to start OMK, with the ODK way. There are three ODK keywords that can be used to get a location.
-
-
 
 * Geopoint - Collect a single location
 * Geoshape - Collect at least 3 points and the ends are closed

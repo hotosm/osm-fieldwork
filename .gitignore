@@ -11,7 +11,13 @@ README.md
 # output files
 *.osm
 *.txt
+<<<<<<< HEAD
 *.xml
+*.geojson
+*.pbf
+*.xml
+*.pdf
+*.html
 
 # Prerequisites
 *.d

@@ -34,10 +34,14 @@ import queue
 import concurrent.futures
 import threading
 import glob
+from pymbtiles import MBtiles, Tile
+import sqlite3
 
 
 def dlthread(dest, mirrors, tiles):
     """Thread to handle downloads for Queue"""
+    if len(tiles) == 0:
+        epdb.st()
     # counter = -1
     errors = 0
 
@@ -120,15 +124,13 @@ class BaseMapper(object):
         source = {'name': "ESRI World Imagery", 'url': url}
         self.sources['ersi'] = source
         # USGS Topographical map
-        url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%d/%d/%s"
+        url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%d/%d/%s.png"
         source = {'name': "USGS Topographic Map", 'url': url}
         self.sources['topo'] = source
         # Google Hybrid
         url = "https://mt0.google.com/vt?lyrs=h&x={x}&s=&y={y}&z={z}"
         source = {'name': "Google Hybrid", 'url': url}
         self.sources['google'] = source
-        
-
 
     def getTiles(self, zoom=None):
         """Get a list of tiles for the specifed zoom level"""
@@ -147,14 +149,16 @@ class BaseMapper(object):
 
         mirrors = [self.sources[self.source]]
         #epdb.st()
-        dlthread(self.base, mirrors, self.tiles[0:10])
-        with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
-            block = 0
-            while block <= len(self.tiles):
-                future = executor.submit(dlthread, self.base, mirrors, self.tiles[block:block+chunk])
-                logging.debug("Dispatching Block %d:%d" % (block, block + chunk))
-                block += chunk
-            executor.shutdown()
+        if len(self.tiles) < chunk:
+            dlthread(self.base, mirrors, self.tiles)
+        else:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
+                block = 0
+                while block <= len(self.tiles):
+                    future = executor.submit(dlthread, self.base, mirrors, self.tiles[block:block+chunk])
+                    logging.debug("Dispatching Block %d:%d" % (block, block + chunk))
+                    block += chunk
+                executor.shutdown()
             # logging.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), os.path.basename(self.base)))
 
         return True
@@ -188,8 +192,23 @@ class BaseMapper(object):
             print(bbox)
         return bbox
 
-    def writeMbtiles(self, filespec):
+    def writeMbtiles(self, filespec=None, boundary=None, zooms=[12, 13, 14, 15]):
         """Write the tiles to an mbtiles file"""
+        db = f"{self.base}/{filespec}.mbtiles"
+        try:
+            conn = sqlite3.connect(db)
+            logging.debug("Database %s formed." % db)
+        except:
+            logging.error("Database %s not formed." % db)
+        out = MBtiles(db, mode='r+')
+        for level in zooms:
+            tiles = list(mercantile.tiles(self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], level))
+            for tile in tiles:
+                png = f"{self.base}/{tile[2]}/{tile[0]}/{tile[1]}.png"
+                with MBtiles(png) as src:
+                    data = src.read_tile(z=tile[2], x=tile[0], y=tile[1])
+                print(tile, data)
+                # out.write_tile(z=tile[0], x=tile[2], y=tile[3], data)
         logging.info("Wrote map tiles to %s" % filespec)
     
 if __name__ == '__main__':
@@ -253,6 +272,7 @@ for level in zooms:
     basemap.getTiles(level)
 
 if args.outfile:
-    basemap.writeMbtiles(args.outfile)
+    pass
+    # basemap.writeMbtiles(args.outfile)
 else:
     logging.error("You need to specify an outfile filename!")
