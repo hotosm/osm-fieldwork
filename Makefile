@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # Copyright (c) 2020, 2021 Humanitarian OpenStreetMap Team
 #
 # This file is part of Odkconvert.
@@ -18,25 +16,9 @@
 #     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-# This uses https://github.com/kivy/python-for-android to produce apks for Android,
-# and a zip file for python pip.
-
 PACKAGE := org.odkconvert.py
-NAME := ODKCOnvert
+NAME := ODKConvert
 VERSION := 0.1
-ARCH := armeabi-v7a
-P4ABIN = /usr/local/bin/p4a
-
-all: pip
-	echo "Nothing to do..."
-
-# Make a python2 apk for Android
-apk2:
-	${P4ABIN} apk ${DEFS} --requirements=${P2VER},${REQUIREMENTS}
-
-# Make a python3 apk for Android
-apk3:
-	${P4ABIN} apk --private `pwd` --arch=${ARCH} --package=${PACKAGE} --name "${NAME}" --version ${VERSION} --bootstrap=${BOOTSTRAP} --requirements=${P3VER},${REQUIREMENTS}
 
 # Make a python package for pip
 pip:
@@ -50,7 +32,3 @@ pip-uninstall:
 
 check:
 	cd testsuite && pytest
-
-#compile:
-#    python3 -m nuitka --follow-imports shp2map.py
-
