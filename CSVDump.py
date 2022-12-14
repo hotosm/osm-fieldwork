@@ -58,6 +58,8 @@ class CSVDump(Convert):
     def writeOSM(self, feature):
         """Write a feature to an OSM XML output file"""
         out = ""
+        if 'id' in feature['tags']:
+            feature['id'] = feature['tags']['id']
         if 'refs' not in feature:
             out += self.osm.createNode(feature)
         else:
