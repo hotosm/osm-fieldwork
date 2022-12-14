@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021, 2022 Humanitarian OpenStreetMap Team
+# Copyright (c) 2022 Humanitarian OpenStreetMap Team
 #
 # This file is part of Odkconvert.
 #
@@ -122,7 +122,7 @@ class PostgresClient(OutputFile):
         select = '*'
         if category == 'buildings':
             tables = ("nodes", "ways_poly", "relations")
-            select = "geom, osm_id AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'building' AS build, tags->>'building:levels' AS levels, tags->>'building:material' AS material,  tags->>'building:roof' AS roof, tags->>'building:levels:underground' AS underground, tags->>'building:prefabricated' AS prefabricated, tags->>'building:condition' AS condition, tags->>'amenity' AS amenity, tags->>'religion'AS religion, tags->>'operator' AS operator, tags->>'cusine' AS cusine, tags->>'amenity' AS amenity, tags->>'shop' AS shop"
+            select = "geom, osm_id AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'building' AS buildingx, tags->>'building:levels' AS bldlevels, tags->>'building:material' AS bldmat, tags->>'building:roof' AS roof, tags->>'roof:material' AS roofmat, tags->>'building:levels:underground' AS underground, tags->>'building:prefabricated' AS prefabricated, tags->>'building:condition' AS condition, tags->>'amenity' AS amenityx, tags->>'religion' AS religionx, tags->>'operator' AS operatorx, tags->>'cusine' AS cusinex, tags->>'amenity' AS amenityx, tags->>'shop' AS shopx "
             filter = "tags->>'building' IS NOT NULL"
         elif category == 'amenities':
             tables = ("nodes", "ways_poly")
