@@ -62,6 +62,8 @@ convert:
   - food: amenity
   - housing: building
   - xlocation: geometry
+  - bldmat: building:material
+  - roofmat: roof:material
 
 # All of the data that goes in a different non-OSM file
 private:
