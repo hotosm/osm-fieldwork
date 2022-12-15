@@ -58,6 +58,10 @@ convert:
   - cemetery_services:
       - cemetery: amenity=grave_yard
       - cremation: amenity=crematorium
+  - xid: id
+  - food: amenity
+  - housing: building
+  - xlocation: geometry
 
 # All of the data that goes in a different non-OSM file
 private:
@@ -110,6 +114,10 @@ ignore:
   - enum_name
   - username
   - model
+  - email
+  - category
+  - existing
+  - formversion
 
 multiple:
   - healthcare
