@@ -142,6 +142,15 @@ class CSVDump(Convert):
         # First convert the tag to the approved OSM equivalent
         for key, value in entry.items():
             attributes = ("id", "timestamp", "lat", "lon", "uid", "user", "version", "action")
+            # When using existing OSM data, there's a special geometry field.
+            # Otherwise use the GPS coordinates where you are.
+            if key == 'geometry':
+                geometry = value.split(' ')
+                if len(geometry) == 4:
+                    attrs['lat'] = geometry[0]
+                    attrs['lon'] = geometry[1]
+                continue
+
             if key is not None and len(key) > 0 and key in attributes:
                 attrs[key] = value
                 logging.debug("Adding attribute %s with value %s" % (key, value))
@@ -215,7 +224,7 @@ if __name__ == '__main__':
             # This OSM XML file only has OSM appropriate tags and values
             feature = csvin.createEntry(entry)
             # Sometimes bad entries, usually from debugging XForm design, sneak in
-            if len(feature['attrs']) == 0:
+            if len(feature) == 0:
                 continue
             if len(feature) > 0:
                 if 'lat' not in feature['attrs']:
