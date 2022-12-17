@@ -16,6 +16,9 @@
 #     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
+# The Rob project on odk.hotosm.org
+PROJECT=19
+
 XLSFILES = \
     buildings.xls \
     cemeteries.xls \
@@ -40,7 +43,25 @@ EXTRACT = make_data_extract.py
 	xls2xform --pretty_print $<
 	@xml=$(subst .xls,.xml,$<);
 
+# A simple naming convention is used to make it possible to automate as
+# much as possible. The basename of the XLSForm file matches the form_id
+# column in the settings sheet. The make_data_extract.py also uses the
+# same value in the category options.
+# Any associated data extract file from OSM is uploaded as well if it
+# exists. Note that when using an external geojson file, Enketo doesn't
+# support that. It only works on a device.
+upload: $(XMLFILES)
+	@target=$(<:.xml=); \
+	if test -e $${target}.geojson; then \
+	  datafiles="$(DATAFILES) $${target}.geojson"; \
+	else \
+	  datafiles="$(DATAFILES)"; \
+	fi; \
+	odk_client.py -i $(PROJECT) -f $${target} -x create $< $${datafiles}
+
 force:
 
 clean:
 	rm -f *.xml
+
+.PHONEY: upload

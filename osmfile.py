@@ -166,7 +166,7 @@ class OsmFile(object):
         if modified:
             attrs['action'] = 'modify'
 
-        if 'id' in node:
+        if 'id' in node['attrs']:
             attrs['id'] = int(node['attrs']['id'])
         else:
             attrs['id'] = self.start
