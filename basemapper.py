@@ -4,12 +4,12 @@
 #
 # This file is part of Odkconvert.
 #
-#     Odkconvert is free software: you can redistribute it and/or modify
+#     This is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 #
-#     Odkconvert is distributed in the hope that it will be useful,
+#     This is distributed in the hope that it will be useful,
 #     but WITHOUT ANY WARRANTY; without even the implied warranty of
 #     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #     GNU General Public License for more details.
@@ -41,7 +41,8 @@ import sqlite3
 def dlthread(dest, mirrors, tiles):
     """Thread to handle downloads for Queue"""
     if len(tiles) == 0:
-        epdb.st()
+        #epdb.st()
+        return
     # counter = -1
     errors = 0
 
@@ -50,11 +51,11 @@ def dlthread(dest, mirrors, tiles):
     # totaltime = 0.0
     logging.info("Downloading %d tiles in thread %d to %s" % (len(tiles), threading.get_ident(), dest))
     for tile in tiles:
-        filespec = f"{tile[2]}/{tile[1]}/{tile[0]}.png"
+        filespec = f"{tile[2]}/{tile[1]}/{tile[0]}"
         for site in mirrors:
             url = site['url']
-            remote = url % (tile[2], tile[1], tile[0])
-            print("FIXME: %s" % remote)
+            remote = url % filespec
+            print("Getting file from: %s" % remote)
             # Create the subdirectories as pySmartDL doesn't do it for us
             if os.path.isdir(dest) is False:
                 tmp = ""
@@ -120,7 +121,7 @@ class BaseMapper(object):
         source = {'name': "Bing Maps Hybrid", 'url': url}
         self.sources['bing'] = source
         # ERSI imagery
-        url = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/%d/%d/%d.png"
+        url = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/%s"
         source = {'name': "ESRI World Imagery", 'url': url}
         self.sources['ersi'] = source
         # USGS Topographical map
@@ -148,8 +149,8 @@ class BaseMapper(object):
         logging.info("%d threads, %d tiles" % (cores, total))
 
         mirrors = [self.sources[self.source]]
-        #epdb.st()
-        if len(self.tiles) < chunk:
+        # epdb.st()
+        if len(self.tiles) < chunk or chunk == 0:
             dlthread(self.base, mirrors, self.tiles)
         else:
             with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
@@ -216,7 +217,6 @@ if __name__ == '__main__':
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-b", "--boundary", help='The boundary for the area you want')
     parser.add_argument("-z", "--zooms", default="12-17", help='The Zoom levels')
-    parser.add_argument("-t", "--tiles", help='Top level directory for tile cache')
     parser.add_argument("-o", "--outfile", help='Output file name')
     parser.add_argument("-d", "--outdir", help='Output directory name for tile cache')
     parser.add_argument("-s", "--source", default="ersi", choices=["ersi", "bing", "topo", "google"], help='Imagery source')
@@ -272,7 +272,7 @@ for level in zooms:
     basemap.getTiles(level)
 
 if args.outfile:
-    pass
-    # basemap.writeMbtiles(args.outfile)
+    basemap.writeMbtiles(args.outfile)
 else:
-    logging.error("You need to specify an outfile filename!")
+    logging.info("Only downloading tiles!")
+    # logging.error("You need to specify an outfile filename!")
