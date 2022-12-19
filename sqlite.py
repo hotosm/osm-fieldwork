@@ -96,7 +96,13 @@ class DataFile(object):
             self.cursor.execute("CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob)")
             self.cursor.execute("CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row)")
             self.cursor.execute("CREATE TABLE metadata (name text, value text)")
-            self.cursor.execute("CREATE UNIQUE INDEX metadata_idx  ON metadata (name)")            
+            self.cursor.execute("CREATE UNIQUE INDEX metadata_idx  ON metadata (name)")
+            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('version', '1.1')")
+            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('type', 'baselayer')")
+            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('name', 'fixme')")
+            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('description', 'fixme')")
+            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('bounds', 'fixme')")
+            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('format', 'png')")
         elif suffix == '.sqlitedb':
             # s is always 0
             self.cursor.execute("CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));")
@@ -106,7 +112,7 @@ class DataFile(object):
             # the metadata is the locale as a string, 'en_US' in out case
             loc = locale.getlocale()[0]
             self.cursor.execute(f"CREATE TABLE  android_metadata ({loc})")
-            self.db.commit()
+        self.db.commit()
 
     def writeTile(self):
         pass
