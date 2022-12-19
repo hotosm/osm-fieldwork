@@ -93,7 +93,10 @@ class DataFile(object):
         self.db = sqlite3.connect(dbname)
         self.cursor = self.db.cursor()
         if suffix == '.mbtiles':
-            pass
+            self.cursor.execute("CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob)")
+            self.cursor.execute("CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row)")
+            self.cursor.execute("CREATE TABLE metadata (name text, value text)")
+            self.cursor.execute("CREATE UNIQUE INDEX metadata_idx  ON metadata (name)")            
         elif suffix == '.sqlitedb':
             # s is always 0
             self.cursor.execute("CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));")
