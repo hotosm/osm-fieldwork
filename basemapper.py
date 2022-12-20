@@ -36,6 +36,7 @@ import threading
 import glob
 from pymbtiles import MBtiles, Tile
 import sqlite3
+from sqlite import MapTile, DataFile
 
 
 def dlthread(dest, mirrors, tiles):
@@ -51,8 +52,9 @@ def dlthread(dest, mirrors, tiles):
     # totaltime = 0.0
     logging.info("Downloading %d tiles in thread %d to %s" % (len(tiles), threading.get_ident(), dest))
     for tile in tiles:
-        filespec = f"{tile[2]}/{tile[1]}/{tile[0]}"
+        filespec = f"{tile[2]}/{tile[1]}/{tile[0]}."
         for site in mirrors:
+            filespec += site['format']
             url = site['url']
             remote = url % filespec
             print("Getting file from: %s" % remote)
@@ -116,22 +118,29 @@ class BaseMapper(object):
         # sources for imagery
         self.source = source
         self.sources = dict()
+
         # Bing hybrid imagery
         url = "http://ecn.t0.tiles.virtualearth.net/tiles/h%s.png?g=129&mkt=en&stl=H"
-        source = {'name': "Bing Maps Hybrid", 'url': url}
+        source = {'name': "Bing Maps Hybrid", 'url': url, 'format': 'png'}
         self.sources['bing'] = source
+
         # ERSI imagery
         url = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/%s"
-        source = {'name': "ESRI World Imagery", 'url': url}
+        source = {'name': "ESRI World Imagery", 'url': url, 'format': 'jpg'}
         self.sources['ersi'] = source
+
         # USGS Topographical map
         url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%d/%d/%s.png"
-        source = {'name': "USGS Topographic Map", 'url': url}
+        source = {'name': "USGS Topographic Map", 'url': url, 'format': 'png'}
         self.sources['topo'] = source
+
         # Google Hybrid
         url = "https://mt0.google.com/vt?lyrs=h&x={x}&s=&y={y}&z={z}"
-        source = {'name': "Google Hybrid", 'url': url}
+        source = {'name': "Google Hybrid", 'url': url, 'format': 'png'}
         self.sources['google'] = source
+
+    def getFormat(self):
+        return  self.sources[self.source]['format']
 
     def getTiles(self, zoom=None):
         """Get a list of tiles for the specifed zoom level"""
@@ -169,13 +178,12 @@ class BaseMapper(object):
             print(files)
         # vrt = gdal.BuildVRT(filespec,  )
 
-    def downloadTile(self, source=None, tile=list()):
-        pass        
-        return True
+    # def downloadTile(self, source=None, tile=list()):
+    #     return True
 
     def tileExists(self, tile=list()):
         """See if a map tile already exists"""
-        filespec = f"{self.base}{tile[2]}/{tile[1]}/{tile[0]}.png"
+        filespec = f"{self.base}{tile[2]}/{tile[1]}/{tile[0]}.{self.sources['ersi']['format']}"
         if os.path.exists(filespec):
             logging.debug("%s exists" % filespec)
             return True
@@ -193,24 +201,24 @@ class BaseMapper(object):
             print(bbox)
         return bbox
 
-    def writeMbtiles(self, filespec=None, boundary=None, zooms=[12, 13, 14, 15]):
-        """Write the tiles to an mbtiles file"""
-        db = f"{self.base}/{filespec}.mbtiles"
-        try:
-            conn = sqlite3.connect(db)
-            logging.debug("Database %s formed." % db)
-        except:
-            logging.error("Database %s not formed." % db)
-        out = MBtiles(db, mode='r+')
-        for level in zooms:
-            tiles = list(mercantile.tiles(self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], level))
-            for tile in tiles:
-                png = f"{self.base}/{tile[2]}/{tile[0]}/{tile[1]}.png"
-                with MBtiles(png) as src:
-                    data = src.read_tile(z=tile[2], x=tile[0], y=tile[1])
-                print(tile, data)
-                # out.write_tile(z=tile[0], x=tile[2], y=tile[3], data)
-        logging.info("Wrote map tiles to %s" % filespec)
+    # def writeMbtiles(self, filespec=None, boundary=None, zooms=[12, 13, 14, 15]):
+    #     """Write the tiles to an mbtiles file"""
+    #     db = f"{self.base}/{filespec}.mbtiles"
+    #     try:
+    #         conn = sqlite3.connect(db)
+    #         logging.debug("Database %s formed." % db)
+    #     except:
+    #         logging.error("Database %s not formed." % db)
+    #     out = MBtiles(db, mode='r+')
+    #     for level in zooms:
+    #         tiles = list(mercantile.tiles(self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], level))
+    #         for tile in tiles:
+    #             png = f"{self.base}/{tile[2]}/{tile[0]}/{tile[1]}.png"
+    #             with MBtiles(png) as src:
+    #                 data = src.read_tile(z=tile[2], x=tile[0], y=tile[1])
+    #             print(tile, data)
+    #             # out.write_tile(z=tile[0], x=tile[2], y=tile[3], data)
+    #     logging.info("Wrote map tiles to %s" % filespec)
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create an mbtiles basemap for ODK Collect')
@@ -272,7 +280,12 @@ for level in zooms:
     basemap.getTiles(level)
 
 if args.outfile:
-    basemap.writeMbtiles(args.outfile)
+    outf = DataFile(args.outfile)
+    for tile in basemap.tiles:
+        xyz = MapTile(tile=tile)
+        xyz.addImage(top=base)
+        outf.writeTile(xyz)
+        tile.dump()
+    #basemap.writeMbtiles(args.outfile)
 else:
-    logging.info("Only downloading tiles!")
-    # logging.error("You need to specify an outfile filename!")
+    logging.info("Only downloading tiles to %s!" % base)
