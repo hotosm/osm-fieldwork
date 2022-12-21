@@ -30,32 +30,6 @@ import mercantile
 
 
 
-# nsert into maxy(y,z) values(0,0);
-# insert into maxy(y,z) values(1,1);
-# insert into maxy(y,z) values(3,2);
-# insert into maxy(y,z) values(7,3);
-# insert into maxy(y,z) values(15,4);
-# insert into maxy(y,z) values(31,5);
-# insert into maxy(y,z) values(63,6);
-# insert into maxy(y,z) values(127,7);
-# insert into maxy(y,z) values(255,8);
-# insert into maxy(y,z) values(511,9);
-# insert into maxy(y,z) values(1023,10);
-# insert into maxy(y,z) values(2047,11);
-# insert into maxy(y,z) values(4095,12);
-# insert into maxy(y,z) values(8191,13);
-# insert into maxy(y,z) values(16383,14);
-# insert into maxy(y,z) values(32767,15);
-# insert into maxy(y,z) values(65535,16);
-# insert into maxy(y,z) values(131071,17);
-# insert into maxy(y,z) values(262143,18);
-# insert into maxy(y,z) values(524287,19);
-# insert into maxy(y,z) values(1048575,20);
-# insert into maxy(y,z) values(2097151,21);
-# insert into maxy(y,z) values(4194303,22);
-# insert into maxy(y,z) values(8388607,23);
-# insert into maxy(y,z) values(16777215,24);
-
 class MapTile(object):
     def __init__(self, x=None, y=None, z=None, filespec=None, tile=None, suffix="jpg"):
         """This is a simple wrapper around mercantile.tile to associate a
@@ -115,8 +89,8 @@ class DataFile(object):
         entry = str(bounds)
         entry = entry[1:len(entry)-1].replace(" ", "")
         self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{entry}')")
-        self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('minzoom', '9')")
-        self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('maxzoom', '15')")
+        # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('minzoom', '9')")
+        # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('maxzoom', '15')")
 
     def createDB(self, dbname=None):
         """Create and sqlitedb in either mbtiles or Osman sqlitedb format"""
@@ -164,14 +138,17 @@ class DataFile(object):
     def writeTile(self, tile=None):
         if tile.blob is None:
             logging.error("Map tile has no image data!")
-            # tile.dump()
+            #tile.dump()
             return False
         suffix = os.path.splitext(self.dbname)[1]
         if suffix == ".sqlitedb":
-            self.db.execute("INSERT INTO tiles (x, y, z, s, image) VALUES (?, ?, ?, ?, ?)", [tile.x, tile.y, tile.z, 0, sqlite3.Binary(tile.blob)])
+            # Osmand tops out at zoom level 16, so the real zoom level is inverse,
+            # and can go negative for really high zoom levels.
+            z = 17 - tile.z
+            self.db.execute("INSERT INTO tiles (x, y, z, s, image) VALUES (?, ?, ?, ?, ?)", [tile.x, tile.y, z, 0, sqlite3.Binary(tile.blob)])
         elif suffix ==".mbtiles":
             y = (1 << tile.z) - tile.y - 1
-            self.db.execute("INSERT INTO tiles (tile_row, tile_column, zoom_level, tile_data) VALUES (?, ?, ?, ?)", [y, tile.x, tile.z, sqlite3.Binary(tile.blob)])
+            self.db.execute("INSERT INTO tiles (tile_row, tile_column, zoom_level, tile_data) VALUES (?, ?, ?, ?)", [y, tile.x, z, sqlite3.Binary(tile.blob)])
 
         self.db.commit()
 
