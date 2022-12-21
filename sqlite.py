@@ -26,91 +26,105 @@ import epdb
 from sys import argv
 import sqlite3
 import locale
+import mercantile
 
-# mbtiles
-# -------
-# CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob);
-# CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row);
-# CREATE TABLE metadata (name text, value text);
-# CREATE UNIQUE INDEX metadata_idx  ON metadata (name);
-# sqlite> 
 
-# osmand
-# ------
-# CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));
-# CREATE INDEX IND on tiles (x,y,z,s);
-# CREATE TABLE info(minzoom,maxzoom);
-# CREATE TABLE android_metadata (locale TEXT);
 
+# nsert into maxy(y,z) values(0,0);
+# insert into maxy(y,z) values(1,1);
+# insert into maxy(y,z) values(3,2);
+# insert into maxy(y,z) values(7,3);
+# insert into maxy(y,z) values(15,4);
+# insert into maxy(y,z) values(31,5);
+# insert into maxy(y,z) values(63,6);
+# insert into maxy(y,z) values(127,7);
+# insert into maxy(y,z) values(255,8);
+# insert into maxy(y,z) values(511,9);
+# insert into maxy(y,z) values(1023,10);
+# insert into maxy(y,z) values(2047,11);
+# insert into maxy(y,z) values(4095,12);
+# insert into maxy(y,z) values(8191,13);
+# insert into maxy(y,z) values(16383,14);
+# insert into maxy(y,z) values(32767,15);
+# insert into maxy(y,z) values(65535,16);
+# insert into maxy(y,z) values(131071,17);
+# insert into maxy(y,z) values(262143,18);
+# insert into maxy(y,z) values(524287,19);
+# insert into maxy(y,z) values(1048575,20);
+# insert into maxy(y,z) values(2097151,21);
+# insert into maxy(y,z) values(4194303,22);
+# insert into maxy(y,z) values(8388607,23);
+# insert into maxy(y,z) values(16777215,24);
 
 class MapTile(object):
-    def __init__(self, x=None, y=None, z=None, filespec=None):
-        self.tile = dict()
-        self.x = x
-        self.y = y
-        self.z = z
-        self.blob = None
-        if not filespec and z:
-            self.filespec = f"{z}/{x}/{y}.png"
+    def __init__(self, x=None, y=None, z=None, filespec=None, tile=None, suffix="jpg"):
+        """This is a simple wrapper around mercantile.tile to associate a
+        filespec with the grid coordinates."""
+        if tile:
+            self.x = tile.x
+            self.y = tile.y
+            self.z = tile.z
         else:
+            self.x = x
+            self.y = y
+            self.z = z
+        self.blob = None
+        self.filespec = None
+        if not filespec and self.z:
+            self.filespec = f"{self.z}/{self.y}/{self.x}.{suffix}"
+        elif filespec:
             self.filespec = filespec
             tmp = filespec.split("/")
             self.z = tmp[0]
-            self.x = tmp[1]
-            self.y = tmp[2].replace(".png", "")
-            
+            self.x = tmp[2]
+            self.y = tmp[1].replace("." + suffix, "")
 
-    def addImage(self, filespec=None):
-        if os.path.exists(filespec):
-            size = os.path.getsize(filespec)
-            file = open(filespec, "rb")
+    def readImage(self, base="./"):
+        file = f"{base}/{self.filespec}"
+        logging.debug("Adding tile image: %s" % file)
+        if os.path.exists(file):
+            size = os.path.getsize(file)
+            file = open(file, "rb")
             self.blob = file.read(size)
-        
-    def createTile(self, x=None, y=None, z=None, blob=None):
-        if x:
-            self.x = x
-        if y:
-            self.y = y
-        if z:
-            self.z = z
-        if blob:
-            self.addBlob(blob)
-
-    def addBlob(self, blob=None):
-        self.blob = blob
-
-    def getTile(self, format=None):
-        if format == 'mbtiles':
-            out = (z, y, x) 
-        elif format == 'osmand':
-            out = (x, y, z)             
-        elif format == 'postgres':
-            out = (x, y, z)             
-        return out
 
     def dump(self):
-        print("Z: %r" % self.z)
-        print("X: %r" % self.x)
-        print("Y: %r" % self.y)
+        if self.z:
+            print("Z: %r" % self.z)
+        if self.x:
+            print("X: %r" % self.x)
+        if self.y:
+            print("Y: %r" % self.y)
         print("Filespec: %s" % self.filespec)
         if self.blob:
             print("Tile size is: %d" % len(self.blob))
 
 class DataFile(object):
-    def __init__(self, dbname=None):
+    def __init__(self, dbname=None, suffix="jpg"):
         """Handle the sqlite3 database file"""
         self.db = None
         self.cursor = None
         if dbname:
             self.createDB(dbname)
+        self.dbname = dbname
         self.metadata = None
         self.toplevel = None
-    
+        self.suffix = suffix
+
+    def addBounds(self, bounds=None):
+        """Mbtiles has a bounds field, Osmand doesn't"""
+        entry = str(bounds)
+        entry = entry[1:len(entry)-1].replace(" ", "")
+        self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{entry}')")
+        self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('minzoom', '9')")
+        self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('maxzoom', '15')")
+
     def createDB(self, dbname=None):
         """Create and sqlitedb in either mbtiles or Osman sqlitedb format"""
         suffix = os.path.splitext(dbname)[1]
-        
-        logging.info("Created database file %s" % dbname)
+
+        if os.path.exists(dbname):
+            os.remove(dbname)
+
         self.db = sqlite3.connect(dbname)
         self.cursor = self.db.cursor()
         if suffix == '.mbtiles':
@@ -118,16 +132,16 @@ class DataFile(object):
             self.cursor.execute("CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row)")
             self.cursor.execute("CREATE TABLE metadata (name text, value text)")
             # These get populated later
-            name = None
-            description = None
+            name = dbname
+            description = "Created by odkconvert/basemapper.py"
             bounds = None
             self.cursor.execute("CREATE UNIQUE INDEX metadata_idx  ON metadata (name)")
             self.cursor.execute("INSERT INTO metadata (name, value) VALUES('version', '1.1')")
             self.cursor.execute("INSERT INTO metadata (name, value) VALUES('type', 'baselayer')")
             self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('name', '{name}')")
             self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('description', '{description}')")
-            self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{bounds}')")
-            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('format', 'png')")
+            #self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{bounds}')")
+            self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('format', 'jpg')")
         elif suffix == '.sqlitedb':
             # s is always 0
             self.cursor.execute("CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));")
@@ -138,16 +152,28 @@ class DataFile(object):
             loc = locale.getlocale()[0]
             self.cursor.execute(f"CREATE TABLE  android_metadata ({loc})")
         self.db.commit()
+        logging.info("Created database file %s" % dbname)
+
+    def writeTiles(self, tiles=list(), base="./"):
+        for tile in tiles:
+            xyz = MapTile(tile=tile)
+            xyz.readImage(base)
+            #xyz.dump()
+            self.writeTile(xyz)
 
     def writeTile(self, tile=None):
-        tile.dump()
-        # self.db.execute("INSERT INTO tiles (x, y, z, s, image) VALUES (?, ?, ?, ?, ?)", [tile.x, tile.y, tile.z, 0, sqlite3.Binary(tile.blob)])
-        self.db.execute("INSERT INTO tiles (tile_row, tile_column, zoom_level, tile_data) VALUES (?, ?, ?, ?)", [tile.x, tile.y, tile.z, sqlite3.Binary(tile.blob)])
+        if tile.blob is None:
+            logging.error("Map tile has no image data!")
+            # tile.dump()
+            return False
+        suffix = os.path.splitext(self.dbname)[1]
+        if suffix == ".sqlitedb":
+            self.db.execute("INSERT INTO tiles (x, y, z, s, image) VALUES (?, ?, ?, ?, ?)", [tile.x, tile.y, tile.z, 0, sqlite3.Binary(tile.blob)])
+        elif suffix ==".mbtiles":
+            y = (1 << tile.z) - tile.y - 1
+            self.db.execute("INSERT INTO tiles (tile_row, tile_column, zoom_level, tile_data) VALUES (?, ?, ?, ?)", [y, tile.x, tile.z, sqlite3.Binary(tile.blob)])
 
         self.db.commit()
-
-    def readTile(self):
-        pass
 
 
 if __name__ == '__main__':
@@ -167,16 +193,22 @@ if __name__ == '__main__':
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
-        outfile = DataFile(args.database)
+        outfile = DataFile(args.database, "jpg")
         toplevel = "/var/www/html/topotiles/"
         foo = "15/12744/6874.png"
         tmp = foo.split("/")
         z = tmp[0]
         x = tmp[1]
-        y = tmp[2].replace(".png", "")
+        y = tmp[2].replace(".jpg", "")
+
+        # file = "10/388/212.jpg"
+        # tile1 = MapTile(x=x, y=y, z=z)
+        # tile2 = MapTile(filespec=file)
+        # tile2.readImage(f'{toplevel}/{foo}')
+        # outfile.writeTile(tile2)
+
+        tile3 = mercantile.Tile(388, 211, 10)
+        xyz = MapTile(tile=tile3)
+        xyz.readImage(toplevel)
+        xyz.dump()
         
-        file = "15/12744/6874.png"
-        tile1 = MapTile(x, y, z)
-        tile2 = MapTile(filespec=file)
-        tile2.addImage(f'{toplevel}/{foo}')
-        outfile.writeTile(tile2)
