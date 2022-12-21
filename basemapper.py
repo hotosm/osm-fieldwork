@@ -26,7 +26,7 @@ import epdb
 import geojson
 from sys import argv
 import mercantile
-from osgeo import ogr, gdal
+from osgeo import ogr, osr
 from pySmartDL import SmartDL
 from cpuinfo import get_cpu_info
 from codetiming import Timer
@@ -52,9 +52,10 @@ def dlthread(dest, mirrors, tiles):
     # totaltime = 0.0
     logging.info("Downloading %d tiles in thread %d to %s" % (len(tiles), threading.get_ident(), dest))
     for tile in tiles:
-        filespec = f"{tile[2]}/{tile[1]}/{tile[0]}."
+        filespec = f"{tile[2]}/{tile[1]}/{tile[0]}"
         for site in mirrors:
-            filespec += site['format']
+            if site['source'] != 'topo':
+                filespec += "." + site['suffix']
             url = site['url']
             remote = url % filespec
             print("Getting file from: %s" % remote)
@@ -71,6 +72,8 @@ def dlthread(dest, mirrors, tiles):
                         logging.debug("Made %s" % tmp)
 
         try:
+            if site['source'] == 'topo':
+                filespec += "." + site['suffix']
             outfile = dest + "/" + filespec
             if not os.path.exists(outfile):
                 dl = SmartDL(remote, dest=outfile, connect_default_logger=False)
@@ -80,38 +83,14 @@ def dlthread(dest, mirrors, tiles):
         except:
             logging.error("Couldn't download from %r: %s" %  (filespec, dl.get_errors()))
 
-        #     errors += 1
-        #     continue
-        # if dl.isSuccessful():
-        #     if dl.get_speed() > 0.0:
-        #              logging.info("Speed: %s" % dl.get_speed(human=True))
-        #              logging.info("Download time: %r" % dl.get_dl_time(human=True))
-    #             totaltime +=  dl.get_dl_time()
-    #             # ERSI does't append the filename
-    #             totaltime +=  dl.get_dl_time()
-    #             suffix = filetype.guess(dl.get_dest())
-    #             print('File extension: %s' % suffix.extension)
-    #             if suffix.extension == 'jpg':
-    #                 os.rename(dl.get_dest(), filespec)
-    #                 logging.debug("Renamed %r" % dl.get_dest())
-    #                 ext = ".jpg"  # FIXME: probably right, but shouldbe a better test
-    #             else:
-    #                 ext = tmp[1]
-    #                 counter += 1
-
-    #         counter += 1
-    #         db.createVRT(filespec, tile)
-
-    # end = datetime.now()
-    # delta = start - end
-    # logging.debug("%d errors out of %d tiles" % (errors, len(tiles)))
-    # # logging.debug("Processed %d tiles in %d.%d.%d minutes" % (len(tiles), delta.minutes , delta.microseconds))
-
 class BaseMapper(object):
     def __init__(self, filespec=None, base=None, source=None):
         """Create an mbtiles basemap for ODK Collect"""
         geom = ogr.Open(filespec)
         layer = geom.GetLayer()
+        x_min, x_max, y_min, y_max = layer.GetExtent()
+        srs = layer.GetSpatialRef()
+
         self.bbox = self.makeBbox(layer)
         self.tiles = list()
         self.base = base
@@ -121,32 +100,29 @@ class BaseMapper(object):
 
         # Bing hybrid imagery
         url = "http://ecn.t0.tiles.virtualearth.net/tiles/h%s.png?g=129&mkt=en&stl=H"
-        source = {'name': "Bing Maps Hybrid", 'url': url, 'format': 'png'}
+        source = {'name': "Bing Maps Hybrid", 'url': url, 'suffix': 'png', 'source': 'bing'}
         self.sources['bing'] = source
 
         # ERSI imagery
         url = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/%s"
-        source = {'name': "ESRI World Imagery", 'url': url, 'format': 'jpg'}
+        source = {'name': "ESRI World Imagery", 'url': url, 'suffix': 'jpg', 'source': 'ersi'}
         self.sources['ersi'] = source
 
         # USGS Topographical map
-        url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%d/%d/%s.png"
-        source = {'name': "USGS Topographic Map", 'url': url, 'format': 'png'}
+        url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%s"
+        source = {'name': "USGS Topographic Map", 'url': url, 'suffix': 'jpg', 'source': 'topo'}
         self.sources['topo'] = source
 
         # Google Hybrid
         url = "https://mt0.google.com/vt?lyrs=h&x={x}&s=&y={y}&z={z}"
-        source = {'name': "Google Hybrid", 'url': url, 'format': 'png'}
+        source = {'name': "Google Hybrid", 'url': url, 'suffix': 'png', 'source': 'google'}
         self.sources['google'] = source
 
     def getFormat(self):
-        return  self.sources[self.source]['format']
+        return  self.sources[self.source]['suffix']
 
     def getTiles(self, zoom=None):
         """Get a list of tiles for the specifed zoom level"""
-        if not zoom:
-            return False
-
         info = get_cpu_info()
         cores = info['count']
 
@@ -171,26 +147,18 @@ class BaseMapper(object):
                 executor.shutdown()
             # logging.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), os.path.basename(self.base)))
 
-        return True
-
-    def createVRT(self, top=None, outfile=None):
-        for files in glob.glob(top + '*'):
-            print(files)
-        # vrt = gdal.BuildVRT(filespec,  )
-
-    # def downloadTile(self, source=None, tile=list()):
-    #     return True
+        return len(self.tiles)
 
     def tileExists(self, tile=list()):
         """See if a map tile already exists"""
-        filespec = f"{self.base}{tile[2]}/{tile[1]}/{tile[0]}.{self.sources['ersi']['format']}"
+        filespec = f"{self.base}{tile[2]}/{tile[1]}/{tile[0]}.{self.sources[{self.source}]['suffix']}"
         if os.path.exists(filespec):
             logging.debug("%s exists" % filespec)
             return True
         else:
             logging.debug("%s doesn't exists" % filespec)
             return False
-    
+
     def makeBbox(self, layer=None):
         """Make a bounding box from a layer"""
         # left, bottom, right, top
@@ -201,25 +169,6 @@ class BaseMapper(object):
             print(bbox)
         return bbox
 
-    # def writeMbtiles(self, filespec=None, boundary=None, zooms=[12, 13, 14, 15]):
-    #     """Write the tiles to an mbtiles file"""
-    #     db = f"{self.base}/{filespec}.mbtiles"
-    #     try:
-    #         conn = sqlite3.connect(db)
-    #         logging.debug("Database %s formed." % db)
-    #     except:
-    #         logging.error("Database %s not formed." % db)
-    #     out = MBtiles(db, mode='r+')
-    #     for level in zooms:
-    #         tiles = list(mercantile.tiles(self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], level))
-    #         for tile in tiles:
-    #             png = f"{self.base}/{tile[2]}/{tile[0]}/{tile[1]}.png"
-    #             with MBtiles(png) as src:
-    #                 data = src.read_tile(z=tile[2], x=tile[0], y=tile[1])
-    #             print(tile, data)
-    #             # out.write_tile(z=tile[0], x=tile[2], y=tile[3], data)
-    #     logging.info("Wrote map tiles to %s" % filespec)
-    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create an mbtiles basemap for ODK Collect')
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
@@ -276,16 +225,14 @@ else:
     logging.error("You need to specify a source!")
     quit()
 
+outf = DataFile(args.outfile, basemap.getFormat())
+suffix = os.path.splitext(args.outfile)[1]
+if suffix == '.mbtiles':
+    outf.addBounds(basemap.bbox)
 for level in zooms:
     basemap.getTiles(level)
-
-if args.outfile:
-    outf = DataFile(args.outfile)
-    for tile in basemap.tiles:
-        xyz = MapTile(tile=tile)
-        xyz.addImage(top=base)
-        outf.writeTile(xyz)
-        tile.dump()
-    #basemap.writeMbtiles(args.outfile)
-else:
-    logging.info("Only downloading tiles to %s!" % base)
+    if args.outfile:
+        # Create output database and specify image format, png, jpg, or tif
+        outf.writeTiles(basemap.tiles, base)
+    else:
+        logging.info("Only downloading tiles to %s!" % base)
