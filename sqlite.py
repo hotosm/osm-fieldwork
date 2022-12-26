@@ -148,7 +148,7 @@ class DataFile(object):
             self.db.execute("INSERT INTO tiles (x, y, z, s, image) VALUES (?, ?, ?, ?, ?)", [tile.x, tile.y, z, 0, sqlite3.Binary(tile.blob)])
         elif suffix ==".mbtiles":
             y = (1 << tile.z) - tile.y - 1
-            self.db.execute("INSERT INTO tiles (tile_row, tile_column, zoom_level, tile_data) VALUES (?, ?, ?, ?)", [y, tile.x, z, sqlite3.Binary(tile.blob)])
+            self.db.execute("INSERT INTO tiles (tile_row, tile_column, zoom_level, tile_data) VALUES (?, ?, ?, ?)", [y, tile.x, tile.z, sqlite3.Binary(tile.blob)])
 
         self.db.commit()
 
