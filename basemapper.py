@@ -118,6 +118,11 @@ class BaseMapper(object):
         source = {'name': "Google Hybrid", 'url': url, 'suffix': 'png', 'source': 'google'}
         self.sources['google'] = source
 
+        # OpenArialMap
+        url = "https://tiles.openaerialmap.org/63962d0d9f665400075759be/0/63962d0d9f665400075759bf/{z}/{x}/{y}"
+        source = {'name': "Open Aerial Map", 'url': url, 'suffix': 'png', 'source': 'oam'}
+        self.sources['oam'] = source
+
     def getFormat(self):
         return  self.sources[self.source]['suffix']
 
@@ -176,7 +181,7 @@ if __name__ == '__main__':
     parser.add_argument("-z", "--zooms", default="12-17", help='The Zoom levels')
     parser.add_argument("-o", "--outfile", help='Output file name')
     parser.add_argument("-d", "--outdir", help='Output directory name for tile cache')
-    parser.add_argument("-s", "--source", default="ersi", choices=["ersi", "bing", "topo", "google"], help='Imagery source')
+    parser.add_argument("-s", "--source", default="ersi", choices=["ersi", "bing", "topo", "google", 'oam'], help='Imagery source')
     args = parser.parse_args()
 
     # if verbose, dump to the terminal.
