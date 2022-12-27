@@ -22,25 +22,11 @@ import os
 import epdb
 import sys
 from osgeo import ogr
-from geojson import Point, Feature, FeatureCollection, dump
 from progress.bar import Bar, PixelBar
 from progress.spinner import PixelSpinner
 from codetiming import Timer
-
-class OutputFile(object):
-    def __init__(self, outfile=None):
-        """Initialize OGR output layer"""
-        outdrv = ogr.GetDriverByName("GeoJson")
-        if os.path.exists(outfile):
-            outdrv.DeleteDataSource(outfile)
-
-        logging.info("Creating output data file: %s" % outfile)
-        self.outdata  = outdrv.CreateDataSource(outfile)
-        self.outlayer = self.outdata.CreateLayer("data", geom_type=ogr.wkbPolygon)
-        self.fields = self.outlayer.GetLayerDefn()
-        # newid = ogr.FieldDefn("id", ogr.OFTInteger)
-        # self.outlayer.CreateField(newid)
-        self.filespec = outfile
+from osmfile import OsmFile
+import shapely.wkb as wkblib
 
 
 class InputFile(object):
@@ -63,8 +49,12 @@ class InputFile(object):
         self.msmem = memdrv.CreateDataSource('msmem')
         self.msmem.CopyLayer(self.datain.GetLayer(), "msmem")
         self.layer = self.msmem.GetLayer()
+        self.fields = self.datain.GetLayer().GetLayerDefn()
         self.memlayer = None
         self.mem = None
+        self.tags = dict()
+        for i in range(self.fields.GetFieldCount()):
+            self.tags[self.fields.GetFieldDefn(i).GetName()] = None
 
     def clip(self, boundary=None):
         """Clip a data source by a boundary"""
@@ -77,7 +67,6 @@ class InputFile(object):
             poly = ogr.Open(boundary)
             layer = poly.GetLayer()
             ogr.Layer.Clip(self.layer, layer, self.memlayer)
-        
         
     def dump(self):
         """Dump internal data"""
@@ -97,6 +86,7 @@ if __name__ == '__main__':
     parser.add_argument("-b", "--boundary", help='Boundary polygon to limit the data size')
     args = parser.parse_args()
 
+    # This program needs options to actually do anything
     if len(argv) == 1:
         parser.print_help()
         quit()
@@ -106,25 +96,30 @@ if __name__ == '__main__':
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
 
+    # This is the existing OSM data, a database or a file
     if args.osmfile:
         osmf = InputFile(args.osmfile)
-        osmf.dump()
+        # osmf.dump()
         if args.boundary:
             osmf.clip(args.boundary)
+        osmf.dump()
     else:
         logging.error("No OSM data source specified!")
         parser.print_help()
         quit()
-        
-    if args.odkfile:
-        odkf = InputFile(args.odkfile)
-        odkf.dump()
-        if args.boundary:
-            odkf.clip(args.boundary)
-    else:
-        logging.error("No ODK CSV file specified!")
-        parser.print_help()
-        quit()
+
+    # Create an OSM XML handler, which writes to the output file
+    odkf = OsmFile(filespec=args.outfile)
+    # And also loads the POIs from the ODK Central submission
+    odkf.loadFile(args.odkfile)
+    # odkf.dump()
+    # odkf.getFields()
+    out = list()
+    for id, node in odkf.data.items():
+        out.append(odkf.createNode(node))
+    odkf.write(out)
+    odkf.footer()
+
 
 # osmoutfile = os.path.basename(args.infile.replace(".csv", ".osm"))
 #csvin.createOSM(osmoutfile)
