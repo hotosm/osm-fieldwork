@@ -279,5 +279,4 @@ if __name__ == '__main__':
     osm = OsmFile()
     osm.loadFile(args.osmfile)
     #osm.dump()
-    foo = osm.getFeature("44552974")
-    print(foo)
+    
