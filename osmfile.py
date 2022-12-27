@@ -47,6 +47,7 @@ class OsmFile(object):
             self.file = open(filespec, 'w')
             # self.file = open(filespec + ".osm", 'w')
             logging.info("Opened output file: " + filespec )
+        self.header()
         #logging.error("Couldn't open %s for writing!" % filespec)
 
         # This is the file that contains all the filtering data
@@ -258,6 +259,16 @@ class OsmFile(object):
     def getFeature(self, id):
         """Get the data for a feature from the loaded OSM data file"""
         return self.data[id]
+
+    def getFields(self):
+        """Extract all the tags used in this file"""
+        fields = list()
+        for id, item in self.data.items():
+            keys = list(item['tags'].keys())
+            for key in keys:
+                if key not in fields:
+                    fields.append(key)
+        print(fields)
 
 if __name__ == '__main__':
     # Command Line options
