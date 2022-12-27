@@ -127,6 +127,9 @@ class Convert(YamlFile):
                 key = list(i.keys())[0]
                 newtag = key
                 newval = i[key]
+                all.append( { newtag: newval } )
+        else:
+            all.append( { newtag: newval } )
 
         # if newtag not in self.tags:
         #     tmp = { newtag: None }
@@ -137,8 +140,7 @@ class Convert(YamlFile):
         #     key = list(val.keys())[0]
         #     logging.debug("Converted Value for entry %s to %s" % (tag, value))
         #     # all = self.Value(tag, value)
-        all.append( { newtag: newval } )
-        return newtag, newval
+        return all
 
     def convertValue(self, tag=None, value=None):
         """Convert a single tag value"""
