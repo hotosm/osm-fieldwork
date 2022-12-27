@@ -103,6 +103,7 @@ class CSVDump(Convert):
             if keyword is None or len(keyword) == 0:
                 continue
             base = self.basename(keyword).lower()
+            # logging.debug("Line: %r, %r" % (base, value))
             # There's many extraneous fields in the input file which we don't need.
             if base is None or base in self.ignore or value is None or len(value) == 0:
                 continue
@@ -115,9 +116,17 @@ class CSVDump(Convert):
             #             tags['name'] = val
             #     continue
             else:
-                tag, val = self.convertEntry(base, value)
-                tags[tag] = val
-                # logging.debug("\tFIXME1: %r (%r) = %r" % (tag, base, val))
+                items = self.convertEntry(base, value)
+                if len(items) > 0:
+                    if type(items[0]) == str:
+                        tags[items[0]] = items[1]
+                    elif type(items[0]) == dict:
+                        for entry in items:
+                            for k,v in entry.items():
+                                tags[k] = v
+                else:
+                    tags[base] = value
+                    # logging.debug("\tFIXME1: %r" % len(items))
         # all.append(tags)
         return tags
 
