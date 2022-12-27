@@ -46,7 +46,7 @@ class YamlFile(object):
         return keyword in self.yaml['ignore']
 
     def tagsData(self, keyword):
-        """See if a keyword is in the tags complteness section"""
+        """See if a keyword is in the tags completness section"""
         return keyword in self.yaml['tags']
 
     def hasList(self, keyword=None):
