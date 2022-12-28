@@ -27,6 +27,7 @@ from progress.spinner import PixelSpinner
 from codetiming import Timer
 from osmfile import OsmFile
 import shapely.wkb as wkblib
+from shapely.geometry import Point, Polygon
 
 
 class InputFile(object):
@@ -67,7 +68,19 @@ class InputFile(object):
             poly = ogr.Open(boundary)
             layer = poly.GetLayer()
             ogr.Layer.Clip(self.layer, layer, self.memlayer)
-        
+
+    def getFeature(self, id=None):
+        query = f"SELECT * FROM ways_poly WHERE osm_id=\'{id}\'"
+        result = self.datain.ExecuteSQL(query)
+        if not result:
+            return None
+        index = self.fields.GetFieldIndex('tags')
+        # There should only be one feature returned from the query
+        tags = eval(result[0].GetField(index))
+        for k,v in tags.items():
+            self.tags[k] = v
+        return self.tags
+
     def dump(self):
         """Dump internal data"""
         print(f"Data source is: {self.source}")
@@ -108,18 +121,24 @@ if __name__ == '__main__':
         parser.print_help()
         quit()
 
+#    id = "701684811"
+#    feature = osmf.getFeature(id)
+#    if not feature:
+#        logging.debug(f"No feature found for {id}")
+
     # Create an OSM XML handler, which writes to the output file
     odkf = OsmFile(filespec=args.outfile)
     # And also loads the POIs from the ODK Central submission
     odkf.loadFile(args.odkfile)
-    # odkf.dump()
-    # odkf.getFields()
+
+    # FIXME: for now just copy the data file from Central
+    # to test input parsing, and output accuracy.
     out = list()
     for id, node in odkf.data.items():
-        out.append(odkf.createNode(node))
+        out.append(odkf.createNode(node, modified=True))
     odkf.write(out)
     odkf.footer()
-
+    logging.info("Wrote %s: " % args.outfile)
 
 # osmoutfile = os.path.basename(args.infile.replace(".csv", ".osm"))
 #csvin.createOSM(osmoutfile)
