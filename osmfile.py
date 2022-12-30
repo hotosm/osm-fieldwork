@@ -94,11 +94,11 @@ class OsmFile(object):
         # Add default attributes
         if modified:
             attrs['action'] = 'modify'
-        if 'osm_way_id' in way:
+        if 'osm_way_id' in way['attrs']:
             attrs['id'] = int(way['attrs']['osm_way_id'])
-        elif 'osm_id' in way:
+        elif 'osm_id' in way['attrs']:
             attrs['id'] = int(way['attrs']['osm_id'])
-        elif 'id' in way:
+        elif 'id' in way['attrs']:
             attrs['id'] = int(way['attrs']['id'])
         else:
             attrs['id'] = self.start
@@ -124,9 +124,9 @@ class OsmFile(object):
         # The geometry is an EWKT string, so there is no need to get fancy with
         # geometries, just manipulate the string, as OSM XML it's only strings
         # anyway.
-        geom = way['geom'][19:][:-2]
+        # geom = way['geom'][19:][:-2]
         #print(geom)
-        points = geom.split(",")
+        # points = geom.split(",")
         #print(points)
 
         # epdb.st()
@@ -153,8 +153,7 @@ class OsmFile(object):
         osm += "  <way " + line + ">"
 
         for ref in way['refs']:
-            if ref != 'osm_id':
-                osm += '\n    <nd ref="%s"/>' % ref
+            osm += '\n    <nd ref="%s"/>' % ref
 
         if 'tags' in way:
             for key, value in way['tags'].items():
@@ -253,7 +252,7 @@ class OsmFile(object):
             tags = dict()
             if 'tag' in node:
                 for tag in node['tag']:
-                    tags[tag['@k']] = tag['@v']
+                    tags[tag['@k']] = tag['@v'].strip()
                 node = {'attrs': attrs, 'tags': tags}
                 self.data[node['attrs']['id']] = node
 
