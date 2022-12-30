@@ -69,21 +69,38 @@ class InputFile(object):
             layer = poly.GetLayer()
             ogr.Layer.Clip(self.layer, layer, self.memlayer)
 
-    def createFeature(self, data=None):
-        # a negative ID is a new feature
-        pass
-
-    def getFeature(self, id=None):
+    def getFeature(self, data=None):
+        id = data['attrs']['id']
+        result = None
         if not id or int(id) < 0:
-            logging.debug(f"New feature for ID: {id}")
-            return None
+            if 'name' in data['tags']:
+                query = f"SELECT *, ST_AsEWKT(geom) AS wkt FROM nodes WHERE tags->>'name'=\'{data['tags']['name']}\'"
+                # print(query)
+                result = self.datain.ExecuteSQL(query)
+                if result.GetFeatureCount() == 0:
+                    logging.debug(f"Feature not found in nodes for ID: {data['tags']['name']}")
+                    result = None
+                else:
+                    logging.debug(f"Feature {data['tags']['name']} found in nodes")
+                    # logging.debug(f"Feature {data['attrs']['id']} found in nodes")
+            else:
+                return None
 
-        query = f"SELECT *, ST_AsEWKT(geom) AS wkt FROM ways_poly WHERE osm_id=\'{id}\'"
-        # print(query)
-        result = self.datain.ExecuteSQL(query)
-        if result.GetFeatureCount() == 0:
-            # logging.debug(f"No feature found for ID: {id}")
-            return None
+        if not result:
+            query = f"SELECT *, ST_AsEWKT(geom) AS wkt FROM ways_poly WHERE osm_id=\'{id}\'"
+            # print(query)
+            result = self.datain.ExecuteSQL(query)
+            if result.GetFeatureCount() == 0:
+                # print(data)
+                if 'name' in data['tags']:
+                    query = f"SELECT *, ST_AsEWKT(geom) AS wkt FROM nodes WHERE tags->>'name'=\'{data['tags']['name']}\'"
+                    #print(query)
+                    result = self.datain.ExecuteSQL(query)
+                    if result.GetFeatureCount() == 0:
+                        logging.debug(f"Feature not found in ways for ID: {data['tags']['name']}")
+                    else:
+                        logging.debug(f"Feature found in ways for ID: {data['tags']['name']}")
+                return None
 
         # There is only one feature for an OSM ID
         feature = result.GetFeature(0)
@@ -96,15 +113,19 @@ class InputFile(object):
 
         # Refs are stored as a string with a colon delimiter
         index = feature.GetFieldIndex('refs')
-        refs = eval(feature.GetField(index))
+        if index < 0:
+            refs = list()
+        else:
+            refs = eval(feature.GetField(index))
 
         # There should only be one feature returned from the query
         index = feature.GetFieldIndex('wkt')
         geom = feature.GetField(index)
         #geom = result[0].GetGeometryRef()
 
-        # a ways doesn't use lat-lon, it uses references to nodes instead
+        # a ways don't use lat-lon, it uses references to nodes instead
         attrs = {'id': id}
+        self.tags = dict()
         for k,v in tags.items():
             self.tags[k] = v
         feature = {'tags': self.tags, 'attrs': attrs, 'refs': refs, 'geom': geom}
@@ -156,15 +177,19 @@ if __name__ == '__main__':
     odkf.loadFile(args.odkfile)
 
     for id in odkf.data:
-        # print(odkf.data[id])
-        feature = osmf.getFeature(id)
+        #print(odkf.data[id])
+        feature = osmf.getFeature(odkf.data[id])
         out = list()
         if not feature:
             # logging.debug(f"No feature found for ID {id}")
             # feature = osmf.createFeature(odkf.data[id])
-            out.append(odkf.createNode(odkf.data[id], modified=True))
+                out.append(odkf.createNode(odkf.data[id], modified=True))
         else:
-            out.append(odkf.createWay(feature, modified=True))
+            if 'name' in feature['tags']:
+                if odkf.data[id]['tags']['name'] != feature['tags']['name']:
+                    out.append(odkf.createNode(odkf.data[id], modified=True))
+            else:
+                out.append(odkf.createWay(feature, modified=True))
         odkf.write(out)
 
     # # FIXME: for now just copy the data file from Central
