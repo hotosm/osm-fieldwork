@@ -69,17 +69,46 @@ class InputFile(object):
             layer = poly.GetLayer()
             ogr.Layer.Clip(self.layer, layer, self.memlayer)
 
+    def createFeature(self, data=None):
+        # a negative ID is a new feature
+        pass
+
     def getFeature(self, id=None):
-        query = f"SELECT * FROM ways_poly WHERE osm_id=\'{id}\'"
-        result = self.datain.ExecuteSQL(query)
-        if not result:
+        if not id or int(id) < 0:
+            logging.debug(f"New feature for ID: {id}")
             return None
-        index = self.fields.GetFieldIndex('tags')
+
+        query = f"SELECT *, ST_AsEWKT(geom) AS wkt FROM ways_poly WHERE osm_id=\'{id}\'"
+        # print(query)
+        result = self.datain.ExecuteSQL(query)
+        if result.GetFeatureCount() == 0:
+            # logging.debug(f"No feature found for ID: {id}")
+            return None
+
+        # There is only one feature for an OSM ID
+        feature = result.GetFeature(0)
+        if feature.GetFieldCount() == 0:
+            logging.debug(f"No fields found in feature for ID: {id}")
+            return None
+
+        index = feature.GetFieldIndex('tags')
+        tags = eval(feature.GetField(index))
+
+        # Refs are stored as a string with a colon delimiter
+        index = feature.GetFieldIndex('refs')
+        refs = eval(feature.GetField(index))
+
         # There should only be one feature returned from the query
-        tags = eval(result[0].GetField(index))
+        index = feature.GetFieldIndex('wkt')
+        geom = feature.GetField(index)
+        #geom = result[0].GetGeometryRef()
+
+        # a ways doesn't use lat-lon, it uses references to nodes instead
+        attrs = {'id': id}
         for k,v in tags.items():
             self.tags[k] = v
-        return self.tags
+        feature = {'tags': self.tags, 'attrs': attrs, 'refs': refs, 'geom': geom}
+        return feature
 
     def dump(self):
         """Dump internal data"""
@@ -121,22 +150,29 @@ if __name__ == '__main__':
         parser.print_help()
         quit()
 
-#    id = "701684811"
-#    feature = osmf.getFeature(id)
-#    if not feature:
-#        logging.debug(f"No feature found for {id}")
-
     # Create an OSM XML handler, which writes to the output file
     odkf = OsmFile(filespec=args.outfile)
     # And also loads the POIs from the ODK Central submission
     odkf.loadFile(args.odkfile)
 
-    # FIXME: for now just copy the data file from Central
-    # to test input parsing, and output accuracy.
-    out = list()
-    for id, node in odkf.data.items():
-        out.append(odkf.createNode(node, modified=True))
-    odkf.write(out)
+    for id in odkf.data:
+        # print(odkf.data[id])
+        feature = osmf.getFeature(id)
+        out = list()
+        if not feature:
+            # logging.debug(f"No feature found for ID {id}")
+            # feature = osmf.createFeature(odkf.data[id])
+            out.append(odkf.createNode(odkf.data[id], modified=True))
+        else:
+            out.append(odkf.createWay(feature, modified=True))
+        odkf.write(out)
+
+    # # FIXME: for now just copy the data file from Central
+    # # to test input parsing, and output accuracy.
+    # out = list()
+    # for id, node in odkf.data.items():
+    #     out.append(odkf.createNode(node, modified=True))
+    # odkf.write(out)
     odkf.footer()
     logging.info("Wrote %s: " % args.outfile)
 
