@@ -58,7 +58,7 @@ class OsmFile(object):
         self.addr = None
         # decrement the ID
         self.start = -1
-        # self.convert = Convert()
+        self.convert = Convert()
         self.data = dict()
 
     def isclosed(self):
@@ -108,39 +108,43 @@ class OsmFile(object):
         else:
             attrs['version'] = way['attrs']['version'] + 1
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
-        # If the resulting file is publicly accessible without authentication, THE GDPR applies
+        # If the resulting file is publicly accessible without authentication, The GDPR applies
         # and the identifying fields should not be included
-        if 'uid' in way:
+        if 'uid' in way and attrs['uid'] is not None:
             attrs['uid'] = way['attrs']['uid']
-        if 'user' in way:
+        if 'user' in way and attrs['user'] is not None:
             attrs['user'] = way['attrs']['user']
 
         # Make all the nodes first. The data in the track has 4 fields. The first two
         # are the lat/lon, then the altitude, and finally the GPS accuracy.
         i = 0
-        newrefs = list()
+        # newrefs = list()
         node = dict()
-        for ref in way['refs']:
-            node['timestamp'] = attrs['timestamp']
-            if 'user' in attrs:
-                node['user'] = attrs['user']
-            if 'uid' in attrs:
-                node['uid'] = attrs['uid']
-            node['version'] = 0
-            colon = ref.find(';')
-            if colon > 0:
-                newrefs.append(self.start)
-                osm += self.createNode(node) + '\n'
-                #node['accuracy'] = ref[:colon]
-                ref = ref[colon+1:]
-                i = 0
-            if i == 0:
-                node['lat'] = ref
-            if i == 1:
-                node['lon'] = ref
-            # if i == 2:
-            #     node[altitude] = ref
-            i += 1
+        node['attrs'] = dict()
+        # The geometry is an EWKT string, so there is no need to get fancy with
+        # geometries, just manipulate the string, as OSM XML it's only strings
+        # anyway.
+        geom = way['geom'][19:][:-2]
+        #print(geom)
+        points = geom.split(",")
+        #print(points)
+
+        # epdb.st()
+        # loop = 0
+        # while loop < len(way['refs']):
+        #     #print(f"{points[loop]} {way['refs'][loop]}")
+        #     node['timestamp'] = attrs['timestamp']
+        #     if 'user' in attrs and attrs['user'] is not None:
+        #         node['attrs']['user'] = attrs['user']
+        #     if 'uid' in attrs and attrs['uid'] is not None:
+        #         node['attrs']['uid'] = attrs['uid']
+        #     node['version'] = 0
+        #     lat,lon = points[loop].split(' ')
+        #     node['attrs']['lat'] = lat
+        #     node['attrs']['lon'] = lon
+        #     node['attrs']['id'] = way['refs'][loop]
+        #     osm += self.createNode(node) + '\n'
+        #     loop += 1
 
         # Processs atrributes
         line = ""
@@ -148,19 +152,21 @@ class OsmFile(object):
             line += '%s=%r ' % (ref, str(value))
         osm += "  <way " + line + ">"
 
-        for ref in newrefs:
+        for ref in way['refs']:
             if ref != 'osm_id':
                 osm += '\n    <nd ref="%s"/>' % ref
 
         if 'tags' in way:
             for key, value in way['tags'].items():
+                if value is None:
+                    continue
                 if key == 'track':
                     continue
                 if key not in attrs:
                     newkey = self.convert.escape(key)
                     osm += "\n    <tag k='%s' v=%r/>" % (newkey, value)
-                if modified:
-                    osm += '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
+            if modified:
+                osm += '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
             osm += '\n'
 
         osm += "  </way>"
@@ -188,9 +194,9 @@ class OsmFile(object):
         attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, THE GDPR applies
         # and the identifying fields should not be included
-        if 'uid' in node:
+        if 'uid' in node and attrs['uid'] is not None:
             attrs['uid'] = node['uid']
-        if 'user' in node:
+        if 'user' in node and attrs['ser'] is not None:
             attrs['user'] = node['user']
 
         # Processs atrributes
@@ -203,10 +209,12 @@ class OsmFile(object):
         if 'tags' in node:
             osm += ">"
             for key, value in node['tags'].items():
+                if not value:
+                    continue
                 if key not in attrs:
                     osm += "\n    <tag k='%s' v=%r/>" % (key, value)
-                if modified:
-                    osm += '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
+            if modified:
+                osm += '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
             osm += "\n  </node>"
         else:
             osm += "/>"
@@ -243,10 +251,11 @@ class OsmFile(object):
         for node in field['node']:
             attrs = {'id': node['@id'], 'lat': node['@lat'], 'lon': node['@lon'], 'timestamp': node['@timestamp']}
             tags = dict()
-            for tag in node['tag']:
-                tags[tag['@k']] = tag['@v']
-            node = {'attrs': attrs, 'tags': tags}
-            self.data[node['attrs']['id']] = node
+            if 'tag' in node:
+                for tag in node['tag']:
+                    tags[tag['@k']] = tag['@v']
+                node = {'attrs': attrs, 'tags': tags}
+                self.data[node['attrs']['id']] = node
 
     def dump(self):
         """Dump the contents of an OSM file"""
@@ -289,5 +298,5 @@ if __name__ == '__main__':
 
     osm = OsmFile()
     osm.loadFile(args.osmfile)
-    #osm.dump()
+    osm.dump()
     
