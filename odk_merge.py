@@ -69,6 +69,17 @@ class InputFile(object):
             layer = poly.GetLayer()
             ogr.Layer.Clip(self.layer, layer, self.memlayer)
 
+    def mergeTags(self, osm=None, odk=None):
+        """Merge two sets of tags together"""
+        if str(osm) < str(odk):
+            # logging.debug("No changes made to tags")
+            return None
+        else:
+            # logging.debug("Changes tags")
+            osm.update(odk)
+            return osm
+        return None
+
     def getFeature(self, data=None):
         id = data['attrs']['id']
         result = None
@@ -82,7 +93,6 @@ class InputFile(object):
                     result = None
                 else:
                     logging.debug(f"Feature {data['tags']['name']} found in nodes")
-                    # logging.debug(f"Feature {data['attrs']['id']} found in nodes")
             else:
                 return None
 
@@ -188,8 +198,12 @@ if __name__ == '__main__':
             # feature = osmf.createFeature(odkf.data[id])
                 out.append(odkf.createNode(odkf.data[id], modified=True))
         else:
+            tags = osmf.mergeTags(feature['tags'], odkf.data[id]['tags'])
+            if tags:
+                odkf.data[id]['tags'] = tags
             if 'name' in feature['tags']:
-                if odkf.data[id]['tags']['name'] != feature['tags']['name']:
+                # if tags and odkf.data[id]['tags']['name'] != feature['tags']['name']:
+                if tags:
                     out.append(odkf.createNode(odkf.data[id], modified=True))
             else:
                 out.append(odkf.createWay(feature, modified=True))
