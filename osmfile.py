@@ -103,7 +103,7 @@ class OsmFile(object):
         else:
             attrs['id'] = self.start
             self.start -= 1
-        if 'version' not in way:
+        if 'version' not in way['attrs']:
             attrs['version'] = 1
         else:
             attrs['version'] = way['attrs']['version'] + 1

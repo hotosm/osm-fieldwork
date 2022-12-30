@@ -111,6 +111,9 @@ class InputFile(object):
         index = feature.GetFieldIndex('tags')
         tags = eval(feature.GetField(index))
 
+        index = feature.GetFieldIndex('version')
+        version = feature.GetField(index)
+
         # Refs are stored as a string with a colon delimiter
         index = feature.GetFieldIndex('refs')
         if index < 0:
@@ -124,7 +127,7 @@ class InputFile(object):
         #geom = result[0].GetGeometryRef()
 
         # a ways don't use lat-lon, it uses references to nodes instead
-        attrs = {'id': id}
+        attrs = {'id': id, 'version': version}
         self.tags = dict()
         for k,v in tags.items():
             self.tags[k] = v
