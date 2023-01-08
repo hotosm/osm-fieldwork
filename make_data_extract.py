@@ -27,11 +27,13 @@ import epdb
 from sys import argv
 from osgeo import ogr, gdal
 import json
-from geojson import Point, Polygon, Feature, FeatureCollection
+from geojson import Point, Polygon, Feature, FeatureCollection, dump
 import geojson
 from OSMPythonTools.overpass import Overpass
 from OSMPythonTools.api import Api
 from yamlfile import YamlFile
+import psycopg2
+from shapely.geometry import shape
 
 
 # all possible queries
@@ -84,48 +86,61 @@ class OutputFile(object):
     def cleanup(self, filespec=None):
         if not filespec:
             return False
-        os.rename(filespec, 'tmp.geojson')
-        infile = open('tmp.geojson', 'r')
-        outfile = open(filespec, 'w')
-        data = geojson.load(infile)
-        for feature in data['features']:
-            feature.pop('id')
-            if 'amenity' in feature['properties']:
-                tmp = feature['properties']['amenity']
-                # amenity is in the query, and is often null, so
-                # ignore that.
-                if tmp is None:
-                    continue
-                feature['properties']['amenity'] = tmp.replace('\"', '')
-            else:
-                tmp = feature['properties']
-                if type(tmp) == str:
-                    feature['properties'] = tmp.replace('\"', '')
-        geojson.dump(data, outfile)
+        # os.rename(filespec, 'tmp.geojson')
+        # infile = open('tmp.geojson', 'r')
+        # outfile = open(filespec, 'w')
+        # data = geojson.load(infile)
+        # for feature in data['features']:
+        #     feature.pop('id')
+        #     if 'amenity' in feature['properties']:
+        #         tmp = feature['properties']['amenity']
+        #         # amenity is in the query, and is often null, so
+        #         # ignore that.
+        #         if tmp is None:
+        #             continue
+        #         feature['properties']['amenity'] = tmp.replace('\"', '')
+        #     else:
+        #         tmp = feature['properties']
+        #         if type(tmp) == str:
+        #             feature['properties'] = tmp.replace('\"', '')
+        # geojson.dump(data, outfile)
 
-class PostgresClient(OutputFile):
+class PostgresClient(object):
     """Class to handle SQL queries for the categories"""
     def __init__(self, dbhost=None, dbname=None, output=None):
         """Initialize the postgres handler"""
-        OutputFile.__init__( self, output)
+        # OutputFile.__init__( self, output)
         logging.info("Opening database connection to: %s" % dbhost)
         connect = "PG: dbname=" + dbname
-        connect += " host=" + dbhost
+        if dbhost:
+            connect += " host=" + dbhost
         self.pg = ogr.Open(connect)
         self.boundary = None
+        if dbhost is None or dbhost == 'localhost':
+            connect = f"dbname={dbname}"
+        else:
+            connect = f"host={dbhost} dbname={dbname}"
+        try:
+            self.dbshell = psycopg2.connect(connect)
+            self.dbshell.autocommit = True
+            self.dbcursor = self.dbshell.cursor()
+            if self.dbcursor.closed == 0:
+                logging.info(f"Opened cursor in {dbname}")
+        except Exception as e:
+            logging.error("Couldn't connect to database: %r" % e)
 
     def getFeature(self, boundary=None, filespec=None, category='buildings'):
         """Extract buildings from Postgres"""
         logging.info("Extracting features from Postgres...")
 
         tables = list()
-        select = '*'
+        select = "ST_AsEWKT(ST_Centroid(geom)), osm_id, tags"
         if category == 'buildings':
-            tables = ("nodes", "ways_poly", "relations")
-            select = "geom, osm_id AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'building' AS buildingx, tags->>'building:levels' AS bldlevels, tags->>'building:material' AS bldmat, tags->>'building:roof' AS roof, tags->>'roof:material' AS roofmat, tags->>'building:levels:underground' AS underground, tags->>'building:prefabricated' AS prefabricated, tags->>'building:condition' AS condition, tags->>'amenity' AS amenityx, tags->>'religion' AS religionx, tags->>'operator' AS operatorx, tags->>'cusine' AS cusinex, tags->>'amenity' AS amenityx, tags->>'shop' AS shopx, tags->>'tourism' AS tourismx "
+            tables = ("nodes_view", "ways_view")
+            #select = "geom, osm_id AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'building' AS building, tags->>'building:levels' AS building_levels, tags->>'building:material' AS building_material, tags->>'building:levels:underground' AS buildings_levels_underground, tags->>'building:prefabricated' AS building_prefabricated, tags->>'building:condition' AS building_condition, tags->>'amenity' AS amenity, tags->>'religion' AS religion, tags->>'operator' AS operator, tags->>'cusine' AS cusine, tags->>'shop' AS shop, tags->>'tourism' AS tourism "
             filter = "tags->>'building' IS NOT NULL OR tags->>'shop' IS NOT NULL OR tags->>'amenities' IS NOT NULL OR tags->>'tourism' IS NOT NULL"
         elif category == 'amenities':
-            tables = ("nodes", "ways_poly")
+            tables = ("nodes_view", "ways_view")
             select = "geom, osm_id::varchar AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'amenity' AS amenity, tags->>'cusine' AS cusine, tags->>'operator' AS operator, tags->>'takeaway' AS takeaway, tags->>'religion' AS religion, tags->>'addr:street' AS addr_street, tags->>'addr:housenumber' AS addr_housenumber, tags->>'wheelchair' AS wheelchair, tags->>'opening_hours' AS opening_hours, tags->>'shelter_type' AS shelter_type, tags->>'brewery' AS brewery, tags->>'microbrewery' AS microbrewery"
             filter = "tags->>'amenity' IS NOT NULL AND tags->>'parking' IS NULL;"
         elif category == 'toilets':
@@ -155,35 +170,48 @@ class PostgresClient(OutputFile):
             tables = ("ways_poly")
             filter = "tags->>'landuse' IS NOT NULL"
 
+        clip = open(boundary, 'r')
+        data = geojson.load(clip)
+        feature = data['features'][0]
+        geom = feature['geometry']
+        wkt = shape(geom)
+        sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT(\'SRID=4326;{wkt.wkt}\'), geom)"
+        # print(sql)
+        self.dbcursor.execute(sql)
+        sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT(\'SRID=4326;{wkt.wkt}\'), geom)"
+        # print(sql)
+        self.dbcursor.execute(sql)
+
         # Clip the large file using the supplied boundary
-        memdrv = ogr.GetDriverByName("MEMORY")
-        mem = memdrv.CreateDataSource(category)
-        memlayer = mem.CreateLayer(category, geom_type=ogr.wkbMultiPolygon)
+        # memdrv = ogr.GetDriverByName("MEMORY")
+        # mem = memdrv.CreateDataSource(category)
+        # memlayer = mem.CreateLayer(category, geom_type=ogr.wkbMultiPolygon)
+        features = list()
         for table in tables:
-            # logging.debug("Querying table %s with conditional %s" % (table, filter))
-            tags = self.getTags(category)
-            # osm = self.pg.GetLayerByName(table)
+            logging.debug("Querying table %s with conditional %s" % (table, filter))
             query = f"SELECT {select} FROM {table} WHERE {filter}"
-            logging.debug(query)
-            osm = self.pg.ExecuteSQL(query)
-            # osm.SetAttributeFilter(filter)
-            if boundary:
-                poly = ogr.Open(boundary)
-                layer = poly.GetLayer()
-                ogr.Layer.Clip(osm, layer, memlayer)
-            else:
-                memlayer = osm
+            self.dbcursor.execute(query)
+            result = self.dbcursor.fetchall()
+            logging.info("Query returned %d records" % len(result))
+            for item in result:
+                gps = item[0][16:-1].split(' ')
+                poi = Point((float(gps[0]), float(gps[1])))
+                tags = item[2]
+                features.append(Feature(geometry=poi, properties=tags))
+        collection = FeatureCollection(features)
+        json = open(filespec, 'w')
+        dump(collection, json)
 
-            logging.info("There are %d in the %s table" % (memlayer.GetFeatureCount(), table))
-            for feature in memlayer:
-                poly = feature.GetGeometryRef()
-                center = poly.Centroid()
-                feature.SetGeometry(center)
-                # feature.DumpReadable()
-                self.outlayer.CreateFeature(feature)
-
-        self.outdata.Destroy()
-        self.cleanup()
+            # logging.debug(f"QUERY: {query}")
+            #if len(result) == 0:
+            #    return None
+            #for feature in result:
+            #    print(feature)
+            #sql = f"SELECT array_to_json(array_agg(row_to_json(tmp))) FROM {table} tmp;"
+            #self.dbcursor.execute(query)
+            #result = self.dbcursor.fetchall()
+            #print(result)
+            
 
 class OverpassClient(OutputFile):
     """Class to handle Overpass queries"""
@@ -326,7 +354,7 @@ if args.postgres:
     logging.info("Using a Postgres database for the data source")
     pg = PostgresClient(args.dbhost, args.dbname, outfile)
     pg.getFeature(args.boundary, args.geojson, args.category)
-    pg.cleanup(outfile)
+    #pg.cleanup(outfile)
 elif args.overpass:
     logging.info("Using Overpass Turbo for the data source")
     op = OverpassClient(outfile)
