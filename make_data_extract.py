@@ -39,72 +39,6 @@ from shapely.geometry import shape
 # all possible queries
 choices = ["buildings", "amenities", "toilets", "landuse", "emergency", "shops", "waste", "water", "education", "healthcare"]
 
-
-class OutputFile(object):
-    def __init__(self, outfile=None):
-        """Initialize OGR output layer"""
-        outdrv = ogr.GetDriverByName("GeoJson")
-        if os.path.exists(outfile):
-            outdrv.DeleteDataSource(outfile)
-
-        logging.info("Creating output data file: %s" % outfile)
-        self.outdata  = outdrv.CreateDataSource(outfile)
-        self.outlayer = self.outdata.CreateLayer("data", geom_type=ogr.wkbPolygon)
-        self.fields = self.outlayer.GetLayerDefn()
-        # newid = ogr.FieldDefn("id", ogr.OFTInteger)
-        # self.outlayer.CreateField(newid)
-        self.filespec = outfile
-
-        # Read the YAML config file that tells
-        self.yaml = YamlFile("filter.yaml")
-        keys = list(self.yaml.yaml.keys())
-        self.tags = dict()
-        for key in keys:
-            values = list()
-            for value in self.yaml.yaml[key][0]['keep']:
-                values.append(value)
-            self.tags[key] = values
-
-        # FIXME: neither of these seems to work to keep the extra ID field out
-        # out of the output file, which screws up ODK Collect.
-        gdal.SetConfigOption('ID_GENERATE', 'NO')
-        os.environ['ID_GENERATE'] = 'NO'
-
-    def getTags(self, keyword=None):
-        if keyword in self.tags:
-            return self.tags[keyword]
-        else:
-            return None
-
-    def addFeature(self, feature=None):
-        """Add an OGR feature to the output layer"""
-        self.outlayer.CreateFeature(feature)
-
-    # FIXME: This is really ugly, but needed to cleanup the output file till
-    # I figure out how to make OGR stop generating IDs in the FeatureCollection,
-    # which screw up ODk COllect.
-    def cleanup(self, filespec=None):
-        if not filespec:
-            return False
-        # os.rename(filespec, 'tmp.geojson')
-        # infile = open('tmp.geojson', 'r')
-        # outfile = open(filespec, 'w')
-        # data = geojson.load(infile)
-        # for feature in data['features']:
-        #     feature.pop('id')
-        #     if 'amenity' in feature['properties']:
-        #         tmp = feature['properties']['amenity']
-        #         # amenity is in the query, and is often null, so
-        #         # ignore that.
-        #         if tmp is None:
-        #             continue
-        #         feature['properties']['amenity'] = tmp.replace('\"', '')
-        #     else:
-        #         tmp = feature['properties']
-        #         if type(tmp) == str:
-        #             feature['properties'] = tmp.replace('\"', '')
-        # geojson.dump(data, outfile)
-
 class PostgresClient(object):
     """Class to handle SQL queries for the categories"""
     def __init__(self, dbhost=None, dbname=None, output=None):
@@ -137,37 +71,33 @@ class PostgresClient(object):
         select = "ST_AsEWKT(ST_Centroid(geom)), osm_id, tags"
         if category == 'buildings':
             tables = ("nodes_view", "ways_view")
-            #select = "geom, osm_id AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'building' AS building, tags->>'building:levels' AS building_levels, tags->>'building:material' AS building_material, tags->>'building:levels:underground' AS buildings_levels_underground, tags->>'building:prefabricated' AS building_prefabricated, tags->>'building:condition' AS building_condition, tags->>'amenity' AS amenity, tags->>'religion' AS religion, tags->>'operator' AS operator, tags->>'cusine' AS cusine, tags->>'shop' AS shop, tags->>'tourism' AS tourism "
             filter = "tags->>'building' IS NOT NULL OR tags->>'shop' IS NOT NULL OR tags->>'amenities' IS NOT NULL OR tags->>'tourism' IS NOT NULL"
         elif category == 'amenities':
             tables = ("nodes_view", "ways_view")
-            select = "geom, osm_id::varchar AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'amenity' AS amenity, tags->>'cusine' AS cusine, tags->>'operator' AS operator, tags->>'takeaway' AS takeaway, tags->>'religion' AS religion, tags->>'addr:street' AS addr_street, tags->>'addr:housenumber' AS addr_housenumber, tags->>'wheelchair' AS wheelchair, tags->>'opening_hours' AS opening_hours, tags->>'shelter_type' AS shelter_type, tags->>'brewery' AS brewery, tags->>'microbrewery' AS microbrewery"
             filter = "tags->>'amenity' IS NOT NULL AND tags->>'parking' IS NULL;"
         elif category == 'toilets':
-            tables = ("nodes", "ways_poly")
-            select = "ST_Centroid(geom), osm_id AS id, tags->>'name' AS title, tags->>'name' AS label, tags->>'access' AS access, tags->>'female' AS female, tags->>'male' AS male, tags->>'unisex' AS unisex, tags->>'opening_hours' AS hours, tags->>'toilets:disposal' AS disposal, tags->>'wheelchair' AS chair, tags->>'toilets:position' AS position, tags->>'fee' AS fee"
+            tables = ("nodes_view", "ways_view")
             filter = "tags->>'amenity'='toilets'"
         elif category == 'emergency':
             tables = ("nodes", "ways_poly")
             filter = "tags->>'emergency' IS NOT NULL"
         elif category == 'healthcare':
-            tables = ("nodes", "ways_poly")
-            select = "osm_id AS id,tags->>'name' AS title, tags->>'name' AS label, tags->>'healthcare' AS healthcare, tags->>'healthcare:speciality' AS speciality, tags->>'generator:source' AS power_source, tags->'amenity' AS amenity, tags->>'operator:type' AS operator_type, tags->>'opening_hours' AS hours, ST_Centroid(geom)"
+            tables = ("nodes_view", "ways_view")
             filter = "(tags->>'healthcare' IS NOT NULL or tags->>'social_facility' IS NOT NULL OR tags->>'healthcare:speciality' IS NOT NULL) AND tags->>'opening_hours' IS NOT NULL"
         elif category == 'education':
-            tables = ("nodes", "ways_poly")
+            tables = ("nodes_view", "ways_view")
             filter = "tags->>'amenity'='school' OR tags->>'amenity'='kindergarden' OR tags->>'amenity'='college' OR tags->>'amenity'='university' OR tags->>'amenity'='music_school' OR tags->>'amenity'='language_school' OR tags->>'amenity'='childcare'"
         elif category == 'shops':
-            tables = ("nodes", "ways_poly")
+            tables = ("nodes_view", "ways_view")
             filter = "tags->>'shop' IS NOT NULL"
         elif category == 'waste':
-            tables = ("nodes", "ways_poly")
+            tables = ("nodes_view", "ways_view")
             filter = "tags->>'amenity'='waste_disposal'"
         elif category == 'water':
-            tables = ("nodes")
+            tables = ("nodes_view")
             filter = "tags->>'water_source' IS NOT NULL"
         elif category == 'landuse':
-            tables = ("ways_poly")
+            tables = ("ways_view")
             filter = "tags->>'landuse' IS NOT NULL"
 
         clip = open(boundary, 'r')
@@ -176,16 +106,13 @@ class PostgresClient(object):
         geom = feature['geometry']
         wkt = shape(geom)
         sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT(\'SRID=4326;{wkt.wkt}\'), geom)"
-        # print(sql)
         self.dbcursor.execute(sql)
         sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT(\'SRID=4326;{wkt.wkt}\'), geom)"
-        # print(sql)
         self.dbcursor.execute(sql)
 
-        # Clip the large file using the supplied boundary
-        # memdrv = ogr.GetDriverByName("MEMORY")
-        # mem = memdrv.CreateDataSource(category)
-        # memlayer = mem.CreateLayer(category, geom_type=ogr.wkbMultiPolygon)
+        sql = f"DROP VIEW IF EXISTS relations_view;CREATE TEMP VIEW relations_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT(\'SRID=4326;{wkt.wkt}\'), geom)"
+        #self.dbcursor.execute(sql)
+
         features = list()
         for table in tables:
             logging.debug("Querying table %s with conditional %s" % (table, filter))
@@ -197,6 +124,13 @@ class PostgresClient(object):
                 gps = item[0][16:-1].split(' ')
                 poi = Point((float(gps[0]), float(gps[1])))
                 tags = item[2]
+                tags['id'] = item[1]
+                if 'name' in tags:
+                    tags['title'] = tags['name']
+                    tags['label'] = tags['name']
+                else:
+                    tags['title'] = None
+                    tags['label'] = None
                 features.append(Feature(geometry=poi, properties=tags))
         collection = FeatureCollection(features)
         json = open(filespec, 'w')
@@ -213,7 +147,7 @@ class PostgresClient(object):
             #print(result)
             
 
-class OverpassClient(OutputFile):
+class OverpassClient(object):
     """Class to handle Overpass queries"""
     def __init__(self, output=None):
         """Initialize Overpass handler"""
@@ -287,7 +221,7 @@ class OverpassClient(OutputFile):
                 self.addFeature(feature)
         self.outdata.Destroy()
 
-class FileClient(OutputFile):
+class FileClient(object):
     """Class to handle Overpass queries"""
     def __init__(self, infile=None, output=None):
         """Initialize Overpass handler"""
