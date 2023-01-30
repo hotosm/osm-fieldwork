@@ -111,23 +111,114 @@ class OdkClient(object):
 
     def makeCSV(self, filespec=None):
         data = list()
-        if len(self.submissions) > 0:
-            ignore = ['__id', 'start', 'end', 'today', 'phonenumber', 'deviceid', 'username', 'email', 'warmup', 'meta', '__system']
+        for submit in self.submissions:
+            item = submit['value'][0]
+            keys = list(item.keys())
+            pairs = dict()
+            # The keywords for each submission  are the same
             keywords = list()
-            for data in self.submissions:
-                item = data['value'][0]
-                keys = list(item.keys())
-                for key in keys:
-                    if not key in ignore:
-                        # print(f"{key} = \t{item[key]}")
-                        keywords += list(item[key].keys())
-                # print(keywords)
-            return data
+            for key in keys:
+                print(f"FIXME: {key} = \t{item[key]}")
+                if key == 'warmup':
+                    continue
+                if type(item[key]) == dict:
+                    for entry in list(item[key].keys()):
+                        if type(item[key]) == dict:
+                            print(f"YES {item[key][entry]}")
+                            if type(item[key][entry]) == dict:
+                                for k, v in item[key][entry].items():
+                                    tag = f"{key}-{entry}-{k}"
+                                    if entry == 'properties':
+                                        tag = f"{key}-accuracy"
+                                        if tag not in keywords:
+                                            keywords.append(tag)
+                                        pairs[tag] = item[key][entry]['accuracy']
+                                    print(f"SUB DICT {tag} = {v}")
+                                    # coordinates and properties are set by ODK Central,
+                                    # so we can depend on them for special handling
+                                    if k == 'point':
+                                        coords = (0.0, 0.0, 0.0)
+                                        if item[key][entry][k]:
+                                            print(f"COORDS: {item[key][entry]}")
+                                            if item[key][entry]['point']:
+                                                coords = item[key][entry]['point']['coordinates']
+                                        tag = f"{key}-{entry}-{k}-Latitude"
+                                        if tag not in keywords:
+                                            keywords.append(tag)
+                                        pairs[tag] = coords[0]
+                                        tag = f"{key}-{entry}-{k}-Longitude"
+                                        if tag not in keywords:
+                                            keywords.append(tag)
+                                        pairs[tag] = coords[1]
+                                    else:
+                                        pairs[tag] = v
+                                        if tag not in keywords:
+                                            keywords.append(tag)
+                            else:
+                                if key == '__system':
+                                    tag = f"{entry}"
+                                else:
+                                    tag = f"{key}-{entry}"
+                                print(f"DICT {tag}")
+                        # the xlocation field is custom to this XLSForm library
+                        # and uses when the data is from a seleted OSM feature.
+                        if entry == 'xlocation':
+                            loc = item[key][entry]
+                            print(f"LOC: {loc}")
+                            if not loc:
+                                continue
+                            tag = f"{key}-{entry}"
+                            if tag not in keywords:
+                                keywords.append(tag)
+                            pairs[tag] = loc
+                            coords = loc.split(' ' )
+                            tag = f"{key}-{entry}-Latitude"
+                            if tag not in keywords:
+                                keywords.append(tag)
+                                pairs[tag] = coords[1]
+                                tag = f"{key}-{entry}-Longitude"
+                            if tag not in keywords:
+                                keywords.append(tag)
+                                pairs[tag] = coords[0]
+                            else:
+                                pairs[tag] = v
+                                if tag not in keywords:
+                                    keywords.append(tag)
+                            # tmp = loc.split(' ')
+                            # tag = f"{key}-{entry}-point-Latitude"
+                            # if tag not in keywords:
+                            #     keywords.append(tag) 
+                            # pairs[tag] = float(tmp[1])
+                            # tag = f"{key}-{entry}-point-Longitude"
+                            # if tag not in keywords:
+                            #     keywords.append(tag) 
+                            # pairs[tag] = float(tmp[0])
+                            # if tag not in keywords:
+                            #     keywords.append(tag)
+                            # pairs[tag] = item[key][entry]
+                else:
+                    print(f"NOT DICT {key}")
+                    pairs[key] = item[key]
+                    if key not in keywords:
+                        keywords.append(key)
+            if 'warmup' in pairs:
+                logging.warning(f"No warmup GPS data for this entry!")
+                pairs.pop('warmup')
+            # This is unnecessary, we know it's only a point
+            if 'warmup-type' in pairs:
+                pairs.pop('warmup-type')
+            if 'warmup-coordinates' in pairs:
+                pairs.pop('warmup-coordinates')
+            data.append(pairs)
+            print(f"KEYS = {keywords}")
+            print(f"DATA = {data}")
+
         with open(filespec, 'w', newline='') as csvfile:
-            csv = csv.DictWriter(csvfile, dialect='excel',fieldnames=keywords)
-            csv.writeheader()
-            for row in rows:
-                csv.writerow(row)
+            csvout = csv.DictWriter(csvfile, fieldnames=keywords, dialect='excel')
+            csvout.writeheader()
+            csvout.writerows(data)
+            #for row in data:
+            #    csvout.writerow(row)
         print("Wrote: %s" % filespec)
 
     def dump(self):
@@ -216,8 +307,8 @@ if __name__ == '__main__':
     projects = odk.getProject()
     xforms = odk.getForms()
     submissions = odk.getSubmissions()
-    odk.dump()
-    outfile = odk.makeCSV('test.csv')
+    # odk.dump()
+    odk.makeCSV('test.csv')
     odk.close()
 
 # # Get any files for upload or download
