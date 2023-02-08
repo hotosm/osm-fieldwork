@@ -19,7 +19,10 @@
 # The Rob project on odk.hotosm.org
 PROJECT=19
 
-XLSFILES = \
+XLSFILES = buildings.xls
+POLY=university.geojson
+
+XXXXLSFILES = \
     buildings.xls \
     cemeteries.xls \
     education.xls \
@@ -58,6 +61,13 @@ upload: $(XMLFILES)
 	  datafiles="$(DATAFILES)"; \
 	fi; \
 	odk_client.py -i $(PROJECT) -f $${target} -x create $< $${datafiles}
+
+xform: $(XMLFILES)
+	target=$(<:.xml=); \
+	base=$(basename $(notdir $(POLY))); \
+	sed -e "s:<data id=\"[a-zA-Z0-9_]*\":<data id=\"$${base} $${target}\":" \
+		-e "s/<h:title>[a-zA-Z0-9_]*</<h:title>$${base} $${target}</" \
+		-e "s,jr://file/[a-zA-Z0-9_]*.geojson,jr://file/$${base}$${target}.geojson," $< > $${base}$${target}.xml
 
 force:
 
