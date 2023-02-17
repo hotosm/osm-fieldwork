@@ -132,7 +132,7 @@ class OdkCentral(object):
     def deleteProject(self, project_id: int):
         """Delete a project on an ODK Central server"""
         url = f'{self.base}projects/{project_id}'
-        result = self.session.delete(url, auth=self.auth)
+        result = self.session.delete(url, auth=self.auth, verify=self.verify)
         # update the internal list of projects
         self.listProjects()
         return self.findProject(project_id)
