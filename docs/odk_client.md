@@ -57,10 +57,18 @@ towns.
 
 	./odk_client.py --id 4 --form waterpoints --xform create XForms/waterpoints.xml XForms/towns.csv XForms/municipality.csv
 
+# Project Requests
+
+## List all the projects on an ODK Central server
+	./odk_client.py --server projects
+
+## Delete a project from ODK Central
+	./odk_client.py --server delete --id 2
+
 # App-user Requests
 
 ## Create a new app-user for a project
-	./odk_client.py --appuser create --id 4 ---form waterpoints foobar
+	./odk_client.py --appuser create --id 4 foobar
 
 ## create a QR code for the app-user to access ODK Central
 	./odk_client.py -i 4 -f waterpoints -a qrcode -u 'jhAbIwHmYCBObnR45l!I3yi$LbCL$q$saJHkDvgwgtKs2F6sso3eepySJ5tyyyAX'
@@ -69,15 +77,15 @@ towns.
 	./odk_client.py --appuser delete --id 4 378
 
 ## List all app-users for a project
-	./odk_client.py  --id 4 --form waterpoints --project app-users
-
-## Generate a QR code for this app-user for this project
-	./odk_client.py -a qrcode -i 4 foobar -f waterpoints -u 'nWYLS1HJ...XDFe'
+	./odk_client.py  --id 4 --project app-users
 
 # Bulk operations
 
 Some commands require multiple queries to ODK Central, and are mostly
 limited to the app-users for a project.
+
+## Delete multiple app-users from a project
+	./odk_client.py --appuser delete --id 4 22-95
 
 ## Generate QRcodes for all registered app-users
 	./odk_client.py --id 4 --bulk qrcodes --form waterpoints
