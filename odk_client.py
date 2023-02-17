@@ -148,7 +148,13 @@ elif args.project:
         for user in ordered:
             print("\t%r: %s (%s)" % (user['id'], user['displayName'], user['token']))
     if args.project == "delete":
-        project.deleteProject(args.id)
+        epdb.st()
+        if args.id.find("-") > 0:
+            for id in range(bulk):
+                project.deleteProject(id)
+            else:
+                project.deleteProject(args.id)
+
         # logging.info("There are %d app users on this ODK Central server" %)
     if args.project == "assignments":
         assign = project.listAssignments(args.id)
@@ -249,8 +255,12 @@ elif args.appuser:
         for appuser in files:
             result = user.create(args.id, appuser)
     elif args.appuser == "delete":
-        for appuser in files:
-            result = user.delete(args.id, appuser)
+        tmp = files[0].split("-")
+        if len(tmp) > 1:
+            for id in range(int(tmp[0]), int(tmp[1])):
+                result = user.delete(args.id, id)
+        else:
+            result = user.delete(args.id, tmp[0])
     elif args.appuser == "update":
         for appuser in files:
             result = user.updateRole(args.id, args.form, role, appuser)
