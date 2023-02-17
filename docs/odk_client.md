@@ -81,8 +81,10 @@ towns.
 
 # Bulk operations
 
-Some commands require multiple queries to ODK Central, and are mostly
-limited to the app-users for a project.
+Some commands require multiple queries to ODK Central. As FMTM creates
+many, many appusers and xforms, it's necesary to be able to cleanup
+the database sometimes, rather than go through Central for hundres, or
+thousands of appusers.
 
 ## Delete multiple app-users from a project
 	./odk_client.py --appuser delete --id 4 22-95
