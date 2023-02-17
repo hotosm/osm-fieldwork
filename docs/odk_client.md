@@ -83,7 +83,7 @@ towns.
 
 Some commands require multiple queries to ODK Central. As FMTM creates
 many, many appusers and xforms, it's necesary to be able to cleanup
-the database sometimes, rather than go through Central for hundres, or
+the database sometimes, rather than go through Central for hundreds, or
 thousands of appusers.
 
 ## Delete multiple app-users from a project
