@@ -57,7 +57,7 @@ class OdkClient(object):
 parser = argparse.ArgumentParser(description='command line client for ODK Central')
 parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
 # This is for server requests
-parser.add_argument("-s", "--server", choices=['projects', 'users'],
+parser.add_argument("-s", "--server", choices=['projects', 'users', 'delete'],
                     help="project operations")
 # This is for project specific requests
 parser.add_argument("-p", "--project", choices=['forms', 'app-users', 'assignments', 'delete'],
@@ -121,6 +121,8 @@ if args.server:
         ordered = sorted(users, key=lambda item: item.get('id'))
         for user in ordered:
             print("%s: %s (%s)" % (user['id'], user['displayName'], user['email']))
+    elif args.server == "delete":
+        central.deleteProject(args.id)
 
 # Commands to get data about a specific project on an ODK Central server.
 elif args.project:
@@ -148,12 +150,12 @@ elif args.project:
         for user in ordered:
             print("\t%r: %s (%s)" % (user['id'], user['displayName'], user['token']))
     if args.project == "delete":
-        epdb.st()
-        if args.id.find("-") > 0:
-            for id in range(bulk):
+        tmp = files[0].split("-")
+        if len(tmp) > 1:
+            for id in range(int(tmp[0]), int(tmp[1])):
                 project.deleteProject(id)
-            else:
-                project.deleteProject(args.id)
+        else:
+            project.deleteProject(tmp[0])
 
         # logging.info("There are %d app users on this ODK Central server" %)
     if args.project == "assignments":
