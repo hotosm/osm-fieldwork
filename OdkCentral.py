@@ -47,6 +47,7 @@ class OdkCentral(object):
         self.url = url
         self.user = user
         self.passwd = passwd
+        self.verify=False
         # These are settings used by ODK Collect
         self.general = {
             "form_update_mode": "match_exactly",
@@ -101,17 +102,14 @@ class OdkCentral(object):
         self.session.headers.update({'accept': 'odkcentral'})
 
         # Connect to the server
-        # FIXME: disabling verify is a bad idea, but required if you
-        # are testing against Central running on a local network
-        # without DNS.
-        return self.session.get(self.url, auth=self.auth, verify=False)
+        return self.session.get(self.url, auth=self.auth, verify=self.verify)
 
     def listProjects(self):
         """Fetch a list of projects from an ODK Central server, and
         store it as an indexed list."""
         logging.info("Getting a list of projects from %s" % self.url)
         url = f'{self.base}projects'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         projects = result.json()
         for project in projects:
             self.projects[project['id']] = project
@@ -126,21 +124,18 @@ class OdkCentral(object):
             return exists
         else:
             url = f'{self.base}projects'
-            result = self.session.post(url, auth=self.auth, json={'name': name}, verify=False)
+            result = self.session.post(url, auth=self.auth, json={'name': name}, verify=self.verify)
             # update the internal list of projects
             self.listProjects()
-        return result.json()
+        return self.findProject(name)
 
     def deleteProject(self, project_id: int):
         """Delete a project on an ODK Central server"""
         url = f'{self.base}projects/{project_id}'
-        result = self.session.delete(url, auth=self.auth, verify=False)
+        result = self.session.delete(url, auth=self.auth)
         # update the internal list of projects
-        if result.status_code == 200:
-            self.listProjects()
-            return True
-        if result.status_code == 404:
-            return False
+        self.listProjects()
+        return self.findProject(project_id)
 
     def findProject(self, project_id=None, name=None):
         """Get the project data from Central"""
@@ -159,23 +154,20 @@ class OdkCentral(object):
         """Get the data for an app user"""
         if self.appusers:
             if name:
-                for item in self.appusers:
-                    if name == item['displayName']:
-                        return item
-                    else:
-                        continue
-            if user_id:
-                for item in self.appusers:
-                    for key, value in item.items():
-                        if user_id == item['id']:
-                            return item
+                for key, value in self.appusers.items():
+                    if name == value['name']:
+                        return value
+            if project_id:
+                for key, value in self.appusers.items():
+                    if user_id == value['id']:
+                        return value
         return None
 
     def listUsers(self):
         """Fetch a list of users on the ODK Central server"""
         logging.info("Getting a list of users from %s" % self.url)
         url = self.base + "users"
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.users = result.json()
         return self.users
         
@@ -199,8 +191,8 @@ class OdkCentral(object):
 
 class OdkProject(OdkCentral):
     """Class to manipulate a project on an ODK Central server"""
-    def __init__(self, session=None):
-        super().__init__()
+    def __init__(self, url=None, user=None, passwd=None):
+        super().__init__(url, user, passwd)
         self.forms = None
         self.submissions = None
         self.data = None
@@ -213,27 +205,27 @@ class OdkProject(OdkCentral):
     def listForms(self, id=None):
         """Fetch a list of forms in a project on an ODK Central server."""
         url = f'{self.base}projects/{id}/forms'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.forms = result.json()
         return self.forms
 
     def listAppUsers(self, projectId=None):
         """Fetch a list of app users for a project from an ODK Central server."""
         url = f'{self.base}projects/{projectId}/app-users'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.appusers = result.json()
         return self.appusers
 
     def listAssignments(self, projectId=None):
         """List the Role & Actor assignments for users on a project"""
         url = f'{self.base}projects/{projectId}/assignments'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         return result.json()
 
     def getDetails(self, projectId=None):
         """Get all the details for a project on an ODK Central server"""
         url = f'{self.base}projects/{projectId}'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.data = result.json()
         return self.data
 
@@ -255,8 +247,8 @@ class OdkProject(OdkCentral):
 
 class OdkForm(OdkCentral):
     """Class to manipulate a from on an ODK Central server"""
-    def __init__(self, session=None):
-        super().__init__()
+    def __init__(self, url=None, user=None, passwd=None):
+        super().__init__(url, user, passwd)
         self.name = None
         # Draft is for a form that isn't published yet
         self.draft = True
@@ -288,28 +280,28 @@ class OdkForm(OdkCentral):
     def getDetails(self, projectId=None, xmlFormId=None):
         """Get all the details for a form on an ODK Central server"""
         url = f'{self.base}projects/{projectId}/forms/{xmlFormId}'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.data = result.json()
         return result
 
     def listSubmissions(self, projectId, formId):
         """Fetch a list of submission instances for a given form."""
         url = f'{self.base}projects/{projectId}/forms/{formId}/submissions'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.submissions = result.json()
         return self.submissions
 
     def listAssignments(self, projectId=None, xmlFormId=None):
         """List the Role & Actor assignments for users on a project"""
         url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/assignments'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         return result.json()
 
     def getSubmission(self, projectId=None, formId=None, disk=False):
         """Fetch a CSV file of the submissions without media to a survey form."""
         instanceId = "uuid:47bda2ec-c282-4cb7-9f37-03dc3bbdf96b: 2022-09-02T17:09:19.648Z"
         url = self.base + f'projects/{projectId}/forms/{formId}/submissions'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         if result.status_code == 200:
             if disk:
                 now = datetime.now()
@@ -332,7 +324,7 @@ class OdkForm(OdkCentral):
     def getSubmissionMedia(self, projectId, formId):
         """Fetch a ZIP file of the submissions with media to a survey form."""
         url = self.base + f'projects/{projectId}/forms/{formId}/submissions.csv.zip'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         return result
 
     def addMedia(self, media=None, filespec=None):
@@ -350,7 +342,7 @@ class OdkForm(OdkCentral):
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments'
         else:
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/attachments'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.media = result.json()
         return self.media
 
@@ -366,7 +358,7 @@ class OdkForm(OdkCentral):
         file = open(filespec, "rb")
         media = file.read()
         file.close()
-        result = self.session.post(url, auth=self.auth, data=media, headers=headers, verify=False)
+        result = self.session.post(url, auth=self.auth, data=media, headers=headers, verify=self.verify)
         return result
         
     def getMedia(self, projectId=None, xmlFormId=None, filename=None):
@@ -375,7 +367,7 @@ class OdkForm(OdkCentral):
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments/{filename}'
         else:
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/attachments/{filename}'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.media = result.content
         return self.media
 
@@ -399,7 +391,7 @@ class OdkForm(OdkCentral):
         file.close()
         logging.info("Read %d bytes from %s" % (len(xml), filespec))
 
-        result = self.session.post(url, auth=self.auth,  data=xml, headers=headers, verify=False)
+        result = self.session.post(url, auth=self.auth,  data=xml, headers=headers, verify=self.verify)
         # epdb.st()
         # FIXME: should update self.forms with the new form
         return result
@@ -413,7 +405,7 @@ class OdkForm(OdkCentral):
         else:
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}'
         print(url)
-        result = self.session.delete(url, auth=self.auth, verify=False)
+        result = self.session.delete(url, auth=self.auth)
         return result
 
     def publishForm(self, projectId=None, xmlFormId=None):
@@ -425,7 +417,7 @@ class OdkForm(OdkCentral):
         else:
             url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish?version={version}'
             # url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish'
-        result = self.session.get(url, auth=self.auth, verify=False)
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
         return result
 
     def dump(self):
@@ -439,38 +431,38 @@ class OdkForm(OdkCentral):
 
 
 class OdkAppUser(OdkCentral):
-    def __init__(self):
+    def __init__(self, url=None, user=None, passwd=None):
         """A Class for app user data"""
-        super().__init__()
+        super().__init__(url, user, passwd)
         self.user = None
         self.qrcode = None
         self.id = None
 
-    def create(self, project_id: str, name: str):
+    def create(self, projectId=None, name=None):
         """Create a new app-user for a form"""
-        url = f'{self.base}projects/{project_id}/app-users'
-        result = self.session.post(url, auth=self.auth, json={'displayName': name}, verify=False)
+        url = f'{self.base}projects/{projectId}/app-users'
+        result = self.session.post(url, auth=self.auth, json={'displayName': name}, verify=self.verify)
         self.user = name
         return result
 
-    def delete(self, project_id=None, user_id=None):
+    def delete(self, projectId=None, userId=None):
         """Create a new app-user for a form"""
-        url = f'{self.base}projects/{project_id}/app-users/{user_id}'
-        result = self.session.delete(url, auth=self.auth, verify=False)
+        url = f'{self.base}projects/{projectId}/app-users/{userId}'
+        result = self.session.delete(url, auth=self.auth)
         return result
 
     def updateRole(self, projectId=None, xmlFormId=None, roleId=2, actorId=None):
         """Update the role of an app user for a form"""
         logging.info("Update access to XForm %s for %s" % (xmlFormId, actorId))
         url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/assignments/{roleId}/{actorId}'
-        result = self.session.post(url, auth=self.auth, verify=False)
+        result = self.session.post(url, auth=self.auth, verify=self.verify)
         return result
 
     def grantAccess(self, projectId=None, roleId=2, userId=None, xmlFormId=None, actorId=None):
         """Grant access to an app user for a form"""
         kwargs = { "formId": xmlFormId, "actorId": userId, }
         url = f'{self.base}projects/{projectId}/forms/{formId}/assignments/{roleId}/{actorId}'
-        result = self.session.post(url, auth=self.auth, verify=False)
+        result = self.session.post(url, auth=self.auth, verify=self.verify)
         return result
 
     def createQRCode(self, project_id=None, token=None, name=None):
@@ -480,7 +472,7 @@ class OdkAppUser(OdkCentral):
         self.settings = {"general":
                     {"server_url":f'{self.base}key/{token}/projects/{project_id}',
                      "form_update_mode":"manual",
-                     "basemap_source": "MapBox",
+                     "basemap_source": "OpenStreetMap",
                      "autosend":"wifi_and_cellular"},
                     "project":{"name":f'{name}'},
                     "admin":{}
