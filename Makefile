@@ -31,4 +31,4 @@ pip-uninstall:
 	pip3 uninstall $(NAME)
 
 check:
-	cd testsuite && pytest
+	cd tests && pytest
