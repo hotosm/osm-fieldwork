@@ -26,7 +26,7 @@ from yamlfile import YamlFile
 import pytest
 
 parser = argparse.ArgumentParser(description='Read and parse a YAML file')
-parser.add_argument("--infile", default="../xforms.yaml", help='The YAML input file')
+parser.add_argument("--infile", default="odkconvert/xforms.yaml", help='The YAML input file')
 args = parser.parse_args()
 
 data = YamlFile(args.infile)

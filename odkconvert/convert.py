@@ -18,6 +18,7 @@
 #     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
+import os
 from yamlfile import YamlFile
 import logging
 import epdb
@@ -28,7 +29,10 @@ class Convert(YamlFile):
     """A class to apply a YAML config file and convert ODK to OSM"""
     def __init__(self, xform=None):
         if xform is None:
-            xform = "xforms.yaml"
+            if os.path.exists("xforms.yaml"):
+                xform = "xforms.yaml"
+            elif os.path.exists("odkconvert/xforms.yaml"):
+                xform = "odkconvert/xforms.yaml"
         self.yaml = YamlFile(xform)
         self.filespec = xform
         # Parse the file contents into a data structure to make it

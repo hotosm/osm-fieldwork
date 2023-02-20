@@ -51,3 +51,6 @@ README.md
 *.exe
 *.out
 *.app
+
+# PDM
+.pdm.toml
