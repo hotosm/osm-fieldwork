@@ -55,7 +55,7 @@ These two attachements are input for *select_from_file* in the survey
 sheet. For odkconvert, they are usually a list of municipalities and
 towns. 
 
-	./odk_client.py --id 4 --form waterpoints --xform create XForms/waterpoints.xml XForms/towns.csv XForms/municipality.csv
+	./odkconvert/odk_client.py --id 4 --form waterpoints --xform create XForms/waterpoints.xml XForms/towns.csv XForms/municipality.csv
 
 # Project Requests
 

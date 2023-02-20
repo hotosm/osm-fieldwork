@@ -225,12 +225,12 @@ if __name__ == '__main__':
     root.addHandler(ch)
 
     parser = argparse.ArgumentParser(description='Read and parse a YAML file')
-    parser.add_argument("-x", "--xform", default="xform.yaml", help="Default Yaml file")
-    parser.add_argument("-i", "--infile", default="XForms/Ruwa/ruwanigerproject_waterpoint_form.csv", help='The YAML input file')
+    parser.add_argument("-x", "--xform", default="odkconvert/xform.yaml", help="Default Yaml file")
+    parser.add_argument("-i", "--infile", default="../XForms/Ruwa/ruwanigerproject_waterpoint_form.csv", help='The YAML input file')
     args = parser.parse_args()
 
     # convert = Convert(args.xform)
-    convert = Convert("xforms.yaml")
+    convert = Convert("odkconvert/xforms.yaml")
     print("-----")
     # tag = convert.convertTag("waterpoint_seasonal")
     # entry = convert.convertEntry("waterpoint_seasonal")
