@@ -226,7 +226,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Read and parse a YAML file')
     parser.add_argument("-x", "--xform", default="xform.yaml", help="Default Yaml file")
-    parser.add_argument("-i", "--infile", default="XForms/Ruwa/ruwanigerproject_waterpoint_form.csv", help='The YAML input file')
+    parser.add_argument("-i", "--infile", default="xforms/Ruwa/ruwanigerproject_waterpoint_form.csv", help='The CSV input file')
     args = parser.parse_args()
 
     # convert = Convert(args.xform)
