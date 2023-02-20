@@ -22,7 +22,7 @@ VERSION := 0.1.0
 
 # Make a python package for pip
 pip:
-	zip -r $(NAME).zip odkconvert/*.py
+	zip -r $(NAME).zip .
 
 pip-install: pip
 	pip3 install $(NAME).zip

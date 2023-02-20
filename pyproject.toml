@@ -1,6 +1,6 @@
 [project]
 name = "ODKConvert"
-dynamic = "0.1.0"
+version = "0.1.0"
 description = "Convert CSV files from ODK Central to OSM format."
 authors = [
     {name = "Rob Savoye", email = "rob.savoye@hotosm.org"},
