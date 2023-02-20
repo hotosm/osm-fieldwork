@@ -41,6 +41,11 @@ homepage = "https://github.com/hotosm/odkconvert"
 documentation = "https://github.com/hotosm/odkconvert"
 repository = "https://github.com/hotosm/odkconvert"
 
+[tool.pdm]
+includes = ["odkconvert"]
+source-includes = ["tests", "LICENSE.md", "README.md"]
+version = {from = "odkconvert/__version__.py"}
+
 [build-system]
 requires = ["pdm-pep517>=1.0.0"]
 build-backend = "pdm.pep517.api"
