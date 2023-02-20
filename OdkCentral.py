@@ -448,7 +448,7 @@ class OdkAppUser(OdkCentral):
     def delete(self, projectId=None, userId=None):
         """Create a new app-user for a form"""
         url = f'{self.base}projects/{projectId}/app-users/{userId}'
-        result = self.session.delete(url, auth=self.auth)
+        result = self.session.delete(url, auth=self.auth, verify=self.verify)
         return result
 
     def updateRole(self, projectId=None, xmlFormId=None, roleId=2, actorId=None):
