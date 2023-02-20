@@ -23,29 +23,29 @@ import argparse
 from osmfile import OsmFile
 
 parser = argparse.ArgumentParser(description='Read and parse a CSV file from ODK Central')
-parser.add_argument("--infile", default="test.csv", help='The CSV input file')
+parser.add_argument("--infile", default="tests/test.csv", help='The CSV input file')
 args = parser.parse_args()
 
 # Delete the test output file
-if os.path.exists("test.osm"):
-    os.remove("test.osm")
+if os.path.exists("tests/test.osm"):
+    os.remove("tests/test.osm")
 
-osm = OsmFile(filespec="test.osm")
+osm = OsmFile(filespec="tests/test.osm")
 
 
 def test_init():
     """Make sure the OSM file is initialized"""
-    assert os.path.exists("test.osm")
+    assert os.path.exists("tests/test.osm")
 
 
 def test_header():
     osm.header()
-    assert os.stat("test.osm").st_size > 0
+    assert os.stat("tests/test.osm").st_size > 0
 
 
 def test_footer():
     osm.footer()
-    tmp = open("test.osm", 'r')
+    tmp = open("tests/test.osm", 'r')
     lines = tmp.readlines()
     for line in lines:
         last = line
@@ -111,6 +111,6 @@ if __name__ == '__main__':
     test_create_way()
     test_create_node_modified()
     # Delete the test output file
-    if os.path.exists("test.osm"):
-        os.remove("test.osm")
+    if os.path.exists("tests/test.osm"):
+        os.remove("tests/test.osm")
 
