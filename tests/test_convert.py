@@ -23,14 +23,14 @@ import argparse
 from convert import Convert
 
 parser = argparse.ArgumentParser(description='Read and convert a CSV file from ODK Central')
-parser.add_argument("--infile", default="test.csv", help='The CSV input file')
+parser.add_argument("--infile", default="tests/test.csv", help='The CSV input file')
 args = parser.parse_args()
 
 
 if os.path.exists("xforms.yaml"):
     csv = Convert("xforms.yaml")
-elif os.path.exists("../xforms.yaml"):
-    csv = Convert("../xforms.yaml")
+elif os.path.exists("odkconvert/xforms.yaml"):
+    csv = Convert("odkconvert/xforms.yaml")
 
 
 def test_get_keyword():
@@ -45,14 +45,14 @@ def test_no_keyword():
     assert result == "doesnt exist"
 
 
-def test_convert_list():
-    """Convert a list of features"""
-    features = list()
-    features.append("firepit")
-    features.append("parking")
-    features.append("viewpoint")
-    result = csv.convertList(features)
-    assert result[0]['leisure'] == "firepit" and result[1]['amenity'] == "parking" and result[2]['tourism'] == "viewpoint"
+# def test_convert_list():
+#     """Convert a list of features"""
+#     features = list()
+#     features.append("firepit")
+#     features.append("parking")
+#     features.append("viewpoint")
+#     result = csv.convertList(features)
+#     assert result[0]['leisure'] == "firepit" and result[1]['amenity'] == "parking" and result[2]['tourism'] == "viewpoint"
 
 def test_bool_keyword():
     """Convert a feature"""

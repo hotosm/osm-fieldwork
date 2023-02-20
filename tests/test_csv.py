@@ -27,11 +27,10 @@ from osmfile import OsmFile
 import pytest
 
 parser = argparse.ArgumentParser(description='Read and parse a CSV file from ODK Central')
-parser.add_argument("--infile", default="test.csv", help='The CSV input file')
+parser.add_argument("--infile", default="tests/test.csv", help='The CSV input file')
 args = parser.parse_args()
-
 csv = CSVDump()
-data = csv.parse("test.csv")
+data = csv.parse("tests/test.csv")
 # print(data)
 
 
@@ -46,8 +45,7 @@ def test_init():
 
 
 def test_osm_entry():
-    csv.createOSM("test.osm")
-    print(csv)
+    csv.createOSM("tests/test.osm")
     line = {'timestamp': '2021-09-25T14:27:43.862Z', 'end': '2021-09-24T17:55:26.194-06:00', 'today': '2021-09-24', 'features': 'firepit parking caravans', 'internet': 'none', 'lat': '38.3697403', 'lon': '-106.3078813', 'ele': '2825.998', 'uid': '123435', 'user': 'Foobar'}
     tmp = csv.createEntry(line)
     #assert tmp
