@@ -79,7 +79,7 @@ class Convert(YamlFile):
 
     def getKeyword(self, value):
         """Get the value for a keyword from the yaml file"""
-        key = self.yaml.getValues(value)
+        key = self.yaml.yaml(value)
         if type(key) == bool:
             return value
         if len(key) == 0:

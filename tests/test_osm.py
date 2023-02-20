@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021 Humanitarian OpenStreetMap Team
+# Copyright (c) 2022, 2023 Humanitarian OpenStreetMap Team
 #
 # This file is part of odkconvert.
 #
@@ -19,7 +19,10 @@
 #
 
 import os
+import sys
+sys.path.append(f"{os.getcwd()}/odkconvert")
 import argparse
+import epdb
 from osmfile import OsmFile
 
 parser = argparse.ArgumentParser(description='Read and parse a CSV file from ODK Central')
@@ -58,14 +61,19 @@ def test_create_tag():
 
 
 def test_create_node_notags():
-    node = dict(osm_id=12345, lat=1, lon=2, uid=54321, user='bar')
+    node = dict()
+    attrs = dict(id=12345, lat=1, lon=2, uid=54321, user='bar')
+    node['attrs'] = attrs
     tmp = osm.createNode(node).lstrip().split(' ')
     assert tmp[1] == "id='12345'" and tmp[2] == "version='1'" and tmp[3] == "lat='1'"
     # print(tmp)
 
 
 def test_create_node_modified():
-    node = dict(osm_id=12345, lat=1, lon=2, version=2, uid=54321, user='bar')
+    node = dict()
+    attrs = dict(id=12345, lat=1, lon=2, version=2, uid=54321, user='bar')
+    node['attrs'] = attrs
+    node['version'] = 7
     tmp = osm.createNode(node, modified=True)
     assert tmp.find("action")
     # print(tmp)
@@ -73,13 +81,8 @@ def test_create_node_modified():
 
 def test_create_node_tags():
     node = dict()
-    tags = dict(foo='bar', bar='foo', uid=54321, user='bar')
-    node['osm_id'] = 123456
-    node['lat'] = 2
-    node['lon'] = 3
-    node['user'] = 'foo'
-    node['uid'] = 12345
-    node['tags'] = tags
+    attrs = dict(id=12345, lat=1, lon=2, uid=54321, user='bar')
+    node['attrs'] = attrs
     tmp = osm.createNode(node)
     assert tmp.find('bar') and tmp.find('foo')
     # print(tmp)
@@ -87,11 +90,11 @@ def test_create_node_tags():
 
 def test_create_way():
     way = dict()
+    way = dict()
+    attrs = dict(id=12345, lat=1, lon=2, uid=54321, user='bar')
+    way['attrs'] = attrs
     tags = dict(foo='bar', bar='foo')
     refs = list()
-    way['osm_id'] = 123456
-    way['user'] = 'foo'
-    way['uid'] = 12345
     refs.append(12345)
     refs.append(23456)
     refs.append(34567)

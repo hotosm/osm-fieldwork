@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021 Humanitarian OpenStreetMap Team
+# Copyright (c) 2022, 2023 Humanitarian OpenStreetMap Team
 #
 # This file is part of odkconvert.
 #
@@ -22,6 +22,9 @@ import logging
 import string
 import epdb
 import argparse
+import os
+import sys
+sys.path.append(f"{os.getcwd()}/odkconvert")
 from CSVDump import CSVDump
 from osmfile import OsmFile
 import pytest
@@ -41,7 +44,7 @@ def test_csv():
 
 def test_init():
     """Make sure the YAML file got loaded"""
-    assert len(csv.convert.yaml.yaml) > 0
+    assert len(csv.yaml.yaml) > 0
 
 
 def test_osm_entry():
