@@ -18,11 +18,11 @@
 
 PACKAGE := org.odkconvert.py
 NAME := ODKConvert
-VERSION := 0.1
+VERSION := 0.1.0
 
 # Make a python package for pip
 pip:
-	zip -r $(NAME).zip *.py
+	zip -r $(NAME).zip odkconvert/*.py
 
 pip-install: pip
 	pip3 install $(NAME).zip
