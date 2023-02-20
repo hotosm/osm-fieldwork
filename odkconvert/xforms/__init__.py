@@ -3,21 +3,21 @@
 import os
 
 
-path = os.path.dirname(os.path.abspath(__file__))
+xforms_path = os.path.dirname(os.path.abspath(__file__))
 
-buildings = f"{path}/buildings.xls"
-cemeteries = f"{path}/cemeteries.xls"
-education = f"{path}/education.xls"
-healthcare = f"{path}/healthcare.xls"
-landuse = f"{path}/landuse.xls"
-natural = f"{path}/natural.xls"
-place = f"{path}/place.xls"
-religious = f"{path}/religious.xls"
-school = f"{path}/school.xls"
-solidwaste = f"{path}/solidwaste.xlsx"
-toilets = f"{path}/toilets.xls"
-transportation = f"{path}/transportation.xls"
-waste_collection = f"{path}/waste_collection.xlsx"
-waste = f"{path}/waste.xls"
-waterpoints = f"{path}/waterpoints.xls"
-waterways = f"{path}/waterways.xls"
+buildings = f"{xforms_path}/buildings.xls"
+cemeteries = f"{xforms_path}/cemeteries.xls"
+education = f"{xforms_path}/education.xls"
+healthcare = f"{xforms_path}/healthcare.xls"
+landuse = f"{xforms_path}/landuse.xls"
+natural = f"{xforms_path}/natural.xls"
+place = f"{xforms_path}/place.xls"
+religious = f"{xforms_path}/religious.xls"
+school = f"{xforms_path}/school.xls"
+solidwaste = f"{xforms_path}/solidwaste.xlsx"
+toilets = f"{xforms_path}/toilets.xls"
+transportation = f"{xforms_path}/transportation.xls"
+waste_collection = f"{xforms_path}/waste_collection.xlsx"
+waste = f"{xforms_path}/waste.xls"
+waterpoints = f"{xforms_path}/waterpoints.xls"
+waterways = f"{xforms_path}/waterways.xls"
