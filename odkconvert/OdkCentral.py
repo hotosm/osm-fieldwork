@@ -119,7 +119,10 @@ class OdkCentral(object):
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         projects = result.json()
         for project in projects:
-            self.projects[project['id']] = project
+            if isinstance(project, int):
+                self.projects[project['id']] = project
+            else:
+                logging.info("No projects returned. Is this a first run?")
         return projects
 
     def createProject(self, name=None):
