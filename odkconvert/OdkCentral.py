@@ -26,7 +26,8 @@
 import logging
 import epdb
 import argparse
-import sys, os
+import sys
+import os
 import requests
 from requests.auth import HTTPBasicAuth
 import json
@@ -44,8 +45,14 @@ import zlib
 class OdkCentral(object):
     def __init__(self, url=None, user=None, passwd=None):
         """A Class for accessing an ODK Central server via it's REST API"""
+        if not url:
+            url = os.getenv("ODK_CENTRAL_URL", default=None)
         self.url = url
+        if not user:
+            user = os.getenv("ODK_CENTRAL_USER", default=None)
         self.user = user
+        if not passwd:
+            passwd = os.getenv("ODK_CENTRAL_PASSWD", default=None)
         self.passwd = passwd
         self.verify=False
         # These are settings used by ODK Collect
@@ -112,7 +119,10 @@ class OdkCentral(object):
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         projects = result.json()
         for project in projects:
-            self.projects[project['id']] = project
+            if isinstance(project, int):
+                self.projects[project['id']] = project
+            else:
+                logging.info("No projects returned. Is this a first run?")
         return projects
 
     def createProject(self, name=None):
@@ -520,10 +530,10 @@ if __name__ == '__main__':
     # print(x.json())
     # x = form.listMedia(4, "waterpoints", 'uuid:fbe3ef41-6298-40c1-a694-6c9d25a8c476')
     # Make a new form
-    # xml = "/home/rob/projects/HOT/odkconvert.git/XForms/cemeteries.xml"
+    # xml = "/home/rob/projects/HOT/odkconvert.git/odkconvert/xlsforms/cemeteries.xml"
     # form.addXMLForm(xml)
-    # csv1 = "/home/rob/projects/HOT/odkconvert.git/XForms/municipality.csv"
-    # csv2 = "/home/rob/projects/HOT/odkconvert.git/XForms/towns.csv"
+    # csv1 = "/home/rob/projects/HOT/odkconvert.git/odkconvert/xlsforms/municipality.csv"
+    # csv2 = "/home/rob/projects/HOT/odkconvert.git/odkconvert/xlsforms/towns.csv"
     # form.addMedia(csv1)
     # form.addMedia(csv2)
     x = form.createForm(4, 'cemeteries', "cemeteries.xls", True)
