@@ -6,18 +6,18 @@ authors = [
     {name = "Rob Savoye", email = "rob.savoye@hotosm.org"},
 ]
 dependencies = [
-    "codetiming==1.4.0",
-    "epdb==0.15.1",
-    "geodex==0.1.2",
-    "geojson==2.5.0",
-    "OSMPythonTools==0.3.5",
-    "progress==1.6",
-    "pymbtiles==0.5.0",
-    "PyYAML==6.0",
-    "qrcode==7.4.2",
-    "requests==2.28.2",
-    "segno==1.5.2",
-    "xmltodict==0.13.0",
+    "codetiming>=1.4.0",
+    "epdb>=0.15.1",
+    "geodex>=0.1.2",
+    "geojson>=2.5.0",
+    "OSMPythonTools>=0.3.5",
+    "progress>=1.6",
+    "pymbtiles>=0.5.0",
+    "PyYAML>=6.0",
+    "qrcode>=7.4.2",
+    "requests>=2.28.2",
+    "segno>=1.5.2",
+    "xmltodict>=0.13.0",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
