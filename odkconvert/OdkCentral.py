@@ -26,7 +26,8 @@
 import logging
 import epdb
 import argparse
-import sys, os
+import sys
+import os
 import requests
 from requests.auth import HTTPBasicAuth
 import json
@@ -44,8 +45,14 @@ import zlib
 class OdkCentral(object):
     def __init__(self, url=None, user=None, passwd=None):
         """A Class for accessing an ODK Central server via it's REST API"""
+        if not url:
+            url = os.getenv("ODK_CENTRAL_URL", default=None)
         self.url = url
+        if not user:
+            user = os.getenv("ODK_CENTRAL_USER", default=None)
         self.user = user
+        if not passwd:
+            passwd = os.getenv("ODK_CENTRAL_PASSWD", default=None)
         self.passwd = passwd
         self.verify=False
         # These are settings used by ODK Collect
