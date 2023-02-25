@@ -28,6 +28,7 @@ import argparse
 from collections import OrderedDict
 from sys import argv
 import os
+import pathlib
 
 
 class OsmFile(object):
@@ -58,7 +59,9 @@ class OsmFile(object):
         self.addr = None
         # decrement the ID
         self.start = -1
-        self.convert = Convert()
+        import epdb; epdb.st()
+        top = pathlib.Path(ODKInstance.__file__).resolve().parent
+        self.convert = Convert(str(top.absolute()) + "/xforms.yaml")
         self.data = dict()
 
     def isclosed(self):
