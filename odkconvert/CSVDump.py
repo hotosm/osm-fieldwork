@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021, 2022 Humanitarian OpenStreetMap Team
+# Copyright (c) 2020, 2021, 2022, 2023 Humanitarian OpenStreetMap Team
 #
 # This file is part of Odkconvert.
 #
@@ -49,10 +49,10 @@ class CSVDump(Convert):
                 yaml = os.path.dirname(argv[0]) + "/xforms.yaml"
         self.config = super().__init__(yaml)
 
-    def createOSM(self, file="tmp.osm"):
+    def createOSM(self, filespec="tmp.osm"):
         """Create an OSM XML output files"""
-        logging.debug("Creating OSM XML file: %s" % file)
-        self.osm = OsmFile(filespec=file)
+        logging.debug("Creating OSM XML file: %s" % filespec)
+        self.osm = OsmFile(filespec=filespec)
         self.osm.header()
 
     def writeOSM(self, feature):
