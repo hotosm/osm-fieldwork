@@ -41,6 +41,8 @@ import codecs
 import segno
 import zlib
 
+# This enables debug messages from urllib
+# logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
 class OdkCentral(object):
     def __init__(self, url=None, user=None, passwd=None):
@@ -307,17 +309,17 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         return result.json()
 
-    def getSubmission(self, projectId=None, formId=None, disk=False):
+    def getSubmissions(self, projectId=None, formId=None, disk=False):
         """Fetch a CSV file of the submissions without media to a survey form."""
-        instanceId = "uuid:47bda2ec-c282-4cb7-9f37-03dc3bbdf96b: 2022-09-02T17:09:19.648Z"
-        url = self.base + f'projects/{projectId}/forms/{formId}/submissions'
+        url = self.base + f'projects/{projectId}/forms/{formId}/submissions.csv'
         result = self.session.get(url, auth=self.auth, verify=self.verify)
+        import epdb; epdb.st()
         if result.status_code == 200:
             if disk:
                 now = datetime.now()
                 timestamp = f'{now.year}_{now.hour}_{now.minute}'
                 # id = self.forms[0]['xmlFormId']
-                filespec = f'{formId}_{timestamp}.csv'
+                filespec = f'/tmp/{formId}_{timestamp}.csv'
                 try:
                     file = open(filespec, "xb")
                     file.write(result.content)
@@ -359,16 +361,15 @@ class OdkForm(OdkCentral):
     def uploadMedia(self, projectId=None, xmlFormId=None, filespec=None):
         """Upload an attachement to the ODK Central server"""
         file = os.path.basename(filespec)
-        if self.draft:
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments/{file}'
-        else:
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/attachments/{file}'
+        file = file.replace(".geojson", "")
+        url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments/{file}'
 
         headers = { 'Content-Type': '*/*' }
         file = open(filespec, "rb")
         media = file.read()
         file.close()
         result = self.session.post(url, auth=self.auth, data=media, headers=headers, verify=self.verify)
+        logging.debug(f"Uploaded {filespec} to Central")
         return result
         
     def getMedia(self, projectId=None, xmlFormId=None, filename=None):
@@ -402,7 +403,6 @@ class OdkForm(OdkCentral):
         logging.info("Read %d bytes from %s" % (len(xml), filespec))
 
         result = self.session.post(url, auth=self.auth,  data=xml, headers=headers, verify=self.verify)
-        # epdb.st()
         # FIXME: should update self.forms with the new form
         return result
 
@@ -421,12 +421,7 @@ class OdkForm(OdkCentral):
     def publishForm(self, projectId=None, xmlFormId=None):
         """Publish a draft form. When creating a form that isn't a draft, it can get publised then"""
         version = "newversion"
-        if self.draft:
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version={version}'
-            # url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish'
-        else:
-            url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish?version={version}'
-            # url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/publish'
+        url = f'{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version={version}'
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         return result
 
@@ -482,14 +477,14 @@ class OdkAppUser(OdkCentral):
         self.settings = {"general":
                     {"server_url":f'{self.base}key/{token}/projects/{project_id}',
                      "form_update_mode":"manual",
-                     "basemap_source": "OpenStreetMap",
+                     "basemap_source": "MapBox",
                      "autosend":"wifi_and_cellular"},
                     "project":{"name":f'{name}'},
                     "admin":{}
                     }
         qr_data = (b64encode(zlib.compress(json.dumps(self.settings).encode("utf-8"))))
         self.qrcode = segno.make(qr_data, micro=False)
-        # self.qrcode.save(f'{name}.png', scale=5)
+        self.qrcode.save(f'{name}.png', scale=5)
         return qr_data
 
 # This following code is only for debugging purposes, since this is easier
