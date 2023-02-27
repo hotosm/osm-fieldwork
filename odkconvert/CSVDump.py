@@ -93,44 +93,50 @@ class CSVDump(Convert):
         collection = FeatureCollection(features)
         dump(collection, self.json)
 
-    def parse(self, csv_file):
+    def parse(self, filespec=None, data=None):
         """Parse the CSV file from ODK Central and convert it to a data structure"""
-        # all_tags = []
-        with open(csv_file, newline='') as csvfile:
+        all_tags = list()
+        if len(data) == 0:
+            csvfile = open(filespec, newline='')
             reader = csv.DictReader(csvfile, delimiter=',')
-            tags = dict()
-            for row in reader:
-                for keyword, value in row.items():
-                    # logging.debug("Line: %r, %r" % (keyword, value))
-                    if keyword is None or len(keyword) == 0:
-                        continue
-                    base = self.basename(keyword).lower()
-                    # logging.debug("Line: %r, %r" % (base, value))
-                    # There's many extraneous fields in the input file which we don't need.
-                    if base is None or base in self.ignore or value is None or len(value) == 0:
-                        continue
-                    # if base in self.multiple:
-                    #     epdb.st()
-                    #     entry = reader[keyword]
-                    #     for key, val in entry.items():
-                    #         print(key)
-                    #         if key == "name":
-                    #             tags['name'] = val
-                    #     continue
+            csvfile.close()
+        else:
+            reader = csv.DictReader(data, delimiter=',')
+        tags = dict()
+        for row in reader:
+            print(row)
+            for keyword, value in row.items():
+                # print("LINE: %r, %r" % (keyword, value))
+                if keyword is None or len(keyword) == 0:
+                    continue
+
+                base = self.basename(keyword).lower()
+                # logging.debug("Line: %r, %r" % (base, value))
+                # There's many extraneous fields in the input file which we don't need.
+                if base is None or base in self.ignore or value is None or len(value) == 0:
+                    continue
+                # if base in self.multiple:
+                #     epdb.st()
+                #     entry = reader[keyword]
+                #     for key, val in entry.items():
+                #         print(key)
+                #         if key == "name":
+                #             tags['name'] = val
+                #     continue
+                else:
+                    items = self.convertEntry(base, value)
+                    if len(items) > 0:
+                        if type(items[0]) == str:
+                            tags[items[0]] = items[1]
+                        elif type(items[0]) == dict:
+                            for entry in items:
+                                for k,v in entry.items():
+                                    tags[k] = v
                     else:
-                        items = self.convertEntry(base, value)
-                        if len(items) > 0:
-                            if type(items[0]) == str:
-                                tags[items[0]] = items[1]
-                            elif type(items[0]) == dict:
-                                for entry in items:
-                                    for k,v in entry.items():
-                                        tags[k] = v
-                        else:
-                            tags[base] = value
-                            # logging.debug("\tFIXME1: %r" % len(items))
-                # all_tags.append(tags)
-                return tags
+                        tags[base] = value
+                        # logging.debug("\tFIXME1: %r" % len(items))
+                all_tags.append(tags)
+        return all_tags
 
     def basename(self, line):
         """Extract the basename of a path after the last -"""
