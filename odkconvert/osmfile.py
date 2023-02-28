@@ -59,7 +59,6 @@ class OsmFile(object):
         self.addr = None
         # decrement the ID
         self.start = -1
-        import epdb; epdb.st()
         top = pathlib.Path(ODKInstance.__file__).resolve().parent
         self.convert = Convert(str(top.absolute()) + "/xforms.yaml")
         self.data = dict()
