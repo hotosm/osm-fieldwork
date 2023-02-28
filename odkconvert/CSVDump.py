@@ -60,6 +60,8 @@ class CSVDump(Convert):
         out = ""
         if 'id' in feature['tags']:
             feature['id'] = feature['tags']['id']
+        if 'lat' not in feature['attrs'] or 'lon' not in feature['attrs']:
+            return None
         if 'refs' not in feature:
             out += self.osm.createNode(feature)
         else:
@@ -78,6 +80,8 @@ class CSVDump(Convert):
     def writeGeoJson(self, feature):
         """Write a feature to a GeoJson output file"""
         # These get written later when finishing , since we have to create a FeatureCollection
+        if 'lat' not in feature['attrs'] or 'lon' not in feature['attrs']:
+            return None
         self.features.append(feature)
 
     def finishGeoJson(self):
@@ -96,22 +100,19 @@ class CSVDump(Convert):
     def parse(self, filespec=None, data=None):
         """Parse the CSV file from ODK Central and convert it to a data structure"""
         all_tags = list()
-        if len(data) == 0:
+        if not data:
             csvfile = open(filespec, newline='')
-            reader = csv.DictReader(csvfile, delimiter=',')
-            csvfile.close()
+            reader = csv.DictReader(filespec, delimiter=',')
         else:
             reader = csv.DictReader(data, delimiter=',')
-        tags = dict()
         for row in reader:
-            print(row)
+            tags = dict()
+            # logging.info(f"ROW: {row}")
             for keyword, value in row.items():
-                # print("LINE: %r, %r" % (keyword, value))
                 if keyword is None or len(keyword) == 0:
                     continue
 
                 base = self.basename(keyword).lower()
-                # logging.debug("Line: %r, %r" % (base, value))
                 # There's many extraneous fields in the input file which we don't need.
                 if base is None or base in self.ignore or value is None or len(value) == 0:
                     continue
@@ -124,6 +125,7 @@ class CSVDump(Convert):
                 #             tags['name'] = val
                 #     continue
                 else:
+                    # import epdb; epdb.st()
                     items = self.convertEntry(base, value)
                     if len(items) > 0:
                         if type(items[0]) == str:
@@ -134,8 +136,8 @@ class CSVDump(Convert):
                                     tags[k] = v
                     else:
                         tags[base] = value
-                        # logging.debug("\tFIXME1: %r" % len(items))
-                all_tags.append(tags)
+                # logging.debug(f"\tFIXME1: {tags}")
+            all_tags.append(tags)
         return all_tags
 
     def basename(self, line):
@@ -234,23 +236,21 @@ if __name__ == '__main__':
     csvin.createGeoJson(jsonoutfile)
 
     logging.debug("Parsing csv files %r" % args.infile)
-    with open(args.infile, newline='') as csvfile:
-        reader = csv.DictReader(csvfile, delimiter=',')
-        for row in reader:
-            entry = csvin.parse(row)
-            # This OSM XML file only has OSM appropriate tags and values
-            feature = csvin.createEntry(entry)
-            # Sometimes bad entries, usually from debugging XForm design, sneak in
-            if len(feature) == 0:
+    data = csvin.parse(args.infile)
+    # This OSM XML file only has OSM appropriate tags and values
+    for entry in data:
+        feature = csvin.createEntry(entry)
+        # Sometimes bad entries, usually from debugging XForm design, sneak in
+        if len(feature) == 0:
+            continue
+        if len(feature) > 0:
+            if 'lat' not in feature['attrs']:
+                logging.warning("Bad record! %r" % feature)
                 continue
-            if len(feature) > 0:
-                if 'lat' not in feature['attrs']:
-                    logging.warning("Bad record! %r" % feature)
-                    continue
-                csvin.writeOSM(feature)
-                # This GeoJson file has all the data values
-                csvin.writeGeoJson(feature)
-                # print("TAGS: %r" % feature['tags'])
+            csvin.writeOSM(feature)
+            # This GeoJson file has all the data values
+            csvin.writeGeoJson(feature)
+            # print("TAGS: %r" % feature['tags'])
 
     csvin.finishOSM()
     csvin.finishGeoJson()
