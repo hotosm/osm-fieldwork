@@ -313,7 +313,6 @@ class OdkForm(OdkCentral):
         """Fetch a CSV file of the submissions without media to a survey form."""
         url = self.base + f'projects/{projectId}/forms/{formId}/submissions.csv'
         result = self.session.get(url, auth=self.auth, verify=self.verify)
-        import epdb; epdb.st()
         if result.status_code == 200:
             if disk:
                 now = datetime.now()
