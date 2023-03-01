@@ -29,7 +29,7 @@ from cpuinfo import get_cpu_info
 import queue
 import concurrent.futures
 import threading
-from sqlite import DataFile
+from odkconvert.sqlite import DataFile
 
 
 def dlthread(dest, mirrors, tiles):

@@ -19,7 +19,7 @@
 #
 
 import os
-from yamlfile import YamlFile
+from odkconvert.yamlfile import YamlFile
 import logging
 import argparse
 import sys

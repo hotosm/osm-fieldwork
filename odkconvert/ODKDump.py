@@ -18,12 +18,12 @@
 #
 
 import sys
-import ODKForm
-from ODKInstance import ODKInstance
+from odkconvert.ODKForm import ODKForm
+from odkconvert.ODKInstance import ODKInstance
 import argparse
 from datetime import datetime
-from osmfile import OsmFile
-from convert import Convert
+from odkconvert.osmfile import OsmFile
+from odkconvert.convert import Convert
 import logging
 import re
 
@@ -63,7 +63,7 @@ osmfile = OsmFile(filespec=xinst + ".osm")
 osmfile.header()
 
 # Read in the XML config file from ODK Collect
-odkform = ODKForm.ODKForm()
+odkform = ODKForm()
 odkform.parse(xform + ".xml")
 
 # Read the YAML config file for this XForm

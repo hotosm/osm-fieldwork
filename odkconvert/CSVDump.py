@@ -24,8 +24,8 @@ import os
 import logging
 import sys
 from sys import argv
-from convert import Convert
-from osmfile import OsmFile
+from odkconvert.convert import Convert
+from odkconvert.osmfile import OsmFile
 from geojson import Point, Feature, FeatureCollection, dump
 
 

@@ -20,7 +20,7 @@ import logging
 import argparse
 import sys
 import json
-from OdkCentral import OdkCentral, OdkProject, OdkForm, OdkAppUser
+from odkconvert.OdkCentral import OdkCentral, OdkProject, OdkForm, OdkAppUser
 from pathlib import Path
 
 

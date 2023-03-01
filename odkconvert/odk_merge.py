@@ -19,7 +19,7 @@ import argparse
 import logging
 from sys import argv
 from osgeo import ogr
-from osmfile import OsmFile
+from odkconvert.osmfile import OsmFile
 
 
 class InputFile(object):

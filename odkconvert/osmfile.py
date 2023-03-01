@@ -18,8 +18,7 @@
 
 import logging
 from datetime import datetime
-import ODKInstance
-from convert import Convert
+from odkconvert.convert import Convert
 import xmltodict
 import argparse
 from sys import argv
@@ -56,7 +55,7 @@ class OsmFile(object):
         self.addr = None
         # decrement the ID
         self.start = -1
-        top = pathlib.Path(ODKInstance.__file__).resolve().parent
+        top = pathlib.Path(__file__).resolve().parent
         self.convert = Convert(str(top.absolute()) + "/xforms.yaml")
         self.data = dict()
 
