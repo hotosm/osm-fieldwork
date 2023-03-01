@@ -7,7 +7,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -26,15 +26,19 @@ import re
 from collections import OrderedDict
 import csv
 from pathlib import Path
-from datetime import tzinfo, datetime
+from datetime import datetime
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Convert ODK XML instance file to CSV format')
-    parser.add_argument("-v", "--verbose", nargs="?",const="0", help="verbose output")
-    parser.add_argument("-i","--instance", help='The instance file(s) from ODK Collect')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Convert ODK XML instance file to CSV format"
+    )
+    parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
+    parser.add_argument(
+        "-i", "--instance", help="The instance file(s) from ODK Collect"
+    )
     # parser.add_argument("-d","--directories", help='A local directory pato to instance files.')
-    #parser.add_argument("-o","--outfile", default='tmp.csv', help='The output file for JOSM')
+    # parser.add_argument("-o","--outfile", default='tmp.csv', help='The output file for JOSM')
     args = parser.parse_args()
 
     # if verbose, dump to the termina
@@ -44,7 +48,9 @@ if __name__ == '__main__':
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
@@ -69,14 +75,14 @@ if __name__ == '__main__':
     rows = list()
     for instance in xmlfiles:
         logging.info("Processing instance file: %s" % instance)
-        with open(instance, 'rb') as file:
-            # Instances are small, read the whole file        
+        with open(instance, "rb") as file:
+            # Instances are small, read the whole file
             xml = file.read(os.path.getsize(instance))
             doc = xmltodict.parse(xml)
             fields = list()
             tags = dict()
             # import epdb; epdb.st()
-            data = doc['data']
+            data = doc["data"]
             for i, j in data.items():
                 if j is None:
                     continue
@@ -84,7 +90,7 @@ if __name__ == '__main__':
                 pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
                 if pat.match(str(j)):
                     fields.append("lat")
-                    gps = j.split(' ')
+                    gps = j.split(" ")
                     tags["lat"] = gps[0]
                     fields.append("lon")
                     tags["lon"] = gps[1]
@@ -113,10 +119,10 @@ if __name__ == '__main__':
     xml = os.path.basename(xmlfiles[0])
     tmp = xml.split("_")
     now = datetime.now()
-    timestamp = f'_{now.year}_{now.hour}_{now.minute}'
+    timestamp = f"_{now.year}_{now.hour}_{now.minute}"
     outfile = tmp[0] + timestamp + ".csv"
-    with open(outfile, 'w', newline='') as csvfile:
-        csv = csv.DictWriter(csvfile, dialect='excel',fieldnames=fields)
+    with open(outfile, "w", newline="") as csvfile:
+        csv = csv.DictWriter(csvfile, dialect="excel", fieldnames=fields)
         csv.writeheader()
         for row in rows:
             csv.writerow(row)

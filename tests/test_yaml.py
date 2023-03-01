@@ -18,27 +18,28 @@
 #     along with odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-import logging
-import string
-import epdb
 import argparse
 import sys
 import os
+
 sys.path.append(f"{os.getcwd()}/odkconvert")
 from yamlfile import YamlFile
-import pytest
 
-parser = argparse.ArgumentParser(description='Read and parse a YAML file')
-parser.add_argument("--infile", default="odkconvert/xforms.yaml", help='The YAML input file')
+parser = argparse.ArgumentParser(description="Read and parse a YAML file")
+parser.add_argument(
+    "--infile", default="odkconvert/xforms.yaml", help="The YAML input file"
+)
 args = parser.parse_args()
 
 data = YamlFile(args.infile)
 
+
 def test_validate():
     """Tests for things under validate"""
     foo = data.yaml["validate"]
-    bar = foo[1]['leisure']
+    bar = foo[1]["leisure"]
     assert "firepit" in bar
+
 
 # def test_bool_good():
 #     epdb.st()
@@ -52,7 +53,7 @@ def test_validate():
 #     assert "caravans" == "tourism"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_validate()
 #    test_bool_good()
 #    test_bool_bad()
