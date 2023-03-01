@@ -18,16 +18,8 @@
 import argparse
 import logging
 from sys import argv
-import os
-import epdb
-import sys
 from osgeo import ogr
-from progress.bar import Bar, PixelBar
-from progress.spinner import PixelSpinner
-from codetiming import Timer
-from osmfile import OsmFile
-import shapely.wkb as wkblib
-from shapely.geometry import Point, Polygon
+from odkconvert.osmfile import OsmFile
 
 
 class InputFile(object):
@@ -39,7 +31,7 @@ class InputFile(object):
             logging.info("Opening database connection to: %s" % source)
             connect = "PG: dbname=" + source[3:]
             # if options.get('dbhost') != "localhost":
-            #connect += " host=" + options.get('dbhost')
+            # connect += " host=" + options.get('dbhost')
             self.datain = ogr.Open(connect)
         else:
             logging.info("Opening data file: %s" % source)
@@ -47,7 +39,7 @@ class InputFile(object):
 
         # Copy the data into memory for better performance
         memdrv = ogr.GetDriverByName("MEMORY")
-        self.msmem = memdrv.CreateDataSource('msmem')
+        self.msmem = memdrv.CreateDataSource("msmem")
         self.msmem.CopyLayer(self.datain.GetLayer(), "msmem")
         self.layer = self.msmem.GetLayer()
         self.fields = self.datain.GetLayer().GetLayerDefn()
@@ -81,15 +73,17 @@ class InputFile(object):
         return None
 
     def getFeature(self, data=None):
-        id = data['attrs']['id']
+        id = data["attrs"]["id"]
         result = None
         if not id or int(id) < 0:
-            if 'name' in data['tags']:
-                query = f"SELECT *, ST_AsEWKT(geom) AS wkt FROM nodes WHERE tags->>'name'=\'{data['tags']['name']}\'"
+            if "name" in data["tags"]:
+                query = f"SELECT *, ST_AsEWKT(geom) AS wkt FROM nodes WHERE tags->>'name'='{data['tags']['name']}'"
                 # print(query)
                 result = self.datain.ExecuteSQL(query)
                 if result.GetFeatureCount() == 0:
-                    logging.debug(f"Feature not found in nodes for ID: {data['tags']['name']}")
+                    logging.debug(
+                        f"Feature not found in nodes for ID: {data['tags']['name']}"
+                    )
                     result = None
                 else:
                     logging.debug(f"Feature {data['tags']['name']} found in nodes")
@@ -97,19 +91,25 @@ class InputFile(object):
                 return None
 
         if not result:
-            query = f"SELECT *, ST_AsEWKT(geom) AS wkt FROM ways_poly WHERE osm_id=\'{id}\'"
+            query = (
+                f"SELECT *, ST_AsEWKT(geom) AS wkt FROM ways_poly WHERE osm_id='{id}'"
+            )
             # print(query)
             result = self.datain.ExecuteSQL(query)
             if result.GetFeatureCount() == 0:
                 # print(data)
-                if 'name' in data['tags']:
-                    query = f"SELECT *, ST_AsEWKT(geom) AS wkt FROM nodes WHERE tags->>'name'=\'{data['tags']['name']}\'"
-                    #print(query)
+                if "name" in data["tags"]:
+                    query = f"SELECT *, ST_AsEWKT(geom) AS wkt FROM nodes WHERE tags->>'name'='{data['tags']['name']}'"
+                    # print(query)
                     result = self.datain.ExecuteSQL(query)
                     if result.GetFeatureCount() == 0:
-                        logging.debug(f"Feature not found in ways for ID: {data['tags']['name']}")
+                        logging.debug(
+                            f"Feature not found in ways for ID: {data['tags']['name']}"
+                        )
                     else:
-                        logging.debug(f"Feature found in ways for ID: {data['tags']['name']}")
+                        logging.debug(
+                            f"Feature found in ways for ID: {data['tags']['name']}"
+                        )
                 return None
 
         # There is only one feature for an OSM ID
@@ -118,48 +118,57 @@ class InputFile(object):
             logging.debug(f"No fields found in feature for ID: {id}")
             return None
 
-        index = feature.GetFieldIndex('tags')
+        index = feature.GetFieldIndex("tags")
         tags = eval(feature.GetField(index))
 
-        index = feature.GetFieldIndex('version')
+        index = feature.GetFieldIndex("version")
         version = feature.GetField(index)
 
         # Refs are stored as a string with a colon delimiter
-        index = feature.GetFieldIndex('refs')
+        index = feature.GetFieldIndex("refs")
         if index < 0:
             refs = list()
         else:
             refs = eval(feature.GetField(index))
 
         # There should only be one feature returned from the query
-        index = feature.GetFieldIndex('wkt')
+        index = feature.GetFieldIndex("wkt")
         geom = feature.GetField(index)
-        #geom = result[0].GetGeometryRef()
+        # geom = result[0].GetGeometryRef()
 
         # a ways don't use lat-lon, it uses references to nodes instead
-        attrs = {'id': id, 'version': version}
+        attrs = {"id": id, "version": version}
         self.tags = dict()
-        for k,v in tags.items():
+        for k, v in tags.items():
             self.tags[k] = v
-        feature = {'tags': self.tags, 'attrs': attrs, 'refs': refs, 'geom': geom}
+        feature = {"tags": self.tags, "attrs": attrs, "refs": refs, "geom": geom}
         return feature
 
     def dump(self):
         """Dump internal data"""
         print(f"Data source is: {self.source}")
         if self.layer:
-           print("There are %d in the layer" % self.layer.GetFeatureCount())
+            print("There are %d in the layer" % self.layer.GetFeatureCount())
         if self.memlayer:
-           print("There are %d in the layer" % self.memlayer.GetFeatureCount())
-        
-if __name__ == '__main__':
+            print("There are %d in the layer" % self.memlayer.GetFeatureCount())
+
+
+if __name__ == "__main__":
     # Command Line options
-    parser = argparse.ArgumentParser(description='This program conflates ODK data with existing features from OSM.')
+    parser = argparse.ArgumentParser(
+        description="This program conflates ODK data with existing features from OSM."
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument("-c", "--odkfile", help="ODK CSV file downloaded from ODK Central")
+    parser.add_argument(
+        "-c", "--odkfile", help="ODK CSV file downloaded from ODK Central"
+    )
     parser.add_argument("-f", "--osmfile", help="OSM XML file created by odkconvert")
-    parser.add_argument("-o", "--outfile", default="tmp.osm", help="Output file from the merge")
-    parser.add_argument("-b", "--boundary", help='Boundary polygon to limit the data size')
+    parser.add_argument(
+        "-o", "--outfile", default="tmp.osm", help="Output file from the merge"
+    )
+    parser.add_argument(
+        "-b", "--boundary", help="Boundary polygon to limit the data size"
+    )
     args = parser.parse_args()
 
     # This program needs options to actually do anything
@@ -190,18 +199,18 @@ if __name__ == '__main__':
     odkf.loadFile(args.odkfile)
 
     for id in odkf.data:
-        #print(odkf.data[id])
+        # print(odkf.data[id])
         feature = osmf.getFeature(odkf.data[id])
         out = list()
         if not feature:
             # logging.debug(f"No feature found for ID {id}")
             # feature = osmf.createFeature(odkf.data[id])
-                out.append(odkf.createNode(odkf.data[id], modified=True))
+            out.append(odkf.createNode(odkf.data[id], modified=True))
         else:
-            tags = osmf.mergeTags(feature['tags'], odkf.data[id]['tags'])
+            tags = osmf.mergeTags(feature["tags"], odkf.data[id]["tags"])
             if tags:
-                odkf.data[id]['tags'] = tags
-            if 'name' in feature['tags']:
+                odkf.data[id]["tags"] = tags
+            if "name" in feature["tags"]:
                 # if tags and odkf.data[id]['tags']['name'] != feature['tags']['name']:
                 if tags:
                     out.append(odkf.createNode(odkf.data[id], modified=True))
@@ -219,4 +228,4 @@ if __name__ == '__main__':
     logging.info("Wrote %s: " % args.outfile)
 
 # osmoutfile = os.path.basename(args.infile.replace(".csv", ".osm"))
-#csvin.createOSM(osmoutfile)
+# csvin.createOSM(osmoutfile)

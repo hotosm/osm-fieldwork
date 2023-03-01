@@ -17,15 +17,10 @@
 #
 
 import logging
-import string
-import epdb
 from datetime import datetime
-import ODKInstance
-from shapely.geometry import Point, LineString, Polygon, GeometryCollection
-from convert import Convert
+from odkconvert.convert import Convert
 import xmltodict
 import argparse
-from collections import OrderedDict
 from sys import argv
 import os
 import pathlib
@@ -33,23 +28,24 @@ import pathlib
 
 class OsmFile(object):
     """OSM File output"""
+
     def __init__(self, options=dict(), filespec=None, outdir=None):
         self.options = options
         # Read the config file to get our OSM credentials, if we have any
         # self.config = config.config(self.options)
         self.version = 3
-        self.visible = 'true'
+        self.visible = "true"
         self.osmid = -1
         # Open the OSM output file
         if filespec is None:
-            if 'outdir' in self.options:
-                self.file = self.options.get('outdir') + "foobar.osm"
+            if "outdir" in self.options:
+                self.file = self.options.get("outdir") + "foobar.osm"
         else:
-            self.file = open(filespec, 'w')
+            self.file = open(filespec, "w")
             # self.file = open(filespec + ".osm", 'w')
-            logging.info("Opened output file: " + filespec )
+            logging.info("Opened output file: " + filespec)
         self.header()
-        #logging.error("Couldn't open %s for writing!" % filespec)
+        # logging.error("Couldn't open %s for writing!" % filespec)
 
         # This is the file that contains all the filtering data
         # self.ctable = convfile(self.options.get('convfile'))
@@ -59,7 +55,7 @@ class OsmFile(object):
         self.addr = None
         # decrement the ID
         self.start = -1
-        top = pathlib.Path(ODKInstance.__file__).resolve().parent
+        top = pathlib.Path(__file__).resolve().parent
         self.convert = Convert(str(top.absolute()) + "/xforms.yaml")
         self.data = dict()
 
@@ -68,13 +64,13 @@ class OsmFile(object):
 
     def header(self):
         if self.file is not False:
-            self.file.write('<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n')
-            #self.file.write('<osm version="0.6" generator="gosm 0.1" timestamp="2017-03-13T21:43:02Z">\n')
+            self.file.write("<?xml version='1.0' encoding='UTF-8'?>\n")
+            # self.file.write('<osm version="0.6" generator="gosm 0.1" timestamp="2017-03-13T21:43:02Z">\n')
             self.file.write('<osm version="0.6" generator="gosm 0.1">\n')
             self.file.flush()
 
     def footer(self):
-        #logging.debug("FIXME: %r" % self.file)
+        # logging.debug("FIXME: %r" % self.file)
         self.file.write("</osm>\n")
         self.file.flush()
         if self.file is False:
@@ -86,7 +82,7 @@ class OsmFile(object):
                 for line in data:
                     self.file.write("%s\n" % line)
         else:
-            self.file.write("%s\n" % data)            
+            self.file.write("%s\n" % data)
 
     def createWay(self, way, modified=False):
         """This creates a string that is the OSM representation of a node"""
@@ -95,41 +91,40 @@ class OsmFile(object):
 
         # Add default attributes
         if modified:
-            attrs['action'] = 'modify'
-        if 'osm_way_id' in way['attrs']:
-            attrs['id'] = int(way['attrs']['osm_way_id'])
-        elif 'osm_id' in way['attrs']:
-            attrs['id'] = int(way['attrs']['osm_id'])
-        elif 'id' in way['attrs']:
-            attrs['id'] = int(way['attrs']['id'])
+            attrs["action"] = "modify"
+        if "osm_way_id" in way["attrs"]:
+            attrs["id"] = int(way["attrs"]["osm_way_id"])
+        elif "osm_id" in way["attrs"]:
+            attrs["id"] = int(way["attrs"]["osm_id"])
+        elif "id" in way["attrs"]:
+            attrs["id"] = int(way["attrs"]["id"])
         else:
-            attrs['id'] = self.start
+            attrs["id"] = self.start
             self.start -= 1
-        if 'version' not in way['attrs']:
-            attrs['version'] = 1
+        if "version" not in way["attrs"]:
+            attrs["version"] = 1
         else:
-            attrs['version'] = way['attrs']['version'] + 1
-        attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
+            attrs["version"] = way["attrs"]["version"] + 1
+        attrs["timestamp"] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, The GDPR applies
         # and the identifying fields should not be included
-        if 'uid' in way and attrs['uid'] is not None:
-            attrs['uid'] = way['attrs']['uid']
-        if 'user' in way and attrs['user'] is not None:
-            attrs['user'] = way['attrs']['user']
+        if "uid" in way and attrs["uid"] is not None:
+            attrs["uid"] = way["attrs"]["uid"]
+        if "user" in way and attrs["user"] is not None:
+            attrs["user"] = way["attrs"]["user"]
 
         # Make all the nodes first. The data in the track has 4 fields. The first two
         # are the lat/lon, then the altitude, and finally the GPS accuracy.
-        i = 0
         # newrefs = list()
         node = dict()
-        node['attrs'] = dict()
+        node["attrs"] = dict()
         # The geometry is an EWKT string, so there is no need to get fancy with
         # geometries, just manipulate the string, as OSM XML it's only strings
         # anyway.
         # geom = way['geom'][19:][:-2]
-        #print(geom)
+        # print(geom)
         # points = geom.split(",")
-        #print(points)
+        # print(points)
 
         # epdb.st()
         # loop = 0
@@ -151,24 +146,26 @@ class OsmFile(object):
         # Processs atrributes
         line = ""
         for ref, value in attrs.items():
-            line += '%s=%r ' % (ref, str(value))
+            line += "%s=%r " % (ref, str(value))
         osm += "  <way " + line + ">"
 
-        for ref in way['refs']:
+        for ref in way["refs"]:
             osm += '\n    <nd ref="%s"/>' % ref
 
-        if 'tags' in way:
-            for key, value in way['tags'].items():
+        if "tags" in way:
+            for key, value in way["tags"].items():
                 if value is None:
                     continue
-                if key == 'track':
+                if key == "track":
                     continue
                 if key not in attrs:
                     newkey = self.convert.escape(key)
                     osm += "\n    <tag k='%s' v=%r/>" % (newkey, value)
             if modified:
-                osm += '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
-            osm += '\n'
+                osm += (
+                    '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
+                )
+            osm += "\n"
 
         osm += "  </way>"
 
@@ -179,43 +176,45 @@ class OsmFile(object):
         attrs = dict()
         # Add default attributes
         if modified:
-            attrs['action'] = 'modify'
+            attrs["action"] = "modify"
 
-        if 'id' in node['attrs']:
-            attrs['id'] = int(node['attrs']['id'])
+        if "id" in node["attrs"]:
+            attrs["id"] = int(node["attrs"]["id"])
         else:
-            attrs['id'] = self.start
+            attrs["id"] = self.start
             self.start -= 1
-        if 'version' not in node['attrs']:
-            attrs['version'] = "1"
+        if "version" not in node["attrs"]:
+            attrs["version"] = "1"
         else:
-            attrs['version'] = int(node['version']) + 1
-        attrs['lat'] = node['attrs']['lat']
-        attrs['lon'] = node['attrs']['lon']
-        attrs['timestamp'] = datetime.now().strftime("%Y-%m-%dT%TZ")
+            attrs["version"] = int(node["version"]) + 1
+        attrs["lat"] = node["attrs"]["lat"]
+        attrs["lon"] = node["attrs"]["lon"]
+        attrs["timestamp"] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, THE GDPR applies
         # and the identifying fields should not be included
-        if 'uid' in node and attrs['uid'] is not None:
-            attrs['uid'] = node['uid']
-        if 'user' in node and attrs['ser'] is not None:
-            attrs['user'] = node['user']
+        if "uid" in node and attrs["uid"] is not None:
+            attrs["uid"] = node["uid"]
+        if "user" in node and attrs["ser"] is not None:
+            attrs["user"] = node["user"]
 
         # Processs atrributes
         line = ""
         osm = ""
         for ref, value in attrs.items():
-            line += '%s=%r ' % (ref, str(value))
+            line += "%s=%r " % (ref, str(value))
         osm += "  <node " + line
 
-        if 'tags' in node:
+        if "tags" in node:
             osm += ">"
-            for key, value in node['tags'].items():
+            for key, value in node["tags"].items():
                 if not value:
                     continue
                 if key not in attrs:
                     osm += "\n    <tag k='%s' v=%r/>" % (key, value)
             if modified:
-                osm += '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
+                osm += (
+                    '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
+                )
             osm += "\n  </node>"
         else:
             osm += "/>"
@@ -225,13 +224,13 @@ class OsmFile(object):
     def createTag(self, field, value):
         """Create a data structure for an OSM feature tag"""
         newval = str(value)
-        newval = newval.replace('&', 'and')
-        newval = newval.replace('"', '')
+        newval = newval.replace("&", "and")
+        newval = newval.replace('"', "")
         tag = dict()
         # logging.debug("OSM:makeTag(field=%r, value=%r)" % (field, newval))
 
         newtag = field
-        change = newval.split('=')
+        change = newval.split("=")
         if len(change) > 1:
             newtag = change[0]
             newval = change[1]
@@ -242,28 +241,33 @@ class OsmFile(object):
     def loadFile(self, file=None):
         """Read a OSM XML file generated by odkconvert"""
         size = os.path.getsize(file)
-        with open(file, 'rb') as file:
+        with open(file, "rb") as file:
             xml = file.read(size)  # Instances are small, read the whole file
             doc = xmltodict.parse(xml)
-            if not 'osm' in doc:
+            if "osm" not in doc:
                 logging.warning("No data in this instance")
                 return False
-            field = doc['osm']
-        for node in field['node']:
-            attrs = {'id': node['@id'], 'lat': node['@lat'], 'lon': node['@lon'], 'timestamp': node['@timestamp']}
+            field = doc["osm"]
+        for node in field["node"]:
+            attrs = {
+                "id": node["@id"],
+                "lat": node["@lat"],
+                "lon": node["@lon"],
+                "timestamp": node["@timestamp"],
+            }
             tags = dict()
-            if 'tag' in node:
-                for tag in node['tag']:
-                    tags[tag['@k']] = tag['@v'].strip()
-                node = {'attrs': attrs, 'tags': tags}
-                self.data[node['attrs']['id']] = node
+            if "tag" in node:
+                for tag in node["tag"]:
+                    tags[tag["@k"]] = tag["@v"].strip()
+                node = {"attrs": attrs, "tags": tags}
+                self.data[node["attrs"]["id"]] = node
 
     def dump(self):
         """Dump the contents of an OSM file"""
         for id, item in self.data.items():
-            for k,v in item['attrs'].items():
+            for k, v in item["attrs"].items():
                 print(f"{k} = {v}")
-            for k,v in item['tags'].items():
+            for k, v in item["tags"].items():
                 print(f"\t{k} = {v}")
 
     def getFeature(self, id):
@@ -274,15 +278,18 @@ class OsmFile(object):
         """Extract all the tags used in this file"""
         fields = list()
         for id, item in self.data.items():
-            keys = list(item['tags'].keys())
+            keys = list(item["tags"].keys())
             for key in keys:
                 if key not in fields:
                     fields.append(key)
         print(fields)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Command Line options
-    parser = argparse.ArgumentParser(description='This program conflates ODK data with existing features from OSM.')
+    parser = argparse.ArgumentParser(
+        description="This program conflates ODK data with existing features from OSM."
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-o", "--osmfile", help="OSM XML file created by odkconvert")
     args = parser.parse_args()
@@ -300,4 +307,3 @@ if __name__ == '__main__':
     osm = OsmFile()
     osm.loadFile(args.osmfile)
     osm.dump()
-    

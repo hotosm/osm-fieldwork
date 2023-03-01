@@ -22,7 +22,7 @@ validate:
 # data we need to handle converting the tag name back to the colon
 # version for OSM.
 convert:
-   # From the Saint Lucia XForm
+  # From the Saint Lucia XForm
   - _record_your_current_location_altitude: ele
   - Record_your_current_location-Longitude: lon
   - Record_your_current_location-Latitide: lat
@@ -113,7 +113,7 @@ private:
   - lateral_material
   - lateral_system
   - access_roof
-  
+
 # All of these tags are in the CSV file, and can be ignored
 ignore:
   - attachmentsexpected
@@ -155,29 +155,29 @@ multiple:
 # all share the same keyword. This corrects that.
 tags:
   - leisure:
-    - firepit
-    - picnic_table
-    - fishing
-    - park
-    - resort
+      - firepit
+      - picnic_table
+      - fishing
+      - park
+      - resort
   - tourism:
-    - picnic_table
-    - caravans
-    - camp_site
-    - camp_pitch
-    - viewpoint
+      - picnic_table
+      - caravans
+      - camp_site
+      - camp_pitch
+      - viewpoint
   - bear box: yes
   - barbeque_grill: yes
   - power_supply: yes
   - path:
-    - sac_scale
-    - mtb:scale
-    - mtb:scale:imba
+      - sac_scale
+      - mtb:scale
+      - mtb:scale:imba
   - internet_access:
-    - wlan
-    - cellular
-    - internet
-    
+      - wlan
+      - cellular
+      - internet
+
   - toilets:disposal:
       - flush
       - urinal

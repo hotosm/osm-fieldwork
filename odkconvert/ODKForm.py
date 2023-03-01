@@ -7,7 +7,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -19,28 +19,25 @@
 
 import logging
 import argparse
-import xmltodict
 import os
-import re
-import epdb
 import sys
-from collections import OrderedDict
 
 
 class ODKForm(object):
     """Support for parsing an XLS Form"""
+
     def __init__(self):
         self.fields = dict()
         self.nodesets = dict()
         self.groups = dict()
-        self.ignore = ('label', '@appearance', 'hint', 'upload')
+        self.ignore = ("label", "@appearance", "hint", "upload")
 
     def parseSelect(self, select=dict()):
         print("parseSelect %r" % type(select))
         newsel = dict()
-        if 'item' in select:
-            data = self.parseItems(select['item'])
-            ref = os.path.basename(select['@ref'])
+        if "item" in select:
+            data = self.parseItems(select["item"])
+            ref = os.path.basename(select["@ref"])
             for key in data:
                 if key in self.ignore:
                     continue
@@ -51,10 +48,6 @@ class ODKForm(object):
     def parseItems(self, items):
         print("\tparseItems: %r: %r" % (type(items), items))
         newitems = list()
-        newdata = dict()
-        group = None
-        subgroup = None
-        label = None
         # if type(items) == OrderedDict:
         #     data = list()
         #     data.append(items)
@@ -62,7 +55,7 @@ class ODKForm(object):
         #     data = items
 
         for values in items:
-            newitems.append(values['value'])
+            newitems.append(values["value"])
 
             # if type(values) == str:
             #     continue
@@ -87,29 +80,32 @@ class ODKForm(object):
 
     def parseGroup(self, group=dict()):
         print("\tparseGroup %r" % (type(group)))
-        newgrp = dict()
         if type(group) == list:
             for val in group:
                 for k in group:
                     print("\nZZZZ1 %r" % (k))
-        else:                   # it's a list
+        else:  # it's a list
             for keyword, data in group.items():
-                ref = None
                 # FIXME: for now,. ignore media files
                 if keyword in self.ignore:
                     continue
                 print("WWW3 %r, %r" % (keyword, type(data)))
-                #pat = re.compile('select[0-9]*')
-                #if pat.match(keyword):
-                if keyword[0:6] == 'select':
+                # pat = re.compile('select[0-9]*')
+                # if pat.match(keyword):
+                if keyword[0:6] == "select":
                     print("WWW4 select")
-                    select = self.parseSelect(data)
-                    #self.groups[] =
+                    self.parseSelect(data)
+                    # self.groups[] =
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='convert CSV from ODK Central to OSM XML')
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="convert CSV from ODK Central to OSM XML"
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument("-i", "--infile", help='The input file downloaded from ODK Central')
+    parser.add_argument(
+        "-i", "--infile", help="The input file downloaded from ODK Central"
+    )
     args = parser.parse_args()
 
     # if verbose, dump to the terminal.
@@ -119,7 +115,9 @@ if __name__ == '__main__':
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         ch.setFormatter(formatter)
         root.addHandler(ch)
 

@@ -22,12 +22,9 @@ import argparse
 import os
 import logging
 import sys
-import epdb
-from sys import argv
 import sqlite3
 import locale
 import mercantile
-
 
 
 class MapTile(object):
@@ -72,6 +69,7 @@ class MapTile(object):
         if self.blob:
             print("Tile size is: %d" % len(self.blob))
 
+
 class DataFile(object):
     def __init__(self, dbname=None, suffix="jpg"):
         """Handle the sqlite3 database file"""
@@ -87,8 +85,10 @@ class DataFile(object):
     def addBounds(self, bounds=None):
         """Mbtiles has a bounds field, Osmand doesn't"""
         entry = str(bounds)
-        entry = entry[1:len(entry)-1].replace(" ", "")
-        self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{entry}')")
+        entry = entry[1 : len(entry) - 1].replace(" ", "")
+        self.cursor.execute(
+            f"INSERT INTO metadata (name, value) VALUES('bounds', '{entry}')"
+        )
         # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('minzoom', '9')")
         # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('maxzoom', '15')")
 
@@ -101,24 +101,39 @@ class DataFile(object):
 
         self.db = sqlite3.connect(dbname)
         self.cursor = self.db.cursor()
-        if suffix == '.mbtiles':
-            self.cursor.execute("CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob)")
-            self.cursor.execute("CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row)")
+        if suffix == ".mbtiles":
+            self.cursor.execute(
+                "CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob)"
+            )
+            self.cursor.execute(
+                "CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row)"
+            )
             self.cursor.execute("CREATE TABLE metadata (name text, value text)")
             # These get populated later
             name = dbname
             description = "Created by odkconvert/basemapper.py"
-            bounds = None
             self.cursor.execute("CREATE UNIQUE INDEX metadata_idx  ON metadata (name)")
-            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('version', '1.1')")
-            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('type', 'baselayer')")
-            self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('name', '{name}')")
-            self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('description', '{description}')")
-            #self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{bounds}')")
-            self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('format', 'jpg')")
-        elif suffix == '.sqlitedb':
+            self.cursor.execute(
+                "INSERT INTO metadata (name, value) VALUES('version', '1.1')"
+            )
+            self.cursor.execute(
+                "INSERT INTO metadata (name, value) VALUES('type', 'baselayer')"
+            )
+            self.cursor.execute(
+                f"INSERT INTO metadata (name, value) VALUES('name', '{name}')"
+            )
+            self.cursor.execute(
+                f"INSERT INTO metadata (name, value) VALUES('description', '{description}')"
+            )
+            # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{bounds}')")
+            self.cursor.execute(
+                "INSERT INTO metadata (name, value) VALUES('format', 'jpg')"
+            )
+        elif suffix == ".sqlitedb":
             # s is always 0
-            self.cursor.execute("CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));")
+            self.cursor.execute(
+                "CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));"
+            )
             self.cursor.execute("CREATE INDEX IND on tiles (x,y,z,s)")
             # Info is simple "2|4" for example, it gets populated later
             self.cursor.execute("CREATE TABLE info (maxzoom Int, minzoom Int);")
@@ -132,31 +147,41 @@ class DataFile(object):
         for tile in tiles:
             xyz = MapTile(tile=tile)
             xyz.readImage(base)
-            #xyz.dump()
+            # xyz.dump()
             self.writeTile(xyz)
 
     def writeTile(self, tile=None):
         if tile.blob is None:
             logging.error("Map tile has no image data!")
-            #tile.dump()
+            # tile.dump()
             return False
         suffix = os.path.splitext(self.dbname)[1]
         if suffix == ".sqlitedb":
             # Osmand tops out at zoom level 16, so the real zoom level is inverse,
             # and can go negative for really high zoom levels.
             z = 17 - tile.z
-            self.db.execute("INSERT INTO tiles (x, y, z, s, image) VALUES (?, ?, ?, ?, ?)", [tile.x, tile.y, z, 0, sqlite3.Binary(tile.blob)])
-        elif suffix ==".mbtiles":
+            self.db.execute(
+                "INSERT INTO tiles (x, y, z, s, image) VALUES (?, ?, ?, ?, ?)",
+                [tile.x, tile.y, z, 0, sqlite3.Binary(tile.blob)],
+            )
+        elif suffix == ".mbtiles":
             y = (1 << tile.z) - tile.y - 1
-            self.db.execute("INSERT INTO tiles (tile_row, tile_column, zoom_level, tile_data) VALUES (?, ?, ?, ?)", [y, tile.x, tile.z, sqlite3.Binary(tile.blob)])
+            self.db.execute(
+                "INSERT INTO tiles (tile_row, tile_column, zoom_level, tile_data) VALUES (?, ?, ?, ?)",
+                [y, tile.x, tile.z, sqlite3.Binary(tile.blob)],
+            )
 
         self.db.commit()
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Create an mbtiles basemap for ODK Collect')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Create an mbtiles basemap for ODK Collect"
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument("-d", "--database", default="test.mbtiles", help='Database file name')
+    parser.add_argument(
+        "-d", "--database", default="test.mbtiles", help="Database file name"
+    )
     args = parser.parse_args()
 
     # if verbose, dump to the terminal.
@@ -166,7 +191,9 @@ if __name__ == '__main__':
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
@@ -188,4 +215,3 @@ if __name__ == '__main__':
         xyz = MapTile(tile=tile3)
         xyz.readImage(toplevel)
         xyz.dump()
-        

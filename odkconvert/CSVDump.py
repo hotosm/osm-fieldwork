@@ -23,15 +23,15 @@ import csv
 import os
 import logging
 import sys
-import epdb
 from sys import argv
-from convert import Convert
-from osmfile import OsmFile
+from odkconvert.convert import Convert
+from odkconvert.osmfile import OsmFile
 from geojson import Point, Feature, FeatureCollection, dump
 
 
 class CSVDump(Convert):
     """A class to parse the CSV files from ODK Central"""
+
     def __init__(self, yaml=None):
         """"""
         self.fields = dict()
@@ -58,11 +58,11 @@ class CSVDump(Convert):
     def writeOSM(self, feature):
         """Write a feature to an OSM XML output file"""
         out = ""
-        if 'id' in feature['tags']:
-            feature['id'] = feature['tags']['id']
-        if 'lat' not in feature['attrs'] or 'lon' not in feature['attrs']:
+        if "id" in feature["tags"]:
+            feature["id"] = feature["tags"]["id"]
+        if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
             return None
-        if 'refs' not in feature:
+        if "refs" not in feature:
             out += self.osm.createNode(feature)
         else:
             out += self.osm.createWay(feature)
@@ -75,12 +75,12 @@ class CSVDump(Convert):
     def createGeoJson(self, file="tmp.geojson"):
         """Create a GeoJson output file"""
         logging.debug("Creating GeoJson file: %s" % file)
-        self.json = open(file, 'w')
+        self.json = open(file, "w")
 
     def writeGeoJson(self, feature):
         """Write a feature to a GeoJson output file"""
         # These get written later when finishing , since we have to create a FeatureCollection
-        if 'lat' not in feature['attrs'] or 'lon' not in feature['attrs']:
+        if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
             return None
         self.features.append(feature)
 
@@ -88,11 +88,11 @@ class CSVDump(Convert):
         """Write the GeoJson FeatureCollection to the output file and close it"""
         features = list()
         for item in self.features:
-            poi = Point((float(item['attrs']['lon']), float(item['attrs']['lat'])))
-            if 'private' in item:
-                props = {**item['tags'], **item['private']}
+            poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
+            if "private" in item:
+                props = {**item["tags"], **item["private"]}
             else:
-                props = item['tags']
+                props = item["tags"]
             features.append(Feature(geometry=poi, properties=props))
         collection = FeatureCollection(features)
         dump(collection, self.json)
@@ -101,10 +101,10 @@ class CSVDump(Convert):
         """Parse the CSV file from ODK Central and convert it to a data structure"""
         all_tags = list()
         if not data:
-            csvfile = open(filespec, newline='')
-            reader = csv.DictReader(filespec, delimiter=',')
+            open(filespec, newline="")
+            reader = csv.DictReader(filespec, delimiter=",")
         else:
-            reader = csv.DictReader(data, delimiter=',')
+            reader = csv.DictReader(data, delimiter=",")
         for row in reader:
             tags = dict()
             # logging.info(f"ROW: {row}")
@@ -114,7 +114,12 @@ class CSVDump(Convert):
 
                 base = self.basename(keyword).lower()
                 # There's many extraneous fields in the input file which we don't need.
-                if base is None or base in self.ignore or value is None or len(value) == 0:
+                if (
+                    base is None
+                    or base in self.ignore
+                    or value is None
+                    or len(value) == 0
+                ):
                     continue
                 # if base in self.multiple:
                 #     epdb.st()
@@ -132,7 +137,7 @@ class CSVDump(Convert):
                             tags[items[0]] = items[1]
                         elif type(items[0]) == dict:
                             for entry in items:
-                                for k,v in entry.items():
+                                for k, v in entry.items():
                                     tags[k] = v
                     else:
                         tags[base] = value
@@ -142,10 +147,10 @@ class CSVDump(Convert):
 
     def basename(self, line):
         """Extract the basename of a path after the last -"""
-        tmp = line.split('-')
+        tmp = line.split("-")
         if len(tmp) == 0:
             return line
-        base = tmp[len(tmp)-1]
+        base = tmp[len(tmp) - 1]
         return base
 
     def createEntry(self, entry=None):
@@ -160,14 +165,23 @@ class CSVDump(Convert):
         logging.debug("Creating entry")
         # First convert the tag to the approved OSM equivalent
         for key, value in entry.items():
-            attributes = ("id", "timestamp", "lat", "lon", "uid", "user", "version", "action")
+            attributes = (
+                "id",
+                "timestamp",
+                "lat",
+                "lon",
+                "uid",
+                "user",
+                "version",
+                "action",
+            )
             # When using existing OSM data, there's a special geometry field.
             # Otherwise use the GPS coordinates where you are.
-            if key == 'geometry':
-                geometry = value.split(' ')
+            if key == "geometry":
+                geometry = value.split(" ")
                 if len(geometry) == 4:
-                    attrs['lat'] = geometry[0]
-                    attrs['lon'] = geometry[1]
+                    attrs["lat"] = geometry[0]
+                    attrs["lon"] = geometry[1]
                 continue
 
             if key is not None and len(key) > 0 and key in attributes:
@@ -187,7 +201,7 @@ class CSVDump(Convert):
                                     tags[entry] = "yes"
                     continue
 
-                if value is not None and value != 'no' and value != 'unknown':
+                if value is not None and value != "no" and value != "unknown":
                     if key == "track" or key == "geoline":
                         refs.append(tag)
                         logging.debug("Adding reference %s" % tag)
@@ -197,21 +211,25 @@ class CSVDump(Convert):
                         else:
                             tags[key] = value
             if len(tags) > 0:
-                feature['attrs'] = attrs
-                feature['tags'] = tags
+                feature["attrs"] = attrs
+                feature["tags"] = tags
             if len(refs) > 0:
-                feature['refs'] = refs
+                feature["refs"] = refs
             if len(priv) > 0:
-                feature['private'] = priv
+                feature["private"] = priv
 
         return feature
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='convert CSV from ODK Central to OSM XML')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="convert CSV from ODK Central to OSM XML"
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-y", "--yaml", help="Alternate YAML file")
-    parser.add_argument("-i", "--infile", help='The input file downloaded from ODK Central')
+    parser.add_argument(
+        "-i", "--infile", help="The input file downloaded from ODK Central"
+    )
     args = parser.parse_args()
 
     # if verbose, dump to the terminal.
@@ -221,7 +239,9 @@ if __name__ == '__main__':
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
@@ -244,7 +264,7 @@ if __name__ == '__main__':
         if len(feature) == 0:
             continue
         if len(feature) > 0:
-            if 'lat' not in feature['attrs']:
+            if "lat" not in feature["attrs"]:
                 logging.warning("Bad record! %r" % feature)
                 continue
             csvin.writeOSM(feature)

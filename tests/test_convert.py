@@ -20,13 +20,15 @@
 
 import os
 import sys
+
 sys.path.append(f"{os.getcwd()}/odkconvert")
 import argparse
-import epdb
 from convert import Convert
 
-parser = argparse.ArgumentParser(description='Read and convert a CSV file from ODK Central')
-parser.add_argument("--infile", default="tests/test.csv", help='The CSV input file')
+parser = argparse.ArgumentParser(
+    description="Read and convert a CSV file from ODK Central"
+)
+parser.add_argument("--infile", default="tests/test.csv", help="The CSV input file")
 args = parser.parse_args()
 
 
@@ -38,7 +40,7 @@ elif os.path.exists("odkconvert/xforms.yaml"):
 
 def test_get_keyword():
     """Convert a feature"""
-    if 'sac_scale' in csv.yaml.yaml['tags']:
+    if "sac_scale" in csv.yaml.yaml["tags"]:
         assert 0
     else:
         assert 1
@@ -46,8 +48,8 @@ def test_get_keyword():
 
 def test_no_keyword():
     """Convert a feature that doesn't exist"""
-    if 'sac_scale' in csv.yaml.yaml['convert']:
-        result = csv.getKeyword("doesn't exist")
+    if "sac_scale" in csv.yaml.yaml["convert"]:
+        csv.getKeyword("doesn't exist")
         assert 0
     else:
         assert 1
@@ -75,9 +77,9 @@ def test_convert_tag():
 
 
 # Run standalone for easier debugging when not under pytest
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_get_keyword()
     test_no_keyword()
-#    test_convert_list()
-#    test_bool_keyword()
+    #    test_convert_list()
+    #    test_bool_keyword()
     test_convert_tag()

@@ -7,7 +7,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -18,12 +18,11 @@
 #
 
 import sys
-import csv
 import logging
 import xmltodict
 import argparse
-#from shapely.geometry import Point, LineString, Polygon
-import epdb                      # FIXME: remove later
+
+# from shapely.geometry import Point, LineString, Polygon
 from collections import OrderedDict
 
 
@@ -34,13 +33,14 @@ class ODKObject(object):
         self.data = data
 
     def dump(self):
-        print("Name: %s, Type %s" % (self.name,self.type))
+        print("Name: %s, Type %s" % (self.name, self.type))
         print("\tValue: %s" % self.data)
+
 
 class ODKInstance(object):
     def __init__(self, file):
         self.odkobjs = list()
-#super(ODKInstance, self).__init__()
+        # super(ODKInstance, self).__init__()
         self.name = file
         self.odkobjs = list()
 
@@ -118,11 +118,11 @@ class ODKInstance(object):
 
     def parse(self, instance):
         print("Parsing Instance: %s" % instance)
-        with open(instance, 'rb') as file:
+        with open(instance, "rb") as file:
             xml = file.read(10000)  # Instances are small, read the whole file
             doc = xmltodict.parse(xml)
         try:
-            field = doc['data']
+            field = doc["data"]
         except:
             logging.warning("No data in this instance")
             return False
@@ -191,11 +191,14 @@ class ODKInstance(object):
 
         return self.odkobjs
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--verbose", nargs="?",const="0", help="verbose output")
-    parser.add_argument("-i", "--infile", required=True, help="instance data in XML format")
+    parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
+    parser.add_argument(
+        "-i", "--infile", required=True, help="instance data in XML format"
+    )
     args = parser.parse_args()
 
     # if verbose, dump to the terminal as well as the logfile.
@@ -205,7 +208,9 @@ if __name__ == '__main__':
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
