@@ -363,10 +363,18 @@ class OdkForm(OdkCentral):
 
     def uploadMedia(self, projectId=None, xmlFormId=None, filespec=None):
         """Upload an attachement to the ODK Central server"""
-        file = os.path.basename(filespec)
-        file = file.replace(".geojson", "")
-        url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/draft/attachments/{file}"
+        title = os.path.basename(os.path.splitext(filespec)[0])
+        datafile = f"{title}.geojson"
+        xid = xmlFormId.split('_')[2]
+        url = f"{self.base}projects/{projectId}/forms/{xid}/draft"
+        result = self.session.post(url, auth=self.auth, verify=self.verify)
+        if result.status_code == 200:
+            logging.debug(f"Modified {title} to draft")
+        else:
+            status = eval(result._content)
+            logging.error(f"Couldn't modify {title} to draft: {status['message']}")
 
+        url = f"{self.base}projects/{projectId}/forms/{xid}/draft/attachments/{datafile}"
         headers = {"Content-Type": "*/*"}
         file = open(filespec, "rb")
         media = file.read()
@@ -374,7 +382,12 @@ class OdkForm(OdkCentral):
         result = self.session.post(
             url, auth=self.auth, data=media, headers=headers, verify=self.verify
         )
-        logging.debug(f"Uploaded {filespec} to Central")
+        if result.status_code == 200:
+            logging.debug(f"Uploaded {filespec} to Central")
+        else:
+            status = eval(result._content)
+            logging.error(f"Couldn't upload {filespec} to Central: {status['message']}")
+
         return result
 
     def getMedia(self, projectId=None, xmlFormId=None, filename=None):
@@ -384,6 +397,11 @@ class OdkForm(OdkCentral):
         else:
             url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/attachments/{filename}"
         result = self.session.get(url, auth=self.auth, verify=self.verify)
+        if result.status_code == 200:
+            logging.debug(f"fetched {filename} from Central")
+        else:
+            status = eval(result._content)
+            logging.error(f"Couldn't fetch {filename} from Central: {status['message']}")
         self.media = result.content
         return self.media
 
@@ -391,13 +409,9 @@ class OdkForm(OdkCentral):
         """Create a new form on an ODK Central server"""
         if draft is not None:
             self.draft = draft
-        # headers = {
-        #    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        #    f'X-XlsForm-FormId-Fallback': filespec
-        # }
         headers = {"Content-Type": "application/xml"}
         if self.draft:
-            url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/draft?ignoreWarnings=true"
+            url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/draft?ignoreWarnings=true&publish=false"
         else:
             url = f"{self.base}projects/{projectId}/forms?ignoreWarnings=true&publish=true"
 
@@ -411,7 +425,14 @@ class OdkForm(OdkCentral):
             url, auth=self.auth, data=xml, headers=headers, verify=self.verify
         )
         # FIXME: should update self.forms with the new form
-        return result
+        if result.status_code != 200:
+            if result.status_code == 409:
+                logging.error(f"{xmlFormId} already exists on Central")
+            else:
+                status = eval(result._content)
+                logging.error(f"Couldn't create {xmlFormId} on Central: {status['message']}")
+
+        return result.status_code
 
     def deleteForm(self, projectId=None, xmlFormId=None):
         """Delete a form from an ODK Central server"""
@@ -427,10 +448,17 @@ class OdkForm(OdkCentral):
 
     def publishForm(self, projectId=None, xmlFormId=None):
         """Publish a draft form. When creating a form that isn't a draft, it can get publised then"""
-        version = "newversion"
-        url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/draft/publish?version={version}"
-        result = self.session.get(url, auth=self.auth, verify=self.verify)
-        return result
+        version = now = datetime.now().strftime("%Y-%m-%dT%TZ")
+        xid = xmlFormId.split('_')[2]
+
+        url = f"{self.base}projects/{projectId}/forms/{xid}/draft/publish?version={version}"
+        result = self.session.post(url, auth=self.auth, verify=self.verify)
+        if result.status_code != 200:
+            status = eval(result._content)
+            logging.error(f"Couldn't publish {xmlFormId} on Central: {status['message']}")
+        else:
+            logging.error(f"Published {xmlFormId} on Central.")
+        return result.status_code
 
     def dump(self):
         """Dump internal data structures, for debugging purposes only"""
