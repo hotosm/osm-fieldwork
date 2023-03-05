@@ -17,12 +17,10 @@
 #
 
 import logging
-import epdb
 import argparse
-import sys, os
-from datetime import tzinfo, datetime
+import sys
 import json
-from OdkCentral import OdkCentral, OdkProject, OdkForm, OdkAppUser
+from odkconvert.OdkCentral import OdkCentral, OdkProject, OdkForm, OdkAppUser
 from pathlib import Path
 
 
@@ -53,25 +51,52 @@ class OdkClient(object):
             file.write(json.dump(data))
             file.close()
         logging.info("Wrote config file %s" % filespec)
-        
-parser = argparse.ArgumentParser(description='command line client for ODK Central')
+
+
+parser = argparse.ArgumentParser(description="command line client for ODK Central")
 parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
 # This is for server requests
-parser.add_argument("-s", "--server", choices=['projects', 'users'],
-                    help="project operations")
+parser.add_argument(
+    "-s", "--server", choices=["projects", "users", "delete"], help="project operations"
+)
 # This is for project specific requests
-parser.add_argument("-p", "--project", choices=['forms', 'app-users', 'assignments'],
-                    help="project operations")
-parser.add_argument('-i', '--id', type=int, help = 'Project ID nunmber')
+parser.add_argument(
+    "-p",
+    "--project",
+    choices=["forms", "app-users", "assignments", "delete"],
+    help="project operations",
+)
+parser.add_argument("-i", "--id", type=int, help="Project ID nunmber")
 parser.add_argument("-f", "--form", help="XForm name")
 parser.add_argument("-u", "--uuid", help="Submission UUID, needed to download the data")
 # This is for form specific requests
-parser.add_argument('-x', '--xform', choices=['attachments', "csv", 'submissions', 'upload', 'download', 'create', 'assignments', 'delete', 'publish'],
-                    help = 'XForm ID for operations with data files')
-parser.add_argument("-a", "--appuser", choices=['create', 'delete', 'update', 'qrcode', 'access'], help="App-User operations")
+parser.add_argument(
+    "-x",
+    "--xform",
+    choices=[
+        "attachments",
+        "csv",
+        "submissions",
+        "upload",
+        "download",
+        "create",
+        "assignments",
+        "delete",
+        "publish",
+    ],
+    help="XForm ID for operations with data files",
+)
+parser.add_argument(
+    "-a",
+    "--appuser",
+    choices=["create", "delete", "update", "qrcode", "access"],
+    help="App-User operations",
+)
 parser.add_argument("-d", "--data", help="Data files for upload or download")
 parser.add_argument("-t", "--timestamp", help="Timestamp for submissions")
-parser.add_argument("-b", "--bulk", choices=['qrcodes', 'update'], help="Bulk operations")
+parser.add_argument(
+    "-b", "--bulk", choices=["qrcodes", "update"], help="Bulk operations"
+)
 
 # Caching isn't implemented yet. That's for fancier queries that require multiple
 # requests to the ODK server. Caching allows for data like names for IDs to
@@ -97,12 +122,14 @@ if unknown:
 if args.verbose is not None:
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
-    
+
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     ch.setFormatter(formatter)
-    root.addHandler(ch)    
+    root.addHandler(ch)
 
 # Commands to the ODK Central server, which gets data that applies
 # to all projects on the server.
@@ -112,30 +139,34 @@ if args.server:
     if args.server == "projects":
         projects = central.listProjects()
         print("There are %d projects on this ODK Central server" % len(projects))
-        ordered = sorted(projects, key=lambda item: item.get('id'))
+        ordered = sorted(projects, key=lambda item: item.get("id"))
         for project in ordered:
-            print("\t%s: %s" % (project['id'], project['name']))
+            print("\t%s: %s" % (project["id"], project["name"]))
     elif args.server == "users":
         users = central.listUsers()
         logging.info("There are %d users on this ODK Central server" % len(users))
-        ordered = sorted(users, key=lambda item: item.get('id'))
+        ordered = sorted(users, key=lambda item: item.get("id"))
         for user in ordered:
-            print("%s: %s (%s)" % (user['id'], user['displayName'], user['email']))
+            print("%s: %s (%s)" % (user["id"], user["displayName"], user["email"]))
+    elif args.server == "delete":
+        central.deleteProject(args.id)
 
 # Commands to get data about a specific project on an ODK Central server.
 elif args.project:
     project = OdkProject()
     # project.authenticate()
     if not args.id:
-        print("Need to specify a project ID using \"--id\"!")
-        print("You can use \"odk_client.-py --server projects\" to list all the projects!")
+        print('Need to specify a project ID using "--id"!')
+        print(
+            'You can use "odk_client.-py --server projects" to list all the projects!'
+        )
         # parser.print_help()
         quit()
     if args.project == "forms":
         forms = project.listForms(args.id)
-        ordered = sorted(forms, key=lambda item: item.get('xmlFormId'))
+        ordered = sorted(forms, key=lambda item: item.get("xmlFormId"))
         for form in ordered:
-            print("\t%r: %r" % (form['xmlFormId'], form['name']))
+            print("\t%r: %r" % (form["xmlFormId"], form["name"]))
     # if args.project == "submissions":
     #     submit = project.listSubmissions(args.id, args.form)
     #     # ordered = sorted(submit, key=lambda item: item.get('xmlFormId'))
@@ -144,24 +175,35 @@ elif args.project:
     if args.project == "app-users":
         users = project.listAppUsers(args.id)
         logging.info("There are %d app users on this ODK Central server" % len(users))
-        ordered = sorted(users, key=lambda item: item.get('id'))
+        ordered = sorted(users, key=lambda item: item.get("id"))
         for user in ordered:
-            print("\t%r: %s (%s)" % (user['id'], user['displayName'], user['token']))
+            print("\t%r: %s (%s)" % (user["id"], user["displayName"], user["token"]))
+    if args.project == "delete":
+        tmp = files[0].split("-")
+        if len(tmp) > 1:
+            for id in range(int(tmp[0]), int(tmp[1])):
+                project.deleteProject(id)
+        else:
+            project.deleteProject(tmp[0])
+
+        # logging.info("There are %d app users on this ODK Central server" %)
     if args.project == "assignments":
         assign = project.listAssignments(args.id)
-        logging.info("There are %d assignments  on this ODK Central server" % len(assign))
-        ordered = sorted(assign, key=lambda item: item.get('id'))
+        logging.info(
+            "There are %d assignments  on this ODK Central server" % len(assign)
+        )
+        ordered = sorted(assign, key=lambda item: item.get("id"))
         for role in ordered:
             print("\t%r" % role)
 
 elif args.xform:
-# This downloads files from the ODK server
+    # This downloads files from the ODK server
     print("XForm ops %r" % files)
     if not args.id:
-        print("Need to specify a project ID using \"--id\" and an XForm id using \"--\"!")
+        print('Need to specify a project ID using "--id" and an XForm id using "--"!')
         quit()
     if not args.form:
-        print("Need to specify a XForm id using \"--form\"!")
+        print('Need to specify a XForm id using "--form"!')
         quit()
 
     form = OdkForm()
@@ -187,29 +229,37 @@ elif args.xform:
             file.close()
     elif args.xform == "assignments":
         assign = form.listAssignments(args.id, args.form)
-        logging.info("There are %d assignments  on this ODK Central server" % len(assign))
+        logging.info(
+            "There are %d assignments  on this ODK Central server" % len(assign)
+        )
         # ordered = sorted(assign, key=lambda item: item.get('id'))
         for role in assign:
             print("\t%r" % role)
     elif args.xform == "submissions":
         submissions = form.listSubmissions(args.id, args.form)
-        logging.info("There are %d submissions for XForm %s" % (len(submissions), args.form))
+        logging.info(
+            "There are %d submissions for XForm %s" % (len(submissions), args.form)
+        )
         for file in submissions:
             # form.submissions.append(file)
-            print("%s: %s" % (file['instanceId'], file['createdAt']))
+            print("%s: %s" % (file["instanceId"], file["createdAt"]))
 
     elif args.xform == "csv":
         submissions = form.getSubmission(args.id, args.form, True)
-        logging.info("There are %d submissions for XForm %s" % (len(submissions), args.form))
+        logging.info(
+            "There are %d submissions for XForm %s" % (len(submissions), args.form)
+        )
         for file in submissions:
             form.submissions.append(file)
-            print("%s: %s" % (file['instanceId'], file['createdAt']))
+            print("%s: %s" % (file["instanceId"], file["createdAt"]))
 
     elif args.xform == "attachments":
         attachments = form.listMedia(args.id, args.form)
-        logging.info("There are %d attachments for XForm %s" % (len(attachments), args.form))
+        logging.info(
+            "There are %d attachments for XForm %s" % (len(attachments), args.form)
+        )
         for file in attachments:
-            print("\t%s exists ? %s" % (file['name'], file['exists']))
+            print("\t%s exists ? %s" % (file["name"], file["exists"]))
 
     elif args.xform == "create":
         for file in files:
@@ -231,23 +281,27 @@ elif args.xform:
         result = form.publishForm(args.id, args.form)
 
 elif args.appuser:
-# This handles app-users
+    # This handles app-users
     print("App User ops %s" % args.appuser)
     if not args.id:
-        print("Need to specify a project ID using \"--id\" and an XForm id using \"--\"!")
+        print('Need to specify a project ID using "--id" and an XForm id using "--"!')
         quit()
     # if not args.form:
     #     print("Need to specify a XForm id using \"--form\"!")
     #     quit()
 
-    role = 2                # seems to be the default value
+    role = 2  # seems to be the default value
     user = OdkAppUser()
     if args.appuser == "create":
         for appuser in files:
             result = user.create(args.id, appuser)
     elif args.appuser == "delete":
-        for appuser in files:
-            result = user.delete(args.id, appuser)
+        tmp = files[0].split("-")
+        if len(tmp) > 1:
+            for id in range(int(tmp[0]), int(tmp[1])):
+                result = user.delete(args.id, id)
+        else:
+            result = user.delete(args.id, tmp[0])
     elif args.appuser == "update":
         for appuser in files:
             result = user.updateRole(args.id, args.form, role, appuser)
@@ -255,24 +309,28 @@ elif args.appuser:
         result = user.getQRCode(args.id, args.uuid, args.form)
     elif args.appuser == "access":
         for appuser in files:
-            result = user.grantAccess(args.id, role, appuser, )
+            result = user.grantAccess(
+                args.id,
+                role,
+                appuser,
+            )
     print(result)
 
 elif args.bulk:
     central = OdkProject()
     # project = central.getDetails(args.id)
     appuser = OdkAppUser()
-    role = 2                    # thise seems to be the default value
+    role = 2  # thise seems to be the default value
     if not args.form:
-        print("Need to specify a XForm id using \"--form\"!")
+        print('Need to specify a XForm id using "--form"!')
         quit()
     if args.bulk == "qrcodes":
         users = central.listAppUsers(args.id)
         for user in users:
             # name = "%s-%s" % (project['name'], user['displayName'])
-            name = "%s-%s" % (args.form, user['displayName'])
-            result = appuser.getQRCode(args.id, user['token'], name)
+            name = "%s-%s" % (args.form, user["displayName"])
+            result = appuser.getQRCode(args.id, user["token"], name)
     elif args.bulk == "update":
         users = central.listAppUsers(args.id)
         for user in users:
-            result = appuser.updateRole(args.id, args.form, role, user['id'])
+            result = appuser.updateRole(args.id, args.form, role, user["id"])

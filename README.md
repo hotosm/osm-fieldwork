@@ -18,9 +18,19 @@ uploaded to OSM without validating the conversion in JOSM. To do high
 quality conversion from ODK to OSM, it's best to use the XLSForm
 library as templates, as everything is designed to work together.
 
+### Install
+
+- Directly from the main branch:
+  `pip install git+https://github.com/hotosm/odkconvert.git`
+
+- Latest on PyPi:
+  `pip install ODKConvert`
+
+**Note**: installation requires GDAL >3.4 installed on your system.
+
 ## XLSForm library
 
-In the XForms directory  is a collection of XLSForms that support the
+In the XForms directory is a collection of XLSForms that support the
 new HOT data models for humanitarian data collection. These cover
 many categories like healthcare, waterpoints, waste distribution,
 etc... All of these XLSForms are designed to have an efficient mapper
@@ -40,4 +50,3 @@ information on this program [is here](docs/programs.md).
 
 This is a program that makes data extracts from OpenStreetMap for ODK
 convert. More information on this program [is here](docs/programs.md).
-

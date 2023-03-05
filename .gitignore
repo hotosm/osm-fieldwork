@@ -11,13 +11,14 @@ README.md
 # output files
 *.osm
 *.txt
-<<<<<<< HEAD
 *.xml
 *.geojson
 *.pbf
 *.xml
 *.pdf
 *.html
+*.mbtiles
+*.sqlitedb
 
 # Prerequisites
 *.d
@@ -51,3 +52,7 @@ README.md
 *.exe
 *.out
 *.app
+
+# PDM
+.pdm.toml
+pdm.lock

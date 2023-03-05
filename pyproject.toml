@@ -1,0 +1,58 @@
+[project]
+name = "ODKConvert"
+version = "0.1.0"
+description = "Convert CSV files from ODK Central to OSM format."
+authors = [
+    {name = "Rob Savoye", email = "rob.savoye@hotosm.org"},
+]
+dependencies = [
+    "codetiming>=1.4.0",
+    "epdb>=0.15.1",
+    "geodex>=0.1.2",
+    "geojson>=2.5.0",
+    "OSMPythonTools>=0.3.5",
+    "progress>=1.6",
+    "pymbtiles>=0.5.0",
+    "PyYAML>=6.0",
+    "qrcode>=7.4.2",
+    "requests>=2.28.2",
+    "segno>=1.5.2",
+    "xmltodict>=0.13.0",
+    "shapely>=1.8.5",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = "GPL-3.0-only"
+keywords = ["fmtm", "hot", "openstreetmap"]
+classifiers = [
+    "Topic :: Utilities",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+]
+
+[project.urls]
+homepage = "https://github.com/hotosm/odkconvert"
+documentation = "https://github.com/hotosm/odkconvert"
+repository = "https://github.com/hotosm/odkconvert"
+
+[project.optional-dependencies]
+[tool.pdm]
+includes = ["odkconvert"]
+source-includes = ["tests", "LICENSE.md", "README.md"]
+version = {from = "odkconvert/__version__.py"}
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=7.2.1",
+]
+
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+pythonpath = "odkconvert"

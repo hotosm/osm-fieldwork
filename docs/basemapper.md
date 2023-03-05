@@ -10,30 +10,26 @@ any program that supports a TMS data source. Luckily once downloaded,
 you don't have to update the map tile cache very often, but it's also
 easy to do so when you need to.
 
-
 # Options
 
-*	-h, --help            show this help message and exit
-*	-v, --verbose         verbose output
-*	-b BOUNDARY, --boundary BOUNDARY - The boundary for the area you want
-*	-z ZOOMS, --zooms ZOOMS - The Zoom levels
-*	-t TILES, --tiles TILES - Top level directory for tile cache
-*	-o OUTFILE, --outfile - OUTFILE Output file name
-*	-d OUTDIR, --outdir OUTDIR -Output directory name for tile cache
-*	-s {ersi,bing,topo,google,oam}, --source {ersi,bing,topo,google,oam} - Imagery source
-
+- -h, --help show this help message and exit
+- -v, --verbose verbose output
+- -b BOUNDARY, --boundary BOUNDARY - The boundary for the area you want
+- -z ZOOMS, --zooms ZOOMS - The Zoom levels
+- -t TILES, --tiles TILES - Top level directory for tile cache
+- -o OUTFILE, --outfile - OUTFILE Output file name
+- -d OUTDIR, --outdir OUTDIR -Output directory name for tile cache
+- -s {ersi,bing,topo,google,oam}, --source {ersi,bing,topo,google,oam} - Imagery source
 
 # Examples
 
 This will generate a basemap for Osmand using ERSI imagery, and
-supports zoom levels 12 through 19.  The suffix of the datafile is
+supports zoom levels 12 through 19. The suffix of the datafile is
 used to determine which format to write. This uses the boundary file
 to download and make a basemap.
 
-	./basemapper.py -z 12-19 -b test.geojson -o test.sqlitedb -s ersi
-	
+    ./basemapper.py -z 12-19 -b test.geojson -o test.sqlitedb -s ersi
+
 This makes a basemap for ODK Collect.
 
-	./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s ersi
-	
-
+    ./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s ersi

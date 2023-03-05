@@ -18,17 +18,22 @@
 #     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-from yamlfile import YamlFile
+import os
+from odkconvert.yamlfile import YamlFile
 import logging
-import epdb
 import argparse
 import sys
 
+
 class Convert(YamlFile):
     """A class to apply a YAML config file and convert ODK to OSM"""
+
     def __init__(self, xform=None):
         if xform is None:
-            xform = "xforms.yaml"
+            if os.path.exists("xforms.yaml"):
+                xform = "xforms.yaml"
+            elif os.path.exists("odkconvert/xforms.yaml"):
+                xform = "odkconvert/xforms.yaml"
         self.yaml = YamlFile(xform)
         self.filespec = xform
         # Parse the file contents into a data structure to make it
@@ -36,7 +41,7 @@ class Convert(YamlFile):
         self.convert = dict()
         self.ignore = list()
         self.private = list()
-        for item in self.yaml.yaml['convert']:
+        for item in self.yaml.yaml["convert"]:
             key = list(item.keys())[0]
             value = item[key]
             # print("ZZZZ: %r, %r" % (key, value))
@@ -52,9 +57,9 @@ class Convert(YamlFile):
                         tag = list(entry.keys())[0]
                         vals[tag] = entry[tag]
                 self.convert[key] = vals
-        self.ignore = self.yaml.yaml['ignore']
-        self.private = self.yaml.yaml['private']
-        self.multiple = self.yaml.yaml['multiple']
+        self.ignore = self.yaml.yaml["ignore"]
+        self.private = self.yaml.yaml["private"]
+        self.multiple = self.yaml.yaml["multiple"]
 
     def privateData(self, keyword):
         """See is a keyword is in the private data category"""
@@ -75,7 +80,7 @@ class Convert(YamlFile):
 
     def getKeyword(self, value):
         """Get the value for a keyword from the yaml file"""
-        key = self.yaml.getValues(value)
+        key = self.yaml.yaml(value)
         if type(key) == bool:
             return value
         if len(key) == 0:
@@ -104,7 +109,11 @@ class Convert(YamlFile):
         all = list()
 
         # If it's not in any conversion data, pass it through unchanged.
-        if tag not in self.convert and tag not in self.ignore and tag not in self.private:
+        if (
+            tag not in self.convert
+            and tag not in self.ignore
+            and tag not in self.private
+        ):
             return tag, value
 
         newtag = None
@@ -113,23 +122,23 @@ class Convert(YamlFile):
         if self.convertData(tag):
             newtag = self.convertTag(tag)
             if newtag != tag:
-                logging.debug("Converted Tag for entry \'%s\' to \'%s\'" % (tag, newtag))
+                logging.debug("Converted Tag for entry '%s' to '%s'" % (tag, newtag))
 
         if newtag is None:
             newtag = tag
         # Truncate the elevation, as it's really long
-        if newtag == 'ele':
+        if newtag == "ele":
             value = value[:7]
         newval = self.convertValue(newtag, value)
         if newval != value:
-            logging.debug("Converted Value for entry \'%s\' to \'%s\'" % (value, newval))
+            logging.debug("Converted Value for entry '%s' to '%s'" % (value, newval))
             for i in newval:
                 key = list(i.keys())[0]
                 newtag = key
                 newval = i[key]
-                all.append( { newtag: newval } )
+                all.append({newtag: newval})
         else:
-            all.append( { newtag: newval } )
+            all.append({newtag: newval})
 
         # if newtag not in self.tags:
         #     tmp = { newtag: None }
@@ -153,7 +162,7 @@ class Convert(YamlFile):
 
         if type(vals) is dict:
             if value not in vals:
-                all.append({ tag: value })
+                all.append({tag: value})
                 return all
             if type(vals[value]) is bool:
                 entry = dict()
@@ -165,11 +174,11 @@ class Convert(YamlFile):
                 return all
             for item in vals[value].split(","):
                 entry = dict()
-                tmp =  item.split("=")
+                tmp = item.split("=")
                 if len(tmp) == 1:
                     entry[tag] = vals[value]
                 else:
-                    entry[tmp[0]] =  tmp[1]
+                    entry[tmp[0]] = tmp[1]
                     logging.debug("\tValue %s converted to %s" % (value, entry))
                 all.append(entry)
         return all
@@ -179,7 +188,7 @@ class Convert(YamlFile):
         if tag in self.convert:
             newtag = self.convert[tag]
             if type(newtag) is str:
-                logging.debug("\tTag \'%s\' converted to \'%s\'" % (tag, newtag))
+                logging.debug("\tTag '%s' converted to '%s'" % (tag, newtag))
                 tmp = newtag.split("=")
                 if len(tmp) > 1:
                     newtag = tmp[0]
@@ -205,24 +214,32 @@ class Convert(YamlFile):
             else:
                 print("Tag %s is %s" % (key, val))
 
+
 #
 # This script can be run standalone for debugging purposes. It's easier to debug
 # this way than using pytest,
 #
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Enable logging to the terminal by default
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     ch.setFormatter(formatter)
     root.addHandler(ch)
 
-    parser = argparse.ArgumentParser(description='Read and parse a YAML file')
+    parser = argparse.ArgumentParser(description="Read and parse a YAML file")
     parser.add_argument("-x", "--xform", default="xform.yaml", help="Default Yaml file")
-    parser.add_argument("-i", "--infile", default="XForms/Ruwa/ruwanigerproject_waterpoint_form.csv", help='The YAML input file')
+    parser.add_argument(
+        "-i",
+        "--infile",
+        default="xlsforms/Ruwa/ruwanigerproject_waterpoint_form.csv",
+        help="The CSV input file",
+    )
     args = parser.parse_args()
 
     # convert = Convert(args.xform)
