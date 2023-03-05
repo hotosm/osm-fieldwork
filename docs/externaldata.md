@@ -13,9 +13,9 @@ Why do I want to use ODK Collect to edit map data ? Much of what is
 currently in [OpenStreetMap](https:www.openstreetmap.org) is lacking
 metadata, or the data has changed, like when a restaurant changes
 owners and gets a new name. Also most all remote mapping using
-satellite imagery lacks tags beyond *building=yes*. When we are doing
+satellite imagery lacks tags beyond _building=yes_. When we are doing
 a ground data collection project, we want to add useful tags like the
-building material, or whether it's a cafe or a hospital. 
+building material, or whether it's a cafe or a hospital.
 
 Old imports also bring in problems, for example the infamous [TIGER
 import](https://wiki.openstreetmap.org/wiki/TIGER). Mappers have been
@@ -45,22 +45,22 @@ thumb is to make sure that all names are unique. As I'm using
 [ogr2ogr](https://gdal.org/programs/ogr2ogr.html) to do data extracts
 from a postgres database, I have a little more control than when
 using Overpass. Plus I can process much larger datasets than Overpass
-can. 
+can.
 
-For my database SQL queries, I use the *AS* keyword to redefine the
+For my database SQL queries, I use the _AS_ keyword to redefine the
 output column name, so I can use the OSM standard name in the survey
 and choices sheets. That makes the next translation step much
 cleaner. I try to be consistent so it's easier to follow the data
 flow. My currrent technique is to append an x to the end of each
-column, so *healthcare* becomes *healthcarex*.
+column, so _healthcare_ becomes _healthcarex_.
 
-Then in the XLSForm, I can use *healthcarex* for the instance, and
-then I'll use *xhealthcare* as the value for the *calculation* column
-in the survey sheet. Then the value in the *name* column of the survey
-sheet is just *healthcare*, as that'll translate directly into it's
+Then in the XLSForm, I can use _healthcarex_ for the instance, and
+then I'll use _xhealthcare_ as the value for the _calculation_ column
+in the survey sheet. Then the value in the _name_ column of the survey
+sheet is just _healthcare_, as that'll translate directly into it's
 OSM tag equivalant.
 
-If use use a *text* type in your XLSForm, you can support most any
+If use use a _text_ type in your XLSForm, you can support most any
 weird value. But as we are aiming for tag validation and tag
 completeness, we prefer to have an approved value. If using a data
 model, the the list of choices for a tag is defined. Anything outside
@@ -84,55 +84,54 @@ on.
 
 ### Disable the map appearance
 
-Most of the time when using external data you have the *map* value in
-the *appearance* column of the survey sheet. That's how we want to use
+Most of the time when using external data you have the _map_ value in
+the _appearance_ column of the survey sheet. That's how we want to use
 it in the field. But it slows down the repetitious process of
-debugging everything. I turn off *map* values, and then I just have
+debugging everything. I turn off _map_ values, and then I just have
 the select menu, which is more efficient. That works especially well
 if you have a small data file for testing, because then it's easy to
 cycle between them.
 
 To use the placement map, here's an example.
 
-| type|name|label|appearance|
-|-----|----|-----|----------|
-|select_one_from_file camp_sites.geojson|existing|Existing Campsites|map|
+| type                                    | name     | label              | appearance |
+| --------------------------------------- | -------- | ------------------ | ---------- |
+| select_one_from_file camp_sites.geojson | existing | Existing Campsites | map        |
 
 And an example were there values in the data file are an inline select
 menu instead.
 
-| type|name|label|appearance|
-|-----|----|-----|----------|
-|select_one_from_file camp_sites.geojson|existing|Existing Campsites|minimal|
-
+| type                                    | name     | label              | appearance |
+| --------------------------------------- | -------- | ------------------ | ---------- |
+| select_one_from_file camp_sites.geojson | existing | Existing Campsites | minimal    |
 
 ### Display calculated values
 
 Often the bug you are trying to find is obscure, you just don't see
 any of the data file values being propogated into ODK Collect, when
 that was working previously. In that case I just add a text survey
-question, whose entire purpose is to display any of the values 
+question, whose entire purpose is to display any of the values
 
-| type|name|label|calculation|trigger|
-|-----|----|-----|-----------|-------|
-|calculate|xid|OSM ID|instance(“camp_sites”)/root/item[id=${existing}]/id|
-|calculate|xlabel|Get the label|instance(“camp_sites”)/root/item[id=${existing}]/title||
-|calculate|xref|Reference number|instance(“camp_sites”)/root/item[id=${existing}]/ref||
-|calculate|xlocation|Location|instance(“camp_sites”)/root/item[id=${existing}]/geometry||
-|calculate|xtourism|camping type|instance(“camp_sites”)/root/item[id=${existing}]/tourism||
-|calculate|xleisure|leisure type|instance(“camp_sites”)/root/item[id=${existing}]/leisure||
-|text|debug1|Leisure|${xleisure}|${existing}
-|text|debug2|OSM ID|${xid}|${existing}|
-|text|debug3|Ref number|${xref}|${existing}
-|text|debug4|Tourism|${xtourism}|${existing}
+| type      | name      | label            | calculation                                               | trigger     |
+| --------- | --------- | ---------------- | --------------------------------------------------------- | ----------- |
+| calculate | xid       | OSM ID           | instance(“camp_sites”)/root/item[id=${existing}]/id       |
+| calculate | xlabel    | Get the label    | instance(“camp_sites”)/root/item[id=${existing}]/title    |             |
+| calculate | xref      | Reference number | instance(“camp_sites”)/root/item[id=${existing}]/ref      |             |
+| calculate | xlocation | Location         | instance(“camp_sites”)/root/item[id=${existing}]/geometry |             |
+| calculate | xtourism  | camping type     | instance(“camp_sites”)/root/item[id=${existing}]/tourism  |             |
+| calculate | xleisure  | leisure type     | instance(“camp_sites”)/root/item[id=${existing}]/leisure  |             |
+| text      | debug1    | Leisure          | ${xleisure}                                               | ${existing} |
+| text      | debug2    | OSM ID           | ${xid}                                                    | ${existing} |
+| text      | debug3    | Ref number       | ${xref}                                                   | ${existing} |
+| text      | debug4    | Tourism          | ${xtourism}                                               | ${existing} |
 
 ### Error Dialog
 
 Assuming xls2xform is happy, sometimes you get this error message in
 ODK Collect when switching screens. You'll see this when you have a
-value in your data file for a *select_one* survey question, but that
+value in your data file for a _select_one_ survey question, but that
 value not in the list of values in the choices sheet for that tag. In
-this example, there is no *doctor* value in the *healthcare*
+this example, there is no _doctor_ value in the _healthcare_
 selection in the choices sheet.
 
 ![XPath Error](xlsimages/image1.jpg){width=500}

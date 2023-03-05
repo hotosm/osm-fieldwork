@@ -25,22 +25,26 @@
 # area, since the tile store may be huge. This assumes all the tiles
 # have already been download to disk.
 #
-from yamlfile import YamlFile
 import logging
-import epdb
 import argparse
 import sys
-from pymbtiles import MBtiles, Tile
-import geodex
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Create mbtiles for ODK from XYZ tiles')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Create mbtiles for ODK from XYZ tiles"
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument("-i", "--infile", required=True, help='The boundary to select tiles in')
-    parser.add_argument("-o", "--outfile", required=True, help='The output file for ODK')
-    parser.add_argument("-x", "--xyz", required=True, help='The path to the top level XYZ tiles')
-    parser.add_argument("-z", "--zoom", nargs='+', help='The zoom levels')
+    parser.add_argument(
+        "-i", "--infile", required=True, help="The boundary to select tiles in"
+    )
+    parser.add_argument(
+        "-o", "--outfile", required=True, help="The output file for ODK"
+    )
+    parser.add_argument(
+        "-x", "--xyz", required=True, help="The path to the top level XYZ tiles"
+    )
+    parser.add_argument("-z", "--zoom", nargs="+", help="The zoom levels")
     args = parser.parse_args()
 
     # if verbose, dump to the terminal.
@@ -50,7 +54,9 @@ if __name__ == '__main__':
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
@@ -63,4 +69,3 @@ if __name__ == '__main__':
 # Get the list of tiles at each zoom level
 
 # Open the each tile and write it to the mbtiles file.
-
