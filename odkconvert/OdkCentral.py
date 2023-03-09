@@ -35,8 +35,11 @@ from base64 import b64encode
 import segno
 import zlib
 
-# This enables debug messages from urllib
-# logging.getLogger("urllib3").setLevel(logging.DEBUG)
+# Set log level for urllib
+log_level = os.getenv("LOG_LEVEL", default="INFO")
+logging.getLogger("urllib3").setLevel(log_level)
+
+log = logging.getLogger(__name__)
 
 
 class OdkCentral(object):
@@ -79,7 +82,7 @@ class OdkCentral(object):
                     if tmp[0] == "passwd":
                         self.passwd = tmp[1].strip("\n")
             else:
-                logging.warning("You can put authentication settings in %s" % filespec)
+                log.warning("You can put authentication settings in %s" % filespec)
         # Base URL for the REST API
         self.version = "v1"
         self.base = self.url + "/" + self.version + "/"
@@ -111,15 +114,16 @@ class OdkCentral(object):
     def listProjects(self):
         """Fetch a list of projects from an ODK Central server, and
         store it as an indexed list."""
-        logging.info("Getting a list of projects from %s" % self.url)
-        url = f"{self.base}projects"
+        log.info("Getting a list of projects from %s" % self.url)
+        url = f'{self.base}projects'
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         projects = result.json()
         for project in projects:
-            if isinstance(project, int):
-                self.projects[project["id"]] = project
+            if isinstance(project, dict):
+                if project.get("id") is not None:
+                    self.projects[project['id']] = project
             else:
-                logging.info("No projects returned. Is this a first run?")
+                log.info("No projects returned. Is this a first run?")
         return projects
 
     def createProject(self, name=None):
@@ -127,7 +131,7 @@ class OdkCentral(object):
         already exist"""
         exists = self.findProject(name)
         if exists:
-            logging.debug(f'Project "{name}" already exists.')
+            log.debug(f"Project \"{name}\" already exists.")
             return exists
         else:
             url = f"{self.base}projects"
@@ -162,19 +166,25 @@ class OdkCentral(object):
     def findAppUser(self, user_id=None, name=None):
         """Get the data for an app user"""
         if self.appusers:
-            if name:
-                for key, value in self.appusers.items():
-                    if name == value["name"]:
-                        return value
-            if project_id:
-                for key, value in self.appusers.items():
-                    if user_id == value["id"]:
-                        return value
+            if name is not None:
+                result = [d for d in self.appusers if d['displayName']==name]
+                if result:
+                    return result[0]
+                else:
+                    log.debug(f"No user found with name: {name}")
+                    return None
+            if user_id is not None:
+                result = [d for d in self.appusers if d['id']==user_id]
+                if result:
+                    return result[0]
+                else:
+                    log.debug(f"No user found with id: {user_id}")
+                    return None
         return None
 
     def listUsers(self):
         """Fetch a list of users on the ODK Central server"""
-        logging.info("Getting a list of users from %s" % self.url)
+        log.info("Getting a list of users from %s" % self.url)
         url = self.base + "users"
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.users = result.json()
@@ -282,14 +292,14 @@ class OdkForm(OdkCentral):
         if "name" in self.data:
             return self.data["name"]
         else:
-            logging.warning("Execute OdkForm.getDetails() to get this data.")
+            log.warning("Execute OdkForm.getDetails() to get this data.")
 
     def getFormId(self):
         """Extract the xmlFormId from a form on an ODK Central server"""
         if "xmlFormId" in self.data:
             return self.data["xmlFormId"]
         else:
-            logging.warning("Execute OdkForm.getDetails() to get this data.")
+            log.warning("Execute OdkForm.getDetails() to get this data.")
 
     def getDetails(self, projectId=None, xmlFormId=None):
         """Get all the details for a form on an ODK Central server"""
@@ -311,9 +321,9 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         return result.json()
 
-    def getSubmissions(self, projectId=None, formId=None, disk=False):
+    def getSubmission(self, projectId=None, formId=None, disk=False):
         """Fetch a CSV file of the submissions without media to a survey form."""
-        url = self.base + f"projects/{projectId}/forms/{formId}/submissions.csv"
+        url = self.base + f"projects/{projectId}/forms/{formId}/submissions"
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         if result.status_code == 200:
             if disk:
@@ -327,13 +337,11 @@ class OdkForm(OdkCentral):
                 except FileExistsError:
                     file = open(filespec, "wb")
                     file.write(result.content)
-                logging.info("Wrote CSV file %s" % filespec)
+                log.info("Wrote CSV file %s" % filespec)
                 file.close()
             return result.content
         else:
-            logging.error(
-                f"Submissions for {projectId}, Form {formId}" + "doesn't exist"
-            )
+            log.error(f'Submissions for {projectId}, Form {formId}' + "doesn't exist")
             return None
 
     def getSubmissionMedia(self, projectId, formId):
@@ -369,10 +377,10 @@ class OdkForm(OdkCentral):
         url = f"{self.base}projects/{projectId}/forms/{xid}/draft"
         result = self.session.post(url, auth=self.auth, verify=self.verify)
         if result.status_code == 200:
-            logging.debug(f"Modified {title} to draft")
+            log.debug(f"Modified {title} to draft")
         else:
             status = eval(result._content)
-            logging.error(f"Couldn't modify {title} to draft: {status['message']}")
+            log.error(f"Couldn't modify {title} to draft: {status['message']}")
 
         url = f"{self.base}projects/{projectId}/forms/{xid}/draft/attachments/{datafile}"
         headers = {"Content-Type": "*/*"}
@@ -383,10 +391,10 @@ class OdkForm(OdkCentral):
             url, auth=self.auth, data=media, headers=headers, verify=self.verify
         )
         if result.status_code == 200:
-            logging.debug(f"Uploaded {filespec} to Central")
+            log.debug(f"Uploaded {filespec} to Central")
         else:
             status = eval(result._content)
-            logging.error(f"Couldn't upload {filespec} to Central: {status['message']}")
+            log.error(f"Couldn't upload {filespec} to Central: {status['message']}")
 
         return result
 
@@ -398,10 +406,10 @@ class OdkForm(OdkCentral):
             url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/attachments/{filename}"
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         if result.status_code == 200:
-            logging.debug(f"fetched {filename} from Central")
+            log.debug(f"fetched {filename} from Central")
         else:
             status = eval(result._content)
-            logging.error(f"Couldn't fetch {filename} from Central: {status['message']}")
+            log.error(f"Couldn't fetch {filename} from Central: {status['message']}")
         self.media = result.content
         return self.media
 
@@ -419,18 +427,17 @@ class OdkForm(OdkCentral):
         file = open(filespec, "rb")
         xml = file.read()
         file.close()
-        logging.info("Read %d bytes from %s" % (len(xml), filespec))
+        log.info("Read %d bytes from %s" % (len(xml), filespec))
 
-        result = self.session.post(
-            url, auth=self.auth, data=xml, headers=headers, verify=self.verify
-        )
+        result = self.session.post(url, auth=self.auth,  data=xml, headers=headers, verify=self.verify)
+        # epdb.st()
         # FIXME: should update self.forms with the new form
         if result.status_code != 200:
             if result.status_code == 409:
-                logging.error(f"{xmlFormId} already exists on Central")
+                log.error(f"{xmlFormId} already exists on Central")
             else:
                 status = eval(result._content)
-                logging.error(f"Couldn't create {xmlFormId} on Central: {status['message']}")
+                log.error(f"Couldn't create {xmlFormId} on Central: {status['message']}")
 
         return result.status_code
 
@@ -455,9 +462,9 @@ class OdkForm(OdkCentral):
         result = self.session.post(url, auth=self.auth, verify=self.verify)
         if result.status_code != 200:
             status = eval(result._content)
-            logging.error(f"Couldn't publish {xmlFormId} on Central: {status['message']}")
+            log.error(f"Couldn't publish {xmlFormId} on Central: {status['message']}")
         else:
-            logging.error(f"Published {xmlFormId} on Central.")
+            log.error(f"Published {xmlFormId} on Central.")
         return result.status_code
 
     def dump(self):
@@ -495,7 +502,7 @@ class OdkAppUser(OdkCentral):
 
     def updateRole(self, projectId=None, xmlFormId=None, roleId=2, actorId=None):
         """Update the role of an app user for a form"""
-        logging.info("Update access to XForm %s for %s" % (xmlFormId, actorId))
+        log.info("Update access to XForm %s for %s" % (xmlFormId, actorId))
         url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/assignments/{roleId}/{actorId}"
         result = self.session.post(url, auth=self.auth, verify=self.verify)
         return result
@@ -510,7 +517,7 @@ class OdkAppUser(OdkCentral):
 
     def createQRCode(self, project_id=None, token=None, name=None):
         """Get the QR Code for an app-user"""
-        logging.info(
+        log.info(
             'Generating QR Code for app-user "%s" for project %s' % (name, project_id)
         )
         self.settings = {
@@ -531,18 +538,16 @@ class OdkAppUser(OdkCentral):
 
 # This following code is only for debugging purposes, since this is easier
 # to use a debugger with instead of pytest.
-if __name__ == "__main__":
-    # Enable logging to the terminal by default
-    root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
-
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+if __name__ == '__main__':
+    logging.basicConfig(
+        level=log_level,
+        format=(
+            "%(asctime)s.%(msecs)03d [%(levelname)s] "
+            "%(name)s | %(funcName)s:%(lineno)d | %(message)s"
+        ),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=sys.stdout,
     )
-    ch.setFormatter(formatter)
-    root.addHandler(ch)
 
     # Gotta start somewhere...
     project = OdkProject()
