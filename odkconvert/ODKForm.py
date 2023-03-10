@@ -22,6 +22,9 @@ import argparse
 import os
 import sys
 
+# Logging
+log = logging.getLogger(__name__)
+
 
 class ODKForm(object):
     """Support for parsing an XLS Form"""

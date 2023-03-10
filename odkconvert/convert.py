@@ -24,6 +24,9 @@ import logging
 import argparse
 import sys
 
+# Instantiate logger
+log = logging.getLogger(__name__)
+
 
 class Convert(YamlFile):
     """A class to apply a YAML config file and convert ODK to OSM"""

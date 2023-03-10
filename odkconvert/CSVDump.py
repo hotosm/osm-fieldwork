@@ -28,6 +28,12 @@ from odkconvert.convert import Convert
 from odkconvert.osmfile import OsmFile
 from geojson import Point, Feature, FeatureCollection, dump
 
+# set log level for urlib
+log_level = os.getenv("LOG LEVEL", default="INFO")
+loggint.getLogger("urllib3").setLevel(log_level)
+
+log = logging.getLogger(__name__)
+
 
 class CSVDump(Convert):
     """A class to parse the CSV files from ODK Central"""
@@ -231,6 +237,17 @@ if __name__ == "__main__":
         "-i", "--infile", help="The input file downloaded from ODK Central"
     )
     args = parser.parse_args()
+    
+    #logging
+    logging.basicConfig(
+        level=log_level,
+        format=(
+            "%(asctime)s.%(msec)03d [%(levelname)s]"
+            "%(name)s | %(funcName)s:%(lineno)d | %(message)s"
+        ),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=sys.stdout,
+    )
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:

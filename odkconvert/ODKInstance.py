@@ -25,6 +25,8 @@ import argparse
 # from shapely.geometry import Point, LineString, Polygon
 from collections import OrderedDict
 
+# Logging
+log = logging.getLogger(__name__)
 
 class ODKObject(object):
     def __init__(self, name=str(), type=str(), data=str()):
