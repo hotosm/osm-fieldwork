@@ -31,6 +31,9 @@ import concurrent.futures
 import threading
 from odkconvert.sqlite import DataFile
 
+# Instantiate logger
+log = logging.getLogger(__name__)
+
 
 def dlthread(dest, mirrors, tiles):
     """Thread to handle downloads for Queue"""

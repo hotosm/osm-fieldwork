@@ -46,6 +46,9 @@ choices = [
     "healthcare",
 ]
 
+# Instantiate logger
+log = logging.getLogger(__name__)
+
 
 class PostgresClient(object):
     """Class to handle SQL queries for the categories"""

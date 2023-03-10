@@ -25,6 +25,9 @@ from sys import argv
 import os
 import pathlib
 
+# Intantiate logger
+log = logging.getLogger(__name__)
+
 
 class OsmFile(object):
     """OSM File output"""

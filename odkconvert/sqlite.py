@@ -26,6 +26,9 @@ import sqlite3
 import locale
 import mercantile
 
+# Instantiate logger
+log = logging.getLogger(__name__)
+
 
 class MapTile(object):
     def __init__(self, x=None, y=None, z=None, filespec=None, tile=None, suffix="jpg"):

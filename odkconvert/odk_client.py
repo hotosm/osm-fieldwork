@@ -23,6 +23,12 @@ import json
 from odkconvert.OdkCentral import OdkCentral, OdkProject, OdkForm, OdkAppUser
 from pathlib import Path
 
+# Set log level
+log_level = os.getenv("LOG_LEVEL", default="INFO")
+logging.getLogger("urllib3").setLevel(log_level)
+
+log = logging.getLogger(__name__)
+
 
 # FIXME: this classes isn;t used yet
 class OdkClient(object):
@@ -97,6 +103,19 @@ parser.add_argument("-t", "--timestamp", help="Timestamp for submissions")
 parser.add_argument(
     "-b", "--bulk", choices=["qrcodes", "update"], help="Bulk operations"
 )
+
+# Creating a basic logger
+if __name__ == '__main__':
+    logging.basicConfig(
+        level=log_level,
+        format=(
+            "%(asctime)s.%(msecs)03d [%(levelname)s]"
+            "%(name)s | %(funcName)s:%(lineno)d | %(message)s"
+        ),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=sys.stdout,
+    )
+
 
 # Caching isn't implemented yet. That's for fancier queries that require multiple
 # requests to the ODK server. Caching allows for data like names for IDs to

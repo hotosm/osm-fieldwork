@@ -29,6 +29,9 @@ import logging
 import argparse
 import sys
 
+# Instantiate logger
+log = logging.getLogger(__name__)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
