@@ -28,6 +28,9 @@ import csv
 from pathlib import Path
 from datetime import datetime
 
+# Instantiate logger
+log = logging.getLogger(__name__)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

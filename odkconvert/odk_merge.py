@@ -21,6 +21,9 @@ from sys import argv
 from osgeo import ogr
 from odkconvert.osmfile import OsmFile
 
+# Instantiate logger
+log = logging.getLogger(__name__)
+
 
 class InputFile(object):
     def __init__(self, source=None):

@@ -25,6 +25,9 @@ import sys
 
 """This parses a yaml file into a dictionary for easy access."""
 
+# Instantiate logger
+log = logging.getLogger(__name__)
+
 
 class YamlFile(object):
     """Config file in YAML format"""
