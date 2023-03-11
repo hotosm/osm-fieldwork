@@ -30,7 +30,7 @@ from geojson import Point, Feature, FeatureCollection, dump
 
 # set log level for urlib
 log_level = os.getenv("LOG LEVEL", default="INFO")
-loggint.getLogger("urllib3").setLevel(log_level)
+logging.getLogger("urllib3").setLevel(log_level)
 
 log = logging.getLogger(__name__)
 
