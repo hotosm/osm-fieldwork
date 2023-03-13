@@ -24,7 +24,7 @@ The `Basemapper.py` script is run from the command line. The basic syntax is as 
 
 Converts form with a geoshape question into a map with tile overlays.
 
-# Option
+# Options
 - -input_file, --This is a required positional argument that specifies the path to the input ODK form.
 - -h, --help show this help message and exit
 - -v, --verbose verbose output
