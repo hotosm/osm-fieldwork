@@ -1,6 +1,6 @@
 # Basemapper.py
 
-Basemapper is a program than makes basemaps for mobile apps, namely
+Basemapper is a program that makes basemaps for mobile apps, namely
 mbtiles, which are supported by many apps, and the sqlitedb format
 used by Osmand. Both of these use sqlite3, with similar database
 schemas. Basemapper does not store anything in memory, all processing
@@ -24,7 +24,7 @@ easy to do so when you need to.
 # Examples
 
 This will generate a basemap for Osmand using ERSI imagery, and
-supports zoom levels 12 through 19. The suffix of the datafile is
+supports zoom levels 12 through 19. The suffix of the data file is
 used to determine which format to write. This uses the boundary file
 to download and make a basemap.
 
