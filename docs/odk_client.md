@@ -6,18 +6,18 @@ uploading and downloading attachments and submissions.
 
 # Server requests
 
-All of the server specific commands are accessible via the
+All of the server-specific commands are accessible via the
 _--server_ command. This command takes a single argument, and can only
 access the global data about projects and users.
 
 - --server projects - returns a list of project IDs and the project name
 
-- --server users - returns a list of users IDs and their user name
+- --server users - returns a list of user IDs and their user name
 
 # Project Requests
 
 Projects contain all the Xforms and attachments for that project. To
-access the data for a project, it is necesary to supply the project
+access the data for a project, it is necessary to supply the project
 ID. That can be retrieved using the above server command. In this
 example, 1 is used.
 
@@ -30,12 +30,12 @@ example, 1 is used.
 
 An XForm has several components. The primary one is the XForm
 description itself. In addition to that, there may be additional
-attachments, usually a CSV file external data to be used by the
+attachments, usually a CSV file of external data to be used by the
 XForm. If an XForm has been used to collect data, then it has
-submissions for that XForm. These can be downloaded as a CSV file.
+submissions for that XForm. These can be downloaded as CSV files.
 
-To access the data for an XForm, it is necesary to supply the project
-ID and the XForm ID. The XForm ID can be retrieced using the above
+To access the data for an XForm, it is necessary to supply the project
+ID and the XForm ID. The XForm ID can be retrieved using the above
 project command.
 
 - --id 1 --form formid --xform attachments - returns a list of all the
@@ -51,7 +51,7 @@ project command.
 
 # Create a new XForm, and upload these two attachments
 
-These two attachements are input for _select_from_file_ in the survey
+These two attachments are input for _select_from_file_ in the survey
 sheet. For odkconvert, they are usually a list of municipalities and
 towns.
 
@@ -88,9 +88,9 @@ towns.
 # Bulk operations
 
 Some commands require multiple queries to ODK Central. As FMTM creates
-many, many appusers and xforms, it's necesary to be able to cleanup
+many, many app-users and xforms, it's necessary to be able to clean up
 the database sometimes, rather than go through Central for hundreds, or
-thousands of appusers.
+thousands of app-users.
 
 ## Delete multiple app-users from a project
 
