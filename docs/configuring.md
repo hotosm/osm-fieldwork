@@ -1,10 +1,10 @@
 # Configuring the Data Conversion
 
-ODKConvert uses a YAML based configuration file that controls the
-conversion process. While ideally the tags in the XForm are a match
+ODKConvert uses a YAML-based configuration file that controls the
+conversion process. While ideally, the tags in the XForm are a match
 for OSM tags, some survey questions generate very different primary
-tags. All of the strings in this file are lower case, as when
-processing the CSV file, everything is forced to be lower case.
+tags. All of the strings in this file are lowercase, as when
+processing the CSV file, everything is forced to be lowercase.
 
 YAML is a simple syntax, and most of the config options are simply
 lists. For example:
@@ -15,13 +15,13 @@ lists. For example:
       - age
       - gender
 
-There are 3 section in the config file, _ignore_, _convert_, and
+There are 3 sections in the config file, _ignore_, _convert_, and
 _private_. Anything in the _ignore_ section gets left out of all data
 processing and output files. Anything in the _private_ section is kept
 out of the OXM output file, but included in a separate GeoJson
-formatted file. That file contains all the data by whomever is
+formatted file. That file contains all the data from whoever is
 organizing this mapping campaign. There are often data items like
-_gender_ that doesn't belong in OSM, but that information is useful
+_gender_ that don't belong in OSM, but that information is useful
 to the organizers. Anything in the _convert_ section is the real
 control of the conversion process.
 
@@ -29,7 +29,7 @@ Both ODK and OSM use a _tag/value_ pair. In OSM, the tags and values
 are documented, and the mapping community prefers people use the
 commonly accepted values. In ODK, the tags and values can be anything
 the developer of the XLSForm chooses. Depending on the answer to the
-survey question, that may be convert to a variety of OSM tags and
+survey question, that may be converted to a variety of OSM tags and
 values.
 
 For this example, the value used in the **name** column of the XLSForm
