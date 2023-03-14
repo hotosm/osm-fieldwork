@@ -26,8 +26,6 @@ library as templates, as everything is designed to work together.
 - Latest on PyPi:
   `pip install ODKConvert`
 
-**Note**: installation requires GDAL >3.4 installed on your system.
-
 ## XLSForm library
 
 In the XForms directory is a collection of XLSForms that support the
