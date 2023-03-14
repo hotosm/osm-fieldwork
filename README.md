@@ -26,6 +26,25 @@ library as templates, as everything is designed to work together.
 - Latest on PyPi:
   `pip install ODKConvert`
 
+### Configure
+
+ODKConvert can be configured via environment variable:
+
+**LOG_LEVEL**
+> If present, will change the log level. Defaults to DEBUG.
+
+**ODK_CENTRAL_URL**
+> The URL for an ODKCentral server to connect to.
+
+**ODK_CENTRAL_USER**
+> The user for ODKCentral.
+
+**ODK_CENTRAL_PASSWD**
+> The password for ODKCentral.
+
+**ODK_CENTRAL_SECURE**
+> If set to False, will allow insecure connections to the ODKCentral API. Else defaults to True.
+
 ## XLSForm library
 
 In the XForms directory is a collection of XLSForms that support the
