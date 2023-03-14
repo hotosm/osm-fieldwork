@@ -54,7 +54,7 @@ class OdkCentral(object):
         if not passwd:
             passwd = os.getenv("ODK_CENTRAL_PASSWD", default=None)
         self.passwd = passwd
-        self.verify=True
+        self.verify=os.getenv("ODK_CENTRAL_SECURE", default=True)
         # These are settings used by ODK Collect
         self.general = {
             "form_update_mode": "match_exactly",
