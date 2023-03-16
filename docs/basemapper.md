@@ -4,7 +4,7 @@ Basemapper is a program that makes basemaps for mobile apps, namely
 mbtiles, which are supported by many apps, and the sqlitedb format
 used by Osmand. Both of these use sqlite3, with similar database
 schemas. Basemapper does not store anything in memory, all processing
-is done as a stream, so large areas can be downloaded. Time to go by a
+is done as a stream, so large areas can be downloaded. Time to go buy a
 really large hard drive... You can also use this map tile cache for
 any program that supports a TMS data source. Luckily once downloaded,
 you don't have to update the map tile cache very often, but it's also
