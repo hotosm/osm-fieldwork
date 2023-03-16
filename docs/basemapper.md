@@ -10,7 +10,7 @@ any program that supports a TMS data source. Luckily once downloaded,
 you don't have to update the map tile cache very often, but it's also
 easy to do so when you need to.
 
-In addition `Basemapper.py` is a Python script included in the odkconvert package, which is designed to convert Open Data Kit (ODK) forms from one format to another. This script specifically converts forms with a geoshape question into a map with tile overlays. It takes an input ODK form in XML format and generates a map output that includes tile overlays for imagery from different sources, such as Esri, Bing, Topo, Google, or OAM. The script provides various command-line options for customizing the output, such as setting the zoom levels, boundary, tile cache, output file name, and more. The resulting output can be useful for visualizing geographic data and analyzing survey responses in a spatial context.
+In addition to that, `Basemapper.py` is a Python script included in the odkconvert package, which builds mbtiles and sqlitedb files for ODK Collect and Osmand, typically containing satellite imagery. The script downloads map tiles to a cache and uses them to generate the basemap files. It does not perform data conversion. The resulting output can be used for visualizing geographic data and analyzing survey responses in a spatial context. The script provides various command-line options for customizing the output, such as setting the zoom levels, boundary, tile cache, output file name, and more.
 
 # Installation
 The `odkconvert` package can be installed using `pip`, the Python package manager. To install the package, open a terminal or command prompt and run the following command:
@@ -82,6 +82,6 @@ In this example, the `-t` option sets the top level directory for the tile cache
 
 ### Example 6: Set custom verbose output and imagery source
 
-    python Basemapper.py -v -s topo input_form.xml
+    python Basemapper.py -v -s ersi input_form.xml
 
-In this example, the `-v` option enables verbose output, and the `-s` option sets the imagery source to Topo. The input file is `input_form.xml`. The other options, such as zoom levels, boundary, tile cache, and output file name, will use their default settings.
+In this example, the `-v` option enables verbose output, and the `-s` option sets the imagery source to ersi. The input file is `input_form.xml`. The other options, such as zoom levels, boundary, tile cache, and output file name, will use their default settings.
