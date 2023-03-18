@@ -144,10 +144,15 @@ For example, consider the following Python data structure representing a single 
 
 To write this node to an OSM XML format output file using osmfile.py, you would first create a new osmfile.OsmWriter object, and then call the `write_node()` method, passing in the node dictionary as an argument:
 
-    from osmfile import OsmWriter
+    from osmfile import OsmFile
 
-    writer = OsmWriter('output.osm')
+    writer = OsmFile('output.osm')
     writer.write_node(node)
+    writer.write_way(way)
+    writer.write_relation(relation)
+    writer.add_tag('1234', 'amenity', 'post_office')
+    writer.close()
+
 
 This would write the following XML code to the output file:
 
