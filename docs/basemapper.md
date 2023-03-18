@@ -1,10 +1,16 @@
 # Basemapper.py
 
-Basemapper is a program than makes basemaps for mobile apps, namely
-mbtiles, which are supported by many apps, and the sqlitedb format
-used by Osmand. Both of these use sqlite3, with similar database
-schemas. Basemapper does not store anything in memory, all processing
-is done as a stream, so large areas can be downloaded. Time to go by a
+Basemapper is a program that makes basemaps for mobile apps in two primary formats:
+
+- mbtiles, supported by many apps.
+- sqlite, supported by OSMAnd
+ namely
+
+Both of these use formats use underlying sqlite3, with similar database
+schemas. 
+
+Basemapper does not store anything in memory, all processing
+is done as a stream, so large areas can be downloaded. Time to go buy a
 really large hard drive... You can also use this map tile cache for
 any program that supports a TMS data source. Luckily once downloaded,
 you don't have to update the map tile cache very often, but it's also
@@ -35,16 +41,19 @@ Converts form with a geoshape question into a map with tile overlays.
 - -d OUTDIR, --outdir OUTDIR -Output directory name for tile cache
 - -s {ersi,bing,topo,google,oam}, --source {ersi,bing,topo,google,oam} - Imagery source
 
-# Examples
+## Examples
 
-This will generate a basemap for Osmand using ERSI imagery, and
-supports zoom levels 12 through 19. The suffix of the datafile is
-used to determine which format to write. This uses the boundary file
-to download and make a basemap.
+**Example 1:**
+Generate a basemap for OSMAnd using ERSI imagery, for an area specified by a geojson bounding box, and supporting zoom levels 12 through 19.
 
     ./basemapper.py -z 12-19 -b test.geojson -o test.sqlitedb -s ersi
 
-This makes a basemap for ODK Collect.
+**Example 2:**
+As above, but mbtiles format, and Bing imagery source. The `-v` option enables verbose output,
+which will show more details about the download and processing progress.   
+   
+
+    ./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s bing -v
 
     ./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s ersi
 
@@ -85,3 +94,4 @@ In this example, the `-t` option sets the top level directory for the tile cache
     python Basemapper.py -v -s ersi input_form.xml
 
 In this example, the `-v` option enables verbose output, and the `-s` option sets the imagery source to ersi. The input file is `input_form.xml`. The other options, such as zoom levels, boundary, tile cache, and output file name, will use their default settings.
+

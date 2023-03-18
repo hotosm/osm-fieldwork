@@ -6,6 +6,8 @@
 
 [Contribution](https://github.com/hotosm/odkconvert/wiki/Contribution)
 
+[FAQ](https://github.com/hotosm/odkconvert/wiki/FAQ)
+
 ## Usage
 
 [Configuration](https://github.com/hotosm/odkconvert/wiki/configuring)
