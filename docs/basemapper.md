@@ -18,11 +18,6 @@ easy to do so when you need to.
 
 In addition to that, `Basemapper.py` is a Python script included in the odkconvert package, which builds mbtiles and sqlitedb files for ODK Collect and Osmand, typically containing satellite imagery. The script downloads map tiles to a cache and uses them to generate the basemap files. It does not perform data conversion. The resulting output can be used for visualizing geographic data and analyzing survey responses in a spatial context. The script provides various command-line options for customizing the output, such as setting the zoom levels, boundary, tile cache, output file name, and more.
 
-# Installation
-The `odkconvert` package can be installed using `pip`, the Python package manager. To install the package, open a terminal or command prompt and run the following command:
-
-    pip install git+https://github.com/hotosm/odkconvert.git
-
 # Usage
 The `Basemapper.py` script is run from the command line. The basic syntax is as follows:
 
