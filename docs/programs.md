@@ -346,6 +346,58 @@ This module write OSM XML format output file.
 
 ## yamlfile.py
 
-This reads in the yaml config file with all the conversion
-information into a data structure that can be used when processing the
-data conversion.
+The yamlfile.py module is a part of the `yamlconvert` package and provides functionality for converting YAML files between different formats using a configuration file.
+
+### Usage:
+To use yamlfile.py, you'll need to create a YAML configuration file that specifies the input and output formats for the conversion process. Here's an example configuration file:
+
+    input:
+      type: yaml
+      path: path/to/file.yaml
+
+    output:
+      type: json
+      path: path/to/converted/file.json
+      
+In this example, we're specifying that the input file is a YAML file located at 'path/to/file.yaml', and that the output format should be JSON, with the converted file saved to 'path/to/converted/file.json'.
+
+Once you have a configuration file, you can use yamlfile.py from the command line by running the following command:
+
+    python yamlfile.py path/to/config.yaml
+    
+This will start the conversion process using the specified configuration file. The converted file will be saved to the path specified in the configuration file.
+
+### Supported Formats:
+yamlfile.py supports the following input and output formats:
+
+- YAML: A human-readable data serialization format.
+- JSON: A lightweight data-interchange format.
+> Note that yamlfile.py does not support all possible variations of these formats.
+
+### Configuration File Options:
+
+The following options are available in the configuration file:
+
+- input:
+    -type: The input format (e.g. yaml, json).
+    -path: The path to the input file.
+- output:
+    -type: The output format (e.g. yaml, json).
+    -path: The path to save the converted output file.
+    
+### Example:
+Here's an example of how to use yamlfile.py to convert a YAML file to JSON format:
+
+    input:
+      type: yaml
+      path: path/to/file.yaml
+
+    output:
+      type: json
+      path: path/to/converted/file.json
+      
+And then run the following command:
+
+    python yamlfile.py path/to/config.yaml
+    
+In this example, we're specifying that the input file is a YAML file located at 'path/to/file.yaml', and that the output format should be JSON, with the converted file saved to 'path/to/converted/file.json'. Running the command will start the conversion process using the specified configuration file.
