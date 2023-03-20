@@ -365,14 +365,17 @@ To write this node to an OSM XML format output file using osmfile.py, you would 
     from osmfile import OsmFile
 
     writer = OsmFile('output.osm')
-    writer.write_node(node)
-    writer.write_way(way)
-    writer.write_relation(relation)
+    node_xml = writer.createNode(node)
+    way_xml = writer.createWay(way)
+    relation_xml = writer.createRelation(relation)
     writer.add_tag('1234', 'amenity', 'post_office')
+    writer.write(node_xml)
+    writer.write(way_xml)
+    writer.write(relation_xml)
     writer.close()
 
 
-This would write the following XML code to the output file:
+This would create XML code for the node, way, and relation using createNode(), createWay(), and createRelation() respectively. These methods return a string of XML code which is then written to the output file using writer.write(). The add_tag() method can be used to add additional tags to any of the elements being written to the file.
 
     <node id="1234" lat="51.5074" lon="-0.1278">
     <tag k="name" v="Big Ben"/>
