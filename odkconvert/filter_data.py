@@ -32,7 +32,7 @@ import geojson
 log = logging.getLogger(__name__)
 
 
-class filterData(object):
+class FilterData(object):
     def __init__(self):
         self.tags = dict()
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
-    xls = filterData()
+    xls = FilterData()
     data = xls.parse(args.xform)
     xls.cleanData(args.infile)
 
