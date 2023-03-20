@@ -7,7 +7,7 @@ Basemapper is a program that creates basemaps for mobile apps in the mbtiles and
  namely
 
 Both of these use formats use underlying sqlite3, with similar database
-schemas. 
+schemas.
 
 Basemapper does not store anything in memory, all processing
 is done as a stream, so large areas can be downloaded. Time to go buy a
@@ -25,6 +25,13 @@ Basemapper uses sqlite3 to create the database schema for these formats, and all
 - Processes data as a stream, allowing for large areas to be downloaded without storing anything in memory
 - Can be used by any program that supports a TMS data source
 - Can create mbtiles basemaps for ODK Collect
+
+# Usage
+The `Basemapper.py` script is run from the command line. The basic syntax is as follows:
+
+    Basemapper.py [-h] [-v] [-b BOUNDARY] [-z ZOOMS] [-t TILES] [-o OUTFILE] [-d OUTDIR] [-s {ersi,bing,topo,google,oam}] input_file
+
+Converts form with a geoshape question into a map with tile overlays.
 
 ## Options
 
@@ -46,8 +53,8 @@ Generate a basemap for OSMAnd using ERSI imagery, for an area specified by a geo
 
 **Example 2:**
 As above, but mbtiles format, and Bing imagery source. The `-v` option enables verbose output,
-which will show more details about the download and processing progress.   
-   
+which will show more details about the download and processing progress.
+
 
     ./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s bing -v
 
@@ -55,9 +62,46 @@ which will show more details about the download and processing progress.
 Generate a basemap for the Topo imagery source using sqlitedb format.
  Additionally, the `-d` option specifies directory name for the title cache; /tiles/test. This is useful
  if you want to use the tile cache for other programs or update it later.
-    
+
     ./basemapper.py -z 12-19 -b test.geojson -o test.sqlitedb -s topo -d /tiles/tests
 
+## More examples of using Basemapper.py
+
+### Example 4: Convert an ODK form with default settings
+
+    python Basemapper.py input_form.xml
+
+In this example, the script will use default settings for zoom levels, boundary, tile cache, output file name, and imagery source to generate a map output. The input file is `input_form.xml`.
+
+### Example 5: Set custom zoom levels and imagery source
+
+    python Basemapper.py -z 12-16 -s google input_form.xml
+
+In this example, the `-z` option sets the zoom levels to 12-16, and the `-s` option sets the imagery source to Google. The input file is `input_form.xml`. The other options, such as boundary, tile cache, and output file name, will use their default settings.
+
+### Example 5: Set custom boundary and output file name
+
+    python Basemapper.py -b "25.5, -122.8, 37.5, -118.3" -o my_map.html input_form.xml
+
+In this example, the `-b` option sets the boundary to "25.5, -122.8, 37.5, -118.3", which defines the southwest and northeast corners of the map. The `-o` option sets the output file name to "my_map.html". The input file is `input_form.xml`. The other options, such as zoom levels, tile cache, and imagery source, will use their default settings.
+
+### Example 6: Enable verbose output
+
+    python Basemapper.py -v input_form.xml
+
+In this example, the `-v` option enables verbose output. The input file is `input_form.xml`. The other options, such as zoom levels, boundary, tile cache, output file name, and imagery source, will use their default settings.
+
+### Example 7: Set custom tile cache and imagery source
+
+    python Basemapper.py -t /path/to/tile/cache -s bing input_form.xml
+
+In this example, the `-t` option sets the top level directory for the tile cache to "/path/to/tile/cache", and the `-s` option sets the imagery source to Bing. The input file is `input_form.xml`. The other options, such as zoom levels, boundary, and output file name, will use their default settings.
+
+### Example 8: Set custom verbose output and imagery source
+
+    python Basemapper.py -v -s ersi input_form.xml
+
+In this example, the `-v` option enables verbose output, and the `-s` option sets the imagery source to ersi. The input file is `input_form.xml`. The other options, such as zoom levels, boundary, tile cache, and output file name, will use their default settings.
 
 ## Benefits
 
