@@ -1,6 +1,6 @@
 # Basemapper.py
 
-Basemapper is a program that makes basemaps for mobile apps in two primary formats:
+Basemapper is a program that creates basemaps for mobile apps in the mbtiles and sqlitedb formats. These formats are commonly used by mobile mapping applications like Osmand and ODK Collect in two primary formats:
 
 - mbtiles, supported by many apps.
 - sqlite, supported by OSMAnd
@@ -48,8 +48,8 @@ As above, but mbtiles format, and Bing imagery source. The `-v` option enables v
 which will show more details about the download and processing progress.   
    
 
-    ./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s bing -v
-
+    ./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s bing -
+    
     ./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s ersi
 
 ## More examples of using Basemapper.py
@@ -89,4 +89,3 @@ In this example, the `-t` option sets the top level directory for the tile cache
     python Basemapper.py -v -s ersi input_form.xml
 
 In this example, the `-v` option enables verbose output, and the `-s` option sets the imagery source to ersi. The input file is `input_form.xml`. The other options, such as zoom levels, boundary, tile cache, and output file name, will use their default settings.
-
