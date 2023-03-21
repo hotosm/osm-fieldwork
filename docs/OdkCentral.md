@@ -34,17 +34,16 @@ To use OdkCentral.py, you first need to initialize an OdkCentral object by passi
         from odkcentral import OdkCentral, OdkProject
 
         # Initialize an OdkCentral object with the server URL and credentials
-        odkc = OdkCentral('https://my-odk-central-server.com', 'my-username', 'my-password')
+        odkc = OdkCentral(url='https://my-odk-central-server.com', user='my-username', passwd='my-password')
 
         # Get a list of all projects on the server
-        response = odkc.get('/projects')
-        projects = response.json()
+        projects = odkc.listProjects()
 
         # Choose a project to work with (in this example, we'll use the first project in the list)
-        project = OdkProject(odkc, projects[0]['id'])
+        project = odkc.findProject(project_id=projects[0]['id'])
 
         # Fetch metadata about the project
-        metadata = project.get_metadata()
+        metadata = project.getDetails()
         print(metadata)
 
         # Create a new form associated with the project
@@ -53,18 +52,18 @@ To use OdkCentral.py, you first need to initialize an OdkCentral object by passi
             "xmlFormId": "my-new-form",
             "formXml": "<xform><title>My New Form</title>...</xform>"
         }
-        form = project.create_form(form_data)
+        form = project.createForm(xmlFormId=form_data['xmlFormId'], filespec=form_data['formXml'])
         print(form)
 
         # Delete the form we just created
-        project.delete_form(form['id'])
+        project.deleteForm(xmlFormId=form['xmlFormId'])
 
 
     In this example, we first create an OdkCentral object and use it to fetch a list of all projects on the server. We then choose a project to work with (in this example, we use the first project in the list) and create an OdkProject object by passing in the OdkCentral object and the project ID.
 
-    We use the `get_metadata()` method to fetch metadata about the project, such as its name and description. We then use the `create_form()` method to create a new form associated with the project, passing in the form data as a dictionary. The method returns a JSON object containing information about the new form, which we print to the console.
+    We use the `getDetails()` method to fetch metadata about the project, such as its name and description. We then use the `createform()` method to create a new form associated with the project, passing in the form data as a dictionary. The method returns a JSON object containing information about the new form, which we print to the console.
 
-    Finally, we use the `delete_form()` method to delete the form we just created, passing in the form ID.
+    Finally, we use the `deleteform()` method to delete the form we just created, passing in the form ID.
 
 - ## OdkForm:
 
@@ -75,7 +74,7 @@ To use OdkCentral.py, you first need to initialize an OdkCentral object by passi
         from odkcentral import OdkForm
 
         # Initialize an OdkForm object with the server URL and credentials
-        odkf = OdkForm('https://my-odk-central-server.com', 'my-username', 'my-password')
+        odkf = OdkForm(url='https://my-odk-central-server.com', user='my-username', passwd='my-password')
 
         # Define the form data
         form_data = {
@@ -85,28 +84,30 @@ To use OdkCentral.py, you first need to initialize an OdkCentral object by passi
         }
 
         # Create the form on the server
-        form = odkf.create(form_data)
+        form = odkf.createForm(projectId=None, xmlFormId='my-new-form', filespec=form_data, draft=None)
+
 
     This will create a new form on the server with the specified name and XML form ID, and upload the form XML. You can also update an existing form using the `update()` method and delete a form using the `delete()` method.
 
-    To fetch information about a specific form or a list of all forms, you can use the `get()` method. Here's an example of how to fetch information about a specific form:
+    To fetch information about a specific form or a list of all forms, you can use the `listForms()` method. Here's an example of how to fetch information about a specific form:
 
         # Fetch information about a form with the ID 'my-form-id'
-        form = odkf.get('my-form-id')
+        form = odkf.getDetails(xmlFormId='my-form-id')
 
         # Print the name of the form
         print(form['name'])
 
     This will fetch information about the form with the ID 'my-form-id' and print its name.
 
-    You can also fetch a list of all forms on the server using the `get_all()` method:
+        # Instantiate the OdkCentral object
+        odkf = OdkCentral(url='example.com', user='user', passwd='password')
 
-        # Fetch a list of all forms on the server
-        forms = odkf.get_all()
+        # Fetch a list of all forms in the server
+        forms = odkf.listForms()
 
         # Print the name of each form
         for form in forms:
-            print(form['name'])
+            print(form.getName())
 
 - ## OdkAppUser:
 
@@ -121,8 +122,11 @@ To use OdkCentral.py, you first need to initialize an OdkCentral object by passi
 
         from OdkCentral import OdkCentral, OdkAppUser
 
-        # Connect to the ODK Central server
-        central = OdkCentral('https://example.com', 'username', 'password')
+        # Create an OdkCentral instance
+        central = OdkCentral()
+
+        # Authenticate with the ODK Central server
+        central.authenticate()
 
         # Create a new user
         user_data = {
@@ -131,11 +135,12 @@ To use OdkCentral.py, you first need to initialize an OdkCentral object by passi
             "password": "password123"
         }
 
-        new_user = OdkAppUser.create(central, user_data)
+        new_user = central.createAppUser(user_data)
+
 
     In the above example, we first create a new instance of the OdkCentral class and pass in the URL of the ODK Central server, as well as the username and password of a user with sufficient permissions to create new users.
 
-    Next, we create a dictionary `user_data` containing the display name, email address, and password of the new user. We then call the `create` method on the OdkAppUser class, passing in the `central` object and the `user_data` dictionary. This creates a new user on the server and returns an instance of the OdkAppUser class representing the new user.
+    Next, we create a dictionary `user_data` containing the display name, email address, and password of the new user. We then call the `createAppUser()` method on the OdkAppUser class, passing in the `central` object and the `user_data` dictionary. This creates a new user on the server and returns an instance of the OdkAppUser class representing the new user.
 
     We can also use the OdkAppUser class to retrieve information about existing users:
 
