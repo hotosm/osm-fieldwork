@@ -33,7 +33,6 @@ exposes many of the REST API calls supported by the server and allows users to p
       -b {qrcodes,update}, --bulk {qrcodes,update}
                             Bulk operations
 
-# Server requests
 
 ## Server requests
 
