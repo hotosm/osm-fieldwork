@@ -29,66 +29,22 @@ quote marks, and all sorts of weird values worth correcting.
 
 ## Creating the GeoJson file
 
-While there are a multitude of places to get data from, since I'm
-using OSM data, I can either download a database dump from
-[GeoFabrik](http://download.geofabrik.de/index.html), and use that as
-a flat file or import it into a database. Or use Overpass Turbo. I
-prefer using the datafile from GeoFabrik, and importing it into a
-database.
+When working with OSM data, there are multiple sources to obtain the required data. One option is to download a database dump from [GeoFabrik](http://download.geofabrik.de/index.html), which can be used as a flat file or imported into a database. Alternatively, Overpass Turbo can also be used to query the data directly. It's important to keep in mind that there is a translation between the column names obtained from querying the data and how ODK Collect views it. There is also a translation from ODK to OSM, and it's important to ensure that all translations work together seamlessly for a smooth data flow. To maintain clarity, it's best to keep all tags and values as similar as possible, with unique names. When using [ogr2ogr](https://gdal.org/programs/ogr2ogr.html) for data extraction from a Postgres database, there is more control than when using Overpass, and larger datasets can be processed.
 
-There is a translation between the column names one gets when querying the
-data and how ODK Collect sees it. There is the following translation
-from ODK to OSM as well, and they all have to work together for a clean
-data flow. I like to keep all the tags and values as similar as
-possible, cause otherwise it's easy to get lost. The rough rule of
-thumb is to make sure that all names are unique. As I'm using
-[ogr2ogr](https://gdal.org/programs/ogr2ogr.html) to do data extracts
-from a postgres database, I have a little more control than when
-using Overpass. Plus I can process much larger datasets than Overpass
-can.
+To maintain consistency, the output column names can be redefined using the AS keyword in SQL queries, so that OSM standard names can be used in the survey and choices sheets. A technique for maintaining consistency is to append an _x_ to the end of each column name, so _healthcare_ becomes _healthcarex_. Then, in the XLSForm, _healthcarex_ can be used for the instance, and _xhealthcare_ can be used for the value in the calculation column in the survey sheet. The name column in the survey sheet can then be just _healthcare_, which will translate directly into its OSM tag equivalent.
 
-For my database SQL queries, I use the _AS_ keyword to redefine the
-output column name, so I can use the OSM standard name in the survey
-and choices sheets. That makes the next translation step much
-cleaner. I try to be consistent so it's easier to follow the data
-flow. My current technique is to append an x to the end of each
-column, so _healthcare_ becomes _healthcarex_.
+It's possible to support almost any value using a text type in the XLSForm, but it's better to have an approved value for tag validation and completeness. If using a data model, the list of choices for a tag is defined, and anything outside of that will cause an error. Therefore, it's important to adhere to approved data models to avoid introducing errors or inconsistencies into the dataset. If the SQL query returns columns that aren't compatible with the XLSForm, XPATH errors will occur in ODK Collect.
 
-Then in the XLSForm, I can use _healthcarex_ for the instance, and
-then I'll use _xhealthcare_ as the value for the _calculation_ column
-in the survey sheet. Then the value in the _name_ column of the survey
-the sheet is just _healthcare_, as that'll translate directly into it's
-OSM tag equivalent.
-
-If use use a _text_ type in your XLSForm, you can support almost any
-weird value. But as we are aiming for tag validation and tag
-completeness, we prefer to have an approved value. If using a data
-model, the list of choices for a tag is defined. Anything outside
-of that is not part of the data model, and will cause an
-error. That's documented later in this doc. Currently unless you are
-very careful with what columns you return from the SQL query, you will
-get XPATH errors in ODK Collect.
-
-Currently, if a weird value is found in the data extract that continues
-to break ODK Collect, it must be removed. In that case it must be
-manually edited, and the weird values changed or deleted. At some
-point, I may write a filter program that uses the data model as defined
-in a YAML file, but I'm not there yet.
+If weird values are found in the data extract that continue to break ODK Collect, they must be removed manually. In that case, the weird values should be changed or deleted. At some point, it may be possible to write a filter program that uses the data model as defined in a YAML file, but this is not currently available.
 
 ## Debugging select_from file with GeoJson
 
-Debugging complex interactions between the XLSForm, my
-external data files, and ODK Collect often has left me scratching my
-head more than once. Here are a few tricks to help debug what is going
+Debugging complex interactions between the XLSForm, external data files, and ODK Collect can be a challenging task. Here are a few tricks to help debug what is going
 on.
 
 ### Disable the map appearance
 
-Most of the time when using external data you have the _map_ value in
-the _appearance_ column of the survey sheet. That's how we want to use
-it in the field. But it slows down the repetitious process of
-debugging everything. I turn off _map_ values, and then I just have
-the select menu, which is more efficient. That works especially well
+When working with external data, the _map value_ in the _appearance_ column of the survey sheet is often used. However, this can slow down the debugging process. To make it more efficient, you can turn off the map values and use the select menu instead. That works especially well
 if you have a small data file for testing, because then it's easy to
 cycle between them.
 
@@ -107,11 +63,7 @@ menu instead.
 
 ### Display calculated values
 
-Often the bug you are trying to find is obscure, you just don't see
-any of the data file values being propagated into ODK Collect, when
-that was working previously. In that case, I just add a text survey
-question, whose entire purpose is to display any of the values
-
+Often the bug you are trying to find is obscure, and you may not see any of the data file values being propagated into ODK Collect, even if it was working previously. In such cases, you can add a text survey question to display any of the values. Here's an example: 
 | type      | name      | label            | calculation                                               | trigger     |
 | --------- | --------- | ---------------- | --------------------------------------------------------- | ----------- |
 | calculate | xid       | OSM ID           | instance(“camp_sites”)/root/item[id=${existing}]/id       |
