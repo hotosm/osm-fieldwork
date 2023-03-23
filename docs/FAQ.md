@@ -12,7 +12,7 @@ Or from PyPI using: `pip install ODKConvert`
 
 
 Q: How do I convert my survey form to ODK format using ODK Convert?
-A: To convert your survey form to ODK format using ODK Convert, you can run the command `odkconvert <input_file> <output_file>` in your terminal. Replace <input_file> with the path to your survey form file and <output_file> with the path to the output file in ODK format.
+A: To convert your survey form to ODK format using ODK Convert, run the command `python CSVDump.py <input_file> <output_file>` in your terminal. Replace <input_file> with the path to your survey form file and <output_file> with the path to the output file in ODK format.
 
 Q: Can ODK Convert convert survey forms created in any format to ODK format?
 
@@ -32,7 +32,7 @@ Q: What is ODKConvert?
 A: ODKConvert is a command-line tool for converting data between various data formats commonly used in survey research, including XLSForm, ODK XForm, and JSON. The tool is built using Python and can be run on Windows, Mac, and Linux operating systems.
 
 Q: How can I contribute to ODKConvert?
-A: Contributions to ODKConvert are always welcome! You can contribute by fixing bugs, adding new features, improving the documentation, and testing the tool. To get started, you can check the ODKConvert repository on GitHub, review the open issues, and submit a pull request with your changes.
+A: Contributions to ODKConvert are always welcome! You can contribute by fixing bugs, adding new features, improving the documentation, and testing the tool. To get started, you can check the ODKConvert repository on GitHub, review the [open issues](https://github.com/hotosm/odkconvert/issues), and submit a pull request with your changes.
 
 Q: What programming languages and technologies are used in ODKConvert?
 A: ODKConvert is written in Python and uses several Python libraries, including PyYAML, Click, and xlrd. The tool can be run on any operating system that supports Python.
