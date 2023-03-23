@@ -664,6 +664,8 @@ emergency:
     - siren
     - suction_point
     - water_tank
+    - fire_point_stand
+    - sprinkler_connection
     - yes
 
 lifeguard:
@@ -674,12 +676,6 @@ fire_hydrant:type:
     - pond 
     - underground 
     - wall 
-
-mergency:
-    - fire_point_stand
-
- emergency:
-    - sprinkler_connection
 
 assembly_point:fire:
     - yes, no

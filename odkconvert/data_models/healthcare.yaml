@@ -1,0 +1,8 @@
+select:
+    osm_id: id
+from:
+    - nodes
+    - ways_poly
+where:
+    tags:
+        - { healthcare: not null, social_facility: not null, 'healthcare:speciality: not null, opening_hours: not null }

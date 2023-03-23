@@ -5,4 +5,4 @@ from:
     - ways_poly
 where:
     tags:
-        - { building: not null, amenity: not null, tourism: not null }
+        - { religion: not null, denomination: not null }

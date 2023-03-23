@@ -1,0 +1,10 @@
+select:
+    osm_id: id
+from:
+    - nodes
+    - ways_poly
+where:
+    tags:
+        - { amenity: not null, waste: not null, recycling_type: not
+    null, recycling: not null, recycling:aluminum: not null,
+    recycling:glass: not null, recycling:hazardous_waste: not null }
