@@ -62,11 +62,11 @@ towns.
 ## List all the projects on an ODK Central server
 ### To list all the projects, do the following
 - Run the "`odk_client.py`" file located in the "`odkconvert`" folder.
-- Use the "`--server`" flag to specify that you want to list all the projects on the ODK Central server. For example, use "`--server list-projects`".
+- Use the "`--server`" flag to specify that you want to list all the projects on the ODK Central server. For example, use "`--server projects`".
 
 ### Example command:
 
-    ./odkconvert/odk_client.py --server list-projects
+    ./odkconvert/odk_client.py --server projects
 
 Once you run the command, a list of all the projects on the ODK Central server will be displayed in the terminal or command prompt.
 
@@ -74,12 +74,12 @@ Once you run the command, a list of all the projects on the ODK Central server w
 ### To the delete a project, do the following
 
 - Run the "`odk_client.py`" file located in the "`odkconvert`" folder.
-- Use the "`--server`" flag to specify that you want to delete a project from ODK Central. For example, use "`--server delete-project`".
+- Use the "`--server`" flag to specify that you want to delete a project from ODK Central. For example, use "`--server delete`".
 - Use the "`--id`" flag to specify the ID number of the project you want to delete. For example, if the project ID number is 2, use "`--id 2`".
 
 ### Example command:
 
-    ./odkconvert/odk_client.py --server delete-project --id 2
+    ./odkconvert/odk_client.py --server delete --id 2
 
 Once you run the command, the project with the specified ID number will be deleted from ODK Central. Please note that this action cannot be undone and all data associated with the project will be permanently deleted.
 
@@ -119,24 +119,23 @@ After running the command, the QR code will be displayed in the terminal. The ap
 ### To delete the app-user, do the following
 - Run the "`odk_client.py`" file located in the "`odkconvert`" folder.
 - Use the "`--appuser`" flag to specify the action to perform, which is deleting an app-user. For example, use "`--appuser delete`".
-- Use the "`--id`" flag to specify the app-user's ID number. For example, if the app-user's ID number is 378, use "`--id 378`".
+- Use the "`--id`" flag to specify the project and app-user's ID number. For example, if the app-user's ID number is 378, use "`--id 4 378`".
 
 ### Example command:
 
-    ./odkconvert/odk_client.py --appuser delete --id 378
+    ./odkconvert/odk_client.py --appuser delete --id 4 378
 
 Once you run the command, the app-user with the specified ID number will be deleted from the project.
 
 ## List all app-users for a project
 ### To list all app-users, do the following
 - Run the "`odk_client.py`" file located in the "`odkconvert`" folder.
-- Use the "`--project`" flag to specify the project for which you want to list all app-users. For example, if the project ID is 4, use "`--project 4`".
-- Use the "`--id`" flag to specify your user ID. For example, if your user ID is 123, use "`--id 123`".
-Use the "`--appuser`" flag to specify the action to perform, which is listing all app-users. For example, use "`--appuser list`".
+- Use the "`--id`" flag to specify the project. For example, if your project ID is 4, use "`--id 4`".
+- Use the "`-- project app-users`" flag to specify the action to perform, which is listing all app-users. For example, use "`--project app-users`".
 
 ### Example command:
 
-    ./odkconvert/odk_client.py --project 4 --id 123 --appuser list
+    ./odkconvert/odk_client.py  --id 4 --project app-users
 
 Once you run the command, a list of all app-users for the specified project will be displayed in the terminal or command prompt.
 
@@ -151,11 +150,12 @@ thousands of app-users.
 ### To delete mulitple app-users, do the following:
 - Run the "`odk_client.py`" file located in the "`odkconvert`" folder.
 - Use the "`--appuser`" flag to specify the action to perform, which is deleting app-users. For example, use "`--appuser delete`".
-- Use the "`--id`" flag to specify the app-users' ID numbers, separated by a space. For example, if the app-users' ID numbers are 378 and 379, use "`--id 378 379`".
-- Specify the project ID followed by the usernames or email addresses of the app-users to be deleted, separated by a space. For example, if the project ID is "`myproject`" and the app-users' usernames are "`noah.joe`" and "`droid.jose`", use "`myproject noah.joe droid.jose`".
+- Use the "`--id`" flag to specify the project's ID number. For example, if the project's ID  is 4, use "`--id 4`".
+- Specify the project ID followed by the app-users ids seperated by a hyphen
 
 ### Example command:
-    ./odkconvert/odk_client.py --appuser delete --id 378 379 myproject noah.joe droid.jose
+
+    ./odkconvert/odk_client.py --appuser delete --id 4 22-95
 
 Once you run the command, the app-users with the specified ID numbers and usernames or email addresses will be deleted from the project.
 
