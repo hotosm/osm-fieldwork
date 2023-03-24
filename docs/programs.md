@@ -284,6 +284,17 @@ Note that ODKInstance.py is primarily intended for use by developers who are wor
 The convert.py module is part of the odkconvert package and provides functionality for converting ODK forms between different formats using a YAML configuration file.
 
 ### Usage:
+
+`convert.py [-h] [-x XFORM] [-i INFILE]`
+
+### Read and parse a YAML file
+### options:
+
+    -h, --help            show this help message and exit
+    -x XFORM, --xform XFORM
+                            Default Yaml file
+    -i INFILE, --infile INFILE
+                            The CSV input file
 To use convert.py, you'll need to create a YAML configuration file that specifies the input and output formats for the conversion process. Here's an example configuration file:
 
     input:
@@ -351,6 +362,16 @@ information into a data structure that can be used when processing the
 data conversion.
 
 `yamlfile.py` is a module that reads in a YAML config file containing information about how to convert data between different formats. The config file contains a list of conversion rules, where each rule specifies the source format, the target format, and any additional information needed to perform the conversion. The module parses the YAML file and creates a Python object representing the conversion rules, which can be used by other code in the conversion process.
+
+### Usage
+
+`yamlfile.py [-h] [-i INFILE]`
+
+### Read and parse a YAML file
+### Options
+
+    -h, --help            show this help message and exit
+    -i INFILE, --infile INFILE
 
 To use `yamlfile.py`, you first need to create a YAML config file containing the conversion rules. Here's an example of a simple YAML config file that converts CSV files to ODK Collect forms:
 
