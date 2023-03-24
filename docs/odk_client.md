@@ -3,7 +3,36 @@
 odk_client.py is a command line utility for  interacting with the ODK Central server. It
 exposes many of the REST API calls supported by the server and allows users to perform various tasks, such as uploading and downloading attachments and submissions.
 
-ODK Client provides several command-line options to interact with ODK Central. These commands are divided into three types: server requests, project requests, and XForm requests.
+## Usage
+`[-h] [-v] [-s {projects,users,delete}] [-p {forms,app-users,assignments,delete}] [-i ID] [-f FORM] [-u UUID]`
+
+`[-x {attachments,csv,submissions,upload,download,create,assignments,delete,publish}] [-a {create,delete,update,qrcode,access}] [-d DATA] [-t TIMESTAMP]`
+
+`[-b {qrcodes,update}]`
+
+### command line client for ODK Central
+
+### Options:
+
+      -h, --help            show this help message and exit
+      -v, --verbose         verbose output
+      -s {projects,users,delete}, --server {projects,users,delete}
+                            project operations
+      -p {forms,app-users,assignments,delete}, --project {forms,app-users,assignments,delete}
+                            project operations
+      -i ID, --id ID        Project ID nunmber
+      -f FORM, --form FORM  XForm name
+      -u UUID, --uuid UUID  Submission UUID, needed to download the data
+      -x {attachments,csv,submissions,upload,download,create,assignments,delete,publish}, --xform {attachments,csv,submissions,upload,download,create,assignments,delete,publish}
+                            XForm ID for operations with data files
+      -a {create,delete,update,qrcode,access}, --appuser {create,delete,update,qrcode,access}
+                            App-User operations
+      -d DATA, --data DATA  Data files for upload or download
+      -t TIMESTAMP, --timestamp TIMESTAMP
+                            Timestamp for submissions
+      -b {qrcodes,update}, --bulk {qrcodes,update}
+                            Bulk operations
+
 
 ## Server requests
 

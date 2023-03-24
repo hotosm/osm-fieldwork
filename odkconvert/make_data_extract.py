@@ -26,7 +26,7 @@ import re
 from geojson import Point, Feature, FeatureCollection, dump
 import geojson
 from OSMPythonTools.overpass import Overpass
-from filter_data import FilterData
+from odkconvert.filter_data import FilterData
 from odkconvert.xlsforms import xlsforms_path
 
 
