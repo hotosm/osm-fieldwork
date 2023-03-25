@@ -38,9 +38,10 @@ repository = "https://github.com/hotosm/odkconvert"
 
 [project.optional-dependencies]
 [tool.pdm]
+version = {from = "odkconvert/__version__.py"}
+[tool.pdm.build]
 includes = ["odkconvert"]
 source-includes = ["tests", "LICENSE.md", "README.md"]
-version = {from = "odkconvert/__version__.py"}
 [tool.pdm.dev-dependencies]
 test = [
     "pytest>=7.2.1",
