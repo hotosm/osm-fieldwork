@@ -1,11 +1,8 @@
 name: Publish to PyPi.org
 
 on:
-  push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-  # Allow manual trigger (workflow_dispatch)
-  workflow_dispatch:
+  release:
+    types: [published]
 
 env:
   PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
