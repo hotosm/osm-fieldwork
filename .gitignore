@@ -5,7 +5,6 @@ TAGS
 .libs
 py-compile
 NEWS
-README.md
 *__pycache__/
 
 # output files
