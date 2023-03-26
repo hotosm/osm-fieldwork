@@ -39,14 +39,18 @@ class FilterData(object):
             self.parse(filespec)
 
     def parse(self, filespec):
-        data = pd.read_excel(filespec, sheet_name="Overview - all Tags", usecols=["key", "value"])
+        # data = pd.read_excel(filespec, sheet_name="Overview - all Tags", usecols=["key", "value"])
+        data = pd.read_excel(filespec, sheet_name="choices", usecols=["list name", "name"])
         
         entries = data.to_dict()
-        total = len(entries['key'])
+        total = len(entries['list name'])
         index = 1
         while index < total:
-            key = entries['key'][index]
-            value = entries['value'][index]
+            key = entries['list name'][index]
+            if 'name' in entries:
+                value = entries['name'][index]
+            else:
+                value = None
             if value == "<text>":
                 index += 1
                 continue
@@ -84,6 +88,9 @@ class FilterData(object):
                     properties[key] = value
                 else:
                     if key in self.tags.keys():
+                        if key == "name":
+                            properties['title'] = self.tags[key]
+                            # properties['label'] = self.tags[key]
                         if value in self.tags[key]:
                             properties[key] = value
                         else:
