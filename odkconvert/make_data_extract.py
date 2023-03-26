@@ -26,6 +26,9 @@ import re
 from geojson import Point, Feature, FeatureCollection, dump
 import geojson
 from OSMPythonTools.overpass import Overpass
+from odkconvert.filter_data import FilterData
+from odkconvert.xlsforms import xlsforms_path
+
 
 # from yamlfile import YamlFile
 import psycopg2
@@ -148,19 +151,13 @@ class PostgresClient(object):
                     tags["label"] = None
                 features.append(Feature(geometry=poi, properties=tags))
         collection = FeatureCollection(features)
+
+        cleaned = FilterData()
+        models = xlsforms_path.replace("xlsforms", "data_models")
+        cleaned.parse(f"{models}/Impact Areas - Data Models V1.1.xlsx")
+        new = cleaned.cleanData(collection)
         json = open(filespec, "w")
-        dump(collection, json)
-
-        # logging.debug(f"QUERY: {query}")
-        # if len(result) == 0:
-        #    return None
-        # for feature in result:
-        #    print(feature)
-        # sql = f"SELECT array_to_json(array_agg(row_to_json(tmp))) FROM {table} tmp;"
-        # self.dbcursor.execute(query)
-        # result = self.dbcursor.fetchall()
-        # print(result)
-
+        dump(new, json)
 
 class OverpassClient(object):
     """Class to handle Overpass queries"""
