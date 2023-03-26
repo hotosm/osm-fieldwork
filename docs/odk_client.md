@@ -83,6 +83,8 @@ Once you run the command, a list of all the projects on the ODK Central server w
 
 Once you run the command, the project with the specified ID number will be deleted from ODK Central. Please note that this action cannot be undone and all data associated with the project will be permanently deleted.
 
+Note: Please use the delete option with great care, as it permanently removes the app-user and all associated data from the database. Unlike ODK Central, which merely archives projects, the deletion here removes it from the database completely. This option is primarily meant for debugging and administrative purposes and should rarely be used.
+
 # App-user Requests
 
 ## Create a new app-user for a project
@@ -127,6 +129,8 @@ After running the command, the QR code will be displayed in the terminal. The ap
 
 Once you run the command, the app-user with the specified ID number will be deleted from the project.
 
+Note: Please use the delete option with great care, as it permanently removes the app-user and all associated data from the database. Unlike ODK Central, which merely archives projects, the deletion here removes it from the database completely. This option is primarily meant for debugging and administrative purposes and should rarely be used.
+
 ## List all app-users for a project
 ### To list all app-users, do the following
 - Run the "`odk_client.py`" file located in the "`odkconvert`" folder.
@@ -159,6 +163,7 @@ thousands of app-users.
 
 Once you run the command, the app-users with the specified ID numbers and usernames or email addresses will be deleted from the project.
 
+Note: Please use the delete option with great care, as it permanently removes the app-user and all associated data from the database. Unlike ODK Central, which merely archives projects, the deletion here removes it from the database completely. This option is primarily meant for debugging and administrative purposes and should rarely be used.
 
 ## Generate QRcodes for all registered app-users
 ### To generate QRcodes for all, do the following
