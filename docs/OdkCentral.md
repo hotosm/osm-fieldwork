@@ -8,22 +8,26 @@ To use OdkCentral.py, you first need to initialize an OdkCentral object by passi
 
 - ## OdkCentral:
 
-    This is the base class for interacting with an ODK Central server. It provides methods for authentication and for sending HTTP requests to the server's REST API. You first need to initialize an OdkCentral object by passing in the URL of your ODK Central server and your authentication credentials. Once you have an OdkCentral object, you can use its methods to interact with the server.
+    This is a base class for interacting with an ODK Central server. It should not be used directly, but instead, its derived classes should be used. It provides methods for authentication and for sending HTTP requests to the server's REST API. To initialize an OdkCentral derived object, you first need to pass in the URL of your ODK Central server and your authentication credentials. Once you have an OdkCentral derived object, you can use its methods to interact with the server.
 
     ### Example:
 
         from odkcentral import OdkCentral
 
-        # Initialize an OdkCentral object with the server URL and credentials
-        odkc = OdkCentral('https://my-odk-central-server.com', 'my-username', 'my-password')
+        # Initialize a derived OdkCentral object with the server URL and credentials
+        class MyOdkCentral(OdkCentral):
+            pass
 
-        # Use the object's methods to interact with the server
+        odkc = MyOdkCentral('https://my-odk-central-server.com', 'my-username', 'my-password')
+
+        # Use the object's inherited methods to interact with the server
         response = odkc.get('/projects')
         projects = response.json()
         for project in projects:
             print(project['name'])
 
-    In this example, we first create an OdkCentral object by passing in the URL of our ODK Central server and our authentication credentials. We then use the object's `get()` method to send an HTTP GET request to the `/projects` endpoint of the server's REST API. The response is a JSON object containing information about the projects on the server, which we print to the console.
+
+    In this example, we first create a derived OdkCentral object by defining a new class `MyOdkCentral` that inherits from OdkCentral. We then pass in the URL of our ODK Central server and our authentication credentials when initializing an instance of `MyOdkCentral`. Finally, we use the object's inherited `get()` method to send an HTTP GET request to the `/projects` endpoint of the server's REST API. The response is a JSON object containing information about the projects on the server, which we print to the console.
 
 - ## OdkProject:
 
