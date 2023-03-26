@@ -29,7 +29,7 @@ amenity:
     - loading_dock
     - marketplace
     - mobile_money_agent
-    - money_transfer 
+    - money_transfer
     - music_school
     - parking
     - pharmacy
@@ -435,35 +435,31 @@ building:levels:
     - <number>
 
 building:structure:
-    - bamboo_frame 
+    - bamboo_frame
     - confined_masonry
     - steel_frame
     - wood_frame
 
 building:material:
-    - bamboo 
+    - bamboo
     - brick
-    - brick 
     - cement_block
-    - concrete
     - concrete 
-    - glass
     - glass 
     - metal/zinc
     - stone
     - wood 
 
 floor:material:
-    - ceramics 
+    - ceramics
     - concrete
     - ground
     - tekhel
-    - wood 
-
+    - wood
 roof:material:
-    - concrete 
+    - concrete
     - eternit
-    - tile 
+    - tile
     - tin
 
 access:roof:
@@ -672,10 +668,10 @@ lifeguard:
     - tower
 
 fire_hydrant:type:
-    - pillar 
+    - pillar
     - pond 
     - underground 
-    - wall 
+    - wall
 
 assembly_point:fire:
     - yes, no
