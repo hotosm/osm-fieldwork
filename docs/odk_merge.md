@@ -44,6 +44,8 @@ The `-c` and `-f` options are mandatory, while the `-o` and `-b` options are opt
 
 The `-b` option is useful when working with large OSM data files or when the user wants to limit the area of the merged data. The boundary file can be in any format, but GeoJSON is the most common.
 
+However, currently, The --boundary (-b) option only takes a GeoJson file containing, not bounding box coordinates. It'd be a nice enhancement to add support for that, but currently it doesn't exist.
+
 ## Examples
 
     ./odk_merge.py -f pg:osm -c buildings.osm -b boundary.geojson
