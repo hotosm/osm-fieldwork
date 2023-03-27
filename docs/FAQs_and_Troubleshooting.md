@@ -19,11 +19,11 @@ Or from PyPI using: `pip install ODKConvert`
 - Q: What is the advantage of using ODK Convert?
 - A: Using ODK Convert allows users to easily convert their survey forms to ODK format, which can then be deployed on mobile devices using ODK Collect. ODK Collect allows for offline data collection, and the data can be easily aggregated and analyzed using ODK Aggregate.  
 
-- Q: How do I update my ODK Convert version?  
+- Q: How do I upgrade my ODK Convert to the latest version?  
 - A: You can update your ODK Convert version by running the command `pip install odkconvert --upgrade` in your terminal. This will upgrade ODK Convert to the latest version.  
 
 - Q: Can I use ODK Convert for free?  
-- A: Yes, ODK Convert is free and open-source software, licensed under the AGPLv3.  
+- A: Yes, ODK Convert is a free and open-source software, licensed under the AGPLv3.  
 
 ## For Contributors
 - Q: What is ODKConvert?  
@@ -36,7 +36,7 @@ Or from PyPI using: `pip install ODKConvert`
 - A: ODKConvert is written in Python and uses several Python libraries, including PyYAML, Click, and xlrd. The tool can be run on any operating system that supports Python.  
 
 - Q: How can I set up ODKConvert locally on my computer?  
-- A: To set up ODKConvert locally, you need to have Python 3 installed on your system. You can then clone the ODKConvert repository from GitHub, install the required dependencies using pip, and run the tool using the command-line interface.  
+- A: To set up ODKConvert locally, you need to have Python 3 installed on your system. You can then clone the ODKConvert repository from GitHub, install the required dependencies using pip and run the tool using the command-line interface.  
 
 - Q: How can I report a bug or suggest a new feature for ODKConvert?  
 - A: You can report bugs or suggest new features by opening an issue on the ODKConvert repository on GitHub. Be sure to provide as much detail as possible, including steps to reproduce the bug and any relevant error messages.  
