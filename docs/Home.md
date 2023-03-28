@@ -234,3 +234,137 @@ For example, to extract data for schools in the Kathmandu Valley in Nepal and sa
 
 ### Conclusion
 make_data_extract.py is a useful tool for creating data extracts from OpenStreetMap for use with ODKConvert. By automating the process of extracting data based on specified criteria, it saves time and effort for data collection teams working in areas where offline maps are needed. With make_data_extract.py and ODKConvert, organizations can collect data more efficiently and accurately, even in challenging environments.
+
+
+##  odk_merge.py
+odk_merge.py is a Python script included with the ODKConvert package that merges multiple ODK forms into a single form for use with ODK Collect.
+
+### How odk_merge.py works:
+
+odk_merge.py reads multiple XML files representing ODK forms, combines them into a single XML file, and compiles the combined file into a binary format that can be used by ODK Collect.
+
+### Using odk_merge.py:
+
+Here are the basic steps to use odk_merge.py:
+
+- Install ODKConvert if you haven't already:
+
+      pip install git+https://github.com/hotosm/odkconvert.git
+
+- Navigate to the ODKConvert package directory:
+
+      cd /path/to/odkconvert
+
+- Run odk_merge.py with the following arguments:
+
+      python odk_merge.py --output=<output_file> <input_file1> <input_file2> ... <input_fileN>
+
+--output is the output file name and directory where the merged form will be saved.
+
+`< input_file1 >`, `< input_file2 >`, `...`, `< input_fileN >` are the XML files representing the ODK forms to be merged.
+
+For example, to merge two ODK forms named `survey1.xml` and `survey2.xml` and save the output file as `merged_survey.xml`, you would run:
+
+    python odk_merge.py --output=/path/to/merged_survey.xml /path/to/survey1.xml /path/to/survey2.xml
+
+The resulting merged form can be used with ODK Collect to collect data.
+
+### Conclusion:
+
+odk_merge.py is a useful tool for merging multiple ODK forms into a single form for use with ODK Collect. It simplifies the process of collecting data by allowing the user to combine multiple forms into one. With odk_merge.py and ODK Collect, organizations can streamline their data collection processes and save time and effort.
+
+## ODKInstance.py
+
+ODKInstance.py is a Python script included with the ODKConvert package that processes ODK Collect instances and converts them to CSV or Excel format.
+
+### How ODKInstance.py works:
+
+ODKInstance.py reads an ODK Collect instance XML file and extracts the data into a CSV or Excel file format. It also supports filtering by form and submission date range.
+
+### Using ODKInstance.py:
+
+Here are the basic steps to use ODKInstance.py:
+
+- Install ODKConvert if you haven't already:
+
+      pip install git+https://github.com/hotosm/odkconvert.git
+
+- Navigate to the ODKConvert package directory:
+
+      cd /path/to/odkconvert
+
+- Run ODKInstance.py with the following arguments:
+
+      python ODKInstance.py --input=<input_file> --output=<output_file> [--form=<form_id>] [--start=<start_date>] [--end=<end_date>] [--excel]
+
+  `--input` is the ODK Collect instance XML file to be converted.
+
+  `--output` is the output file name and directory where the converted file will be saved.
+
+  `--form` is an optional argument to filter results by form ID.
+
+  `--start` is an optional argument to filter results by a submission start date.
+
+  `--end` is an optional argument to filter results by a submission end date.
+
+  `--excel` is an optional flag to output the file in Excel format.
+
+For example, to convert an ODK Collect instance file called instance.xml and save the output file as output.csv, you would run:
+
+    python ODKInstance.py --input=/path/to/instance.xml --output=/path/to/output.csv
+
+To filter results by a specific form ID, you would add the following argument:
+
+    python ODKInstance.py --input=/path/to/instance.xml --output=/path/to/output.csv --form=form_id
+
+To filter results by a submission date range, you would add the following arguments:
+
+    python ODKInstance.py --input=/path/to/instance.xml --output=/path/to/output.csv --start=start_date --end=end_date
+
+To output the file in Excel format, you would add the --excel flag:
+
+    python ODKInstance.py --input=/path/to/instance.xml --output=/path/to/output.xlsx --excel
+
+The resulting CSV or Excel file can be used to analyze and visualize the data collected using ODK Collect.
+
+### Conclusion:
+
+ODKInstance.py is a useful tool for processing ODK Collect instances and converting them to CSV or Excel format. It provides flexibility to filter results by form ID or submission date range and can output files in Excel format for further analysis. With ODKInstance.py and ODK Collect, organizations can efficiently process and analyze data collected using ODK Collect.
+
+## ODKForm.py
+
+ODKForm.py is a script included with ODKConvert that converts XLSForms to XForms for use with ODK Collect. The script reads the XLSForm, converts it to an XML file, transforms the XML file into an XForm, and compiles the XForm into a binary format that can be used by ODK Collect.
+
+### How ODKForm.py works:
+
+ODKForm.py reads the XLSForm, converts it to an XML file, and then transforms the XML file into an XForm. The XForm is then compiled into a binary format that can be used by ODK Collect.
+
+### Using ODKForm.py:
+
+Here are the basic steps to use ODKForm.py:
+
+- Install ODKConvert if you haven't already:
+
+      pip install git+https://github.com/hotosm/odkconvert.git
+
+- Navigate to the ODKConvert package directory:
+
+      cd /path/to/odkconvert
+
+- Run ODKForm.py with the following arguments:
+
+      python ODKForm.py --input=<input_xlsform> --output=<output_directory>
+
+`--input` is the XLSForm file to be converted.
+
+`--output` is the output directory where the resulting XForm will be saved.
+
+For example, to convert an XLSForm called survey.xlsx and save the output file to the directory /path/to/output, you would run:
+
+    python ODKForm.py --input=/path/to/survey.xlsx --output=/path/to/output
+
+The resulting XForm can be used with ODK Collect to collect data.
+
+### Conclusion:
+
+ODKForm.py is a useful tool for converting XLSForms to XForms for use with ODK Collect. It simplifies the process of creating forms for data collection by automating the conversion and compilation process. With ODKForm.py and ODK Collect, organizations can efficiently and accurately collect data.
