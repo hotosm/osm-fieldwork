@@ -10,42 +10,88 @@ Read time; 30mins
 Technical Depth: deep dive
 
 ---
-
 ## Background
 
-[XLSXForms](https://xlsform.org/en/) provides a way to define input fields, their data types, and any constraints or validation rules that apply. It uses the XLSX file format and allows users to create forms by editing spreadsheets. It is compatible with ODK and other data collection platforms.
+[XLSXForms](https://xlsform.org/en/) provides a way to define input 
+fields, their data types, and any constraints or validation rules that 
+apply. It uses the XLSX file format and allows users to create forms by
+editing spreadsheets. It is compatible with ODK and other data 
+collection platforms.
 
-XLSForm is a powerful tool that allows users to create complex forms with advanced functionality, such as skip logic, complex calculations, and multimedia inputs. However, it has a complex syntax, and it can be difficult for new users to learn. There are a few web-based front-ends for creating and editing XLSForms, but they don't support all of the advanced features of the format.
+XLSForm is a powerful tool that allows users to create complex forms 
+with advanced functionality, such as skip logic, complex calculations,
+and multimedia inputs. However, it has a complex syntax, and it can be
+difficult for new users to learn. There are a few web-based front-ends
+for creating and editing XLSForms, but they don't support all of the
+advanced features of the format.
 
-To use an XLSForm with a mobile app, it needs to be converted to the XML-based XForm format used by the apps. This conversion is done using a utility program called xls2xform. Once the XLSForm has been converted to an XForm, it can be loaded onto a mobile device and used to collect data in the field.
+To use an XLSForm with a mobile app, it needs to be converted to the
+XML-based XForm format used by the apps. This conversion is done using
+a utility program called xls2xform. Once the XLSForm has been converted
+to an XForm, it can be loaded onto a mobile device and used to collect
+data in the field.
 
-XLSForm is widely used in the humanitarian and development sectors for data collection, monitoring, and evaluation. It is particularly popular for its flexibility and the ease with which it can be customized to meet specific needs. XLSForm has also been adopted by other platforms, such as KoBoToolbox and SurveyCTO, making it a widely used standard for creating forms for mobile data collection.
+XLSForm is widely used in the humanitarian and development sectors for
+data collection, monitoring, and evaluation. It is particularly popular
+for its flexibility and the ease with which it can be customized to meet
+specific needs. XLSForm has also been adopted by other platforms, such as
+KoBoToolbox and SurveyCTO, making it a widely used standard for creating
+forms for mobile data collection.
 
-To use an XLSXForm with a mobile app, it must be converted using a utility program called xls2xform to the XML-based XForm format used by the apps. There are two primary mobile apps used at HOT, OpenMapKit
+To use an XLSXForm with a mobile app, it must be converted using a utility
+program called xls2xform to the XML-based XForm format used by the apps.
+There are two primary mobile apps used at HOT, OpenMapKit
 ([OMK](http://www.openmapkit.org/)), and OpenDataKit
-([ODK](https://getodk.org/)). OMK uses the same XLSX format as ODK, so any comments about improving XLSXForms apply to both.
+([ODK](https://getodk.org/)). OMK uses the same XLSX format as ODK, so any
+comments about improving XLSXForms apply to both.
 
-Improving XLSXForms can lead to more efficient data collection, allowing more good data to be collected in less time.
+Improving XLSXForms can lead to more efficient data collection, allowing
+more good data to be collected in less time.
 
 ## OpenDataKit
 
-[OpenDataKit (ODK)](https://www.opendatakit.org) is a software suite that includes a mobile app called [ODK Collect](https://docs.getodk.org/collect-intro/) and a server called [ODK
-Central](https://docs.getodk.org/central-intro/). ODK Collect is designed to run on Android devices and enables users to collect data in the field using forms created in the XLSXForms format. ODK Central is a server application that enables users to manage forms, data, and users, as well as to visualize and export collected data.
+[OpenDataKit (ODK)](https://www.opendatakit.org) is a software suite that
+includes a mobile app called [ODK Collect](https://docs.getodk.org/collect-intro/)
+and a server called [ODK
+Central](https://docs.getodk.org/central-intro/). ODK Collect is designed to
+run on Android devices and enables users to collect data in the field using
+forms created in the XLSXForms format. ODK Central is a server application
+that enables users to manage forms, data, and users, as well as to visualize
+and export collected data.
 
-ODK Collect offers a wide range of functionality, including the ability to capture photos, videos, and audio recordings, and to collect GPS coordinates and other metadata. It also supports complex data types, such as repeat groups and geoshapes, and can be customized with the use of various add-ons.
+ODK Collect offers a wide range of functionality, including the ability to
+capture photos, videos, and audio recordings, and to collect GPS coordinates
+and other metadata. It also supports complex data types, such as repeat groups
+and geoshapes, and can be customized with the use of various add-ons.
 
-While OMK was an earlier version of the ODK Collect app, most of its functionality has been migrated to ODK Collect. However, this document also provides information on how to modify old XForms from the OMK app to work with ODK Collect. ODK Collect is actively maintained, with regular updates and support services provided by the organization behind it.
+While OMK was an earlier version of the ODK Collect app, most of its functionality
+has been migrated to ODK Collect. However, this document also provides information
+on how to modify old XForms from the OMK app to work with ODK Collect. ODK Collect
+is actively maintained, with regular updates and support services provided by
+the organization behind it.
 
 ## OpenMapKit
 
-[OpenMapKit (OMK)](https://www.openmapkit.org) is an extension of OpenDataKit (ODK) that allows users to create professional quality mobile data collection surveys for field data collection. The tool is designed to simplify the process of collecting data for OpenStreetMap (OSM) in the field.
+[OpenMapKit (OMK)](https://www.openmapkit.org) is an extension of OpenDataKit (ODK)
+that allows users to create professional quality mobile data collection surveys
+for field data collection. The tool is designed to simplify the process of
+collecting data for OpenStreetMap (OSM) in the field.
 
-It is a project sponsored by the Red Cross for collecting data. It includes a server and a mobile app that runs on Android operating system. However, the use of OMK is no longer recommended as it has not been maintained for several years and its functionality has been incorporated into ODK.
+It is a project sponsored by the Red Cross for collecting data. It includes
+a server and a mobile app that runs on Android operating system. However,
+the use of OMK is no longer recommended as it has not been maintained for
+several years and its functionality has been incorporated into ODK.
 
-One of the unique features of OMK was the use of a special field called **osm** in the **survey** sheet, which is the first page of the XLSX file. Additionally, OMK looked at another sheet called **osm** which replaced the existing **choices** sheet. The values in the **osm** sheet were designed to closely match the tagging scheme used by [OpenStreetMap
+One of the unique features of OMK was the use of a special field called
+**osm** in the **survey** sheet, which is the first page of the XLSX file.
+Additionally, OMK looked at another sheet called **osm** which replaced
+the existing **choices** sheet. The values in the **osm** sheet were
+designed to closely match the tagging scheme used by [OpenStreetMap
 (OSM)](https://www.openstreetmap.org/).
 
-Overall, while OMK has been a useful tool in the past for data collection, it is no longer actively maintained, and users are encouraged to use ODK instead which offers more advanced functionality and support services.
+Overall, while OMK has been a useful tool in the past for data collection,
+it is no longer actively maintained, and users are encouraged to use ODK
+instead which offers more advanced functionality and support services.
 
 # XLSXForm Syntax
 
