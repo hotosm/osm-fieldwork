@@ -18,6 +18,7 @@
 #     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
+# Import necessary modules
 import argparse
 import csv
 import os
@@ -28,24 +29,27 @@ from odkconvert.convert import Convert
 from odkconvert.osmfile import OsmFile
 from geojson import Point, Feature, FeatureCollection, dump
 
-# set log level for urlib
+# Set log level for urllib
 log_level = os.getenv("LOG LEVEL", default="INFO")
 logging.getLogger("urllib3").setLevel(log_level)
 
+# Set logger
 log = logging.getLogger(__name__)
-
 
 class CSVDump(Convert):
     """A class to parse the CSV files from ODK Central"""
 
     def __init__(self, yaml=None):
-        """"""
+        """Constructor method"""
+        # Initialize attributes
         self.fields = dict()
         self.nodesets = dict()
         self.data = list()
         self.osm = None
         self.json = None
         self.features = list()
+
+        # Set default yaml file path if not provided
         if yaml is None:
             if os.path.exists("xforms.yaml"):
                 yaml = "xforms.yaml"
@@ -53,48 +57,61 @@ class CSVDump(Convert):
                 yaml = "odkconvert/xforms.yaml"
             elif argv[0][0] == "/" and os.path.dirname(argv[0]) != "/usr/local/bin":
                 yaml = os.path.dirname(argv[0]) + "/xforms.yaml"
+        # Call superclass constructor
         self.config = super().__init__(yaml)
 
     def createOSM(self, filespec="tmp.osm"):
         """Create an OSM XML output files"""
         logging.debug("Creating OSM XML file: %s" % filespec)
+        # Instantiate OsmFile object
         self.osm = OsmFile(filespec=filespec)
+        # Write OSM XML header
         self.osm.header()
 
     def writeOSM(self, feature):
         """Write a feature to an OSM XML output file"""
         out = ""
+        # Assign id from tags to feature id
         if "id" in feature["tags"]:
             feature["id"] = feature["tags"]["id"]
+        # Skip if lat or lon not in attrs
         if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
             return None
+        # Create node or way depending on refs presence
         if "refs" not in feature:
             out += self.osm.createNode(feature)
         else:
             out += self.osm.createWay(feature)
+        # Write output
         self.osm.write(out)
 
     def finishOSM(self):
         """Write the OSM XML file footer and close it"""
+        # Write OSM XML footer
         self.osm.footer()
 
     def createGeoJson(self, file="tmp.geojson"):
         """Create a GeoJson output file"""
         logging.debug("Creating GeoJson file: %s" % file)
+        # Open file for writing
         self.json = open(file, "w")
 
     def writeGeoJson(self, feature):
         """Write a feature to a GeoJson output file"""
-        # These get written later when finishing , since we have to create a FeatureCollection
+        # Skip if lat or lon not in attrs
         if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
             return None
+        # Append feature to features list
         self.features.append(feature)
 
     def finishGeoJson(self):
         """Write the GeoJson FeatureCollection to the output file and close it"""
+        # Create a list of features
         features = list()
         for item in self.features:
+            # Create Point object
             poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
+            # Merge tags and private dicts
             if "private" in item:
                 props = {**item["tags"], **item["private"]}
             else:
