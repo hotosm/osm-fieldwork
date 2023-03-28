@@ -25,18 +25,18 @@ import sys
 import re
 import yaml
 import json
-from geojson import Point, Polygon, Feature, FeatureCollection, dump
+from geojson import Point, Feature, FeatureCollection, dump
 import geojson
-from OSMPythonTools.overpass import Overpass
+import overpy
 from odkconvert.filter_data import FilterData
 from odkconvert.xlsforms import xlsforms_path
 import requests
-from requests.auth import HTTPBasicAuth
-
-
-# from yamlfile import YamlFile
+# from requests.auth import HTTPBasicAuth
+from io import BytesIO
+import zipfile
+import time
 import psycopg2
-from shapely.geometry import shape
+from shapely.geometry import shape, Polygon
 
 
 # all possible queries
@@ -66,13 +66,12 @@ class DatabaseAccess(object):
         self.category = None
         if dbname == "underpass":
             # Authentication data
-            self.auth = HTTPBasicAuth(self.user, self.passwd)
+            # self.auth = HTTPBasicAuth(self.user, self.passwd)
 
             # Use a persistant connect, better for multiple requests
             self.session = requests.Session()
-            self.url = "https://raw-data-api0.hotosm.org/"
-            self.headers = {"accept": "application/json", "Content-Type": "application/json",
-                        }
+            self.url = "https://raw-data-api0.hotosm.org/v1"
+            self.headers = {"accept": "application/json", "Content-Type": "application/json"}
         else:
             logging.info("Opening database connection to: %s" % dbhost)
             connect = "PG: dbname=" + dbname
@@ -94,9 +93,7 @@ class DatabaseAccess(object):
         file = open(f"{path}/{category}.yaml", "r").read()
         data = yaml.load(file, Loader=yaml.Loader)
 
-        # clip = open(boundary, "r")
-        # features = dict()
-        # geom = geojson.load(clip)
+        features = dict()
         features['geometry'] = boundary
 
         # The database tables to query
@@ -119,6 +116,7 @@ class DatabaseAccess(object):
             elif table == "relations":
                 pass
         features["geometryType"] = tables
+        features["centroid"] = "true"
         return json.dumps(features)
 
     def createSQL(self, category):
@@ -184,8 +182,24 @@ class DatabaseAccess(object):
         return features
 
     def queryRemote(self, query):
-        result = self.session.post(self.url, auth=self.auth, data=query, headers=self.headers)
-        return result
+        url = f"{self.url}/snapshot/"
+        result = self.session.post(url, data=query, headers=self.headers)
+        task_id = result.json()['task_id']
+        newurl = f"{self.url}/tasks/status/{task_id}"
+        while True:
+            result = self.session.get(newurl, headers=self.headers)
+            if result.json()['status'] == "PENDING":
+                log.debug("Retrying...")
+                time.sleep(1)
+            elif result.json()['status'] == "SUCCESS":
+                break
+        zip = result.json()['result']['download_url']
+        result = self.session.get(zip, headers=self.headers)
+        fp = BytesIO(result.content)
+        zfp = zipfile.ZipFile(fp, "r")
+        zfp.extract("Export.geojson", "/tmp/")
+        # Now take that taskid and hit /tasks/status url with get
+        return zfp.read("Export.geojson")
 
 class PostgresClient(DatabaseAccess):
     """Class to handle SQL queries for the categories"""
@@ -202,20 +216,23 @@ class PostgresClient(DatabaseAccess):
         if type(boundary) != dict:
             clip = open(boundary, "r")
             geom = geojson.load(clip)
-            poly = geom["geometry"]
+            if 'features' in geom:
+                poly = geom['features'][0]['geometry']
+            else:
+                poly = geom["geometry"]
         else:
             poly = boundary
         wkt = shape(poly)
 
         if self.dbshell:
-            features = list()
+            # features = list()
             sql = self.createSQL(category)
             for query in sql:
                 result = self.queryLocal(query, wkt)
             collection = FeatureCollection(result)
         else:
             request = self.createJson(category, poly)
-            self.queryRemote(request)
+            collection = self.queryRemote(request)
 
         cleaned = FilterData()
         models = xlsforms_path.replace("xlsforms", "data_models")
@@ -226,84 +243,37 @@ class PostgresClient(DatabaseAccess):
         else:
             cleaned.parse(f"{file}x")
         new = cleaned.cleanData(collection)
-        json = open(filespec, "w")
-        dump(new, json)
+        jsonfile = open(filespec, "w")
+        dump(new, jsonfile)
 
 class OverpassClient(object):
     """Class to handle Overpass queries"""
 
     def __init__(self, output=None):
         """Initialize Overpass handler"""
-        self.overpass = Overpass()
-        OutputFile.__init__(self, output)
+        self.overpass = overpy.Overpass()
+        #OutputFile.__init__(self, output)
 
     def getFeatures(self, boundary=None, filespec=None, category="buildings"):
         """Extract buildings from Overpass"""
         logging.info("Extracting features...")
-        poly = ogr.Open(boundary)
-        layer = poly.GetLayer()
 
-        filter = None
-        if category == "buildings":
-            filter = "building"
-        elif category == "amenities":
-            filter = "amenities"
-        elif category == "landuse":
-            filter = "landuse"
-        elif category == "healthcare":
-            filter = "healthcare='*'][social_facility='*'][healthcare:speciality='*'"
-        elif category == "emergency":
-            filter = "emergency"
-        elif category == "education":
-            filter = "amenity=school][amenity=kindergarden"
-        elif category == "shops":
-            filter = "shop"
-        elif category == "waste":
-            filter = '~amenity~"waste_*"'
-        elif category == "water":
-            filter = "amenity=water_point"
-        elif category == "toilets":
-            filter = "amenity=toilets"
+        clip = open(boundary, "r")
+        geom = geojson.load(clip)
+        if 'features' in geom:
+            aoi = geom['features'][0]['geometry']
+        else:
+            aoi = geom["geometry"]
+        wkt = shape(aoi)
+        poly = ""
+        lat, lon = wkt.exterior.coords.xy
+        index = 0
+        while index < len(lat):
+            poly += f"{lat[index]} {lon[index]} "
+            index += 1
 
-        # Create a field in the output file for each tag from the yaml config file
-        tags = self.getTags(category)
-        if tags is None:
-            logging.error("No data returned from Overpass!")
-        if len(tags) > 0:
-            for tag in tags:
-                self.outlayer.CreateField(ogr.FieldDefn(tag, ogr.OFTString))
-        self.fields = self.outlayer.GetLayerDefn()
-
-        extent = layer.GetExtent()
-        bbox = f"{extent[2]},{extent[0]},{extent[3]},{extent[1]}"
-        query = f"(way[{filter}]({bbox}); node[{filter}]({bbox}); relation[{filter}]({bbox}); ); out body; >; out skel qt;"
-        logging.debug(query)
+        query = (f'[out:json];way(poly:\"{poly[:-1]}\");(._;>;);out body;')
         result = self.overpass.query(query)
-
-        nodes = dict()
-        if result.nodes() is None:
-            logging.warning("No data found in this boundary!")
-            return
-
-        for node in result.nodes():
-            wkt = "POINT(%f %f)" % (float(node.lon()), float(node.lat()))
-            center = ogr.CreateGeometryFromWkt(wkt)
-            nodes[node.id()] = center
-
-        ways = result.ways()
-        for way in ways:
-            for ref in way.nodes():
-                # FIXME: There's probably a better way to get the node ID.
-                nd = ref._queryString.split("/")[1]
-                feature = ogr.Feature(self.fields)
-                feature.SetGeometry(nodes[float(nd)])
-                # feature.SetField("id", way.id())
-                for tag, val in way.tags().items():
-                    if tag in tags:
-                        feature.SetField(tag, val)
-                self.addFeature(feature)
-        self.outdata.Destroy()
-
 
 class FileClient(object):
     """Class to handle Overpass queries"""
