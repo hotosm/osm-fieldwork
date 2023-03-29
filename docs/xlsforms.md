@@ -383,8 +383,7 @@ the OMK app anymore.
 
 # XLSXForm Suggestions
 
-Since often mobile data collection is many of the same type of data,
-setting defaults helps reduce the amount of user actions that need to
-be performed to collect data. Often data collection is multiples of
-the same type of data, good defaults can record data where only the
-location has changed.
+Since mobile data collection often involves gathering many of the same types of data,
+setting defaults helps reduce the number of user actions needed to collect data.
+When collecting multiples of the same type of data,good defaults can record data 
+even when only the location has changed.
