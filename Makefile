@@ -18,7 +18,7 @@
 
 PACKAGE := org.odkconvert.py
 NAME := ODKConvert
-VERSION := 0.1.0
+VERSION := 0.1.1
 
 # Make a python package for pip
 pip:
