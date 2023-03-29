@@ -25,9 +25,8 @@ import sys
 import re
 import yaml
 import json
-from geojson import Point, Feature, FeatureCollection, dump
+from geojson import Point, Feature, FeatureCollection, dump, Polygon
 import geojson
-import overpy
 from odkconvert.filter_data import FilterData
 from odkconvert.xlsforms import xlsforms_path
 import requests
@@ -37,6 +36,8 @@ import zipfile
 import time
 import psycopg2
 from shapely.geometry import shape, Polygon
+import overpy
+import shapely
 
 
 # all possible queries
@@ -245,10 +246,10 @@ class PostgresClient(DatabaseAccess):
         new = cleaned.cleanData(collection)
         jsonfile = open(filespec, "w")
         dump(new, jsonfile)
+        return new
 
 class OverpassClient(object):
     """Class to handle Overpass queries"""
-
     def __init__(self, output=None):
         """Initialize Overpass handler"""
         self.overpass = overpy.Overpass()
@@ -269,11 +270,35 @@ class OverpassClient(object):
         lat, lon = wkt.exterior.coords.xy
         index = 0
         while index < len(lat):
-            poly += f"{lat[index]} {lon[index]} "
+            poly += f"{lon[index]} {lat[index]} "
             index += 1
 
-        query = (f'[out:json];way(poly:\"{poly[:-1]}\");(._;>;);out body;')
+        query = (f'[out:json];way[\"building\"](poly:\"{poly[:-1]}\");(._;>;);out body geom;')
         result = self.overpass.query(query)
+        features = list()
+        for way in result.ways:
+            poly = list()
+            for coords in way.attributes['geometry']:
+                lat = coords['lat']
+                lon = coords['lon']
+                point = [lon, lat]
+                poly.append(point)
+            exterior = Polygon(poly)
+            center = shapely.centroid(exterior)
+            features.append(Feature(geometry=center, properties=way.tags))
+
+        collection = FeatureCollection(features)
+
+        cleaned = FilterData()
+        file = f"{xlsforms_path}/{category}.xls"
+        if os.path.exists(file):
+            cleaned.parse(f"{xlsforms_path}/{category}.xls")
+        else:
+            cleaned.parse(f"{file}x")
+        new = cleaned.cleanData(collection)
+        jsonfile = open(filespec, "w")
+        dump(new, jsonfile)
+        return new
 
 class FileClient(object):
     """Class to handle Overpass queries"""
