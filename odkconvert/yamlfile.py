@@ -86,16 +86,6 @@ class YamlFile(object):
         notnull = f"{notnull[:-2]}"
         notnull += "}"
         yaml.append(f"{notnull}")
-        # select:
-        #     "osm_id": id # this will translate osm_id as id
-        #     tags: # if you need to select inside tags
-        # from : # table name
-        #     - nodes
-        #     - ways_poly
-        # where :
-        #     osm_id : [1,3,4,5]
-        #     tags : # filters inside tags
-        # - {building : not null , amenities : not null, tourism : not null }
         return yaml
 
 #

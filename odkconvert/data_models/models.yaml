@@ -3,116 +3,100 @@
         # script from the 'Impact Areas - Data Models V1.1.xlsx' 
         # spreadsheet.
 amenity:
-    - waste_dump_site
-    - waste_disposal
-    - waste_basket
-    - recycling
-    - toilet
-    - shower
-    - drinking_water
-    - water_point
-    - school
-    - university
-    - college
-    - kindergarten
-    - social_facility
-    - music_school
-    - language_school
-    - childcare
-    - prep_school
-    - clinic
-    - doctors
-    - hospital
-    - dentist
-    - pharmacy
-    - veterinary
+    - atm
     - baby_hatch
-    - fire_station
+    - bank
+    - bureau_de_change
+    - cafe
     - childcare
-    - social_facility
-    - ferry_terminal
-    - police
-    - prison
+    - clinic
+    - college
     - court_house
+    - courthouse
+    - dentist
+    - doctors
+    - drinking_water
+    - embassy
+    - fast_food
+    - ferry_terminal
+    - fire_station
+    - fuel
+    - hospital
+    - kindergarten
+    - kitchen.
+    - language_school
+    - library
+    - loading_dock
+    - marketplace
+    - mobile_money_agent
+    - money_transfer
+    - music_school
+    - parking
+    - pharmacy
+    - place_of_worship
+    - police
     - post_office
+    - prep_school
+    - prison
+    - recycling
+    - restaurant
+    - school
+    - shower
     - social_centre
     - social_facility
     - studio
+    - toilet
     - townhall
-    - loading_dock
-    - atm
-    - bank
-    - money_transfer 
-    - bureau_de_change
-    - mobile_money_agent
-    - restaurant
-    - marketplace
-    - fast_food
-    - cafe
-    - social_facility
-    - kitchen.
-    - courthouse
-    - embassy
-    - post_office
-    - fuel
-    - library
-    - parking
-    - townhall
-    - place_of_worship
+    - university
+    - veterinary
+    - waste_basket
+    - waste_disposal
+    - waste_dump_site
+    - water_point
 
 landuse:
-    - landfill
-    - basin
-    - education
-    - recreation
-    - commercial
-    - military
-    - farmland
-    - farmyard
-    - meadow
-    - orchard
-    - plant_nursery
-    - aquaculture
     - allotments
-    - farmland
-    - forest
-    - meadow
-    - orchard
-    - plant_nursery
-    - vineyard
+    - aquaculture
     - basin
     - brownfield
+    - cemetery
     - commercial
     - construction
     - depot
-    - residential
+    - education
+    - farmland
+    - farmyard
+    - forest
     - industrial
+    - landfill
+    - meadow
+    - military
+    - orchard
+    - plant_nursery
+    - quarry
+    - recreation
+    - reservoir
+    - residential
     - retail
     - salt_pond
-    - quarry
-    - cemetery
-    - reservoir
+    - vineyard
 
 waste:
-    - trash
-    - oil
+    - cigarettes
+    - dog_excrement
     - drugs
+    - oil
     - organic
     - rubble
-    - dog_excrement
-    - cigarettes
+    - trash
 
 fee:
-    - yes, no
-    - yes, no
-    - yes, no
-    - yes, no
     - yes, no
 
 management:
     - overflowing
-    - waste_burning
     - recycling
+    - waste_burning
 
 recycling_type:
     - container
@@ -131,37 +115,32 @@ recycling:hazardous_waste:
     - yes, no
 
 waterway:
-    - drain
-    - ditch
     - canal
+    - dam
+    - ditch
+    - drain
     - river
     - riverbank
     - stream
-    - canal
-    - drain
-    - ditch
-    - dam
 
 intermittent:
     - yes, no
-    - yes, no
-    - yes
     - yes
 
 drain_type:
-    - decommissioned
-    - drain
-    - ditch
     - culvert
+    - decommissioned
+    - ditch
+    - drain
 
 distance_from_road:
     - <integer>
 
 profile_open:
+    - elliptical
     - open_retangular
     - tabulated
     - trapezoid
-    - elliptical
     - trapezoid_elliptical
 
 profile_closed:
@@ -182,11 +161,10 @@ covered:
 cover_type:
     - concrete
     - grating
-    - wood
     - other
+    - wood
 
 depth:
-    - <integer>
     - <integer>
 
 width_boxed:
@@ -210,12 +188,12 @@ width:
     - (in meters of street width)
 
 material:
+    - asphalt
     - concrete
+    - other
+    - plastic
     - rock
     - steel
-    - plastic
-    - asphalt
-    - other
 
 concrete_smoothness:
     - normal
@@ -236,26 +214,26 @@ outdoor:
     - yes
 
 shop:
-    - laundry
-    - charity
-    - money lender
-    - department_store
-    - general
-    - kiosk
-    - mall
-    - hardware
-    - yes
-    - supermarket
     - bakery
     - butcher
+    - charity
     - convenience
+    - department_store
     - farm
+    - general
+    - hardware
+    - kiosk
+    - laundry
+    - mall
+    - money lender
+    - supermarket
+    - yes
 
 toilets:access:
-    - yes, no
     - customers 
     - public
     - staff only
+    - yes, no
 
 female:
     - yes, no
@@ -270,31 +248,16 @@ toilets:handwashing:
     - yes, no
 
 operational_status:
-    - operational
     - closed
     - needs_maintenance
-    - under_construction
-    - operational
-    - closed
-    - needs_maintenance
-    - under_construction
-    - operational
     - non_operational
+    - operational
+    - under_construction
     - unknown
-    - operational
-    - closed
-    - needs_maintenance
-    - under_construction
-    - operational
-    - closed
-    - needs_maintenance
-    - under_construction
 
 wheelchair:
     - yes, no
     - limited
-    - yes, no
-    - yes, no
 
 changing_table:
     - yes, no
@@ -303,149 +266,121 @@ changing_table:
 
 toilets:position:
     - seated
-    - urinal
     - squat
+    - urinal
 
 toilets:disposal:
+    - bucket
+    - chemical
+    - dry_toilet
     - flush
     - pitlatrine
-    - chemical
-    - bucket
-    - dry_toilet
 
 noname:
     - yes
-    - yes
-    - yes
-    - yes
-    - yes
-    - yes
 
 operator:type:
-    - ngo
-    - private
-    - religious
-    - community
-    - government
-    - ngo
-    - private
-    - government
-    - community
-    - public
-    - ngo
-    - religious
-    - private
-    - public
-    - private
-    - community
-    - religious
-    - government
-    - ngo
     - combination
     - community
     - government
-    - public
-    - private
-    - religious
     - ngo
+    - public
+    - religious
 
 flood_prone:
-    - yes, no
     - yes, no
 
 toilets:num_chambers:
     - <integer>
 
 lit:
-    - yes
     - yes, no
-    - yes
 
 water_source:
-    - main
-    - tube_well
-    - water_works
-    - tap
     - groundwater
-    - water_tank
+    - groundwater
+    - lake
+    - main
+    - manual_pump
     - pond
     - powered_pump
-    - well
+    - powered_pump
+    - rain
+    - rain␣fed
     - river
     - stream
-    - rain␣fed
-    - lake
-    - well
+    - tap
+    - tube_well
+    - water_tank
     - water_works
-    - manual_pump
-    - powered_pump
-    - groundwater
-    - rain
+    - water_works
+    - well
+    - well
 
 natural:
-    - creek
-    - stream
-    - spring
-    - water
-    - water
-    - water
-    - water
-    - grassland
-    - wetland
-    - glacier
     - beach
-    - reef
-    - wood
-    - scrub
+    - creek
+    - glacier
+    - grassland
     - heath
+    - reef
+    - scrub
+    - spring
+    - stream
+    - water
+    - water
+    - water
+    - water
+    - wetland
+    - wood
 
 water:
-    - lagoon
-    - lake
-    - oxbow
-    - rapids
-    - river
-    - stream
-    - stream_pool
     - basin
     - canal
     - ditch
     - drain
+    - lagoon
+    - lake
+    - oxbow
     - pond
+    - rapids
+    - river
+    - stream
+    - stream_pool
     - wastewater
 
 man_made:
-    - water_tap
-    - borehole
-    - protected_spring
-    - water_works
-    - pumping_station
-    - wastewater_plant
-    - clarifier
-    - oxidation_ditch
-    - storage_tank
-    - water_well
-    - water_tower
-    - reservoir_covered
-    - water_tank
     - basin
-    - water_catchment
-    - pumping_station
-    - pipeline
-    - wildlife_crossing
-    - yes
+    - borehole
+    - clarifier
     - communications_tower
     - mast
-    - tower
-    - pipeline
     - monitoring_station
-    - wastewater_plant
+    - oxidation_ditch
+    - pipeline
+    - pipeline
+    - protected_spring
+    - pumping_station
+    - pumping_station
     - reservoir_covered
+    - reservoir_covered
+    - storage_tank
+    - tower
+    - wastewater_plant
+    - wastewater_plant
+    - water_catchment
+    - water_tank
+    - water_tap
+    - water_tower
+    - water_well
+    - water_works
+    - wildlife_crossing
+    - yes
 
 pump:
-    - powered
     - manual
     - no
+    - powered
 
 opening_hours:
     - <integers>
@@ -455,42 +390,39 @@ drought_prone:
 
 content:
     - drinking_water
-    - water
     - sewage
     - wastewater
+    - water
 
 capacity:
     - <integer>
-    -  <integer>
     - boys
     - girls
 
 building:
-    - pumping_station
-    - warehouse
-    - yes
-    - residential
-    - commercial
-    - apartment
-    - industrial
-    - public
-    - construction
-    - mosque
-    - church
     - Office
-    - tent
-    - roof
-    - hut
+    - apartment
     - cabin
-    - shed
-    - static_caravan
-    - ger
-    - church
-    - mosque
-    - temple
-    - shrine
     - cathedral
     - chapel
+    - church
+    - commercial
+    - construction
+    - ger
+    - hut
+    - industrial
+    - mosque
+    - public
+    - pumping_station
+    - residential
+    - roof
+    - shed
+    - shrine
+    - static_caravan
+    - temple
+    - tent
+    - warehouse
+    - yes
 
 elevation:
     - <integer>
@@ -503,36 +435,32 @@ building:levels:
     - <number>
 
 building:structure:
+    - bamboo_frame
     - confined_masonry
     - steel_frame
     - wood_frame
-    - bamboo_frame 
 
 building:material:
-    - brick 
-    - concrete 
-    - wood 
-    - bamboo 
-    - glass 
+    - bamboo
     - brick
-    - stone
     - cement_block
-    - concrete
-    - glass
+    - concrete 
+    - glass 
     - metal/zinc
+    - stone
+    - wood 
 
 floor:material:
-    - ground
-    - wood 
+    - ceramics
     - concrete
+    - ground
     - tekhel
-    - ceramics 
-
+    - wood
 roof:material:
-    - tile 
-    - tin
+    - concrete
     - eternit
-    - concrete 
+    - tile
+    - tin
 
 access:roof:
     - yes, no
@@ -544,15 +472,11 @@ substance:
     - water
 
 location:
-    - surface
-    - underground
     - overground
-    - underground 
-    - overground 
     - surface
+    - underground 
 
 phone:
-    - <phone number>
     - <phone number>
 
 grades:
@@ -562,20 +486,20 @@ isced:level:
     - <text> 
 
 school:gender:
-    - mixed
     - female
     - male
-    - separated
+    - mixed
     - other
+    - separated
 
 religion:
-    - christian
-    - muslim
-    - buddhist
     - <other>
+    - baha’i
+    - buddhist
+    - christian
     - christianity
     - islam
-    - baha’i
+    - muslim
 
 min_age:
     - <integer>
@@ -590,96 +514,96 @@ staff_count:teachers:
     - <integer>
 
 pedagogy:
+    - freinet
     - hybrid
     - mainstream
-    - freinet
     - montessori
     - outdoor
     - sudbury
-    - waldorf
     - user defined
+    - waldorf
 
 generator:source:
-    - oil
-    - gas
-    - coal
     - biomass
+    - coal
+    - gas
+    - oil
 
 water_supply:
-    - water_well
+    - borehole
     - pipeline
     - pump
-    - borehole
+    - water_well
 
 social_facility:
-    - outreach
-    - shelter
+    - ambulatory_care
+    - assisted_living
+    - clothing_bank
+    - community_centre
+    - dairy_kitchen
+    - day_care
+    - distribution
+    - food_bank
+    - food_bank
     - group_home
     - nursing_home
-    - assisted_living
-    - day_care
-    - ambulatory_care
     - outreach
+    - outreach
+    - reception_centre
+    - reception_centre
+    - shelter
+    - soup_kitchen
+    - soup_kitchen
+    - transit_centre
+    - transit_centre
     - workshop
-    - clothing_bank
-    - food_bank
-    - soup_kitchen
-    - dairy_kitchen
-    - community_centre
-    - reception_centre
-    - transit_centre
-    - food_bank
-    - soup_kitchen
-    - reception_centre
-    - transit_centre
-    - distribution
     - workshop.
 
 leisure:
-    - pitch
-    - park
-    - park
-    - pitch
-    - sport_centre
-    - stadium
-    - nature_reserve
-    - playground
     - garden
     - nature_preserve
+    - nature_reserve
     - park
+    - park
+    - park
+    - pitch
+    - pitch
+    - playground
+    - sport_centre
+    - stadium
 
 healthcare:
-    - clinic
-    - physiotherapist
     - alternative
-    - laboratory
-    - optometrist
-    - rehabilitation
-    - blood_donation
     - birthing_center
-    - midwife
-    - pediatrics
+    - blood_donation
+    - clinic
     - counselling
     - dialysis
     - hospice
+    - laboratory
+    - midwife
+    - midwife
     - nurse
+    - nutrition_counselling
+    - optometrist
+    - pediatrics
+    - physiotherapist
     - psychotherapist
+    - rehabilitation
     - sample_collection
     - speech_therapist
     - vaccination_centre
-    - nutrition_counselling
-    - midwife
 
 healthcare:speciality:
+    - abortion
     - biology
     - blood_check
     - clinical_pathology
     - diagnostic_radiology
-    - medical_physics
-    - medical_engineering
-    - radiology
-    - abortion
     - fertility_clinic
+    - medical_engineering
+    - medical_physics
+    - radiology
 
 contact:phone:
     - <integer>
@@ -698,78 +622,74 @@ dispensing:
 
 insurance:health:
     - no
-    - public
     - private
+    - public
     - unknown
 
 electricity:
-    - grid
     - generator
-    - solar
-    - other
-    - none
-    - grid
     - generator
-    - solar
-    - other
+    - grid
+    - grid
     - none
+    - none
+    - other
+    - other
+    - solar
+    - solar
 
 emergency:
     - ambulance_station
+    - assembly_point
     - defibrillator
-    - landing_site
-    - yes
-    - mountain_rescue
-    - lifeguard
-    - life_ring
+    - drinking_water
     - dry_riser_inlet
     - fire_alarm_box
+    - fire_equipment
     - fire_extinguisher
     - fire_hose
     - fire_hydrant
-    - fire_water_pond
-    - fire_equipment
-    - suction_point
-    - water_tank
-    - assembly_point
-    - drinking_water
     - fire_lookout
+    - fire_water_pond
     - first_aid_kit
+    - landing_site
+    - life_ring
+    - lifeguard
+    - mountain_rescue
     - phone
     - siren
+    - suction_point
+    - water_tank
+    - fire_point_stand
+    - sprinkler_connection
+    - yes
 
 lifeguard:
     - tower
 
 fire_hydrant:type:
-    - underground 
-    - pillar 
-    - wall 
+    - pillar
     - pond 
-
-mergency:
-    - fire_point_stand
-
- emergency:
-    - sprinkler_connection
+    - underground 
+    - wall
 
 assembly_point:fire:
     - yes, no
 
 office:
     - NGO
-    - foundation
-    - union
-    - government
-    - political_party
-    - diplomatic
-    - politician
-    - notary
-    - government
-    - lawyer
     - company
-    - ngo
+    - diplomatic
+    - foundation
+    - government
+    - government
     - lawyer
+    - lawyer
+    - ngo
+    - notary
+    - political_party
+    - politician
+    - union
 
 polling_station:
     - yes
@@ -779,16 +699,16 @@ vending:
     - feminine_hygiene
 
 hazard:
-    - children
-    - frail pedestrians
     - animal crossing
+    - avalanche
+    - children
     - contamination
     - falling rocks
+    - frail pedestrians
     - frost heave
-    - landslide
     - ice
+    - landslide
     - washout
-    - avalanche
 
 capacity:disabled:
     - yes, no 
@@ -802,33 +722,28 @@ evacuation_center:
     - social_facility 
 
 social_facility:for:
-    - woman
+    - abused
+    - child
+    - community
+    - dementia
     - diseased
     - displaced
-    - senior
-    - orphan
+    - drug_addicted
     - homeless
     - juvenile
-    - disabled
-    - drug_addicted
-    - overseas_fil_worker
-    - refugees / Refugee
-    - child
-    - abused
     - mental_health
     - migrant
+    - orphan
+    - overseas_fil_worker
+    - refugees
+    - refugees / Refugee
+    - senior
+    - terminally_ill
     - underprivileged
     - unemployed
     - veteran
     - victim
-    - terminally_ill
-    - dementia
-    - community
-    - refugees
-    - child
-    - community
-    - refugees
-    - child
+    - woman
 
 assembly_point:earthquake:
     - yes 
@@ -846,42 +761,42 @@ assembly_point:tsunami:
     - yes 
 
 highway:
-    - motorway
-    - primary
-    - secondary
-    - tertiary
-    - trunk
-    - residential
-    - unclassified
-    - service
-    - track
-    - living_street
-    - crossing
-    - cycleway
-    - footway
-    - path
-    - pedestrian
-    - steps
     - bus_stop
     - busway
-    - street_lamp
+    - crossing
+    - cycleway
     - emergency_access_point
+    - footway
+    - living_street
+    - motorway
+    - path
+    - pedestrian
+    - primary
+    - residential
+    - secondary
+    - service
+    - steps
+    - street_lamp
+    - tertiary
+    - track
+    - trunk
+    - unclassified
 
 surface:
     - asphalt
-    - concrete
-    - gravel
-    - compacted
-    - dirt
-    - sand
     - cobblestone
+    - compacted
+    - concrete
+    - dirt
+    - gravel
     - paved
+    - sand
     - unpaved
 
 smoothness:
+    - bad
     - good
     - intermediate
-    - bad
     - very bad
 
 oneway:
@@ -922,34 +837,34 @@ sidewalk:
     - no
 
 railway:
+    - crossing
+    - funicular
     - light_rail
     - monorail
     - rail
-    - subway
-    - funicular
-    - tram
-    - station
-    - subway_entrance
-    - tram_stop
-    - crossing
     - signal
+    - station
+    - subway
+    - subway_entrance
+    - tram
+    - tram_stop
 
 station:
     - subway
 
 bridge:
-    - yes
+    - aquaduct
     - covered
+    - low_water_crossing
     - movable
     - trestle
-    - low_water_crossing
-    - aquaduct
+    - yes
 
 bridge:material:
     - concrete
+    - iron
     - masonry
     - steel
-    - iron
     - wood
     - mixed
 
@@ -959,27 +874,26 @@ ford:
 bridge:structure:
     - arch
     - beam
-    - truss
-    - floating
-    - suspension
     - cable-stayed
-    - simple-suspension
+    - floating
     - humpback
+    - simple-suspension
+    - suspension
+    - truss
 
 bridge:support:
-    - pier, abutment
     - lift_pier
+    - pier, abutment
     - pivot_pier
 
 seasonal:
-    - yes
-    - yes
+    - autumn
+    - dry_season
     - spring
     - summer
-    - autumn
-    - winter
     - wet_season
-    - dry_season
+    - winter
+    - yes
 
 traffic_sign:
     - hazard
@@ -990,9 +904,9 @@ bus_bay:
     - right
 
 public_transport:
-    - stop_position
     - platform
     - station
+    - stop_position
 
 bus:
     - yes
@@ -1002,9 +916,9 @@ route:
 
 aeroway:
     - aerodrome
-    - runway
     - airstrip
     - helipad
+    - runway
 
 winter_road:
     - yes
@@ -1023,40 +937,40 @@ police:
     - naval_base
 
 military:
+    - airfield
     - barracks
     - checkpoint
-    - training_area
-    - airfield
     - office
+    - training_area
 
 government:
     - register_office
 
 studio:
     - audio
-    - video
-    - television
     - radio
+    - television
+    - video
 
 tower:type:
     - communication
     - lighting
 
 power:
-    - substation
-    - transformer
-    - plant
-    - line
     - generator
+    - line
+    - plant
+    - substation
     - tower
+    - transformer
 
 substation:
     - transmission
 
 generator:method:
-    - wind_turbine
-    - stream
     - combustion
+    - stream
+    - wind_turbine
 
 office :
     - financial
@@ -1075,35 +989,30 @@ produce:
     - live_animal
 
 animal:
-    - cattle
     - buffalo
-    - sheep
+    - cattle
     - goat
-    - pig
     - horse
+    - pig
+    - sheep
 
 access:
     - yes
     - permissive
-    - yes
-    - permissive
-    - yes
-    - permissive
 
 place:
+    - <other>
     - city
+    - hamlet
+    - square
     - suburb
     - town
     - village
-    - hamlet
-    - <other>
-    - square
 
 population:
     - <number>
 
 building:flats:
-    - <number>
     - <number>
 
 building:prefabricated:
@@ -1113,17 +1022,17 @@ destroyed:building:
     - yes
 
 tourism:
+    - Hostel
+    - artwork
+    - attraction
     - camp_site
     - caravan_site
-    - artwork
     - gallery
-    - museum
-    - zoo
-    - yes
-    - attraction
     - guest_house
     - hotel
-    - Hostel
+    - museum
+    - yes
+    - zoo
 
 rooms:
     - number
@@ -1138,28 +1047,28 @@ ruins:
     - yes
 
 artwork_type:
-    - sculpture
-    - statue
-    - mural
     - bust
-    - stone
-    - stone
-    - relief
     - graffiti
     - installation
+    - mural
+    - relief
+    - sculpture
+    - statue
+    - stone
+    - stone
 
 heritage:
     - <1-10>
     - yes
 
 denomination:
-    - Protestant
-    - pentecostal
+    - protestant
     - catholic
     - orthodox
-    - sunni
-    - sufi
+    - pentecostal
     - shia
+    - sufi
+    - sunni
 
 garden:type:
     - community
@@ -1173,10 +1082,10 @@ protect_class:
     - <integer>
 
 wetland:
-    - wet_meadow
     - bog
     - fen
+    - mangrove
     - marsh
     - swamp
-    - mangrove
     - tidal flat <other>
+    - wet_meadow

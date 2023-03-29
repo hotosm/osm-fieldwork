@@ -23,16 +23,21 @@ import os
 import logging
 import sys
 import re
-from geojson import Point, Feature, FeatureCollection, dump
+import yaml
+import json
+from geojson import Point, Feature, FeatureCollection, dump, Polygon
 import geojson
-from OSMPythonTools.overpass import Overpass
 from odkconvert.filter_data import FilterData
 from odkconvert.xlsforms import xlsforms_path
-
-
-# from yamlfile import YamlFile
+import requests
+# from requests.auth import HTTPBasicAuth
+from io import BytesIO
+import zipfile
+import time
 import psycopg2
-from shapely.geometry import shape
+from shapely.geometry import shape, Polygon
+import overpy
+import shapely
 
 
 # all possible queries
@@ -50,79 +55,102 @@ choices = [
 ]
 
 # Instantiate logger
+log_level = os.getenv("LOG_LEVEL", default="INFO")
+logging.getLogger("urllib3").setLevel(log_level)
 log = logging.getLogger(__name__)
 
 
-class PostgresClient(object):
-    """Class to handle SQL queries for the categories"""
+class DatabaseAccess(object):
+    def __init__(self, dbhost=None, dbname=None):
+        self.dbshell = None
+        self.dbcursor = None
+        self.category = None
+        if dbname == "underpass":
+            # Authentication data
+            # self.auth = HTTPBasicAuth(self.user, self.passwd)
 
-    def __init__(self, dbhost=None, dbname=None, output=None):
-        """Initialize the postgres handler"""
-        # OutputFile.__init__( self, output)
-        logging.info("Opening database connection to: %s" % dbhost)
-        connect = "PG: dbname=" + dbname
-        # if dbhost:
-        #     connect += " host=" + dbhost
-        # self.pg = ogr.Open(connect)
-        self.boundary = None
-        if dbhost is None or dbhost == "localhost":
-            connect = f"dbname={dbname}"
+            # Use a persistant connect, better for multiple requests
+            self.session = requests.Session()
+            self.url = "https://raw-data-api0.hotosm.org/v1"
+            self.headers = {"accept": "application/json", "Content-Type": "application/json"}
         else:
-            connect = f"host={dbhost} dbname={dbname}"
-        try:
-            self.dbshell = psycopg2.connect(connect)
-            self.dbshell.autocommit = True
-            self.dbcursor = self.dbshell.cursor()
-            if self.dbcursor.closed == 0:
-                logging.info(f"Opened cursor in {dbname}")
-        except Exception as e:
-            logging.error("Couldn't connect to database: %r" % e)
+            logging.info("Opening database connection to: %s" % dbhost)
+            connect = "PG: dbname=" + dbname
+            if dbhost is None or dbhost == "localhost":
+                connect = f"dbname={dbname}"
+            else:
+                connect = f"host={dbhost} dbname={dbname}"
+            try:
+                self.dbshell = psycopg2.connect(connect)
+                self.dbshell.autocommit = True
+                self.dbcursor = self.dbshell.cursor()
+                if self.dbcursor.closed == 0:
+                    logging.info(f"Opened cursor in {dbname}")
+            except Exception as e:
+                logging.error("Couldn't connect to database: %r" % e)
 
-    def getFeature(self, boundary=None, filespec=None, category="buildings"):
-        """Extract buildings from Postgres"""
-        logging.info("Extracting features from Postgres...")
+    def createJson(self, category, boundary):
+        path = xlsforms_path.replace("xlsforms", "data_models")
+        file = open(f"{path}/{category}.yaml", "r").read()
+        data = yaml.load(file, Loader=yaml.Loader)
 
+        features = dict()
+        features['geometry'] = boundary
+
+        # The database tables to query
+        # if tags exists, then only query those fields
+        columns = dict()
+        tags = data['where']['tags'][0]
+        for tag, value in tags.items():
+            if value == "not null":
+                columns[tag] = []
+        filters = {"tags": {"all_geometry": {"join_or": columns}}}
+        features['filters'] = filters
         tables = list()
-        select = "ST_AsEWKT(ST_Centroid(geom)), osm_id, tags"
-        if category == "buildings":
-            tables = ("nodes_view", "ways_view")
-            filter = "tags->>'building' IS NOT NULL OR tags->>'shop' IS NOT NULL OR tags->>'amenities' IS NOT NULL OR tags->>'tourism' IS NOT NULL"
-        elif category == "amenities":
-            tables = ("nodes_view", "ways_view")
-            filter = "tags->>'amenity' IS NOT NULL AND tags->>'parking' IS NULL;"
-        elif category == "toilets":
-            tables = ("nodes_view", "ways_view")
-            filter = "tags->>'amenity'='toilets'"
-        elif category == "emergency":
-            tables = ("nodes", "ways_poly")
-            filter = "tags->>'emergency' IS NOT NULL"
-        elif category == "healthcare":
-            tables = ("nodes_view", "ways_view")
-            filter = "(tags->>'healthcare' IS NOT NULL or tags->>'social_facility' IS NOT NULL OR tags->>'healthcare:speciality' IS NOT NULL) AND tags->>'opening_hours' IS NOT NULL"
-        elif category == "education":
-            tables = ("nodes_view", "ways_view")
-            filter = "tags->>'amenity'='school' OR tags->>'amenity'='kindergarden' OR tags->>'amenity'='college' OR tags->>'amenity'='university' OR tags->>'amenity'='music_school' OR tags->>'amenity'='language_school' OR tags->>'amenity'='childcare'"
-        elif category == "shops":
-            tables = ("nodes_view", "ways_view")
-            filter = "tags->>'shop' IS NOT NULL"
-        elif category == "waste":
-            tables = ("nodes_view", "ways_view")
-            filter = "tags->>'amenity'='waste_disposal'"
-        elif category == "water":
-            tables = "nodes_view"
-            filter = "tags->>'water_source' IS NOT NULL"
-        elif category == "landuse":
-            tables = "ways_view"
-            filter = "tags->>'landuse' IS NOT NULL"
+        for table in data['from']:
+            if table == "nodes":
+                tables.append("point")
+            elif table == "ways_poly":
+                tables.append("polygon")
+            elif table == "ways_line":
+                tables.append("linestring")
+            elif table == "relations":
+                pass
+        features["geometryType"] = tables
+        features["centroid"] = "true"
+        return json.dumps(features)
 
-        if type(boundary) != dict:
-            clip = open(boundary, "r")
-            geom = geojson.load(clip)
-            feature = geom["features"][0]
-            geom = feature["geometry"]
-        else:
-            geom = boundary
-        wkt = shape(geom)
+    def createSQL(self, category):
+        path = xlsforms_path.replace("xlsforms", "data_models")
+        file = open(f"{path}/{category}.yaml", "r").read()
+        data = yaml.load(file, Loader=yaml.Loader)
+
+        sql = list()
+        # The database tables to query
+        tables = data['from']
+        for table in tables:
+            query = "SELECT "
+            select = data['select']
+            # if tags exists, then only return those fields
+            if 'tags' in select:
+                for tag in select['tags']:
+                    query += f" {select[tag]} AS {tag}, "
+                query += "osm_id AS id, ST_AsEWKT(ST_Centroid(geom)) "
+            else:
+                query += "osm_id AS id, ST_AsEWKT(ST_Centroid(geom)), tags "
+            query += f" FROM {table} "
+            where = data['where']
+            # if tags exists, then only query those fields
+            if 'where' in data:
+                query += " WHERE "
+                tags = data['where']['tags'][0]
+                for tag, value in tags.items():
+                    if value == "not null":
+                        query += f"tags->>\'{tag}\' IS NOT NULL OR "
+            sql.append(query[:-4])
+        return sql
+
+    def queryLocal(self, query, wkt):
         sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{wkt.wkt}'), geom)"
         self.dbcursor.execute(sql)
         sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{wkt.wkt}'), geom)"
@@ -131,109 +159,146 @@ class PostgresClient(object):
         sql = f"DROP VIEW IF EXISTS relations_view;CREATE TEMP VIEW relations_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{wkt.wkt}'), geom)"
         # self.dbcursor.execute(sql)
 
+        if query.find(" ways_poly ") > 0:
+            query = query.replace("ways_poly", "ways_view")
+        elif query.find(" nodes ") > 0:
+            query = query.replace("nodes", "nodes_view")
         features = list()
-        for table in tables:
-            logging.debug("Querying table %s with conditional %s" % (table, filter))
-            query = f"SELECT {select} FROM {table} WHERE {filter}"
-            self.dbcursor.execute(query)
-            result = self.dbcursor.fetchall()
-            logging.info("Query returned %d records" % len(result))
-            for item in result:
-                gps = item[0][16:-1].split(" ")
-                poi = Point((float(gps[0]), float(gps[1])))
-                tags = item[2]
-                tags["id"] = item[1]
-                if "name" in tags:
-                    tags["title"] = tags["name"]
-                    tags["label"] = tags["name"]
-                else:
-                    tags["title"] = None
-                    tags["label"] = None
-                features.append(Feature(geometry=poi, properties=tags))
-        collection = FeatureCollection(features)
+        log.debug(query)
+        self.dbcursor.execute(query)
+        result = self.dbcursor.fetchall()
+        logging.info("Query returned %d records" % len(result))
+        for item in result:
+            gps = item[1][16:-1].split(" ")
+            poi = Point((float(gps[0]), float(gps[1])))
+            tags = item[2]
+            tags["id"] = item[1]
+            if "name" in tags:
+                tags["title"] = tags["name"]
+                tags["label"] = tags["name"]
+            else:
+                tags["title"] = None
+                tags["label"] = None
+            features.append(Feature(geometry=poi, properties=tags))
+        return features
+
+    def queryRemote(self, query):
+        url = f"{self.url}/snapshot/"
+        result = self.session.post(url, data=query, headers=self.headers)
+        task_id = result.json()['task_id']
+        newurl = f"{self.url}/tasks/status/{task_id}"
+        while True:
+            result = self.session.get(newurl, headers=self.headers)
+            if result.json()['status'] == "PENDING":
+                log.debug("Retrying...")
+                time.sleep(1)
+            elif result.json()['status'] == "SUCCESS":
+                break
+        zip = result.json()['result']['download_url']
+        result = self.session.get(zip, headers=self.headers)
+        fp = BytesIO(result.content)
+        zfp = zipfile.ZipFile(fp, "r")
+        zfp.extract("Export.geojson", "/tmp/")
+        # Now take that taskid and hit /tasks/status url with get
+        return zfp.read("Export.geojson")
+
+class PostgresClient(DatabaseAccess):
+    """Class to handle SQL queries for the categories"""
+    def __init__(self, dbhost=None, dbname=None, output=None):
+        """Initialize the postgres handler"""
+        # OutputFile.__init__( self, output)
+        self.boundary = None
+        super().__init__(dbhost, dbname)
+
+    def getFeatures(self, boundary=None, filespec=None, category="buildings"):
+        """Extract buildings from Postgres"""
+        logging.info("Extracting features from Postgres...")
+
+        if type(boundary) != dict:
+            clip = open(boundary, "r")
+            geom = geojson.load(clip)
+            if 'features' in geom:
+                poly = geom['features'][0]['geometry']
+            else:
+                poly = geom["geometry"]
+        else:
+            poly = boundary
+        wkt = shape(poly)
+
+        if self.dbshell:
+            # features = list()
+            sql = self.createSQL(category)
+            for query in sql:
+                result = self.queryLocal(query, wkt)
+            collection = FeatureCollection(result)
+        else:
+            request = self.createJson(category, poly)
+            collection = self.queryRemote(request)
 
         cleaned = FilterData()
         models = xlsforms_path.replace("xlsforms", "data_models")
-        cleaned.parse(f"{models}/Impact Areas - Data Models V1.1.xlsx")
+        # cleaned.parse(f"{models}/Impact Areas - Data Models V1.1.xlsx")
+        file = f"{xlsforms_path}/{category}.xls"
+        if os.path.exists(file):
+            cleaned.parse(f"{xlsforms_path}/{category}.xls")
+        else:
+            cleaned.parse(f"{file}x")
         new = cleaned.cleanData(collection)
-        json = open(filespec, "w")
-        dump(new, json)
+        jsonfile = open(filespec, "w")
+        dump(new, jsonfile)
+        return new
 
 class OverpassClient(object):
     """Class to handle Overpass queries"""
-
     def __init__(self, output=None):
         """Initialize Overpass handler"""
-        self.overpass = Overpass()
-        OutputFile.__init__(self, output)
+        self.overpass = overpy.Overpass()
+        #OutputFile.__init__(self, output)
 
-    def getFeature(self, boundary=None, filespec=None, category="buildings"):
+    def getFeatures(self, boundary=None, filespec=None, category="buildings"):
         """Extract buildings from Overpass"""
         logging.info("Extracting features...")
-        poly = ogr.Open(boundary)
-        layer = poly.GetLayer()
 
-        filter = None
-        if category == "buildings":
-            filter = "building"
-        elif category == "amenities":
-            filter = "amenities"
-        elif category == "landuse":
-            filter = "landuse"
-        elif category == "healthcare":
-            filter = "healthcare='*'][social_facility='*'][healthcare:speciality='*'"
-        elif category == "emergency":
-            filter = "emergency"
-        elif category == "education":
-            filter = "amenity=school][amenity=kindergarden"
-        elif category == "shops":
-            filter = "shop"
-        elif category == "waste":
-            filter = '~amenity~"waste_*"'
-        elif category == "water":
-            filter = "amenity=water_point"
-        elif category == "toilets":
-            filter = "amenity=toilets"
+        clip = open(boundary, "r")
+        geom = geojson.load(clip)
+        if 'features' in geom:
+            aoi = geom['features'][0]['geometry']
+        else:
+            aoi = geom["geometry"]
+        wkt = shape(aoi)
+        poly = ""
+        lat, lon = wkt.exterior.coords.xy
+        index = 0
+        while index < len(lat):
+            poly += f"{lon[index]} {lat[index]} "
+            index += 1
 
-        # Create a field in the output file for each tag from the yaml config file
-        tags = self.getTags(category)
-        if tags is None:
-            logging.error("No data returned from Overpass!")
-        if len(tags) > 0:
-            for tag in tags:
-                self.outlayer.CreateField(ogr.FieldDefn(tag, ogr.OFTString))
-        self.fields = self.outlayer.GetLayerDefn()
-
-        extent = layer.GetExtent()
-        bbox = f"{extent[2]},{extent[0]},{extent[3]},{extent[1]}"
-        query = f"(way[{filter}]({bbox}); node[{filter}]({bbox}); relation[{filter}]({bbox}); ); out body; >; out skel qt;"
-        logging.debug(query)
+        query = (f'[out:json];way[\"building\"](poly:\"{poly[:-1]}\");(._;>;);out body geom;')
         result = self.overpass.query(query)
+        features = list()
+        for way in result.ways:
+            poly = list()
+            for coords in way.attributes['geometry']:
+                lat = coords['lat']
+                lon = coords['lon']
+                point = [lon, lat]
+                poly.append(point)
+            exterior = Polygon(poly)
+            center = shapely.centroid(exterior)
+            features.append(Feature(geometry=center, properties=way.tags))
 
-        nodes = dict()
-        if result.nodes() is None:
-            logging.warning("No data found in this boundary!")
-            return
+        collection = FeatureCollection(features)
 
-        for node in result.nodes():
-            wkt = "POINT(%f %f)" % (float(node.lon()), float(node.lat()))
-            center = ogr.CreateGeometryFromWkt(wkt)
-            nodes[node.id()] = center
-
-        ways = result.ways()
-        for way in ways:
-            for ref in way.nodes():
-                # FIXME: There's probably a better way to get the node ID.
-                nd = ref._queryString.split("/")[1]
-                feature = ogr.Feature(self.fields)
-                feature.SetGeometry(nodes[float(nd)])
-                # feature.SetField("id", way.id())
-                for tag, val in way.tags().items():
-                    if tag in tags:
-                        feature.SetField(tag, val)
-                self.addFeature(feature)
-        self.outdata.Destroy()
-
+        cleaned = FilterData()
+        file = f"{xlsforms_path}/{category}.xls"
+        if os.path.exists(file):
+            cleaned.parse(f"{xlsforms_path}/{category}.xls")
+        else:
+            cleaned.parse(f"{file}x")
+        new = cleaned.cleanData(collection)
+        jsonfile = open(filespec, "w")
+        dump(new, jsonfile)
+        return new
 
 class FileClient(object):
     """Class to handle Overpass queries"""
@@ -243,7 +308,7 @@ class FileClient(object):
         OutputFile.__init__(self, output)
         self.infile = infile
 
-    def getFeature(self, boundary=None, infile=None, outfile=None):
+    def getFeatures(self, boundary=None, infile=None, outfile=None):
         """Extract buildings from a disk file"""
         logging.info("Extracting buildings from %s..." % infile)
         if boundary:
@@ -321,15 +386,15 @@ if __name__ == "__main__":
     if args.postgres:
         logging.info("Using a Postgres database for the data source")
         pg = PostgresClient(args.dbhost, args.dbname, outfile)
-        pg.getFeature(args.boundary, args.geojson, args.category)
+        pg.getFeatures(args.boundary, args.geojson, args.category)
         # pg.cleanup(outfile)
     elif args.overpass:
         logging.info("Using Overpass Turbo for the data source")
         op = OverpassClient(outfile)
-        op.getFeature(args.boundary, args.geojson, args.category)
+        op.getFeatures(args.boundary, args.geojson, args.category)
     elif args.infile:
         f = FileClient(args.infile)
-        f.getFeature(args.boundary, args.geojson, args.category)
+        f.getFeatures(args.boundary, args.geojson, args.category)
         logging.info("Using file %s for the data source" % args.infile)
     else:
         logging.error("You need to supply either --overpass or --postgres")

@@ -1,0 +1,10 @@
+select:
+    osm_id: id
+    tags:
+      - water_pump
+from:
+    - nodes
+    - ways_poly
+where:
+    tags:
+        - { building: not null, man_made: not null }
