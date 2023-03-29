@@ -1,6 +1,6 @@
 # ODK Convert Utility Programs
 
-ODK Convert contains a few standalone utility programs for converting
+ODK Convert contains few standalone utility programs for converting
 data from ODK Collect and the ODK Central server, and a few support
 modules.
 
