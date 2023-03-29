@@ -204,8 +204,6 @@ and tag completeness/correctness. By using the XLSForm Library with
 ODKConvert, you can streamline your data collection process and ensure
 the quality of your data. 
 
-### Conclusion
-
 ODKConvert is a powerful tool for processing data collection from
 OpenDataKit into OpenStreetMap format. By following the best practices
 outlined in this documentation and using the utility programs included
