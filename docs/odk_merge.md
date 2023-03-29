@@ -2,7 +2,7 @@
 
 This program conflates the data collected using ODK Collect with
 existing OSM data. Many buildings in OSM were from imports of AI
-derived building footprints, and the only tages are
+derived building footprints, and the only tags are
 _building=yes_. When doing ground data collection, in addition to
 collecting new data, you want to add or correct tags in existing OSM
 data.
@@ -29,7 +29,7 @@ data.
 The boundary file is a polygon to limit the dataset size, useful when
 using downloaded OSM data for entire countries, or using a large
 database. Most ODK data files are not usually very large. It can be in
-any format, but GeoJson is the most common.
+any format, but GeoJson is the most common one.
 
 To specify a database as the OSM source, the input file gets prefixed
 with _pg:_, followed by the database name. Otherwise use a disk
