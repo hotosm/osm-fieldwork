@@ -20,7 +20,7 @@ exposes many of the REST API calls supported by the server and allows users to p
                             project operations
       -p {forms,app-users,assignments,delete}, --project {forms,app-users,assignments,delete}
                             project operations
-      -i ID, --id ID        Project ID nunmber
+      -i ID, --id ID        Project ID number
       -f FORM, --form FORM  XForm name
       -u UUID, --uuid UUID  Submission UUID, needed to download the data
       -x {attachments,csv,submissions,upload,download,create,assignments,delete,publish}, --xform {attachments,csv,submissions,upload,download,create,assignments,delete,publish}
