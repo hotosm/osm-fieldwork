@@ -1,22 +1,10 @@
 # ODK Convert Project
 
-ODKConvert is a project for processing data collection using
-OpenDataKit into OpenStreetMap format. It includes several utility
-programs that automate part of the data flow like creating satellite
-imagery basemaps and data extracts from
-[OpenStreetMap](https://www.openstreetmap.org) so they can be
-used with [ODK Collect](https://www.getodk.org). Many of these steps
-are currently a manual process.
+ODKConvert is a project for processing data collection using OpenDataKit into OpenStreetMap format. It includes several utility programs that automate part of the data flow like creating satellite imagery basemaps and data extracts from [OpenStreetMap](https://www.openstreetmap.org) so they can be used with [ODK Collect](https://www.getodk.org). Many of these steps are currently a manual process.
 
 ## odkconvert
 
-This program converts the data collected from ODK Collect into
-the proper OpenStreetMap tagging schema. The conversion is controled
-by an YAML file, so easy to modify for other projects. The output is
-an OSM XML formatted file for JOSM. No converted data should ever be
-uploaded to OSM without validating the conversion in JOSM. To do high
-quality conversion from ODK to OSM, it's best to use the XLSForm
-library as templates, as everything is designed to work together.
+This program converts the data collected from ODK Collect into the proper OpenStreetMap tagging schema. The conversion is controled by an YAML file, so easy to modify for other projects. The output is an OSM XML formatted file for JOSM. No converted data should ever be uploaded to OSM without validating the conversion in JOSM. To do high quality conversion from ODK to OSM, it's best to use the XLSForm library as templates, as everything is designed to work together.
 
 ## Installation
 
@@ -120,22 +108,16 @@ ODKConvert is a powerful tool for processing data collection from OpenDataKit in
 
 ## XLSForm library
 
-In the XForms directory is a collection of XLSForms that support the
-new HOT data models for humanitarian data collection. These cover
-many categories like healthcare, waterpoints, waste distribution,
-etc... All of these XLSForms are designed to have an efficient mapper
-data flow, edit existing OSM data, and support the data models.
+The [xlsforms directory](../odkconvert/xlsforms/) has a collection of XLSForms that support the
+new HOT data models for humanitarian data collection. These cover many categories like healthcare, waterpoints, waste distribution, etc... All of these XLSForms are designed to have an efficient mapper data flow, edit existing OSM data, and support the data models.
 
-The data models specify the preferred tag values for each data item,
-with a goal of both tag completeness and tag correctness. Each data item
-is broken down into a basic and extended survey questions when
-appropriate.
+The data models specify the preferred tag values for each data item, with the goal of accomplishing both tag completeness and tag correctness. Each data item is broken down into a basic and extended survey questions when appropriate.
 
 ### What is an XLSForm?
 An XLSForm is a spreadsheet-based form design tool that allows you to create complex forms for data collection using a simple and intuitive user interface. With XLSForms, you can easily design and test forms on your computer, then deploy them to mobile devices for data collection using ODK Collect or other data collection tools. XLSForms use a simple and structured format, making it easy for you to share and collaborate on form designs with your team or other organizations.
 
 ### Using the XLSForm Library with ODKConvert
-The XLSForms in the XForms directory of the XLSForm Library have been designed to support the HOT data models and have an efficient mapper data flow. These forms also allow for editing of existing OSM data and support the data models, specifying the preferred tag values for each data item with the goal of both tag completeness and tag correctness.
+The XLSForms in the xlsforms directory of the XLSForm Library have been designed to support the HOT data models and have an efficient mapper data flow. These forms also allow for editing of existing OSM data and support the data models, specifying the preferred tag values for each data item with the goal of accomplishing both tag completeness and tag correctness.
 
 ### Here are some examples of how to use the XLSForm Library with ODKConvert:
 
@@ -198,8 +180,7 @@ basemapper.py is a useful tool for creating satellite imagery basemaps for use w
 ## make_data_extract.py
 
 This is a program that makes data extracts from OpenStreetMap for ODK
-convert.
-make_data_extract.py is a Python script that is included with the ODKConvert package. It is a program that automates the process of creating data extracts from OpenStreetMap for use with ODKConvert. These extracts can be used to assist data collection in areas where offline maps are needed.
+convert. make_data_extract.py is a Python script that is included with the ODKConvert package. It is a program that automates the process of creating data extracts from OpenStreetMap for use with ODKConvert. These extracts can be used to assist data collection in areas where offline maps are needed.
 More information on this program [is here](docs/programs.md).
 
 ### How make_data_extract.py Works
