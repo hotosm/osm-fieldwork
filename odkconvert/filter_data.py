@@ -22,7 +22,6 @@ import argparse
 import logging
 import sys
 import os
-import math
 import pandas as pd
 from geojson import Feature, FeatureCollection
 import geojson
@@ -55,7 +54,7 @@ class FilterData(object):
                 value = entries['name'][index]
             else:
                 value = None
-            if value == "<text>":
+            if value == "<text>" or str(value) == "null":
                 index += 1
                 continue
             if key not in self.tags:
@@ -65,13 +64,13 @@ class FilterData(object):
         return self.tags
 
     def cleanData(self, data):
-        # tmpfile = f"tmp-{filespec}"
         tmpfile = data
-        #os.rename(filespec, tmpfile)
         if type(data) == str:
             outfile = open(f"new-{data}", "x")
             infile = open(tmpfile, "r")
             indata = geojson.load(infile)
+        elif type(data) == bytes:
+            indata = data.decode()
         else:
             indata = data
         keep = ("name",
