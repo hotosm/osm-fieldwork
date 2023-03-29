@@ -15,7 +15,7 @@ lists. For example:
       - age
       - gender
 
-There are 3 sections in the config file, _ignore_, _convert_, and
+There are 3 sections in the config file: _ignore_, _convert_, and
 _private_. Anything in the _ignore_ section gets left out of all data
 processing and output files. Anything in the _private_ section is kept
 out of the OXM output file, but included in a separate GeoJson
@@ -76,13 +76,13 @@ For this example, the value used in the **name** column of the XLSForm
 _survey_ sheet is _waterpoint_. It has several values listed
 underneath. Each of those is for the answer given to the waterpoint
 survey question. If the answer matches the value, it returns both the
-tag and the value for OSM. An equal sign is used to deliminate them.
+tag and the value for OSM. An equal sign is used to delimit them.
 
     - waterpoint:
       - well: man_made=water_well
       - natural: natural=water
 
-Some features have multiple OSM tags for a single survey question
+Some features have multiple OSM tags for a single survey question's
 answer. To handle this case, all entries are deliminated by a comma.
 
     - power:
