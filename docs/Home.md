@@ -234,3 +234,122 @@ For example, to extract data for schools in the Kathmandu Valley in Nepal and sa
 
 ### Conclusion
 make_data_extract.py is a useful tool for creating data extracts from OpenStreetMap for use with ODKConvert. By automating the process of extracting data based on specified criteria, it saves time and effort for data collection teams working in areas where offline maps are needed. With make_data_extract.py and ODKConvert, organizations can collect data more efficiently and accurately, even in challenging environments.
+
+## CSVDump.py
+CSVDump.py is a Python script that is part of the ODKConvert package. It is a program that automates the process of converting data from a CSV file into a format that can be used with ODKCollect. This tool can be particularly useful for data collection teams who need to convert data from external sources into a format that can be used in ODKCollect.
+
+### How CSVDump.py Works
+
+CSVDump.py reads data from a CSV file and generates an XLSForm that can be used with ODKCollect. The XLSForm is a spreadsheet that defines the structure of the data to be collected, including the types of questions and the possible answers. Once the XLSForm is generated, it can be uploaded to ODKCollect to create a survey that can be used for data collection.
+
+### Using CSVDump.py
+
+Here are the basic steps to use CSVDump.py:
+
+- Install ODKConvert if you haven't already:
+
+      pip install git+https://github.com/hotosm/odkconvert.git
+
+- Navigate to the ODKConvert package directory:
+
+      cd /path/to/odkconvert
+
+- Run CSVDump.py with the following arguments:
+
+      python CSVDump.py --input=<input_file> --output=<output_directory> --form_id=<form_id> --form_title=<form_title>
+
+  `--input` is the path to the input CSV file.
+
+  `--output` is the output directory for the XLSForm.
+
+  `--form_id` is a unique identifier for the form.
+
+  `--form_title` is the title of the form.
+
+For example, to convert data from a file named `data.csv` and save the resulting XLSForm to the directory `/path/to/forms`, you would run:
+
+python CSVDump.py --input=/path/to/data.csv --output=/path/to/forms --form_id=my_form --form_title="My Form"
+
+    python CSVDump.py --input=/path/to/data.csv --output=/path/to/forms --form_id=my_form --form_title="My Form"
+
+- Upload the resulting XLSForm to ODKCollect to create a survey that can be used for data collection.
+
+### Conclusion
+
+CSVDump.py is a useful tool for converting data from a CSV file into a format that can be used with ODKCollect. By automating the process of generating an XLSForm, it saves time and effort for data collection teams who need to convert data from external sources. With CSVDump.py and ODKCollect, organizations can collect data more efficiently and accurately, streamlining their data collection process.
+
+## odk2csv.py
+
+odk2csv.py is a Python script that is part of the ODKConvert package. It is a program that automates the process of converting ODKCollect data into a CSV file. This tool can be particularly useful for data analysis teams who need to extract data from ODKCollect forms for further processing.
+
+### How odk2csv.py Works
+
+odk2csv.py reads data from an ODKCollect form and generates a CSV file that can be used for data analysis. The CSV file contains the form data, with each row representing a single submission and each column representing a single question in the form. Once the CSV file is generated, it can be opened in a spreadsheet program like Microsoft Excel or Google Sheets for further analysis.
+
+### Using odk2csv.py
+
+Here are the basic steps to use odk2csv.py:
+
+- Install ODKConvert if you haven't already:
+
+      pip install git+https://github.com/hotosm/odkconvert.git
+
+- Navigate to the ODKConvert package directory:
+
+      cd /path/to/odkconvert
+
+- Run odk2csv.py with the following arguments:
+
+      python odk2csv.py --input=<input_file> --output=<output_file>
+
+  `--input` is the path to the ODKCollect form XML file.
+
+  `--output` is the output CSV file.
+
+For example, to convert data from a file named `my_form.xml` and save the resulting CSV file to the directory `/path/to/data`, you would run:
+
+    python odk2csv.py --input=/path/to/my_form.xml --output=/path/to/data/my_form.csv
+
+- Open the resulting CSV file in a spreadsheet program for further analysis.
+
+### Conclusion
+
+odk2csv.py is a useful tool for converting ODKCollect data into a format that can be used for data analysis. By automating the process of generating a CSV file, it saves time and effort for data analysis teams who need to extract data from ODKCollect forms. With odk2csv.py and a spreadsheet program, organizations can analyze their ODKCollect data more efficiently and accurately, streamlining their data analysis process.
+
+## ODKDump.py
+
+ODKDump.py is a Python script that is part of the ODKConvert package. It is a program that allows you to dump the contents of an ODK Collect instance file into a readable format. This tool can be particularly useful for troubleshooting issues with ODKCollect data or for verifying that the data is being collected correctly.
+
+### How ODKDump.py Works
+
+ODKDump.py reads data from an ODK Collect instance file and generates a text file that contains a human-readable version of the data. The output file contains detailed information about each submission, including the submission date, the form ID, and the values of all the questions in the form.
+
+### Using ODKDump.py
+
+Here are the basic steps to use ODKDump.py:
+
+- Install ODKConvert if you haven't already:
+
+      pip install git+https://github.com/hotosm/odkconvert.git
+
+- Navigate to the ODKConvert package directory:
+
+      cd /path/to/odkconvert
+
+- Run ODKDump.py with the following arguments:
+
+      python ODKDump.py --input=<input_file> --output=<output_file>
+
+  `--input` is the path to the ODKCollect instance file.
+
+  `--output` is the output text file.
+
+For example, to dump data from a file named `my_form_instance.xml` and save the resulting text file to the directory `/path/to/data`, you would run:
+
+    python ODKDump.py --input=/path/to/my_form_instance.xml --output=/path/to/data/my_form_dump.txt
+
+- Open the resulting text file in a text editor for review.
+
+### Conclusion
+
+ODKDump.py is a useful tool for dumping the contents of an ODKCollect instance file into a human-readable format. By providing detailed information about each submission, it allows for easier troubleshooting and verification of data collection processes. With ODKDump.py and a text editor, organizations can review their ODKCollect data more efficiently and accurately, improving their data collection processes.
