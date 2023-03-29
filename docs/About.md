@@ -40,7 +40,7 @@ To convert a CSV file from ODK Central to OSM XML format, run:
 This will generate two output files - one OSM XML of public data, and the other a GeoJson file with all the data.
 
 ## Contributing
-ODKConvert is an open-source project, and contributions are always welcome! If you want to contribute, please read the [Contribution Guidelines](https://github.com/hotosm/odkconvert/blob/main/CONTRIBUTING.md) and [Code of Conduct](https://github.com/hotosm/odkconvert/blob/main/CODE_OF_CONDUCT.md) first.
+ODKConvert is an open-source project, and contributions are always welcome! If you want to contribute, please read the [Contribution Guidelines](../CONTRIBUTING.md) and [Code of Conduct](../CODE_OF_CONDUCT.md) first.
 
 ## License
 ODKConvert is released under the [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html).
