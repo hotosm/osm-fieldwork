@@ -53,6 +53,8 @@ The following server-specific commands are supported by ODK Client:
 - `--server users`
 
   This command returns a list of user IDs and their corresponding usernames.
+  
+  ### Example usage:
 
       python odk_client.py --server users
 
