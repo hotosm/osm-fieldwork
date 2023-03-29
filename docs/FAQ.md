@@ -24,6 +24,9 @@ A: Using ODK Convert allows users to easily convert their survey forms to ODK fo
 Q: How do I update my ODK Convert version?
 A: You can update your ODK Convert version by running the command `pip install odkconvert --upgrade` in your terminal. This will upgrade ODK Convert to the latest version.
 
+Q: Can I convert multiple XLSForms at once using ODK Convert?
+A: Yes, you can provide a directory path as the input file, and ODK Convert will convert all XLSForms within that directory.
+
 Q: Can I use ODK Convert for free?
 A: Yes, ODK Convert is free and open-source software, licensed under the AGPLv3.
 
