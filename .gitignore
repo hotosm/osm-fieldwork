@@ -5,7 +5,6 @@ TAGS
 .libs
 py-compile
 NEWS
-README.md
 *__pycache__/
 
 # output files
@@ -56,3 +55,5 @@ README.md
 # PDM
 .pdm.toml
 pdm.lock
+build
+dist

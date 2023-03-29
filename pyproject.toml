@@ -1,6 +1,6 @@
 [project]
 name = "ODKConvert"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Convert CSV files from ODK Central to OSM format."
 authors = [
     {name = "Rob Savoye", email = "rob.savoye@hotosm.org"},
@@ -23,7 +23,7 @@ dependencies = [
 requires-python = ">=3.9"
 readme = "README.md"
 license = "GPL-3.0-only"
-keywords = ["fmtm", "hot", "openstreetmap"]
+keywords = ["fmtm", "odk", "hot", "openstreetmap", "opendatakit"]
 classifiers = [
     "Topic :: Utilities",
     "Topic :: Scientific/Engineering :: GIS",
@@ -32,15 +32,16 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://github.com/hotosm/odkconvert"
-documentation = "https://github.com/hotosm/odkconvert"
+homepage = "https://github.com/hotosm/odkconvert/wiki"
+documentation = "https://github.com/hotosm/odkconvert/wiki"
 repository = "https://github.com/hotosm/odkconvert"
 
 [project.optional-dependencies]
 [tool.pdm]
+version = {from = "odkconvert/__version__.py"}
+[tool.pdm.build]
 includes = ["odkconvert"]
 source-includes = ["tests", "LICENSE.md", "README.md"]
-version = {from = "odkconvert/__version__.py"}
 [tool.pdm.dev-dependencies]
 test = [
     "pytest>=7.2.1",
@@ -56,3 +57,12 @@ testpaths = [
     "tests",
 ]
 pythonpath = "odkconvert"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+version_files = [
+    "pyproject.toml:version",
+    "odkconvert/__version__.py",
+    "Makefile:VERSION",
+]
