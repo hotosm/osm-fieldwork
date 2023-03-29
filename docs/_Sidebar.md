@@ -22,4 +22,4 @@
 
 [Programs](https://github.com/hotosm/odkconvert/wiki/programs)
 
-[XLS Forms](https://github.com/hotosm/odkconvert/wiki/xlsforms)
+[XLSX Forms](https://github.com/hotosm/odkconvert/wiki/xlsforms)
