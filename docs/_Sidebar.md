@@ -8,6 +8,8 @@
 
 [FAQ](https://github.com/hotosm/odkconvert/wiki/FAQ)
 
+[Verion Control](https://github.com/hotosm/odkconvert/wiki/Version-Control)
+
 ## Usage
 
 [Configuration](https://github.com/hotosm/odkconvert/wiki/configuring)
