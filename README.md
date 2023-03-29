@@ -25,7 +25,6 @@ https://github.com/hotosm/fmtm/wiki) project at
 
 To install odkconvert, you can use pip. Here are two options:
 
-
 - Directly from the main branch:
   `pip install git+https://github.com/hotosm/odkconvert.git`
 
@@ -75,7 +74,7 @@ file. This is just a short overview.
 This program converts the data collected from ODK Collect into
 the proper OpenStreetMap tagging schema. The conversion is controled
 by an
-[YAML](https://github.com/hotosm/odkconvert/blob/main/odkconvert/xforms.yaml
+[YAML](https://github.com/hotosm/odkconvert/blob/main/odkconvert/xforms.yaml)
 file, so easy to modify for other projects. The output are two files,
 one is suitable for OSM,and is in OSM XML format. The other
 No converted data should ever be uploaded to OSM without validating
