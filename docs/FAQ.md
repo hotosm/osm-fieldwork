@@ -14,7 +14,7 @@ Or from PyPI using: `pip install ODKConvert`
 Q: How do I convert my survey form to ODK format using ODK Convert?
 A: To convert your survey form to ODK format using ODK Convert, run the command `python CSVDump.py <input_file> <output_file>` in your terminal. Replace <input_file> with the path to your survey form file and <output_file> with the path to the output file in ODK format.
 
-Q: Can ODK Convert convert survey forms created in any format to ODK format?
+Q: Can ODK Convert survey forms created in any format to ODK format?
 
 A: ODK Convert can convert survey forms created in XLSForm, Google Forms, and Kobo Toolbox format to ODK format. However, not all features and functions of the original form may be supported.
 
