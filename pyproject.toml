@@ -19,6 +19,7 @@ dependencies = [
     "segno>=1.5.2",
     "xmltodict>=0.13.0",
     "shapely>=1.8.5",
+    "overpy>=0.6",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
