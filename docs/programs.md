@@ -1,6 +1,6 @@
 # ODK Convert Utility Programs
 
-ODK Convert contains few standalone utility programs for converting
+ODK Convert contains a few standalone utility programs for converting
 data from ODK Collect and the ODK Central server, and a few support
 modules.
 
@@ -8,7 +8,7 @@ modules.
 The `make_data_extract.py` program is used to extract OpenStreetMap (OSM) data for use with the `select_one_from_file` function in ODK Collect. This function allows users to select from a list of options generated from an external file. The `make_data_extract.py` program creates a data extract that can be used as an external file with the `select_one_from_file` function. The data extract can be created using Overpass Turbo or a Postgres database.
 
 To use the new `select_one_from_file` for editing existing OSM data you
-need to produce a data extract from OSM. This can be done several
+need to produce a data extract from OSM. This can be done in several
 ways, but needed to be automated to be used for FMTM.
 
     options:
@@ -87,7 +87,7 @@ This example uses Overpass Turbo to extract the `buildings` category of OSM data
 OpenDataKit has 3 file formats. The primary one is the source file,
 which is in XLSX format, and follows the XLSXForm specification. This
 file is edited using a spreadsheet program, and convert using the
-xls2xform program. That conversion products an ODK XML file. That file
+xls2xform program. That conversion produces an ODK XML file. That file
 is used by ODK Collect to create the input forms for the mobile
 app. When using ODK Collect, the output file is another XML format,
 unique to ODK Collect. These are the data collection instances.
@@ -140,8 +140,8 @@ odk2csv.py is a command-line tool that is part of the odkconvert package. Its ma
      -i INSTANCE, --instance INSTANCE - The instance file from ODK Collect
 
 These are the modules containing support functions. These need to be
-loaded into the python package managber, pip, before they can be
-used. For debugging purposes these can be run from the command line as
+loaded into the python package manager, pip, before they can be
+used. For debugging purposes, these can be run from the command line as
 well.
 
 To install these from the source tree, you can either install
@@ -342,7 +342,7 @@ In this example, we're specifying that the input form is an XLSForm located at '
 
 ## osmfile.py
 
-This module write OSM XML format output file.
+This module writes OSM XML format output file.
 
 osmfile.py is a Python module that provides functionality for writing OpenStreetMap (OSM) XML format output files. It is used as part of the odkconvert toolset, and can be used as part of a larger Python application.
 
