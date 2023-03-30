@@ -1,8 +1,8 @@
-# Improving XLSXForms
+# Improving XLSForms
 
 ## Document Summary
 
-This documents the process of improving XForms for better mapper
+This documents the process of improving XLSForms for better mapper
 efficiency and stability.
 
 Read time; 30mins
