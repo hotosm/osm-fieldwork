@@ -1,5 +1,5 @@
 [project]
-name = "ODKConvert"
+name = "osm-fieldwork"
 dynamic = ["version"]
 description = "Convert CSV files from ODK Central to OSM format."
 authors = [
@@ -33,15 +33,15 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://github.com/hotosm/odkconvert/wiki"
-documentation = "https://github.com/hotosm/odkconvert/wiki"
-repository = "https://github.com/hotosm/odkconvert"
+homepage = "https://github.com/hotosm/osm-fieldwork/wiki"
+documentation = "https://github.com/hotosm/osm-fieldwork/wiki"
+repository = "https://github.com/hotosm/osm-fieldwork"
 
 [project.optional-dependencies]
 [tool.pdm]
-version = {from = "odkconvert/__version__.py"}
+version = {from = "osm_fieldwork/__version__.py"}
 [tool.pdm.build]
-includes = ["odkconvert"]
+includes = ["osm_fieldwork"]
 source-includes = ["tests", "LICENSE.md", "README.md"]
 [tool.pdm.dev-dependencies]
 test = [
@@ -57,13 +57,13 @@ addopts = "-ra -q"
 testpaths = [
     "tests",
 ]
-pythonpath = "odkconvert"
+pythonpath = "osm_fieldwork"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
 version = "0.1.1"
 version_files = [
     "pyproject.toml:version",
-    "odkconvert/__version__.py",
+    "osm-fieldwork/__version__.py",
     "Makefile:VERSION",
 ]

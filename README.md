@@ -1,6 +1,6 @@
 # ODK Convert Project
 
-ODKConvert is a project for processing data collection using
+Osm-Fieldwork is a project for processing data collection using
 OpenDataKit into OpenStreetMap format. It includes several utility
 programs that automate part of the data flow like creating satellite
 imagery basemaps and data extracts from
@@ -8,7 +8,7 @@ imagery basemaps and data extracts from
 used with [ODK Collect](https://www.getodk.org). Many of these steps
 are currently a manual process.
 
-All of the programs in odkconvert are designed to function as the
+All of the programs in osm-fieldwork are designed to function as the
 backend of a webpage, but to also work standalone and offline. The
 standalone functionality are simple command line programs run in a
 terminal. They were originally created for producing emergency
@@ -23,18 +23,18 @@ https://github.com/hotosm/fmtm/wiki) project at
 
 ## Installation
 
-To install odkconvert, you can use pip. Here are two options:
+To install osm-fieldwork, you can use pip. Here are two options:
 
 - Directly from the main branch:
-  `pip install git+https://github.com/hotosm/odkconvert.git`
+  `pip install git+https://github.com/hotosm/osm-fieldwork.git`
 
 - Latest on PyPi:
-  `pip install ODKConvert`
+  `pip install Osm-Fieldwork`
 
 ### Configure
 
-ODKConvert can be configured using a simple config
-($HOME/.odkconvert)file in your home directory, or using environment
+Osm-Fieldwork can be configured using a simple config
+($HOME/.osm-fieldwork)file in your home directory, or using environment
 variables.
 
 #### Config file
@@ -74,7 +74,7 @@ file. This is just a short overview.
 This program converts the data collected from ODK Collect into
 the proper OpenStreetMap tagging schema. The conversion is controled
 by an
-[YAML](https://github.com/hotosm/odkconvert/blob/main/odkconvert/xforms.yaml)
+[YAML](https://github.com/hotosm/osm-fieldwork/blob/main/osm-fieldwork/xforms.yaml)
 file, so easy to modify for other projects. The output are two files,
 one is suitable for OSM,and is in OSM XML format. The other
 No converted data should ever be uploaded to OSM without validating
@@ -125,7 +125,7 @@ as it does direct database access, and you could loose all your data.
 
 This program is used to support humanitariam data models. It extracts
 the tags and values from the [data models
-document](odkconvert/data_models/Impact Areas - Data Models V1.1.xlsx)
+document](osm-fieldwork/data_models/Impact Areas - Data Models V1.1.xlsx)
 developed by HOT, and compares those to the taginfo database to help
 fine tune what data goes into OSM or the private output data. This is
 to not flood OSM with obscure tags that aren't supported by the
@@ -143,13 +143,13 @@ practices to follow:
 data is compatible with the conversion process. 
 
 - If you're having trouble with the conversion process, try using the
-utility programs included with ODKConvert to troubleshoot common
+utility programs included with Osm-Fieldwork to troubleshoot common
 issues. 
 
 By following these best practices and using the utility programs
-included with ODKConvert, you can effectively process data collection
+included with Osm-Fieldwork, you can effectively process data collection
 from OpenDataKit into OpenStreetMap format. However, please note that
-while ODKConvert has been tested and used in various projects, it is
+while Osm-Fieldwork has been tested and used in various projects, it is
 still in active development and may have limitations or issues that
 need to be resolved.
 
@@ -176,14 +176,14 @@ using ODK Collect or other data collection tools. XLSForms use a
 simple and structured format, making it easy for you to share and
 collaborate on form designs with your team or other organizations. 
 
-### Using the XLSForm Library with ODKConvert
+### Using the XLSForm Library with Osm-Fieldwork
 The XLSForms in the XForms directory of the XLSForm Library have been
 designed to support the HOT data models and have an efficient mapper
 data flow. These forms also allow for editing of existing OSM data and
 support the data models, specifying the preferred tag values for each
 data item with the goal of both tag completeness and tag correctness.
 
-### Here are some examples of how to use the XLSForm Library with ODKConvert:
+### Here are some examples of how to use the XLSForm Library with Osm-Fieldwork:
 
 - Download an XLSForm from the XForms directory:
 
@@ -200,14 +200,13 @@ The XLSForm Library is a valuable resource for organizations involved
 in humanitarian data collection, as it provides a collection of
 pre-designed forms that are optimized for efficient mapper data flow
 and tag completeness/correctness. By using the XLSForm Library with
-ODKConvert, you can streamline your data collection process and ensure
+Osm-Fieldwork, you can streamline your data collection process and ensure
 the quality of your data. 
 
-ODKConvert is a powerful tool for processing data collection from
+Osm-Fieldwork is a powerful tool for processing data collection from
 OpenDataKit into OpenStreetMap format. By following the best practices
 outlined in this documentation and using the utility programs included
-with ODKConvert, you can streamline your data collection process and
+with Osm-Fieldwork, you can streamline your data collection process and
 ensure the quality of your converted data. If you have any questions
-or issues with ODKConvert, please consult the project's documentation
+or issues with osm-fieldwork, please consult the project's documentation
 or seek support from the project's community.
-

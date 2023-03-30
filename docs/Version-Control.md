@@ -47,10 +47,10 @@ But as we are using a git-flow PR-based model, the tags must be made as part of 
 ## Creating Releases
 
 1. Update the version throughout the code ([Bumping a Version](#bumping-a-version)).
-2. Go to the [Releases](https://github.com/hotosm/odkconvert/releases) page.
+2. Go to the [Releases](https://github.com/hotosm/osm_fieldwork/releases) page.
 3. Click `Draft a new release`.
 4. Click `Choose a tag`, then input the current version number and press enter (this will automatically create a matching tag for your release).
 5. Set the `Release title` to v`x.x.x`, replacing with your version number.
 6. Add a description if possible, then release.
 
-This should trigger the PyPi publishing workflow, and your version will be available on [PyPi](https://pypi.org/project/odkconvert/#history).
+This should trigger the PyPi publishing workflow, and your version will be available on [PyPi](https://pypi.org/project/osm_fieldwork/#history).

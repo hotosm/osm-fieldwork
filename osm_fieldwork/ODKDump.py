@@ -18,12 +18,12 @@
 #
 
 import sys
-from odkconvert.ODKForm import ODKForm
-from odkconvert.ODKInstance import ODKInstance
+from osm_fieldwork.ODKForm import ODKForm
+from osm_fieldwork.ODKInstance import ODKInstance
 import argparse
 from datetime import datetime
-from odkconvert.osmfile import OsmFile
-from odkconvert.convert import Convert
+from osm_fieldwork.osmfile import OsmFile
+from osm_fieldwork.convert import Convert
 import logging
 import re
 

@@ -52,38 +52,38 @@ project command.
 # Create a new XForm, and upload these two attachments
 
 These two attachments are input for _select_from_file_ in the survey
-sheet. For odkconvert, they are usually a list of municipalities and
+sheet. For osm_fieldwork, they are usually a list of municipalities and
 towns.
 
-    ./odkconvert/odk_client.py --id 4 --form waterpoints --xform create odkconvert/xlsforms/waterpoints.xml odkconvert/xlsforms/towns.csv odkconvert/xlsforms/municipality.csv
+    ./osm_fieldwork/odk_client.py --id 4 --form waterpoints --xform create osm_fieldwork/xlsforms/waterpoints.xml osm_fieldwork/xlsforms/towns.csv osm_fieldwork/xlsforms/municipality.csv
 
 # Project Requests
 
 ## List all the projects on an ODK Central server
 
-    ./odkconvert/odk_client.py --server projects
+    ./osm_fieldwork/odk_client.py --server projects
 
 ## Delete a project from ODK Central
 
-    ./odkconvert/odk_client.py --server delete --id 2
+    ./osm_fieldwork/odk_client.py --server delete --id 2
 
 # App-user Requests
 
 ## Create a new app-user for a project
 
-    ./odkconvert/odk_client.py --appuser create --id 4 foobar
+    ./osm_fieldwork/odk_client.py --appuser create --id 4 foobar
 
 ## create a QR code for the app-user to access ODK Central
 
-    ./odkconvert/odk_client.py -i 4 -f waterpoints -a qrcode -u 'jhAbIwHmYCBObnR45l!I3yi$LbCL$q$saJHkDvgwgtKs2F6sso3eepySJ5tyyyAX'
+    ./osm_fieldwork/odk_client.py -i 4 -f waterpoints -a qrcode -u 'jhAbIwHmYCBObnR45l!I3yi$LbCL$q$saJHkDvgwgtKs2F6sso3eepySJ5tyyyAX'
 
 ## Delete an app-user from a project
 
-    ./odkconvert/odk_client.py --appuser delete --id 4 378
+    ./osm_fieldwork/odk_client.py --appuser delete --id 4 378
 
 ## List all app-users for a project
 
-    ./odkconvert/odk_client.py  --id 4 --project app-users
+    ./osm_fieldwork/odk_client.py  --id 4 --project app-users
 
 # Bulk operations
 
@@ -94,11 +94,11 @@ thousands of app-users.
 
 ## Delete multiple app-users from a project
 
-    ./odkconvert/odk_client.py --appuser delete --id 4 22-95
+    ./osm_fieldwork/odk_client.py --appuser delete --id 4 22-95
 
 ## Generate QRcodes for all registered app-users
 
-    ./odkconvert/odk_client.py --id 4 --bulk qrcodes --form waterpoints
+    ./osm_fieldwork/odk_client.py --id 4 --bulk qrcodes --form waterpoints
 
 which generates a png file for each app-user, limited to that
 project.

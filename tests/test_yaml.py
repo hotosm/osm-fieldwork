@@ -2,7 +2,7 @@
 
 # Copyright (c) 2022, 2023 Humanitarian OpenStreetMap Team
 #
-# This file is part of odkconvert.
+# This file is part of osm_fieldwork.
 #
 #     Underpass is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -15,19 +15,19 @@
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
+#     along with osm_fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
 import argparse
 import sys
 import os
 
-sys.path.append(f"{os.getcwd()}/odkconvert")
+sys.path.append(f"{os.getcwd()}/osm_fieldwork")
 from yamlfile import YamlFile
 
 parser = argparse.ArgumentParser(description="Read and parse a YAML file")
 parser.add_argument(
-    "--infile", default="odkconvert/xforms.yaml", help="The YAML input file"
+    "--infile", default="osm_fieldwork/xforms.yaml", help="The YAML input file"
 )
 args = parser.parse_args()
 

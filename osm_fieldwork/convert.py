@@ -1,25 +1,25 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021, 2022 Humanitarian OpenStreetMap Team
+# Copyright (c) 2020, 2021, 2022, 2023 Humanitarian OpenStreetMap Team
 #
-# This file is part of Odkconvert.
+# This file is part of OSM-Fieldwork.
 #
-#     Odkconvert is free software: you can redistribute it and/or modify
+#     OSM-Fieldwork is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 #
-#     Odkconvert is distributed in the hope that it will be useful,
+#     OSM-Fieldwork is distributed in the hope that it will be useful,
 #     but WITHOUT ANY WARRANTY; without even the implied warranty of
 #     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
+#     along with OSM-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
 import os
-from odkconvert.yamlfile import YamlFile
+from osm_fieldwork.yamlfile import YamlFile
 import logging
 import argparse
 import sys
@@ -35,8 +35,8 @@ class Convert(YamlFile):
         if xform is None:
             if os.path.exists("xforms.yaml"):
                 xform = "xforms.yaml"
-            elif os.path.exists("odkconvert/xforms.yaml"):
-                xform = "odkconvert/xforms.yaml"
+            elif os.path.exists("osm_fieldwork/xforms.yaml"):
+                xform = "osm_fieldwork/xforms.yaml"
         self.yaml = YamlFile(xform)
         self.filespec = xform
         # Parse the file contents into a data structure to make it

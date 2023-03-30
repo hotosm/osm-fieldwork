@@ -2,20 +2,20 @@
 
 # Copyright (c) 2020, 2021, 2022, 2023 Humanitarian OpenStreetMap Team
 #
-# This file is part of Odkconvert.
+# This file is part of OSM-Fieldwork.
 #
-#     Odkconvert is free software: you can redistribute it and/or modify
+#     OSM-Fieldwork is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 #
-#     Odkconvert is distributed in the hope that it will be useful,
+#     OSM-Fieldwork is distributed in the hope that it will be useful,
 #     but WITHOUT ANY WARRANTY; without even the implied warranty of
 #     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
+#     along with OSM-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
 import argparse
@@ -24,8 +24,8 @@ import os
 import logging
 import sys
 from sys import argv
-from odkconvert.convert import Convert
-from odkconvert.osmfile import OsmFile
+from osm_fieldwork.convert import Convert
+from osm_fieldwork.osmfile import OsmFile
 from geojson import Point, Feature, FeatureCollection, dump
 
 # set log level for urlib
@@ -49,8 +49,8 @@ class CSVDump(Convert):
         if yaml is None:
             if os.path.exists("xforms.yaml"):
                 yaml = "xforms.yaml"
-            elif os.path.exists("odkconvert/xforms.yaml"):
-                yaml = "odkconvert/xforms.yaml"
+            elif os.path.exists("osm_fieldwork/xforms.yaml"):
+                yaml = "osm_fieldwork/xforms.yaml"
             elif argv[0][0] == "/" and os.path.dirname(argv[0]) != "/usr/local/bin":
                 yaml = os.path.dirname(argv[0]) + "/xforms.yaml"
         self.config = super().__init__(yaml)

@@ -19,7 +19,7 @@ import argparse
 import logging
 from sys import argv
 from osgeo import ogr
-from odkconvert.osmfile import OsmFile
+from osm_fieldwork.osmfile import OsmFile
 
 # Instantiate logger
 log = logging.getLogger(__name__)
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-c", "--odkfile", help="ODK CSV file downloaded from ODK Central"
     )
-    parser.add_argument("-f", "--osmfile", help="OSM XML file created by odkconvert")
+    parser.add_argument("-f", "--osmfile", help="OSM XML file created by Osm-Fieldwork")
     parser.add_argument(
         "-o", "--outfile", default="tmp.osm", help="Output file from the merge"
     )

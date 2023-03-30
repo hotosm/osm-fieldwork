@@ -132,7 +132,7 @@ The output of CSVDump.py is an OSM XML file that can be used with OpenStreetMap 
 
 ## odk2csv.py
 
-odk2csv.py is a command-line tool that is part of the odkconvert package. Its main purpose is to convert an Open Data Kit (ODK) XML instance file to CSV format, which can be easily imported into ODK Central for analysis.
+odk2csv.py is a command-line tool that is part of the osm_fieldwork package. Its main purpose is to convert an Open Data Kit (ODK) XML instance file to CSV format, which can be easily imported into ODK Central for analysis.
 
     options:
      -h, --help                       - show this help message and exit
@@ -153,7 +153,7 @@ or run the python setup program
 
      python setup.py install
 
-Once you have the odkconvert package installed, you can use odk2csv.py to convert an ODK XML instance file to CSV format. Here's an example command:
+Once you have the osm_fieldwork package installed, you can use odk2csv.py to convert an ODK XML instance file to CSV format. Here's an example command:
 
     odk2csv.py -i path/to/my_survey.xml
 
@@ -169,7 +169,7 @@ In this example, odk2csv.py will display more detailed information about the con
 
 ## ODKDump.py
 
-ODKDump.py is a Python script that is part of the ODKConvert toolset for converting Open Data Kit (ODK) data into various formats. It is used to dump the contents of an ODK Collect instance file into a readable format. This script takes several command line options that modify its behavior:
+ODKDump.py is a Python script that is part of the OSM-Fieldwork toolset for converting Open Data Kit (ODK) data into various formats. It is used to dump the contents of an ODK Collect instance file into a readable format. This script takes several command line options that modify its behavior:
 
     options:
      -h, --help              - show this help message and exit
@@ -281,7 +281,7 @@ Note that ODKInstance.py is primarily intended for use by developers who are wor
 
 ## convert.py
 
-The convert.py module is part of the odkconvert package and provides functionality for converting ODK forms between different formats using a YAML configuration file.
+The convert.py module is part of the osm_fieldwork package and provides functionality for converting ODK forms between different formats using a YAML configuration file.
 
 ### Usage:
 To use convert.py, you'll need to create a YAML configuration file that specifies the input and output formats for the conversion process. Here's an example configuration file:

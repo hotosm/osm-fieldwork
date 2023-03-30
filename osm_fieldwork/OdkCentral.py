@@ -7,13 +7,13 @@
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 #
-#     Odkconvert is distributed in the hope that it will be useful,
+#     OSM-Fieldwork is distributed in the hope that it will be useful,
 #     but WITHOUT ANY WARRANTY; without even the implied warranty of
 #     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
+#     along with OSM-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
 # The origins of this file was called odk_request.py, and gave me the
@@ -574,10 +574,10 @@ if __name__ == '__main__':
     # print(x.json())
     # x = form.listMedia(4, "waterpoints", 'uuid:fbe3ef41-6298-40c1-a694-6c9d25a8c476')
     # Make a new form
-    # xml = "/home/rob/projects/HOT/odkconvert.git/odkconvert/xlsforms/cemeteries.xml"
+    # xml = "/home/rob/projects/HOT/osm_fieldwork.git/osm_fieldwork/xlsforms/cemeteries.xml"
     # form.addXMLForm(xml)
-    # csv1 = "/home/rob/projects/HOT/odkconvert.git/odkconvert/xlsforms/municipality.csv"
-    # csv2 = "/home/rob/projects/HOT/odkconvert.git/odkconvert/xlsforms/towns.csv"
+    # csv1 = "/home/rob/projects/HOT/osm_fieldwork.git/osm_fieldwork/xlsforms/municipality.csv"
+    # csv2 = "/home/rob/projects/HOT/osm_fieldwork.git/osm_fieldwork/xlsforms/towns.csv"
     # form.addMedia(csv1)
     # form.addMedia(csv2)
     x = form.createForm(4, "cemeteries", "cemeteries.xls", True)

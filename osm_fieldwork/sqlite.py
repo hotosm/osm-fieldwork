@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021, 2022 Humanitarian OpenStreetMap Team
+# Copyright (c) 2020, 2021, 2022, 2023 Humanitarian OpenStreetMap Team
 #
-# This file is part of Odkconvert.
+# This file is part of OSM-Fieldwork.
 #
 #     This is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
+#     along with OSM-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
 import argparse
@@ -114,7 +114,7 @@ class DataFile(object):
             self.cursor.execute("CREATE TABLE metadata (name text, value text)")
             # These get populated later
             name = dbname
-            description = "Created by odkconvert/basemapper.py"
+            description = "Created by osm_fieldwork/basemapper.py"
             self.cursor.execute("CREATE UNIQUE INDEX metadata_idx  ON metadata (name)")
             self.cursor.execute(
                 "INSERT INTO metadata (name, value) VALUES('version', '1.1')"

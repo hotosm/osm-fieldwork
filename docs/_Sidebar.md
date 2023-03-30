@@ -1,27 +1,27 @@
-# [Home](https://github.com/hotosm/odkconvert/wiki)
+# [Home](https://github.com/hotosm/osm_fieldwork/wiki)
 
-[About](https://github.com/hotosm/odkconvert/wiki/About)
+[About](https://github.com/hotosm/osm_fieldwork/wiki/About)
 
-[Code of Conduct](https://github.com/hotosm/odkconvert/wiki/Code-of-Conduct)
+[Code of Conduct](https://github.com/hotosm/osm_fieldwork/wiki/Code-of-Conduct)
 
-[Contribution](https://github.com/hotosm/odkconvert/wiki/Contribution)
+[Contribution](https://github.com/hotosm/osm_fieldwork/wiki/Contribution)
 
-[FAQ](https://github.com/hotosm/odkconvert/wiki/FAQ)
+[FAQ](https://github.com/hotosm/osm_fieldwork/wiki/FAQ)
 
-[Verion Control](https://github.com/hotosm/odkconvert/wiki/Version-Control)
+[Verion Control](https://github.com/hotosm/osm_fieldwork/wiki/Version-Control)
 
 ## Usage
 
-[Configuration](https://github.com/hotosm/odkconvert/wiki/configuring)
+[Configuration](https://github.com/hotosm/osm_fieldwork/wiki/configuring)
 
-[Base Mapper](https://github.com/hotosm/odkconvert/wiki/basemapper)
+[Base Mapper](https://github.com/hotosm/osm_fieldwork/wiki/basemapper)
 
-[External Data](https://github.com/hotosm/odkconvert/wiki/externaldata)
+[External Data](https://github.com/hotosm/osm_fieldwork/wiki/externaldata)
 
-[ODK Client](https://github.com/hotosm/odkconvert/wiki/odk_client)
+[ODK Client](https://github.com/hotosm/osm_fieldwork/wiki/odk_client)
 
-[ODK Merge](https://github.com/hotosm/odkconvert/wiki/odk_merge)
+[ODK Merge](https://github.com/hotosm/osm_fieldwork/wiki/odk_merge)
 
-[Programs](https://github.com/hotosm/odkconvert/wiki/programs)
+[Programs](https://github.com/hotosm/osm_fieldwork/wiki/programs)
 
-[XLS Forms](https://github.com/hotosm/odkconvert/wiki/xlsforms)
+[XLS Forms](https://github.com/hotosm/osm_fieldwork/wiki/xlsforms)

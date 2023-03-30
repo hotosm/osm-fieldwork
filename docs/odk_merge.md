@@ -22,7 +22,7 @@ data.
     -h, --help            show this help message and exit
     -v, --verbose         verbose output
     -c ODKFILE, --odkfile ODKFILE - ODK CSV file downloaded from ODK Central
-    -f OSMFILE, --osmfile OSMFILE - OSM XML file created by odkconvert
+    -f OSMFILE, --osmfile OSMFILE - OSM XML file created by osm_fieldwork
     -o OUTFILE, --outfile OUTFILE - Output file from the merge
     -b BOUNDARY, --boundary BOUNDARY - Boundary polygon to limit the data size
 

@@ -2,9 +2,9 @@
 
 # Copyright (c) 2020, 2021 Humanitarian OpenStreetMap Team
 #
-# This file is part of odkconvert.
+# This file is part of Osm-Fieldwork.
 #
-#     Underpass is free software: you can redistribute it and/or modify
+#     Osm-Fieldwork is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
@@ -15,13 +15,13 @@
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
+#     along with Osm-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
 import os
 import sys
 
-sys.path.append(f"{os.getcwd()}/odkconvert")
+sys.path.append(f"{os.getcwd()}/osm_fieldwork")
 import argparse
 from convert import Convert
 
@@ -34,8 +34,8 @@ args = parser.parse_args()
 
 if os.path.exists("xforms.yaml"):
     csv = Convert("xforms.yaml")
-elif os.path.exists("odkconvert/xforms.yaml"):
-    csv = Convert("odkconvert/xforms.yaml")
+elif os.path.exists("osm_fieldwork/xforms.yaml"):
+    csv = Convert("osm_fieldwork/xforms.yaml")
 
 
 def test_get_keyword():

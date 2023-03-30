@@ -2,9 +2,9 @@
 
 # Copyright (c) 2022, 2023 Humanitarian OpenStreetMap Team
 #
-# This file is part of odkconvert.
+# This file is part of oOsm-Fieldwork.
 #
-#     ODKConvert is free software: you can redistribute it and/or modify
+#     Osm-Fieldwork is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
@@ -15,7 +15,7 @@
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
+#     along with osm_fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
 import argparse
@@ -25,7 +25,7 @@ import os
 import pandas as pd
 from geojson import Feature, FeatureCollection
 import geojson
-from odkconvert.xlsforms import xlsforms_path
+from osm_fieldwork.xlsforms import xlsforms_path
 
 
 # Instantiate logger

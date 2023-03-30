@@ -2,7 +2,7 @@
 
 # Copyright (c) 2020, 2021, 2022 Humanitarian OpenStreetMap Team
 #
-# This file is part of Odkconvert.
+# This file is part of OSM-Fieldwork.
 #
 #     This is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
+#     along with OSM-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
 import argparse
@@ -29,7 +29,7 @@ from cpuinfo import get_cpu_info
 import queue
 import concurrent.futures
 import threading
-from odkconvert.sqlite import DataFile
+from osm_fieldwork.sqlite import DataFile
 
 # Instantiate logger
 log = logging.getLogger(__name__)

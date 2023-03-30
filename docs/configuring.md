@@ -1,6 +1,6 @@
 # Configuring the Data Conversion
 
-ODKConvert uses a YAML-based configuration file that controls the
+Osm_Fieldwork uses a YAML-based configuration file that controls the
 conversion process. While ideally, the tags in the XForm are a match
 for OSM tags, some survey questions generate very different primary
 tags. All of the strings in this file are lowercase, as when

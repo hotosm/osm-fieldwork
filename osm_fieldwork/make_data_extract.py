@@ -2,20 +2,20 @@
 
 # Copyright (c) 2022 Humanitarian OpenStreetMap Team
 #
-# This file is part of Odkconvert.
+# This file is part of OSM-Fieldwork.
 #
-#     Odkconvert is free software: you can redistribute it and/or modify
+#     OSM-Fieldwork is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 #
-#     Odkconvert is distributed in the hope that it will be useful,
+#     OSM-Fieldwork is distributed in the hope that it will be useful,
 #     but WITHOUT ANY WARRANTY; without even the implied warranty of
 #     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with Odkconvert.  If not, see <https:#www.gnu.org/licenses/>.
+#     along with OSM-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
 import argparse
@@ -27,8 +27,8 @@ import yaml
 import json
 from geojson import Point, Feature, FeatureCollection, dump, Polygon
 import geojson
-from odkconvert.filter_data import FilterData
-from odkconvert.xlsforms import xlsforms_path
+from osm_fieldwork.filter_data import FilterData
+from osm_fieldwork.xlsforms import xlsforms_path
 import requests
 # from requests.auth import HTTPBasicAuth
 from io import BytesIO
