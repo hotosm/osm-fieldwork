@@ -37,7 +37,7 @@ The column headers are used to determine the functionality of the value in the c
 
 - [Survey](https://xlsform.org/en/#the-survey-worksheet)
 
-  - This sheet contains all the questions used for collecting data and refers to the actual     values for each question which are on the _choices_ sheet.
+  - This sheet contains all the questions used for collecting data and refers to the actual values for each question which are on the _choices_ sheet.
 
   These are the mandatory column headers in the survey sheet:
 
