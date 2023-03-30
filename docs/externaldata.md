@@ -9,7 +9,7 @@ the XForm as default values. This lets the mapper use the XForm to
 change the existing data, or add to it. Any changes will need to be
 conflated later, that'll be another document.
 
-Why do I want to use ODK Collect to edit map data? Much of what is
+**Why do I want to use ODK Collect to edit map data?** Much of what is
 currently in [OpenStreetMap](https:www.openstreetmap.org) is lacking
 metadata, or the data has changed, like when a restaurant changes
 owners and gets a new name. Also most all remote mapping using
