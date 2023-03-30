@@ -67,12 +67,12 @@ The column headers are used to determine the functionality of the value in the c
 
   The choices sheet is used to define the values used for the **select_one** and **select_multiple** questions on the **survey** sheet.
 
-The mandatory column headers are:
+  The mandatory column headers are:
 
-  - **List_name** - This is the name of the list as specified in the **select** type in the _survey_ sheet.
-  - **Name** - This becomes the _value_ of the _tag_ in the OSM output file.
-  - **Label** - Refers to what is displayed in the **select** menu.
-  - The **label** column header also supports different languages by using a postfix of **::[language](abbreviation)** appended to it, for example **label::Nepali(np)**.
+    - **List_name** - This is the name of the list as specified in the **select** type in the _survey_ sheet.
+    - **Name** - This becomes the _value_ of the _tag_ in the OSM output file.
+    - **Label** - Refers to what is displayed in the **select** menu.
+    - The **label** column header also supports different languages by using a postfix of **::[language](abbreviation)** appended to it, for example **label::Nepali(np)**.
 
 - Settings
   - This is a simple sheet that contains the version of the sheet, and the title of the input form. The version is used by the server and the mobile apps to track changes in the data format, so it should always be updated after changes are made.
