@@ -7,7 +7,7 @@ Basemapper is a program that creates basemaps for mobile apps in the mbtiles and
  namely
 
 Both of these use formats use underlying sqlite3, with similar database
-schemas. 
+schemas.
 
 Basemapper does not store anything in memory, all processing
 is done as a stream, so large areas can be downloaded. Time to go buy a
@@ -46,8 +46,8 @@ Generate a basemap for OSMAnd using ERSI imagery, for an area specified by a geo
 
 **Example 2:**
 As above, but mbtiles format, and Bing imagery source. The `-v` option enables verbose output,
-which will show more details about the download and processing progress.   
-   
+which will show more details about the download and processing progress.
+
 
     ./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s bing -v
 
@@ -55,9 +55,43 @@ which will show more details about the download and processing progress.
 Generate a basemap for the Topo imagery source using sqlitedb format.
  Additionally, the `-d` option specifies directory name for the title cache; /tiles/test. This is useful
  if you want to use the tile cache for other programs or update it later.
-    
+
     ./basemapper.py -z 12-19 -b test.geojson -o test.sqlitedb -s topo -d /tiles/tests
 
+**Example 4:**
+Generate a basemap in mbtiles format using Google imagery source for an area specified by a geojson bounding box, and supporting zoom levels 10 through 16.
+
+    ./basemapper.py -z 10-16 -b area.geojson -o map.mbtiles -s google
+
+**Example 5:**
+Generate a basemap in sqlitedb format using OpenAerialMap (OAM) imagery source for an area specified by a geojson bounding box, and supporting zoom levels 8 through 14.
+
+    ./basemapper.py -z 8-14 -b area.geojson -o map.sqlitedb -s oam
+
+**Example 6:**
+Generate a basemap in mbtiles format using Topo imagery source for an area specified by a geojson bounding box, and supporting zoom levels 9 through 15. Additionally, the -t option specifies the top-level directory for the tile cache, which will be stored in /cache/tiles.
+
+    ./basemapper.py -z 9-15 -b area.geojson -o map.mbtiles -s topo -t /cache/tiles
+
+**Example 7:**
+Generate a basemap in sqlitedb format using Bing imagery source for an area specified by a geojson bounding box, and supporting zoom levels 6 through 12. The -v option enables verbose output, which will show more details about the download and processing progress.
+
+    ./basemapper.py -z 6-12 -b area.geojson -o map.sqlitedb -s bing -v
+
+**Example 8:**
+Generate a basemap in mbtiles format using OSMAnd imagery source for an area specified by a geojson bounding box, and supporting zoom levels 10 through 18. Additionally, the -d option specifies the output directory for the tile cache, which will be stored in /cache/tiles/osmand.
+
+    ./basemapper.py -z 10-18 -b area.geojson -o map.mbtiles -s osmand -d /cache/tiles/osmand
+
+**Example 9:**
+Generate a basemap in sqlitedb format using Topo imagery source for an area specified by a geojson bounding box, and supporting zoom levels 11 through 17. The -v option enables verbose output, which will show more details about the download and processing progress.
+
+    ./basemapper.py -z 11-17 -b area.geojson -o map.sqlitedb -s topo -v
+
+**Example 10:**
+Generate a basemap in mbtiles format using ERSI imagery source for an area specified by a geojson bounding box, and supporting zoom levels 7 through 13. The -b option specifies the boundary for the area you want.
+
+    ./basemapper.py -z 7-13 -b area.geojson -o map.mbtiles -s ersi
 
 ## Benefits
 

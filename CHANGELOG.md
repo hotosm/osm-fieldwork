@@ -9,7 +9,7 @@
 ### Feat
 
 - set ssl verify via environment variable, default true
-- option to configure standalone odkconvert via env vars
+- option to configure standalone osm-fieldwork via env vars
 - index for xform files, plus path
 
 ### Fix
@@ -31,7 +31,7 @@
 - remove redundant csv output files from xforms
 - update refs to xforms dir and odk_client.py
 - rename XForms dir to lowercase xforms
-- add includes to pyproject to bundle odkconvert dir
+- add includes to pyproject to bundle osm-fieldwork dir
 - missed yaml file for restructure
 - rename test dir to pytest default (tests)
-- restructure, move .py files to odkconvert dir
+- restructure, move .py files to osm-fieldwork dir

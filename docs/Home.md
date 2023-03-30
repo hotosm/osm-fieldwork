@@ -154,7 +154,7 @@ The XLSForm Library is a valuable resource for organizations involved in humanit
 
 ## basemapper.py
 
-This is a program that makes mbtiles basemaps for ODK convert.
+This is a program that makes mbtiles basemaps for Osm-Fieldwork.
 
 basemapper.py is a Python script that is included with the Osm_Fieldwork package. It is a program that automates the process of creating satellite imagery basemaps for use with Osm_Fieldwork. These basemaps can be used to assist data collection in areas with limited internet connectivity, where satellite imagery is the only available source of map data. More
 information on this program [is here](docs/programs.md).

@@ -1,4 +1,4 @@
-# ODK Convert Project
+# Osm-Fieldwork Project
 
 Osm-Fieldwork is a project for processing data collection using
 OpenDataKit into OpenStreetMap format. It includes several utility
@@ -80,7 +80,7 @@ one is suitable for OSM,and is in OSM XML format. The other
 No converted data should ever be uploaded to OSM without validating
 the conversion in JOSM. To do efficient conversion from ODK to OSM,
 it's best to use the XLSForm library as templates, as everything is
-designed to work together. 
+designed to work together.
 
 ## basemapper.py
 
@@ -103,7 +103,7 @@ This program makes data extracts from
 [OpenStreetMap](https://www.openstreetmap.org) data. Multiple input
 sources are supported, a local postgresql database, the HOT maintained
 [Underpass](https://galaxy.hotosm.org/) database, or
-[Overpass](https://overpass-turbo.eu). 
+[Overpass](https://overpass-turbo.eu).
 
 ## odk2csv.py
 
@@ -135,16 +135,16 @@ Collect.
 # Best Practices
 
 To ensure the quality of your converted data, here are some best
-practices to follow: 
+practices to follow:
 
 - Always validate your conversion in JOSM before uploading to OpenStreetMap.
 
 - Use the XLSForm library as templates to ensure that your ODK Collect
-data is compatible with the conversion process. 
+data is compatible with the conversion process.
 
 - If you're having trouble with the conversion process, try using the
 utility programs included with Osm-Fieldwork to troubleshoot common
-issues. 
+issues.
 
 By following these best practices and using the utility programs
 included with Osm-Fieldwork, you can effectively process data collection
@@ -174,7 +174,7 @@ user interface. With XLSForms, you can easily design and test forms on
 your computer, then deploy them to mobile devices for data collection
 using ODK Collect or other data collection tools. XLSForms use a
 simple and structured format, making it easy for you to share and
-collaborate on form designs with your team or other organizations. 
+collaborate on form designs with your team or other organizations.
 
 ### Using the XLSForm Library with Osm-Fieldwork
 The XLSForms in the XForms directory of the XLSForm Library have been
@@ -192,7 +192,7 @@ data item with the goal of both tag completeness and tag correctness.
 - Convert the XLSForm to OSM XML using CSVDump:
 
 - Use the resulting OSM XML file with JOSM or other OSM editors to
-validate and edit the data before uploading it to OpenStreetMap. 
+validate and edit the data before uploading it to OpenStreetMap.
 
 ### Conclusion
 
@@ -201,7 +201,7 @@ in humanitarian data collection, as it provides a collection of
 pre-designed forms that are optimized for efficient mapper data flow
 and tag completeness/correctness. By using the XLSForm Library with
 Osm-Fieldwork, you can streamline your data collection process and ensure
-the quality of your data. 
+the quality of your data.
 
 Osm-Fieldwork is a powerful tool for processing data collection from
 OpenDataKit into OpenStreetMap format. By following the best practices
