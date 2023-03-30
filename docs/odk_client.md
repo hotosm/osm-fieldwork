@@ -1,33 +1,97 @@
-## ODK Client
+# ODK Client
 
-odk_client.py is a command line utility for the ODK Central server. It
-exposed many of the REST API calls supported by the server, including
-uploading and downloading attachments and submissions.
+odk_client.py is a command line utility for interacting with the ODK Central server. It
+exposes many of the REST API calls supported by the server and allows users to perform various tasks, such as uploading and downloading attachments and submissions.
 
-# Server requests
+## Usage
+`[-h] [-v] [-s {projects,users,delete}] [-p {forms,app-users,assignments,delete}] [-i ID] [-f FORM] [-u UUID]`
 
-All of the server-specific commands are accessible via the
-_--server_ command. This command takes a single argument, and can only
-access the global data about projects and users.
+`[-x {attachments,csv,submissions,upload,download,create,assignments,delete,publish}] [-a {create,delete,update,qrcode,access}] [-d DATA] [-t TIMESTAMP]`
 
-- --server projects - returns a list of project IDs and the project name
+`[-b {qrcodes,update}]`
 
-- --server users - returns a list of user IDs and their user name
+### command line client for ODK Central
 
-# Project Requests
+### Options:
 
+      -h, --help            show this help message and exit
+      -v, --verbose         verbose output
+      -s {projects,users,delete}, --server {projects,users,delete}
+                            project operations
+      -p {forms,app-users,assignments,delete}, --project {forms,app-users,assignments,delete}
+                            project operations
+      -i ID, --id ID        Project ID number
+      -f FORM, --form FORM  XForm name
+      -u UUID, --uuid UUID  Submission UUID, needed to download the data
+      -x {attachments,csv,submissions,upload,download,create,assignments,delete,publish}, --xform {attachments,csv,submissions,upload,download,create,assignments,delete,publish}
+                            XForm ID for operations with data files
+      -a {create,delete,update,qrcode,access}, --appuser {create,delete,update,qrcode,access}
+                            App-User operations
+      -d DATA, --data DATA  Data files for upload or download
+      -t TIMESTAMP, --timestamp TIMESTAMP
+                            Timestamp for submissions
+      -b {qrcodes,update}, --bulk {qrcodes,update}
+                            Bulk operations
+
+
+## Server requests
+
+Server requests allow users to access global data about projects and users. 
+
+### Usage
+The following server-specific commands are supported by ODK Client:
+
+- `--server projects`
+
+  This command returns a list of project IDs and their corresponding project names.
+
+  ### Example usage:
+
+      python odk_client.py --server projects
+
+
+- `--server users`
+
+  This command returns a list of user IDs and their corresponding usernames.
+  
+  ### Example usage:
+
+      python odk_client.py --server users
+
+
+## Project Requests
+
+Project requests allow users to access data for a specific project, such as XForms, attachments, and app users. 
 Projects contain all the Xforms and attachments for that project. To
 access the data for a project, it is necessary to supply the project
 ID. That can be retrieved using the above server command. In this
-example, 1 is used.
+example, 1 is used as the project ID.
 
-- --id 1 --project forms - returns a list of all the XForms contained
-  in this project
-- --id 1 --project app-users - returns a list of all the app users who
-  have access to this project.
+### Usage
+The following are the project-specific commands supported by ODK Client:
 
-# XForm Requests
+- `--id <project_id> --project forms`
 
+  This command returns a list of all the XForms contained in the specified project. Replace `"<project_id>"` with the actual ID of the project you want to retrieve the forms for.
+
+  ### Example usage:
+
+      python odk_client.py --id 1 --project forms
+
+- `--id <project_id> --project app-users`
+
+  This command returns a list of all the app users who have access to the specified project. Replace `"<project_id>"` with the actual ID of the project you want to retrieve the list of app users for.
+
+  ### Example usage:
+
+      python odk_client.py --id 1 --project app-users
+
+  Note: Replace "1" with the actual ID of the project you want to access.
+
+
+## XForm Requests
+
+XForm requests allow users to access data for a specific XForm within a project, such as attachments, submissions, and CSV data. 
 An XForm has several components. The primary one is the XForm
 description itself. In addition to that, there may be additional
 attachments, usually a CSV file of external data to be used by the
@@ -38,18 +102,52 @@ To access the data for an XForm, it is necessary to supply the project
 ID and the XForm ID. The XForm ID can be retrieved using the above
 project command.
 
-- --id 1 --form formid --xform attachments - returns a list of all the
-  attachments for this XForm
-- --id 1 --form formid -x download file1, file2,etc... - download the
-  specified attachments for this XForm
-- --id 1 --form formid --xform submissions - returns a list of all the
-  submissions for this XForm
-- --id 1 --form formid --xform csv - returns the data for the submissions
-  submissions for this XForm
-- --id 1 --form formid --xform upload file1,file2,.. - upload
-  attachments for this XForm
+### Usage
+The following are the XForm-specific commands supported by ODK Client:
 
-# Create a new XForm, and upload these two attachments
+- `--id <project_id> --form <form_id> --xform attachments`
+
+  This command returns a list of all the attachments for the specified XForm. Replace "`<project_id>`" with the actual ID of the project that contains the XForm, and "`<form_id>`" with the actual ID of the XForm you want to retrieve the attachments for.
+
+  ### Example usage:
+
+      python odk_client.py --id 1 --form 1 --xform attachments
+
+- `--id <project_id> --form <form_id> --xform download <attachment_1>,<attachment_2>,...`
+
+  This command downloads the specified attachments for the specified XForm. Replace "`<project_id>`" with the actual ID of the project that contains the XForm, "`<form_id>`" with the actual ID of the XForm you want to download the attachments for, and "`<attachment_1>`,`<attachment_2>`,`etc...`" with the actual names of the attachments you want to download.
+
+  ### Example usage:
+
+      python odk_client.py --id 1 --form 1 --xform download file1.csv,file2.pdf
+
+- `--id <project_id> --form <form_id> --xform submissions`
+
+  This command returns a list of all the submissions for the specified XForm. Replace "`<project_id>`" with the actual ID of the project that contains the XForm, and "`<form_id>`" with the actual ID of the XForm you want to retrieve the submissions for.
+
+  ### Example usage:
+
+      python odk_client.py --id 1 --form 1 --xform submissions
+
+- `--id <project_id> --form <form_id> --xform csv`
+
+  This command returns the data for the submissions for the specified XForm in CSV format. Replace "`<project_id>`" with the actual ID of the project that contains the XForm, and "`<form_id>`" with the actual ID of the XForm you want to retrieve the submission data for.
+
+  ### Example usage:
+
+      python odk_client.py --id 1 --form 1 --xform csv
+
+- `--id <project_id> --form <form_id> --xform upload <attachment_1>,<attachment_2>,...`
+
+  This command uploads the specified attachments for the specified XForm. Replace "`<project_id>`" with the actual ID of the project that contains the XForm, "`<form_id>`" with the actual ID of the XForm you want to upload the attachments for, and "`<attachment_1>,<attachment_2>,...`" with the actual names of the attachments you want to upload.
+
+  ### Example usage:
+
+      python odk_client.py --id 1 --form 1 --xform upload file1.csv,file2.pdf
+
+Note: Replace "1" with the actual IDs of the project and XForm you want to access.
+
+## Create a new XForm, and upload these two attachments
 
 These two attachments are input for _select_from_file_ in the survey
 sheet. For osm_fieldwork, they are usually a list of municipalities and
@@ -73,7 +171,7 @@ towns.
 
     ./osm_fieldwork/odk_client.py --appuser create --id 4 foobar
 
-## create a QR code for the app-user to access ODK Central
+## Create a QR code for the app-user to access ODK Central
 
     ./osm_fieldwork/odk_client.py -i 4 -f waterpoints -a qrcode -u 'jhAbIwHmYCBObnR45l!I3yi$LbCL$q$saJHkDvgwgtKs2F6sso3eepySJ5tyyyAX'
 
