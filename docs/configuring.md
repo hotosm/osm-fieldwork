@@ -76,14 +76,14 @@ For this example, the value used in the **name** column of the XLSForm
 _survey_ sheet is _waterpoint_. It has several values listed
 underneath. Each of those is for the answer given to the waterpoint
 survey question. If the answer matches the value, it returns both the
-tag and the value for OSM. An equal sign is used to deliminate them.
+tag and the value for OSM. An equal sign is used to delineate them.
 
     - waterpoint:
       - well: man_made=water_well
       - natural: natural=water
 
 Some features have multiple OSM tags for a single survey question
-answer. To handle this case, all entries are deliminated by a comma.
+answer. To handle this case, all entries are delimited by a comma.
 
     - power:
       - solar: generator::source=solar,power=generator
