@@ -20,5 +20,5 @@ Create pull requests (PRs) for changes that you think are needed. We would reall
 
 ## Thank you
 
-Thank you very much in advance for your contributions!! Please ensure you refer to our Code of Conduct.
+Thank you very much in advance for your contributions!! Please ensure you refer to our [Code of Conduct](../CODE_OF_CONDUCT.md).
 If you've read the guidelines, but you are still not sure how to contribute on Github, please reach out to us via our Slack #geospatial-tech-and-innovation.

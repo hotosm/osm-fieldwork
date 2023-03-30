@@ -4,9 +4,8 @@ Basemapper is a program that creates basemaps for mobile apps in the mbtiles and
 
 - mbtiles, supported by many apps.
 - sqlite, supported by OSMAnd
- namely
 
-Both of these use formats use underlying sqlite3, with similar database
+Both of these formats use underlying sqlite3, with similar database
 schemas. 
 
 Basemapper does not store anything in memory, all processing

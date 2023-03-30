@@ -144,8 +144,7 @@ loaded into the python package manager, pip, before they can be
 used. For debugging purposes, these can be run from the command line as
 well.
 
-To install these from the source tree, you can either install
-manually,
+To install these from the source tree, you can either install manually,
 
      pip install -e .
 
@@ -202,10 +201,7 @@ Note that the -i or --instance option is required for all commands, as it specif
 
 ## ODKForm.py
 
-ODKForm.py parses the ODK XML XForm, and creates a data structure so
-any code using this class can access the data types of each input
-field. It can be run standalone from the command line, but this is
-only for debugging purposes.
+ODKForm.py parses the ODK XML XForm, and creates a data structure so any code using this class can access the data types of each input field. It can be run standalone from the command line, but this is only for debugging purposes.
 
     options:
      -h, --help                           - show this help message and exit
@@ -250,9 +246,7 @@ Each dictionary in the body list represents a field in the form and has the foll
 
 ## ODKInstance.py
 
-ODKInstance.py parses the ODK Collect instanceXML file, and creates a
-data structure so any code using this class can access the collected
-data values. It can be run standalone from the command line, but this is only for debugging purposes.
+ODKInstance.py parses the ODK Collect instanceXML file, and creates a data structure so that any code using this class can access the collected data values. It can be run standalone from the command line, but this is only for debugging purposes.
 
 ### Usage:
 ODKInstance.py can be run from the command line or imported as a module in a Python program. When run from the command line, the following options are available:
