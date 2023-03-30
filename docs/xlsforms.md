@@ -47,7 +47,7 @@ The column headers are used to determine the functionality of the value in the c
 
   - **Label**: Refers to the question the user sees
 
-  The **name** and **label** column headers also support different languages by using a postfix of **::[language](abbreviation)**appended to it, for example **label::Nepali(np)**.
+  The **name** and **label** column headers also support different languages by using a postfix of **::[language](abbreviation)** appended to it, for example **label::Nepali(np)**.
 
   These are the optional column headers in the survey sheet:
 
@@ -185,8 +185,7 @@ When using a GeoJson data file, after opening the XForm, you’ll get a button t
 
 ## OpenStreetMap Data
 
-For those of use that are OpenStreetMap mappers, we’ve often wanted to be able to edit data in the field. This is possible with mobile apps like [StreetComplete](https://wiki.openstreetmap.org/wiki/StreetComplete) or [Vespucci](https://vespucci.io/), but their presets aren’t focused
-on humanitarian data collection. Since many features have been added by remote mapping, there are rarely any tags beyond _building=yes_. Until this functionality was added to ODK Collect, the mapper collected a new POI, and just manually merged the data later using an editor like JOSM. Now it’s possible to load data from OSM into ODK Collect. Using an XForm to improve feature data, achieves tag completeness for a feature, as well as limits the tag values to
+For those of use that are OpenStreetMap mappers, we’ve often wanted to be able to edit data in the field. This is possible with mobile apps like [StreetComplete](https://wiki.openstreetmap.org/wiki/StreetComplete) or [Vespucci](https://vespucci.io/), but their presets aren’t focused on humanitarian data collection. Since many features have been added by remote mapping, there are rarely any tags beyond _building=yes_. Until this functionality was added to ODK Collect, the mapper collected a new POI, and just manually merged the data later using an editor like JOSM. Now it’s possible to load data from OSM into ODK Collect. Using an XForm to improve feature data, achieves tag completeness for a feature, as well as limits the tag values to
 accepted values.
 
 To create a data extract from OSM, you need to use Overpass Turbo or Postgres. Each tag in OSM becomes a column in an XForm. The column names are how you reference the data from within the XForm. If you are using the OSM data to set the default value for a _select_one_from_file_, then every possible value used for that tag needs to be in the choices sheet, or you get this error, which is _doctor_ is not in the choices for _healthcare_.
@@ -201,8 +200,7 @@ When doing a query to Overpass or Postgres, the column name will conflict, as it
 
 # Converting from OMK to ODK
 
-The OMK mobile app was used for collecting location data using the GPS on the device, or tapping on a basemap. Because that functionality is now in ODK, the usage of the OMK mobile app is not required and because it is unmaintained and it may be unreliable. This section is only useful if you find yourself with an old XForm that you want to edit and reuse,
-as none of it applies to ODK or Kobo Collect.
+The OMK mobile app was used for collecting location data using the GPS on the device, or tapping on a basemap. Because that functionality is now in ODK, the usage of the OMK mobile app is not required and because it is unmaintained and it may be unreliable. This section is only useful if you find yourself with an old XForm that you want to edit and reuse, as none of it applies to ODK or Kobo Collect.
 
 ## Step 1 - Prepare Data
 
@@ -210,8 +208,7 @@ The first step is to copy the contents of the **osm** sheet into the choices she
 
 ## Step 2 - Migrate Questions
 
-The next step is to migrate the questions. The **osm** keyword in the **survey** sheet is followed by a variable name, for example in this table, **building_tags** is the variable. When looking at the choices sheet, every row using the **building_tag** keyword now has to
-become a question on the **survey** sheet.
+The next step is to migrate the questions. The **osm** keyword in the **survey** sheet is followed by a variable name, for example in this table, **building_tags** is the variable. When looking at the choices sheet, every row using the **building_tag** keyword now has to become a question on the **survey** sheet.
 
 | type              | name         | label         | required |
 | ----------------- | ------------ | ------------- | -------- |
