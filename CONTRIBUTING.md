@@ -13,7 +13,7 @@ code, wait till the feature is complete and ready for review. A
 preliminary review by other developers can be requested via the
 comments for the issue on github, or via slack or email.
 
-It is prefered that all patches contain any documentation
+It is preferred that all patches contain any documentation
 updates made, and for any new features, a test case is preferred when
 possible. Keep patches focused on a single feature to avoid merging
 complications with other developers. The old free software joke is
@@ -43,7 +43,7 @@ it's much easier to read.
 ## Coding Style
 
 Python enforces a certain amount of style due to indent levels. Unlike
-C/C++, we don't have to worry about curly braces. It is prefered that
+C/C++, we don't have to worry about curly braces. It is preferred that
 all code follows object oriented techniques, with a minimal amount of
 code other than basic control in the main function. This allows code
 to be easily reused and run either standalone, or part of a REST API
