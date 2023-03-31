@@ -84,17 +84,9 @@ This example uses Overpass Turbo to extract the `buildings` category of OSM data
 
 ## File Formats
 
-OpenDataKit has 3 file formats. The primary one is the source file,
-which is in XLSX format, and follows the XLSXForm specification. This
-file is edited using a spreadsheet program, and convert using the
-xls2xform program. That conversion products an ODK XML file. That file
-is used by ODK Collect to create the input forms for the mobile
-app. When using ODK Collect, the output file is another XML format,
-unique to ODK Collect. These are the data collection instances.
+OpenDataKit has 3 file formats. The primary one is the source file, which is in XLSX format, and follows the XLSXForm specification. This file is edited using a spreadsheet program, and convert using the xls2xform program. That conversion products an ODK XML file. That file is used by ODK Collect to create the input forms for the mobile app. When using ODK Collect, the output file is another XML format, unique to ODK Collect. These are the data collection instances.
 
-The ODK server, ODK Central supports the downloading of XForms to the
-mobile app, and also supports downloading the collected data. The only
-output format is CSV.
+The ODK server, ODK Central supports the downloading of XForms to the mobile app, and also supports downloading the collected data. The only output format is CSV.
 
 ## CSVDump.py
 
@@ -139,13 +131,9 @@ odk2csv.py is a command-line tool that is part of the odkconvert package. Its ma
      -v, --verbose                    - verbose output
      -i INSTANCE, --instance INSTANCE - The instance file from ODK Collect
 
-These are the modules containing support functions. These need to be
-loaded into the python package managber, pip, before they can be
-used. For debugging purposes these can be run from the command line as
-well.
+These are the modules containing support functions. These need to be loaded into the python package managber, pip, before they can be used. For debugging purposes these can be run from the command line as well.
 
-To install these from the source tree, you can either install
-manually,
+To install these from the source tree, you can either install manually,
 
      pip install -e .
 
@@ -202,10 +190,7 @@ Note that the -i or --instance option is required for all commands, as it specif
 
 ## ODKForm.py
 
-ODKForm.py parses the ODK XML XForm, and creates a data structure so
-any code using this class can access the data types of each input
-field. It can be run standalone from the command line, but this is
-only for debugging purposes.
+ODKForm.py parses the ODK XML XForm, and creates a data structure so any code using this class can access the data types of each input field. It can be run standalone from the command line, but this is only for debugging purposes.
 
     options:
      -h, --help                           - show this help message and exit
@@ -250,9 +235,7 @@ Each dictionary in the body list represents a field in the form and has the foll
 
 ## ODKInstance.py
 
-ODKInstance.py parses the ODK Collect instanceXML file, and creates a
-data structure so any code using this class can access the collected
-data values. It can be run standalone from the command line, but this is only for debugging purposes.
+ODKInstance.py parses the ODK Collect instanceXML file, and creates a data structure so that any code using this class can access the collected data values. It can be run standalone from the command line, but this is only for debugging purposes.
 
 ### Usage:
 ODKInstance.py can be run from the command line or imported as a module in a Python program. When run from the command line, the following options are available:
