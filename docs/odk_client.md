@@ -161,7 +161,7 @@ towns.
 
 - Next, prepare two CSV files: "`towns.csv`" and "`municipality.csv`". These CSV files should contain the list of municipalities and towns, respectively, that will be used as input for the "`select_from_file`" function in the survey sheet.
 
-- Once you have these files ready, use the ODK Convert tool to convert the XLSForm and CSV files into an ODK form. To do this, open a terminal or command prompt and navigate to the "`osm-fieldwork`" directory. Then, run the following command:
+- Once you have these files ready, use the osm-fieldwork tool to convert the XLSForm and CSV files into an ODK form. To do this, open a terminal or command prompt and navigate to the "`osm-fieldwork`" directory. Then, run the following command:
 
       ./osm-fieldwork/odk_client.py --id 4 --form waterpoints --xform create osm-fieldwork/xlsforms/waterpoints.xml osm-fieldwork/xlsforms/towns.csv osm-fieldwork/xlsforms/municipality.csv
 

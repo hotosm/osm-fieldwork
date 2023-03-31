@@ -1,6 +1,6 @@
-# ODK Convert Utility Programs
+# OSM Fieldwork Utility Programs
 
-ODK Convert contains few standalone utility programs for converting
+OSM Fieldwork contains a few standalone utility programs for converting
 data from ODK Collect and the ODK Central server, and a few support
 modules.
 
