@@ -259,19 +259,23 @@ class OverpassClient(object):
         """Extract buildings from Overpass"""
         logging.info("Extracting features...")
 
-        clip = open(boundary, "r")
-        geom = geojson.load(clip)
-        if 'features' in geom:
-            aoi = geom['features'][0]['geometry']
-        else:
-            aoi = geom["geometry"]
-        wkt = shape(aoi)
         poly = ""
-        lat, lon = wkt.exterior.coords.xy
-        index = 0
-        while index < len(lat):
-            poly += f"{lon[index]} {lat[index]} "
-            index += 1
+        if type(boundary) == str:
+            clip = open(boundary, "r")
+            geom = geojson.load(clip)
+            if 'features' in geom:
+                aoi = geom['features'][0]['geometry']
+            else:
+                aoi = geom["geometry"]
+            wkt = shape(aoi)
+            lat, lon = wkt.exterior.coords.xy
+            index = 0
+            while index < len(lat):
+                poly += f"{lon[index]} {lat[index]} "
+                index += 1
+        else:
+            for coords in boundary['geometry']['coordinates'][0]:
+                poly += f"{coords[1]} {coords[0]}"
 
         query = (f'[out:json];way[\"building\"](poly:\"{poly[:-1]}\");(._;>;);out body geom;')
         result = self.overpass.query(query)
@@ -391,7 +395,10 @@ if __name__ == "__main__":
     elif args.overpass:
         logging.info("Using Overpass Turbo for the data source")
         op = OverpassClient(outfile)
-        op.getFeatures(args.boundary, args.geojson, args.category)
+        clip = open(args.boundary, "r")
+        geom = geojson.load(clip)
+        #op.getFeatures(args.boundary, args.geojson, args.category)
+        op.getFeatures(geom, args.geojson, args.category)
     elif args.infile:
         f = FileClient(args.infile)
         f.getFeatures(args.boundary, args.geojson, args.category)
