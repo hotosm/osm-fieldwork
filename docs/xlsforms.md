@@ -2,7 +2,7 @@
 
 ## Document Summary
 
-This documents the process of improving XForms for better mapper
+This documents the process of improving XLSXForms for better mapper
 efficiency and stability.
 
 Read time; 30mins
@@ -109,7 +109,7 @@ sheet.
 The mandatory column headers are:
 
 - **List_name** - This is the name of the list as specified in the **select** type in the _survey_ sheet.
-- **Name** - This becomes the _value_ for the _tag_ in the OSM output file.
+- **Name** - This becomes the _value_ of the _tag_ in the OSM output file.
 - **Label** - Refers to what is displayed in the **select** menu.
 - The **label** column header also supports different languages by using a postfix of **::[language](abbreviation)**appended to it, for example **label::Nepali(np)**.
 - <span style="text-decoration:underline;">Settings</span>
@@ -383,8 +383,7 @@ the OMK app anymore.
 
 # XLSXForm Suggestions
 
-Since often mobile data collection is many of the same type of data,
-setting defaults helps reduce the amount of user actions that need to
-be performed to collect data. Often data collection is multiples of
-the same type of data, good defaults can record data where only the
-location has changed.
+Since mobile data collection often involves gathering many of the same types of data,
+setting defaults helps reduce the number of user actions needed to collect data.
+When collecting multiples of the same type of data,good defaults can record data 
+even when only the location has changed.
