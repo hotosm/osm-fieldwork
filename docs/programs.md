@@ -344,7 +344,7 @@ In this example, we're specifying that the input form is an XLSForm located at '
 
 This module write OSM XML format output file.
 
-osmfile.py is a Python module that provides functionality for writing OpenStreetMap (OSM) XML format output files. It is used as part of the odkconvert toolset, and can be used as part of a larger Python application.
+osmfile.py is a Python module that provides functionality for writing OpenStreetMap (OSM) XML format output files. It is used as part of the osm-fieldwork toolset, and can be used as part of a larger Python application.
 
 When used, osmfile.py takes a Python data structure containing OSM data as input and generates an OSM XML format output file. The data structure consists of nested Python dictionaries and lists, with each dictionary representing an OSM node, way or relation, and each list representing a set of nodes, ways or relations.
 
