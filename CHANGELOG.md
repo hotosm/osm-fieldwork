@@ -1,3 +1,19 @@
+## 0.2.0 (2023-03-31)
+
+### Feat
+
+- rename repo odkconvert --> osm-fieldwork
+
+### Fix
+
+- For querying Overpass, use either a file or a geojson dict
+- fix merge conflicts
+- Merge documentation changes from development branch
+- modified all files, replacing odkconvert wth osm-fieldwork
+- Add overpy
+- Minor typo fix
+- Refactor and update
+
 ## 0.1.1 (2023-03-29)
 
 ### Fix
