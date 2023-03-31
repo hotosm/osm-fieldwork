@@ -64,6 +64,6 @@ name = "cz_conventional_commits"
 version = "0.1.1"
 version_files = [
     "pyproject.toml:version",
-    "osm-fieldwork/__version__.py",
+    "osm_fieldwork/__version__.py",
     "Makefile:VERSION",
 ]
