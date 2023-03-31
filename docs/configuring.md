@@ -15,7 +15,7 @@ lists. For example:
       - age
       - gender
 
-There are 3 sections in the config file, _ignore_, _convert_, and
+There are 3 sections in the config file: _ignore_, _convert_, and
 _private_. Anything in the _ignore_ section gets left out of all data
 processing and output files. Anything in the _private_ section is kept
 out of the OXM output file, but included in a separate GeoJson
@@ -81,9 +81,8 @@ tag and the value for OSM. An equal sign is used to delineate them.
     - waterpoint:
       - well: man_made=water_well
       - natural: natural=water
-
-Some features have multiple OSM tags for a single survey question
-answer. To handle this case, all entries are delimited by a comma.
+Some features have multiple OSM tags for a single survey question's
+answer. To handle this case, all entries are deliminated by a comma.
 
     - power:
       - solar: generator::source=solar,power=generator
