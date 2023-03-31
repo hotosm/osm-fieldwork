@@ -25,7 +25,7 @@ _gender_ that don't belong in OSM, but that information is useful
 to the organizers. Anything in the _convert_ section is the real
 control of the conversion process.
 
-### Here is an example of a configuration file with explanations of its different sections and options expained in detail:
+### Here is an example of a configuration file with explanations of its different sections and options explained in detail:
 
     #ignore section
     ignore:
