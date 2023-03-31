@@ -10,55 +10,88 @@ Read time; 30mins
 Technical Depth: deep dive
 
 ---
-
 ## Background
 
-[XLSXForms](https://xlsform.org/en/) are used by [OpenDataKit
-(ODK)](https://www.opendatakit.org) to define the input fields for
-multiple mobile data collection apps. They have a rather complex
-syntax, since the XLSXForms are edited as a spreadsheet. Most of the
-XLSXForms I’ve collected don’t utilize more than the basic
-functionality of this format. While there are a few web based front
-ends for creating and editing XLSXForms, they don’t support many of
-the more advanced functionality of XLSXForms. The current only way to
-access this functionality is to use a spreadsheet program. To use the
-XLSXForm with a mobile app it gets converted using a utility program,
-_xls2xform,_ to the XML based XForm used by the apps.
+[XLSXForms](https://xlsform.org/en/) provides a way to define input 
+fields, their data types, and any constraints or validation rules that 
+apply. It uses the XLSX file format and allows users to create forms by
+editing spreadsheets. It is compatible with ODK and other data 
+collection platforms.
 
+XLSForm is a powerful tool that allows users to create complex forms 
+with advanced functionality, such as skip logic, complex calculations,
+and multimedia inputs. However, it has a complex syntax, and it can be
+difficult for new users to learn. There are a few web-based front-ends
+for creating and editing XLSForms, but they don't support all of the
+advanced features of the format.
+
+To use an XLSForm with a mobile app, it needs to be converted to the
+XML-based XForm format used by the apps. This conversion is done using
+a utility program called xls2xform. Once the XLSForm has been converted
+to an XForm, it can be loaded onto a mobile device and used to collect
+data in the field.
+
+XLSForm is widely used in the humanitarian and development sectors for
+data collection, monitoring, and evaluation. It is particularly popular
+for its flexibility and the ease with which it can be customized to meet
+specific needs. XLSForm has also been adopted by other platforms, such as
+KoBoToolbox and SurveyCTO, making it a widely used standard for creating
+forms for mobile data collection.
+
+To use an XLSXForm with a mobile app, it must be converted using a utility
+program called xls2xform to the XML-based XForm format used by the apps.
 There are two primary mobile apps used at HOT, OpenMapKit
 ([OMK](http://www.openmapkit.org/)), and OpenDataKit
-([ODK](https://getodk.org/)). OMK uses the same XLSX format as ODK, so
-any comments apply to
-both. [KoboToolKit](https://www.kobotoolbox.org/) also supports
-XLSXForms. This document explains how to improve XLSXForms for more
-efficient data collection. Efficiency lets you collect more good data
-in less time.
+([ODK](https://getodk.org/)). OMK uses the same XLSX format as ODK, so any
+comments about improving XLSXForms apply to both.
+
+Improving XLSXForms can lead to more efficient data collection, allowing
+more good data to be collected in less time.
 
 ## OpenDataKit
 
-[OpenDataKit (ODK)](https://www.opendatakit.org) is both a mobile app
-([ODK Collect](https://docs.getodk.org/collect-intro/)) for Android,
-and a server ([ODK
-Central](https://docs.getodk.org/central-intro/)). Most of the
-functionality of the OMK app has been migrated to ODK Collect,
-although it works differently. This document also explains how to
-modify old XForms from the OMK app to ODK Collect. ODK Collect is
-actively maintained, and the organization behind it offers various
-support services.
+[OpenDataKit (ODK)](https://www.opendatakit.org) is a software suite that
+includes a mobile app called [ODK Collect](https://docs.getodk.org/collect-intro/)
+and a server called [ODK
+Central](https://docs.getodk.org/central-intro/). ODK Collect is designed to
+run on Android devices and enables users to collect data in the field using
+forms created in the XLSXForms format. ODK Central is a server application
+that enables users to manage forms, data, and users, as well as to visualize
+and export collected data.
+
+ODK Collect offers a wide range of functionality, including the ability to
+capture photos, videos, and audio recordings, and to collect GPS coordinates
+and other metadata. It also supports complex data types, such as repeat groups
+and geoshapes, and can be customized with the use of various add-ons.
+
+While OMK was an earlier version of the ODK Collect app, most of its functionality
+has been migrated to ODK Collect. However, this document also provides information
+on how to modify old XForms from the OMK app to work with ODK Collect. ODK Collect
+is actively maintained, with regular updates and support services provided by
+the organization behind it.
 
 ## OpenMapKit
 
-[OpenMapKit (OMK)](https://www.openmapkit.org) is a Red Cross
-sponsored project for collecting data. It comprises both a server and
-a mobile app. OMK is an android based mobile application, referred to
-onward as OMK. Use of OMK is being deprecated, as it has been
-unmaintained for several years, and its functionality has been added
-to ODK. OMK used special field called **osm** in the **survey** sheet
-(first page of the XLSX file), it then looks at an additional sheet
-called **osm** that replaces the existing **choices** sheet. The
-values in the **osm** sheet are designed to be more closely matched
-to the tagging scheme used by [OpenStreetMap
+[OpenMapKit (OMK)](https://www.openmapkit.org) is an extension of OpenDataKit (ODK)
+that allows users to create professional quality mobile data collection surveys
+for field data collection. The tool is designed to simplify the process of
+collecting data for OpenStreetMap (OSM) in the field.
+
+It is a project sponsored by the Red Cross for collecting data. It includes
+a server and a mobile app that runs on Android operating system. However,
+the use of OMK is no longer recommended as it has not been maintained for
+several years and its functionality has been incorporated into ODK.
+
+One of the unique features of OMK was the use of a special field called
+**osm** in the **survey** sheet, which is the first page of the XLSX file.
+Additionally, OMK looked at another sheet called **osm** which replaced
+the existing **choices** sheet. The values in the **osm** sheet were
+designed to closely match the tagging scheme used by [OpenStreetMap
 (OSM)](https://www.openstreetmap.org/).
+
+Overall, while OMK has been a useful tool in the past for data collection,
+it is no longer actively maintained, and users are encouraged to use ODK
+instead which offers more advanced functionality and support services.
 
 # XLSXForm Syntax
 
@@ -281,39 +314,14 @@ can access the values in the OSM data the same as the above example.
 
 ## OpenStreetMap Data
 
-For those of use that are OpenStreetMap mappers, we’ve often wanted to
-be able to edit data in the field. This is possible with mobile apps
-like
-[StreetComplete](https://wiki.openstreetmap.org/wiki/StreetComplete)
-or [Vespucci](https://vespucci.io/), but their presets aren’t focused
-on humanitarian data collection. Since many features have been added
-by remote mapping, there are rarely any tags beyond
-_building=yes_. Until this functionality was added to ODK Collect, the
-mapper collected a new POI, and just manually merged the data later
-using an editor like JOSM. Now it’s possible to load data from OSM
-into ODK Collect. Using an XForm to improve feature data achieves tag
-completeness for a feature, as well as limits the tag values to
-accepted values.
+OpenStreetMap (OSM) is a popular tool for mapping and collecting geographic data, and many OSM mappers have wanted the ability to edit data in the field. While mobile apps like [StreetComplete](https://wiki.openstreetmap.org/wiki/StreetComplete)
+or [Vespucci](https://vespucci.io/) allow for this, they don't focus on humanitarian data collection, which can lead to incomplete tags on many features. Until recently, OSM mappers collected a new point of interest (POI) in the field and merged the data manually later on using an editor like JOSM. However, with the addition of functionality to ODK Collect, it's now possible to load data from OSM into the app and use XForms to improve feature data, achieving tag completeness and limiting tag values to accepted values.
 
-To create a data extract from OSM, you need to use Overpass Turbo or
-Postgres. Each tag in OSM becomes a column in an XForm. The column
-names are how you reference the data from within the XForm. If you are
-using the OSM data to set the default value for a
-_select_one_from_file_, then every possible value used for that tag
-needs to be in the choices sheet, or you get this error, which is
-_doctor_ is not in the choices for _healthcare_.
+In the past, if a mapper collected a new point of interest (POI) in the field, they would have to manually merge the data later using an editor like JOSM because OSM data typically had few tags beyond _building=yes_ due to the majority of features being added by remote mapping. However, with the recent addition of functionality in ODK Collect, it is now possible to load data from OSM into ODK Collect. This allows for the use of an XForm to improve feature data, which achieves tag completeness for a feature and limits the tag values to accepted values.
 
-There’s two data conversion processes required to use OSM in ODK
-Collect. The first step is producing the data extract. Since my goal
-is to convert the data from ODK into OSM, I use OSM standard tags in
-the name column in my survey and choices sheets.
+To create a data extract from OSM, one can use Overpass Turbo or Postgres. Each tag in OSM becomes a column in an XForm, and the column names are used to reference the data from within the XForm. If you are using the OSM data to set the default value for a _select_one_from_file_, then every possible value used for that tag needs to be in the choices sheet. Otherwise, you will get an error such as _doctor_ is not in the choices for _healthcare_.
 
-When doing a query to Overpass or Postgres, the column name will
-conflict, as it’s the same as what is in the survey sheet. So the data
-extract needs to use something else. For Postgres, this is easy as you
-can use **AS** in the query to rename the column to whatever you
-want. I’ve taken to using abbreviations or the OSM tags name. Those
-variable names are only used internally.
+Using OSM in ODK Collect requires two data conversion processes. The first step is to produce the data extract. Since the goal is to convert the data from ODK into OSM, OSM standard tags should be used in the name column in the survey and choices sheets. When doing a query to Overpass or Postgres, the column name will conflict with what is in the survey sheet, so the data extract needs to use something else. For Postgres, this is easy as you can use the **AS** command in the query to rename the column to whatever you want. Abbreviations or the OSM tag's name are often used as variable names internally, but the important thing is to ensure that they are unique and do not conflict with other names in the XForm.
 
 ![Placement Map](xlsimages/image2.jpg)
 
@@ -324,7 +332,7 @@ variable names are only used internally.
 The OMK mobile app was used for collecting location data using the GPS
 on the device, or tapping on a basemap. Because that functionality is
 now in ODK, the usage of the OMK mobile app is not required, and is
-not unmaintained and may be unreliable. This section is only useful if
+not maintained and may be unreliable. This section is only useful if
 you find yourself with an old XForm that you want to edit and reuse,
 as none of it applies to ODK or Kobo Collect.
 
