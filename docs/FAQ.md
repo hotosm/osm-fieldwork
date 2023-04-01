@@ -1,113 +1,91 @@
 # FAQ
-## For Users
-Q: What is OSM-Fieldwork?
-A: OSM-Fieldwork is a tool that allows users to convert survey forms created in different formats, such as XLSForm or Google Forms, to OpenDataKit (ODK) format. ODK is a free and open-source set of tools that allows users to create and deploy data collection forms on mobile devices.
 
-Q: How do I install OSM-Fieldwork?
-A: You can install OSM-Fieldwork either directly from the main branch using:
+**Q:** What is OSM Fieldwork?
 
-`pip install git+https://github.com/hotosm/osm_fieldwork.git`
+**A:** OSM Fieldwork is a project to support field data collection using
+[OpenDataKit](https://opendatakit.org/software/) and
+[OpenStreetMap](https://www.openstreetmap.org). The primary
+functionality is the ability to convert data collected with ODK
+Collect into OSM XML. In addition it can also create satellite imagery
+basemaps for [ODK Collect](https://docs.getodk.org/collect-intro/) and
+[Osmand](https://osmand.net/). In addition there is a library of
+[XLSForms](https://xlsform.org/en/) focused on humanitarian data
+collection.
 
-Or from PyPI using: `pip install Osm_Fieldwork`
+**Q:** How do I install OSM Fieldwork ?
 
+**A:** You can install OSM Fieldwork using **pip install osm-fieldwork**
 
-Q: How do I convert my survey form to ODK format using OSM-Fieldwork?
-A: To convert your survey form to ODK format using OSM-Fieldwork, run the command `python CSVDump.py <input_file> <output_file>` in your terminal. Replace <input_file> with the path to your survey form file and <output_file> with the path to the output file in ODK format.
+**Q:** Where can I find the source code and the XLSForm library ?
 
-Q: Can OSM-Fieldwork convert survey forms created in any format to ODK format?
+**A:** The git repository [is here](https://github.com/hotosm/osm-fieldwork)
 
-A: OSM-Fieldwork can convert survey forms created in XLSForm, Google Forms, and Kobo Toolbox format to ODK format. However, not all features and functions of the original form may be supported.
+**Q:** What language is Osm Fieldwork written in ?
 
-Q: What is the advantage of using OSM-Fieldwork?
-A: Using OSM-Fieldwork allows users to easily convert their survey forms to ODK format, which can then be deployed on mobile devices using ODK Collect. ODK Collect allows for offline data collection, and the data can be easily aggregated and analyzed using ODK Aggregate.
+**A:** OSM Fieldwork is written in Python and uses other modules like
+[shapely](https://pypi.org/project/shapely/),
+[pyxform](https://pypi.org/project/pyxform/),
+[xmltodict](https://pypi.org/project/xmltodict/),
+[psycopg2](https://pypi.org/project/psycopg/), and
+[pandas](https://pypi.org/project/pandas/)
 
-Q: How do I update my OSM-Fieldwork version?
-A: You can update your OSM-Fieldwork version by running the command `pip install osm_fieldwork --upgrade` in your terminal. This will upgrade OSM-Fieldwork to the latest version.
+**Q:** What is the XLSForm library ?
 
-Q: Can I use OSM-Fieldwork for free?
-A: Yes, OSM-Fieldwork is free and open-source software, licensed under the AGPLv3.
+**A:** The library of XLSForms are primarily focused on humanitarian
+data collection, and follow data models designed by the [Humanitarian
+Openstreetmap Team](https://www.hotosm.org) with consultation with
+other [humanitarian
+NGOs](https://en.wikipedia.org/wiki/Non-governmental_organization). These
+are designed for efficient data collection and conversion to OSM XML
+format to allow for easy and high quality contributions to the map.
 
-## For Contributors
-Q: What is OSM-Fieldwork?
-A: OSM-Fieldwork is a command-line tool for converting data between various data formats commonly used in survey research, including XLSForm, ODK XForm, and JSON. The tool is built using Python and can be run on Windows, Mac, and Linux operating systems.
+**Q:** How can I report a bug or suggest a new feature for OSM
+  Fieldwork ?
 
-Q: How can I contribute to OSM-Fieldwork?
-A: Contributions to OSM-Fieldwork are always welcome! You can contribute by fixing bugs, adding new features, improving the documentation, and testing the tool. To get started, you can check the OSM-Fieldwork repository on GitHub, review the [open issues](https://github.com/hotosm/osm_fieldwork/issues), and submit a pull request with your changes.
+**A:** You can report bugs or suggest new features by opening an issue
+  on the [OSM Fieldwork
+  repository](https://github.com/hotosm/osm-fieldwork/issues) on
+  GitHub. Be sure to provide as  much detail as possible, including
+  steps to reproduce the bug and any relevant error messages.
 
-Q: What programming languages and technologies are used in OSM-Fieldwork?
-A: OSM-Fieldwork is written in Python and uses several Python libraries, including PyYAML, Click, and xlrd. The tool can be run on any operating system that supports Python.
+**Q:** Do I need to have prior experience with XLSForms or python to
+contribute to OSM Fieldwork ?
 
-Q: How can I set up OSM-Fieldwork locally on my computer?
-A: To set up OSM-Fieldwork locally, you need to have Python 3 installed on your system. You can then clone the OSM-Fieldwork repository from GitHub, install the required dependencies using pip, and run the tool using the command-line interface.
+**A:** While prior experience with the various data formats usd by OSM
+  Fieldwork is  helpful, it is not required to contribute to OSM
+  Fieldwork. You can  start by reviewing the documentation, exploring
+  the codebase, and contributing to issues labeled as **good first issue**.
 
-Q: How can I report a bug or suggest a new feature for OSM-Fieldwork?
-A: You can report bugs or suggest new features by opening an issue on the OSM-Fieldwork repository on GitHub. Be sure to provide as much detail as possible, including steps to reproduce the bug and any relevant error messages.
+**Q:** What types of contributions are needed ?
 
-Q: How can I test my changes to OSM-Fieldwork?
-A: OSM-Fieldwork has a suite of automated tests that you can run to ensure that your changes do not introduce new bugs or break existing functionality. You can run the tests locally on your computer using the command-line interface or by setting up a continuous integration environment on a platform like Travis CI.
+**A:** OSM Field is currently lacking a collection of test cases, which
+will help maintain good quality. We would also like to have
+[sphinx](https://www.sphinx-doc.org/) based documentation addd to the
+code base.
 
-Q: Do I need to have prior experience with survey research or data formats to contribute to OSM-Fieldwork?
-A: While prior experience with survey research or data formats is helpful, it is not required to contribute to OSM-Fieldwork. You can start by reviewing the documentation, exploring the codebase, and contributing to issues labeled as "good first issue."
+**Q:** How can I get help or support for OSM Fieldwork ?
 
-Q: How can I get help or support with my contributions to OSM-Fieldwork?
-A: If you need help or support, you can reach out to the ODK community on the ODK forum or Slack channel. You can also ask questions or seek feedback on your contributions by opening an issue on the OSM-Fieldwork repository.
+**A:** If you need help or support with XLSForms, you can reach out to the
+  ODK community on the [ODK Forum](https://forum.getodk.org/). For
+  questions on OSM Fieldwork you can open an issue on the OSM
+  Fieldwork repository.
 
-Q: What are the benefits of contributing to OSM-Fieldwork?
-A: Contributing to OSM-Fieldwork allows you to help improve a widely used tool in survey research, gain experience with Python programming and command-line tools, and connect with other contributors in the ODK community.
+**Q:** What are the benefits of contributing to OSM Fieldwork?
 
+**A:** Contributing to OSM Fieldwork allows you to help improve a widely
+used tools for data collection.
 
-# Troubleshooting
+**Q:** What is the license for OSM Fieldwork ?
 
-## Unable to connect to the ODKCentral server over http (i.e. insecure)
+**A:** OSM Fieldwork is
+[AGPLv3](https://www.fsf.org/bulletin/2021/fall/the-fundamentals-of-the-agplv3),
+because it encourages us to all work together. The XLSForms themselves
+are under the [CC 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-By default, ODKCentral API connections are verified with SSL certificates. However, sometimes, users may encounter issues connecting to ODKCentral with self-signed certificates. Here are some steps to troubleshoot and resolve the issue:
+**Q:** How can I test my changes to OSM Fieldwork ?
 
-- Add the certificate to your system trusted certificate store.
-
-    If you are using a self-signed certificate, make sure to add it to your system's trusted certificate store. For Ubuntu/Debian users, follow the steps below:
-
-
-
-    ```bash
-    sudo apt update && sudo apt install ca-certificates
-    sudo cp cert.crt /usr/local/share/ca-certificates/
-    sudo update-ca-certificates
-    ```
-
-    If running OSM-Fieldwork within FMTM, this is handled for you.
-
-- Disable SSL verification (not recommended)
-
-    If you have tried the above step and still cannot connect to ODKCentral, you can disable SSL verification for the certificate. However, this is not recommended as it will connect to ODKCentral insecurely.
-
-    To do this, add the environment variable `ODK_CENTRAL_SECURE=False` to your system.
-
-### Here are some additional troubleshooting steps that may help if you are still unable to connect to the ODKCentral server over HTTP:
-
-- Verify that the ODKCentral API URL is correct
-
-    Make sure that you have entered the correct ODKCentral API URL in your OSM-Fieldwork configuration file. You can check the URL by logging into ODKCentral and navigating to the "Site Configuration" page.
-
-- Check that the ODKCentral server is running
-
-    Make sure that the ODKCentral server is running and accessible. You can check the server status by navigating to the ODKCentral API URL in your web browser.
-
-- Check that the ODKCentral server is reachable from your network
-
-    Make sure that your network is not blocking the connection to the ODKCentral server. You can try pinging the server from your computer to see if there is a network issue.
-
-- Check that your firewall is not blocking the connection
-
-    Make sure that your firewall is not blocking the connection to the ODKCentral server. You can try temporarily disabling your firewall to see if this resolves the issue.
-
-- Check the ODKCentral server logs
-
-    Check the ODKCentral server logs to see if there are any error messages related to the connection. This can help identify the root cause of the issue.
-
-- Try using a different web browser
-
-    If you are having trouble connecting to ODKCentral through a web browser, try using a different browser to see if the issue persists. It is possible that the issue is related to the browser or its settings.
-
-- Update OSM-Fieldwork and ODKCentral to the latest version
-
-    Make sure that you are using the latest version of OSM-Fieldwork and ODKCentral. Check the OSM-Fieldwork and ODKCentral release notes to see if any updates address the issue you are experiencing.
+**A:** OSM Fieldwork has a suite of automated tests that you can run to
+ensure that your changes do not introduce new bugs or break existing
+functionality. You can run the tests locally on your computer using
+the command-line interface or by setting up a continuous integration
+environment on a platform like Travis CI.
