@@ -4,12 +4,12 @@
 
 [ODK Collect](https://www.getodk.org) has recently gained the ability
 to load an external data file in GeoJson format of existing data. It's
-then possible to select existing data and then import its values into
+now possible to select existing data and then import its values into
 the XForm as default values. This lets the mapper use the XForm to
 change the existing data, or add to it. Any changes will need to be
 conflated later, that'll be another document.
 
-Why do I want to use ODK Collect to edit map data? Much of what is
+**Why do I want to use ODK Collect to edit map data?** Much of what is
 currently in [OpenStreetMap](https:www.openstreetmap.org) is lacking
 metadata, or the data has changed, like when a restaurant changes
 owners and gets a new name. Also most all remote mapping using
@@ -45,8 +45,7 @@ on.
 ### Disable the map appearance
 
 When working with external data, the _map value_ in the _appearance_ column of the survey sheet is often used. However, this can slow down the debugging process. To make it more efficient, you can turn off the map values and use the select menu instead. That works especially well
-if you have a small data file for testing, because then it's easy to
-cycle between them.
+if you have a small data file for testing, because then it's easy to cycle between them.
 
 To use the placement map, here's an example.
 

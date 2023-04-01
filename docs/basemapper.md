@@ -4,14 +4,13 @@ Basemapper is a program that creates basemaps for mobile apps in the mbtiles and
 
 - mbtiles, supported by many apps.
 - sqlite, supported by OSMAnd
- namely
 
-Both of these use formats use underlying sqlite3, with similar database
+Both of these formats use underlying sqlite3, with similar database
 schemas. 
 
 Basemapper does not store anything in memory, all processing
 is done as a stream, so large areas can be downloaded. Time to go buy a
-really large hard drive... You can also use this map tile cache for
+really large hard drive. You can also use this map tile cache for
 any program that supports a TMS data source. Luckily once downloaded,
 you don't have to update the map tile cache very often, but it's also
 easy to do so when you need to.
@@ -64,7 +63,7 @@ Generate a basemap for the Topo imagery source using sqlitedb format.
 - Streamlines the process of creating basemaps for mobile apps
 - Creates easily usable cache files for mobile apps
 - Allows for easy integration of custom maps into data collection workflows for ODK Collect
-- Particularly helpful for fieldwork or data collection in remote or hard-to-reach areas
+- Is particularly helpful for fieldwork or data collection in remote or hard-to-reach areas
 
 To use Basemapper, simply provide it with the necessary input data, such as a bounding box or a list of tile coordinates. The program will then create the specified basemap file in either mbtiles or sqlitedb format.
 

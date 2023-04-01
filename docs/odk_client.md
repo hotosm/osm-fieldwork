@@ -1,6 +1,6 @@
 # ODK Client
 
-odk_client.py is a command line utility for  interacting with the ODK Central server. It
+odk_client.py is a command line utility for interacting with the ODK Central server. It
 exposes many of the REST API calls supported by the server and allows users to perform various tasks, such as uploading and downloading attachments and submissions.
 
 ## Usage
@@ -20,7 +20,7 @@ exposes many of the REST API calls supported by the server and allows users to p
                             project operations
       -p {forms,app-users,assignments,delete}, --project {forms,app-users,assignments,delete}
                             project operations
-      -i ID, --id ID        Project ID nunmber
+      -i ID, --id ID        Project ID number
       -f FORM, --form FORM  XForm name
       -u UUID, --uuid UUID  Submission UUID, needed to download the data
       -x {attachments,csv,submissions,upload,download,create,assignments,delete,publish}, --xform {attachments,csv,submissions,upload,download,create,assignments,delete,publish}
@@ -53,6 +53,8 @@ The following server-specific commands are supported by ODK Client:
 - `--server users`
 
   This command returns a list of user IDs and their corresponding usernames.
+  
+  ### Example usage:
 
       python odk_client.py --server users
 
@@ -63,7 +65,7 @@ Project requests allow users to access data for a specific project, such as XFor
 Projects contain all the Xforms and attachments for that project. To
 access the data for a project, it is necessary to supply the project
 ID. That can be retrieved using the above server command. In this
-example, 1 is used.
+example, 1 is used as the project ID.
 
 ### Usage
 The following are the project-specific commands supported by ODK Client:
