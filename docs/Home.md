@@ -1,4 +1,4 @@
-# ODK Convert Project
+# OSM Fieldwork Project
 
 Osm-Fieldwork is a project for processing data collection using
 OpenDataKit into OpenStreetMap format. It includes several utility

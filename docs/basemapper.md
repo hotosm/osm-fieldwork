@@ -16,7 +16,7 @@ any program that supports a TMS data source. Luckily once downloaded,
 you don't have to update the map tile cache very often, but it's also
 easy to do so when you need to.
 
-In addition to that, `Basemapper.py` is a Python script included in the odkconvert package, which builds mbtiles and sqlitedb files for ODK Collect and Osmand, typically containing satellite imagery. The script downloads map tiles to a cache and uses them to generate the basemap files. It does not perform data conversion. The resulting output can be used for visualizing geographic data and analyzing survey responses in a spatial context. The script provides various command-line options for customizing the output, such as setting the zoom levels, boundary, tile cache, output file name, and more.
+In addition to that, `Basemapper.py` is a Python script included in the osm-fieldwork package, which builds mbtiles and sqlitedb files for ODK Collect and Osmand, typically containing satellite imagery. The script downloads map tiles to a cache and uses them to generate the basemap files. It does not perform data conversion. The resulting output can be used for visualizing geographic data and analyzing survey responses in a spatial context. The script provides various command-line options for customizing the output, such as setting the zoom levels, boundary, tile cache, output file name, and more.
 
 # Usage
 The `Basemapper.py` script is run from the command line. The basic syntax is as follows:
