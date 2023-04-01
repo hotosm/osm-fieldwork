@@ -25,3 +25,5 @@
 [Programs](https://github.com/hotosm/osm-fieldwork/wiki/programs)
 
 [XLS Forms](https://github.com/hotosm/osm-fieldwork/wiki/xlsforms)
+
+[Troubleshooting](https://github.com/hotosm/osm-fieldwork/wiki/troubleshooting)
