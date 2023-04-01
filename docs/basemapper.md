@@ -1,94 +1,130 @@
 # Basemapper.py
 
-Basemapper is a program that creates basemaps for mobile apps in the mbtiles and sqlitedb formats. These formats are commonly used by mobile mapping applications like Osmand and ODK Collect in two primary formats:
+Basemapper is a program that creates basemaps for mobile apps in the
+mbtiles and sqlitedb formats. These formats are commonly used by
+mobile mapping applications like [Osmand](https://osmand.net/) and
+[ODK Collect](https://docs.getodk.org/collect-intro/). There are two
+primary formats:
 
 - mbtiles, supported by many apps.
-- sqlite, supported by OSMAnd
- namely
+- sqlitedb, supported only by Osmand
 
-Both of these use formats use underlying sqlite3, with similar database
-schemas. 
+Both of these use formats use underlying
+[sqlite3](https://www.sqlite.org/index.html), with similar database 
+schemas. The schema are a simple XYZ that stores a png or jpeg
+image. When the entire planet is chopped into squares, there is a
+relation between which map tile contains the GPS coordinates you
+want. Small zoom levels cover a large area, higher zoom levels a
+smaller area.
 
 Basemapper does not store anything in memory, all processing
-is done as a stream, so large areas can be downloaded. Time to go buy a
+is done as a stream so large areas can be downloaded. Time to go buy a
 really large hard drive. You can also use this map tile cache for
-any program that supports a TMS data source. Luckily once downloaded,
+any program that supports a TMS data source like
+[JOSM](https://josm.openstreetmap.de/). Luckily once downloaded, 
 you don't have to update the map tile cache very often, but it's also
-easy to do so when you need to.
+easy to do so when you need to. When I expect to be working offline, I
+commonly download a larger area, and then in the field produce the
+smaller files.
 
-In addition to that, `Basemapper.py` is a Python script included in the osm-fieldwork package, which builds mbtiles and sqlitedb files for ODK Collect and Osmand, typically containing satellite imagery. The script downloads map tiles to a cache and uses them to generate the basemap files. It does not perform data conversion. The resulting output can be used for visualizing geographic data and analyzing survey responses in a spatial context. The script provides various command-line options for customizing the output, such as setting the zoom levels, boundary, tile cache, output file name, and more.
+Basemapper. downloads map tiles to a cache and uses them to generate the
+output files. It does not perform data conversion. The resulting
+output can be used for visualizing geographic data and analyzing
+survey responses in a spatial context. The script provides various
+command-line options for customizing the output, such as setting the
+zoom levels, boundary, tile cache, output file name, and more.
+
+## Database Schemas
+
+Mbtiles are used by multiple mobile apps, but our usage is primarly
+for ODK Collect. Imagery basemaps are very useful for two
+reasons. One, the map data may be lacking, so the imagery helps one to
+naviagte. For ODK Collect the other advantage is you can select the
+location based on where the building is, instead of were you are
+standing. Mbtiles are pretty straight forward.
+
+The sqlitedb schema used by Osmand looks the same at first, but has
+one big difference. In this schema it tops out at zoom level 16, so
+instead of incrementing, it decrements the zoom level. This obscure
+detail took me a while to figure out, it isn't documented anywhere.
+
+### mbtiles
+
+	CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob);
+	CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row);
+	CREATE TABLE metadata (name text, value text);
+	CREATE UNIQUE INDEX metadata_idx  ON metadata (name);
+
+### sqlitedb
+
+	CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));
+	CREATE INDEX IND on tiles (x,y,z,s);
+	CREATE TABLE info (maxzoom Int, minzoom Int);
+	CREATE TABLE android_metadata (en_US);
 
 # Usage
-The `Basemapper.py` script is run from the command line. The basic syntax is as follows:
 
-    Basemapper.py [-h] [-v] [-b BOUNDARY] [-z ZOOMS] [-t TILES] [-o OUTFILE] [-d OUTDIR] [-s {ersi,bing,topo,google,oam}] input_file
+The **basemapper.py** script is run from the command line when
+running standalone, or the class can be imported into python
+programs. The [Field Mapping Tasking
+Manager](https://github.com/hotosm/fmtm/wiki) uses this as part of a
+(FastAPI])https://fastapi.tiangolo.com/) backend for the website.
 
-Converts form with a geoshape question into a map with tile overlays.
+The first time you run basemapper.py, it'll start downloading map
+tiles, which may take a long time. Often the upstream source is
+slow. It is not unusual for downloading tiles, especially at higher
+zoom levels may tak an entire day. Once tiles are download, producing
+the outout tiles is quick as then it's just packaging. In areas where
+I work frequentely, I usually download a large area even if it takes a
+week or more so it's available when I need it. On my laptop I actually
+have a map tile cache for the entire state of Colorado, as well as
+many large areas of Nepal, Turkey, Kenya, Uganda, and Tanzania.
 
 # Options
+
+The basic syntax is as follows:
+
 - -input_file, --This is a required positional argument that specifies the path to the input ODK form.
 - -h, --help show this help message and exit
 - -v, --verbose verbose output
 - -b BOUNDARY, --boundary BOUNDARY - The boundary for the area you want
 - -z ZOOMS, --zooms ZOOMS - The Zoom levels
-- -t TILES, --tiles TILES - Top level directory for tile cache
 - -o OUTFILE, --outfile - OUTFILE Output file name
 - -d OUTDIR, --outdir OUTDIR -Output directory name for tile cache
 - -s {ersi,bing,topo,google,oam}, --source {ersi,bing,topo,google,oam} - Imagery source
 
+The suffix of the output file is either **mbtiles** or **sqlitedb**, which is
+used to select the output format. The boundary file must be in
+[GeoJson](https://geojson.org/) format.
+
+## Imagery Sources
+
+- ERSI - Environmental Systems Research Institute
+- Bing - Microsoft Bing imagery 
+- Topo - USGS topographical maps (US only)
+- OAM - OpenAerialMap
+
+The default output directory is **/var/www/html**. The actual
+subdirectory is the soiurce name with **tiles** appended, so for
+example **/var/www/html/oamtiles**. Putting the map tiles into webroot
+lets JOSM or QGIS use them when working offline.
+
 ## Examples
 
-**Example 1:**
-Generate a basemap for OSMAnd using ERSI imagery, for an area specified by a geojson bounding box, and supporting zoom levels 12 through 19.
+### **Example 1:**
 
-    ./basemapper.py -z 12-19 -b test.geojson -o test.sqlitedb -s ersi
+Generate a basemap for Osmand using
+[ERSI](https://www.esri.com/en-us/home) imagery, for an area 
+specified by a geojson bounding box, and supporting zoom levels 12
+through 19.
 
-**Example 2:**
-As above, but mbtiles format, and Bing imagery source. The `-v` option enables verbose output,
-which will show more details about the download and processing progress.   
-   
+    [path]/basemapper.py -z 12-19 -b test.geojson -o test.sqlitedb -s ersi
 
-    ./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s bing -
-    
-    ./basemapper.py -z 12-19 -b test.geojson -o test.mbtiles -s ersi
+### **Example 2:**
 
-## More examples of using Basemapper.py
+As above, but mbtiles format, and Bing imagery source. The `-v` option
+enables verbose output, which will show more details about the
+download and processing progress. Also only download a single zoon
+level.
 
-### Example 1: Convert an ODK form with default settings
-
-- Streamlines the process of creating basemaps for mobile apps
-- Creates easily usable cache files for mobile apps
-- Allows for easy integration of custom maps into data collection workflows for ODK Collect
-- Is particularly helpful for fieldwork or data collection in remote or hard-to-reach areas
-
-In this example, the script will use default settings for zoom levels, boundary, tile cache, output file name, and imagery source to generate a map output. The input file is `input_form.xml`.
-
-### Example 2: Set custom zoom levels and imagery source
-
-    python Basemapper.py -z 12-16 -s google input_form.xml
-
-In this example, the `-z` option sets the zoom levels to 12-16, and the `-s` option sets the imagery source to Google. The input file is `input_form.xml`. The other options, such as boundary, tile cache, and output file name, will use their default settings.
-
-### Example 3: Set custom boundary and output file name
-
-    python Basemapper.py -b "25.5, -122.8, 37.5, -118.3" -o my_map.html input_form.xml
-
-In this example, the `-b` option sets the boundary to "25.5, -122.8, 37.5, -118.3", which defines the southwest and northeast corners of the map. The `-o` option sets the output file name to "my_map.html". The input file is `input_form.xml`. The other options, such as zoom levels, tile cache, and imagery source, will use their default settings.
-
-### Example 4: Enable verbose output
-
-    python Basemapper.py -v input_form.xml
-
-In this example, the `-v` option enables verbose output. The input file is `input_form.xml`. The other options, such as zoom levels, boundary, tile cache, output file name, and imagery source, will use their default settings.
-
-### Example 5: Set custom tile cache and imagery source
-
-    python Basemapper.py -t /path/to/tile/cache -s bing input_form.xml
-
-In this example, the `-t` option sets the top level directory for the tile cache to "/path/to/tile/cache", and the `-s` option sets the imagery source to Bing. The input file is `input_form.xml`. The other options, such as zoom levels, boundary, and output file name, will use their default settings.
-
-### Example 6: Set custom verbose output and imagery source
-
-    python Basemapper.py -v -s ersi input_form.xml
-
-In this example, the `-v` option enables verbose output, and the `-s` option sets the imagery source to ersi. The input file is `input_form.xml`. The other options, such as zoom levels, boundary, tile cache, and output file name, will use their default settings.
+    [path]/basemapper.py -v -z 16 -b test.geojson -o test.mbtiles -s bing
