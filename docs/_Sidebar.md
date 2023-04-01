@@ -24,4 +24,4 @@
 
 [Programs](https://github.com/hotosm/osm_fieldwork/wiki/programs)
 
-[XLS Forms](https://github.com/hotosm/osm_fieldwork/wiki/xlsforms)
+[XLS Forms](https://github.com/hotosm/osm-fieldwork/wiki/xlsforms)
