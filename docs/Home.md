@@ -189,7 +189,7 @@ data item with the goal of both tag completeness and tag correctness.
 
 	wget https://github.com/hotosm/xlsform/raw/master/XForms/buildings.xls
 
-- Convert the XLSForm to OSM XML using CSVDump:
+- Convert the XForm to OSM XML using CSVDump:
 
 - Use the resulting OSM XML file with JOSM or other OSM editors to
 validate and edit the data before uploading it to OpenStreetMap. 
