@@ -113,9 +113,9 @@ class BaseMapper(object):
             "name": "ESRI World Imagery",
             "url": url,
             "suffix": "jpg",
-            "source": "ersi",
+            "source": "esri",
         }
-        self.sources["ersi"] = source
+        self.sources["esri"] = source
 
         # USGS Topographical map
         url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%s"
@@ -217,8 +217,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-s",
         "--source",
-        default="ersi",
-        choices=["ersi", "bing", "topo", "google", "oam"],
+        default="esri",
+        choices=["esri", "bing", "topo", "google", "oam"],
         help="Imagery source",
     )
     args = parser.parse_args()
