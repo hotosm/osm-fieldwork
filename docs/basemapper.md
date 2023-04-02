@@ -99,7 +99,7 @@ used to select the output format. The boundary file must be in
 
 ## Imagery Sources
 
-- ERSI - Environmental Systems Research Institute
+- ESRI - Environmental Systems Research Institute
 - Bing - Microsoft Bing imagery 
 - Topo - USGS topographical maps (US only)
 - OAM - OpenAerialMap
@@ -118,7 +118,7 @@ Generate a basemap for Osmand using
 specified by a geojson bounding box, and supporting zoom levels 12
 through 19.
 
-    [path]/basemapper.py -z 12-19 -b test.geojson -o test.sqlitedb -s ersi
+    [path]/basemapper.py -z 12-19 -b test.geojson -o test.sqlitedb -s esri
 
 ### **Example 2:**
 
