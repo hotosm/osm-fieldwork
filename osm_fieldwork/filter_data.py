@@ -70,7 +70,7 @@ class FilterData(object):
             infile = open(tmpfile, "r")
             indata = geojson.load(infile)
         elif type(data) == bytes:
-            indata = data.decode()
+            indata = eval(data.decode())
         else:
             indata = data
         keep = ("name",
@@ -81,6 +81,7 @@ class FilterData(object):
                 "addr:housenumber",
                 "osm_id",
                 "title",
+                "tags",
                 "label",
                 )
         collection = list()
@@ -88,7 +89,11 @@ class FilterData(object):
             properties = dict()
             for key, value in feature['properties'].items():
                 if key in keep:
-                    properties[key] = value
+                    if key == 'tags':
+                        for k, v in value.items():
+                            properties[k] = v
+                    else:
+                        properties[key] = value
                 else:
                     if key in self.tags.keys():
                         if key == "name":
