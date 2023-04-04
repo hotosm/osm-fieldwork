@@ -84,6 +84,12 @@ class FilterData(object):
                 "tags",
                 "label",
                 )
+        # these just create noise in the log file
+        ignore = (
+            "timestamp",
+            "version",
+            "changeset",
+            )
         collection = list()
         for feature in indata['features']:
             properties = dict()
@@ -91,14 +97,21 @@ class FilterData(object):
                 if key in keep:
                     if key == 'tags':
                         for k, v in value.items():
-                            properties[k] = v
+                            if k[:4] == "name":
+                                properties['title'] = value[k]
+                                properties['label'] = value[k]
+                            else:
+                                properties[k] = v
                     else:
-                        properties[key] = value
+                        if key == 'osm_id':
+                            properties['id'] = value
+                        else:
+                            properties[key] = value
                 else:
                     if key in self.tags.keys():
                         if key == "name":
                             properties['title'] = self.tags[key]
-                            # properties['label'] = self.tags[key]
+                            properties['label'] = self.tags[key]
                         if value in self.tags[key]:
                             properties[key] = value
                         else:
@@ -106,6 +119,8 @@ class FilterData(object):
                                 log.warning(f"Value {value} not in the data model!")
                             continue
                     else:
+                        if key in ignore:
+                            continue
                         log.warning(f"Tag {key} not in the data model!")
                         continue
             newfeature = Feature(geometry=feature['geometry'], properties=properties)
