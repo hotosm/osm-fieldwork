@@ -5,4 +5,4 @@ from:
     - ways_poly
 where:
     tags:
-        - { healthcare: not null, social_facility: not null, 'healthcare:speciality: not null, opening_hours: not null }
+        - { healthcare: not null, social_facility: not null, healthcare:speciality: not null}
