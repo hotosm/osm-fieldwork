@@ -5,48 +5,49 @@
 This documents the process of improving XLSXForms for better mapper
 efficiency and stability.
 
-Read time; 30mins
-
-Technical Depth: deep dive
-
----
 ## Background
 
-[XLSXForms](https://xlsform.org/en/) provides a way to define input 
-fields, their data types, and any constraints or validation rules that 
+[XLSXForms](https://xlsform.org/en/) provides a way to define input
+fields, their data types, and any constraints or validation rules that
 apply. It uses the XLSX file format and allows users to create forms by
-editing spreadsheets. It is compatible with ODK and other data 
+editing spreadsheets. It is compatible with ODK and other data
 collection platforms.
 
-XLSForm is a powerful tool that allows users to create complex forms 
-with advanced functionality, such as skip logic, complex calculations,
-and multimedia inputs. However, it has a complex syntax, and it can be
-difficult for new users to learn. There are a few web-based front-ends
-for creating and editing XLSForms, but they don't support all of the
-advanced features of the format.
+XLSForm is a powerful tool that allows users to create complex forms
+with advanced functionality, such as conditional questions, complex
+calculations, and multimedia inputs. However, it has a complex syntax,
+and it can be difficult for new users to learn. There are a few
+web-based front-ends for creating and editing XLSForms, but they don't
+support all of the advanced features of the format.
 
 To use an XLSForm with a mobile app, it needs to be converted to the
 XML-based XForm format used by the apps. This conversion is done using
-a utility program called xls2xform. Once the XLSForm has been converted
+a utility program called
+[xls2xform](https://pypi.org/project/pyxform/) which is part of the
+pyxform python package. Once the XLSForm has been converted
 to an XForm, it can be loaded onto a mobile device and used to collect
 data in the field.
 
-XLSForm is widely used in the humanitarian and development sectors for
+XLSForms are widely used in the humanitarian and development sectors for
 data collection, monitoring, and evaluation. It is particularly popular
 for its flexibility and the ease with which it can be customized to meet
 specific needs. XLSForm has also been adopted by other platforms, such as
-KoBoToolbox and SurveyCTO, making it a widely used standard for creating
+Kobo Toolbox and SurveyCTO, making it a widely used standard for creating
 forms for mobile data collection.
 
-To use an XLSXForm with a mobile app, it must be converted using a utility
-program called xls2xform to the XML-based XForm format used by the apps.
-There are two primary mobile apps used at HOT, OpenMapKit
-([OMK](http://www.openmapkit.org/)), and OpenDataKit
-([ODK](https://getodk.org/)). OMK uses the same XLSX format as ODK, so any
-comments about improving XLSXForms apply to both.
+The two primary mobile apps used at HOT that use XLSForms are
+[OpenMapKit(OMK)](http://www.openmapkit.org/), and [ODK
+Collect](https://docs.getodk.org/collect-intro/). OMK uses the same
+XLSX format as ODK Collect or Kobo Collect, so any
+comments about improving XLSXForms apply all of them. Using OMK has been
+depreciated as it's functionality has been incorporated into ODK
+Collect. It is unmaintained, and no longer works on newer phones.
 
-Improving XLSXForms can lead to more efficient data collection, allowing
-more good data to be collected in less time.
+Improving XLSXForm design can lead to more efficient data collection,
+allowing more good quality data to be collected in less time. Also
+for those of us use ODK based apps to collect data for
+[OpenStreetMap(OSM)](https://www.openstreetmap.org), a well designed
+XLSForm is easier to convert and upload to OSM.
 
 ## OpenDataKit
 
@@ -74,13 +75,14 @@ the organization behind it.
 
 [OpenMapKit (OMK)](https://www.openmapkit.org) is an extension of OpenDataKit (ODK)
 that allows users to create professional quality mobile data collection surveys
-for field data collection. The tool is designed to simplify the process of
+for field data collection. The tool was designed to simplify the process of
 collecting data for OpenStreetMap (OSM) in the field.
 
-It is a project sponsored by the Red Cross for collecting data. It includes
-a server and a mobile app that runs on Android operating system. However,
-the use of OMK is no longer recommended as it has not been maintained for
-several years and its functionality has been incorporated into ODK.
+It was sponsored by the Red Cross and included a server and a mobile
+app that rans on Android operating system. However, the use of OMK is
+no longer recommended as it has not been maintained for several years
+and its functionality has been incorporated into ODK. It no longer
+runs on most newer phones.
 
 One of the unique features of OMK was the use of a special field called
 **osm** in the **survey** sheet, which is the first page of the XLSX file.
@@ -89,29 +91,41 @@ the existing **choices** sheet. The values in the **osm** sheet were
 designed to closely match the tagging scheme used by [OpenStreetMap
 (OSM)](https://www.openstreetmap.org/).
 
+Because it is important to get collected data into OSM, the
+[Humanitarian OpenStreetMap Team](https://www.hotosm.org) has
+developed a project called [OSM
+Fieldwork](https://github.com/hotosm/osm-fieldwork/wiki), which can
+handle the conversion from ODK formats into OSM.
+
 Overall, while OMK has been a useful tool in the past for data collection,
 it is no longer actively maintained, and users are encouraged to use ODK
 instead which offers more advanced functionality and support services.
 
 # XLSXForm Syntax
 
-An [XLSXForm](https://xlsform.org/en/) is the source file for OMK and
+An [XLSXForm](https://xlsform.org/en/) is the source file for
 ODK based tools. This is edited in a spreadsheet program like
-LIbreCalc or Excel. There are also online build tools, but they fail
-to utilize the full functionality of XLSXForms. The python program
-_xls2xform_ converts the spreadsheet to the format used by ODK
-Collect. You can also upload the spreadsheet to the ODK Central
-server, and it will convert it.
+LibreCalc, Excel, or Google Forms. There are also online build tools,
+but they fail to utilize the full functionality of XLSXForms. The
+program **xls2xform**, which is in the
+[pyxform](https://pypi.org/project/pyxform/) python package converts
+the spreadsheet to the format used by ODK Collect. You can also upload
+the spreadsheet to the ODK Central server, and it will convert it
+there.
 
-### Sheet Names
+This document is just a subset of all of syntax, and focuses on the
+most commonly used ones. To really dig deep into the XLSForm syntax go
+that [documentation page](https://xlsform.org/en/).
+
+## Sheet Names
 
 The sheet names are predefined to have specific functionality as
 follows, and the column headers are used to determine the
 functionality of the value in the cells of the spreadsheet. The
-sheets are Survey, Choices, and Settings. A few columns are required
-to exist in each sheet, the rest are optional.
+sheets are **Survey**, **Choices**, and **Settings**. A few columns
+are required to exist in each sheet, the rest are optional.
 
-- [Survey](https://xlsform.org/en/#the-survey-worksheet)
+### [Survey Sheet](https://xlsform.org/en/#the-survey-worksheet)
 
   - This sheet contains all the questions used for collecting data,
     and refers to the actual values for each question which are on the
@@ -119,47 +133,93 @@ to exist in each sheet, the rest are optional.
 
   These are the mandatory column headers in the survey sheet:
 
-- **Type** - The type of question, the most common ones are **text**, **select_one**, and **select_multiple.** The second argument in the type column is the keyword used as the **list_name** in the _choices_ sheet for selection menus
-- **Name** - Refers to the name of the choice keyword that would be the _tag_ in the output OSM file
+- **Type** - The type of question, the most common ones are **text**,
+  **select_one**, **select_multiple.**, and **select_from_file** The
+  second argument in the type column is the keyword used as the
+  **list_name** in the _choices_ sheet for selection menus
+- **Name** - Refers to the name of the choice keyword that would be
+  the _tag_ in the output OSM file
 - **Label** - Refers to the question the user sees
 
-  The **name** and **label** column headers also support different languages by using a postfix of **::[language](abbreviation)**appended to it, for example **label::Nepali(np)**.
+  The **name** and **label** column headers also support different
+  languages by using a postfix of
+  **::[language](abbreviation)** appended to it, for example
+  **label::Nepali(np)**.
 
   These are the optional column headers in the survey sheet:
 
-- [Hint](https://xlsform.org/en/#hints) - Optional value display with the question with further information
-  - The **hint** column also supports different languages by using a postfix of**::[language](abbreviation)**appended to it, for example **hint::Nepali(np)**.
-- [Default](https://xlsform.org/en/#default) - Optional default value for a selection.
-- [Required](https://xlsform.org/en/#required) - If the value is 1 or _yes_, this field must have an answer. If the value is 0 or _no_ or blank, then it’s optional.
-- [Relevant](https://xlsform.org/en/#relevant) - Allows to set up conditional display of questions based on other fields.
-- [Appearance](https://xlsform.org/en/#appearance) - This changes how input fields are displayed on the screen.
-- [Choices](https://xlsform.org/en/#the-choices-worksheet)
+- [Hint](https://xlsform.org/en/#hints) - Optional value display with
+  the question with further information
+  - The **hint** column also supports different languages by using a
+    postfix of**::[language](abbreviation)**appended to it, for
+    example **hint::Nepali(np)**.
+- [Default](https://xlsform.org/en/#default) - Optional default value
+  for a selection.
+- [Required](https://xlsform.org/en/#required) - If the value is 1 or
+  _yes_, this field must have an answer. If the value is 0 or _no_ or
+  blank, then it’s optional.
+- [Relevant](https://xlsform.org/en/#relevant) - Allows to set up
+  conditional display of questions based on other fields.
+- [Appearance](https://xlsform.org/en/#appearance) - This changes how
+  input fields are displayed on the screen.
+- [Calculation](https://xlsform.org/en/#calculation) - Do a
+  calculation, used for dynamic values.
+- Choice_filter - Filters choices based on other surbay answers.
+- Parameters - Change the behaviour of input data, or example the size
+  of images.
 
+#### Input Types
+
+The Survey sheet has several forms of selecting answers. These allow
+the mapper to enter an interger, text, or select one or multiple items
+from a menu.
+
+### [Choices Sheet](https://xlsform.org/en/#the-choices-worksheet)
 The choices sheet is used to define the values used for the
 **select_one** and **select_multiple** questions on the **survey**
 sheet.
 
 The mandatory column headers are:
 
-- **List_name** - This is the name of the list as specified in the **select** type in the _survey_ sheet.
+- **List_name** - This is the name of the list as specified in the
+  **select** type in the _survey_ sheet.
 - **Name** - This becomes the _value_ of the _tag_ in the OSM output file.
 - **Label** - Refers to what is displayed in the **select** menu.
-- The **label** column header also supports different languages by using a postfix of **::[language](abbreviation)**appended to it, for example **label::Nepali(np)**.
-- <span style="text-decoration:underline;">Settings</span>
-- This is a simple sheet that contains the version of the sheet, and the title of the input form. The version is used by the server and the mobile apps to track changes in the data format, so it should always be updated after changes are made.
+- The _label_ column header also supports different languages by
+  using a postfix of _::[language](abbreviation)_ appended to it, for
+  example **label::Nepali(np)**.
 
-#### Input Types
+### [Settings Sheet](https://xlsform.org/en/#settings-worksheet)
 
-The Survey sheet has several forms of selecting answers. These allow
-the mapper to enter a number, text, or select one or multiple items
-from a menu.
+For the settings sheet, there are 1 mandatory ones, but I usually
+always add 2 of the optional ones. This is a simple sheet that
+contains the version of the sheet, and the title of the input
+form. The version is used by the server and the mobile apps to track
+changes in the data format, so it should always be updated after
+changes are made.
+
+
+- **form_title** - This is what is displayed in ODK Central
+- **form_id** - This is a unique ID to identify this XForm.
+- **version** - This is mandatory, and needs to change after major
+  change. During development when I make many changes I usually use
+  **NOW()** which is the current data. Use the date format with no
+  spaces.
 
 ## Mapping Answers to OSM
 
 When designing an XForm whose data is for OSM, the two key columns
 that determine the tag & value scheme used in the OSM XML format are
 **name** in the _survey_ sheet, which becomes the tag, and **name** in
-the _choices_ sheet, which becomes the value.
+the _choices_ sheet, which becomes the value. If you are using the
+[OSM Fieldwork](https://github.com/hotosm/osm-fieldwork) project,
+anything that isn't a one to one match with OSM syntax can be specified
+in the [config
+file](https://github.com/hotosm/osm-fieldwork/blob/main/osm_fieldwork/xforms.yaml)
+for that project. When using OSM Fieldwork, tags & values can also be
+specified as _private_ data, which goes into a GeoJson file, and
+anything that is for OSM goes into an OSM XML file. That file can be
+edited in [JOSM](https://josm.openstreetmap.de/).
 
 # Screen Layout
 
@@ -173,21 +233,20 @@ ones.
 - **Minimal** - Answer choices appear in a pull-down menu.
 - **Field-list** - Entire group of questions appear on one screen
 - **Parameter-map** - Use a basemap to pick the location
-- **Quick** - Auto-advances the form to the next question after an answer is selected
-
-For example, the below screenshot shows the result of the **minimal**
-attribute set in the **appearance** column.
-
-![XLSForm](xlsimages/image4.png)
-
-Which then looks like this when the XForm is opened.
+- **Quick** - Auto-advances the form to the next question after an
+  answer is selected
 
 - All fields are grouped together to maximize screen space.
 - When the **field-list** attribute is set for **begin_group**, then
   multiple questions are on the same screen.
 - The screen can be scrolled if there are more input fields than fit.
 
-![XPath Error](xlsimages/image3.jpg)
+| type               | name    | label           | appearance  |
+| ------------------ | ------- | --------------- | ------------|
+| begin_group        | agroup  | Amenity Details | field-list  |
+| select_one text    | name    | Amenity Name    | minimal     |
+| select_one amenity | amenity | Type of Amenity | minimal     |
+| end_group          |         |                 |             |
 
 # Conditionals
 
@@ -314,18 +373,52 @@ can access the values in the OSM data the same as the above example.
 
 ## OpenStreetMap Data
 
-OpenStreetMap (OSM) is a popular tool for mapping and collecting geographic data, and many OSM mappers have wanted the ability to edit data in the field. While mobile apps like [StreetComplete](https://wiki.openstreetmap.org/wiki/StreetComplete)
-or [Vespucci](https://vespucci.io/) allow for this, they don't focus on humanitarian data collection, which can lead to incomplete tags on many features. Until recently, OSM mappers collected a new point of interest (POI) in the field and merged the data manually later on using an editor like JOSM. However, with the addition of functionality to ODK Collect, it's now possible to load data from OSM into the app and use XForms to improve feature data, achieving tag completeness and limiting tag values to accepted values.
+OpenStreetMap (OSM) is a popular tool for mapping and collecting
+geographic data, and many OSM mappers have wanted the ability to edit
+data in the field. While mobile apps like
+[StreetComplete](https://wiki.openstreetmap.org/wiki/StreetComplete)
+or [Vespucci](https://vespucci.io/) allow for this, they don't focus
+on humanitarian data collection, which can lead to incomplete tags on
+many features. Until recently, OSM mappers collected a new point of
+interest (POI) in the field and merged the data manually later on
+using an editor like JOSM. However, with the addition of functionality
+to ODK Collect, it's now possible to load data from OSM into the app
+and use XForms to improve feature data, achieving tag completeness and
+limiting tag values to accepted values.
 
-In the past, if a mapper collected a new point of interest (POI) in the field, they would have to manually merge the data later using an editor like JOSM because OSM data typically had few tags beyond _building=yes_ due to the majority of features being added by remote mapping. However, with the recent addition of functionality in ODK Collect, it is now possible to load data from OSM into ODK Collect. This allows for the use of an XForm to improve feature data, which achieves tag completeness for a feature and limits the tag values to accepted values.
+In the past, if a mapper collected a new point of interest (POI) in
+the field, they would have to manually merge the data later using an
+editor like JOSM because OSM data typically had few tags beyond
+_building=yes_ due to the majority of features being added by remote
+mapping. However, with the recent addition of functionality in ODK
+Collect, it is now possible to load data from OSM into ODK
+Collect. This allows for the use of an XForm to improve feature data,
+which achieves tag completeness for a feature and limits the tag
+values to accepted values.
 
-To create a data extract from OSM, one can use Overpass Turbo or Postgres. Each tag in OSM becomes a column in an XForm, and the column names are used to reference the data from within the XForm. If you are using the OSM data to set the default value for a _select_one_from_file_, then every possible value used for that tag needs to be in the choices sheet. Otherwise, you will get an error such as _doctor_ is not in the choices for _healthcare_.
+To create a data extract from OSM, one can use Overpass Turbo or
+Postgres. Each tag in OSM becomes a column in an XForm, and the column
+names are used to reference the data from within the XForm. If you are
+using the OSM data to set the default value for a
+_select_one_from_file_, then every possible value used for that tag
+needs to be in the choices sheet. Otherwise, you will get an error
+such as _doctor_ is not in the choices for _healthcare_.
 
-Using OSM in ODK Collect requires two data conversion processes. The first step is to produce the data extract. Since the goal is to convert the data from ODK into OSM, OSM standard tags should be used in the name column in the survey and choices sheets. When doing a query to Overpass or Postgres, the column name will conflict with what is in the survey sheet, so the data extract needs to use something else. For Postgres, this is easy as you can use the **AS** command in the query to rename the column to whatever you want. Abbreviations or the OSM tag's name are often used as variable names internally, but the important thing is to ensure that they are unique and do not conflict with other names in the XForm.
+Using OSM in ODK Collect requires two data conversion processes. The
+first step is to produce the data extract. Since the goal is to
+convert the data from ODK into OSM, OSM standard tags should be used
+in the name column in the survey and choices sheets. When doing a
+query to Overpass or Postgres, the column name will conflict with what
+is in the survey sheet, so the data extract needs to use something
+else. For Postgres, this is easy as you can use the **AS** command in
+the query to rename the column to whatever you want. Abbreviations or
+the OSM tag's name are often used as variable names internally, but
+the important thing is to ensure that they are unique and do not
+conflict with other names in the XForm.
+There is a much more detailed document on using OSM data extracts in
+this [Dealing with External Data in ODK](externaldata.md) document.
 
 ![Placement Map](xlsimages/image2.jpg)
-
-![XPath Error](xlsimages/image1.jpg)
 
 # Converting from OMK to ODK
 
