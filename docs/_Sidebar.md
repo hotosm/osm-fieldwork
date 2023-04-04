@@ -10,20 +10,29 @@
 
 [Verion Control](https://github.com/hotosm/osm-fieldwork/wiki/Version-Control)
 
-## Usage
+[Troubleshooting](https://github.com/hotosm/osm-fieldwork/wiki/troubleshooting)
+
+## Programs
 
 [Configuration](https://github.com/hotosm/osm-fieldwork/wiki/configuring)
 
 [Base Mapper](https://github.com/hotosm/osm-fieldwork/wiki/basemapper)
 
-[External Data](https://github.com/hotosm/osm-fieldwork/wiki/externaldata)
+[CSVDump](https://github.com/hotosm/osm-fieldwork/wiki/CSVDump)
 
 [ODK Client](https://github.com/hotosm/osm-fieldwork/wiki/odk_client)
 
 [ODK Merge](https://github.com/hotosm/osm-fieldwork/wiki/odk_merge)
 
+## Modules & Utilities
+
 [Programs](https://github.com/hotosm/osm-fieldwork/wiki/programs)
+
+[OSM XML output](https://github.com/hotosm/osm-fieldwork/wiki/osmfile)
+
+## Technical Deep Dives
+
+[External Data](https://github.com/hotosm/osm-fieldwork/wiki/externaldata)
 
 [XLS Forms](https://github.com/hotosm/osm-fieldwork/wiki/xlsforms)
 
-[Troubleshooting](https://github.com/hotosm/osm-fieldwork/wiki/troubleshooting)
