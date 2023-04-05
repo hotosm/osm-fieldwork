@@ -26,9 +26,11 @@
 
 ## Modules & Utilities
 
-[Programs](https://github.com/hotosm/osm-fieldwork/wiki/programs)
+[Program Summaries](https://github.com/hotosm/osm-fieldwork/wiki/programs)
 
-[OSM XML output](https://github.com/hotosm/osm-fieldwork/wiki/osmfile)
+[OSM XML Output](https://github.com/hotosm/osm-fieldwork/wiki/osmfile)
+
+[YAML Config File](https://github.com/hotosm/osm-fieldwork/wiki/yamlfile)
 
 ## Technical Deep Dives
 

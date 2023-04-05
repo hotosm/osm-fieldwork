@@ -136,7 +136,6 @@ class CSVDump(Convert):
                 #             tags['name'] = val
                 #     continue
                 else:
-                    # import epdb; epdb.st()
                     items = self.convertEntry(base, value)
                     if len(items) > 0:
                         if type(items[0]) == str:
