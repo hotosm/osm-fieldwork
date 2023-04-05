@@ -1,78 +1,79 @@
-## convert.py
+# Convert.py
 
 The convert.py module is part of the osm_fieldwork package and
-provides functionality for converting ODK forms between different
-formats using a YAML configuration file.
+provides functionality for converting ODK forms to OSM XML using a
+YAML configuration file.
 
-### Usage:
+Even if an XLSForm is carefully designed to have a one to one match
+between ODK and [OSM](https://www.openstreetmap.org), this is not
+always possible, as not all survey questions are for OSM.
 
-To use convert.py, you'll need to create a YAML configuration file
-that specifies the input and output formats for the conversion
-process. Here's an example configuration file:
+## The Config File Sections
 
-    input:
-      type: xlsform
-      path: path/to/form.xls
+There are several sections the config file. The default one is called
+**xforms.yaml**, and is included in the sources and the python
+package. It is possible to use a different config file.
 
-    output:
-      type: odk
-      path: path/to/converted/form
+### convert
 
-In this example, we're specifying that the input form is an XLSForm
-located at 'path/to/form.xls', and that the output format should be
-ODK, with the converted form saved to 'path/to/converted/form'.
+This section supports one to one conversion of tags, as well as one to
+many. This example shows all poossible conversion types. The simple
+ones like _altitude_ just change the tag, and the value is used
+unchanged. A more complicated conversion is changing the value in
+addition to the tag. Anything with an equals sign is split into the
+appropriate tag and value for OSM. The final one is where a singe
+survey question creates multiple tahg and value pairs, deliminated by
+a comma. Each of the pairs is handled as a separate tag and value in
+OSM.
+	
+	convert:
+		- latitude: lat
+		- longitude: lon
+		- altitude: ele
+		- cemetery_services:
+			- cemetery: amenity=grave_yard
+			- cremation: amenity=crematorium
+		- amenity:
+			- coffee: amenity=cafe,cuisine=coffee_shop
+	...
 
-Once you have a configuration file, you can use convert.py from the
-command line by running the following command:
+### private
 
-    [path]/convert.py path/to/config.yaml
+Not all collected data is suitable for OSM. This may include data that
+has no equivalant tag in OSM, or personal data. 
 
-This will start the conversion process using the specified
-configuration file. The converted form will be saved to the path
-specified in the configuration file.
+	private:
+		- income
+		- age
+		- gender
+		- education
 
-### Supported Formats:
+### ignore
 
-convert.py supports the following input and output formats:
+ODK supports many tags useful only internally. These go into the
+ignore section of the config file. Any tag in this section gets
+removed from from all output files. An example would be this:
 
-- XLSForm: A format for creating ODK forms using a spreadsheet.
-- ODK: The native format used by ODK Collect for storing forms and collected data.
-- GeoJson: A lightweight data-interchange format.
-- CSV: A common format for storing tabular data
+	ignore:
+		- attachmentsexpected
+		- attachmentspresent
+		- reviewstate
+		- edits
+		- gps_type
+		- accuracy
+		- deviceid
+	...
 
-Note that convert.py does not support all possible variations of these
-formats. For example, some advanced features of XLSForm may not be
-supported.
 
-### Configuration File Options:
+### multiple
 
-The following options are available in the configuration file:
+Not all survey questions have a single answer. Anything using
+**select_multiple** may have more than one value. As the default
+assumes one answer per question, this specifies the questions with
+multiple answers since they have to be processed seperately. The
+normal conversion process is applied to these too.
 
-- input:
-    - type: The input format (e.g. xlsform, odk, json, csv).
-    - path: The path to the input file.
-- output:
-    - type: The output format (e.g. odk, json, csv).
-    - path: The path to save the converted output file.
-
-### Example:
-Here's an example of how to use convert.py to convert an XLSForm to ODK format:
-
-    input:
-      type: xlsform
-      path: path/to/form.xls
-
-    output:
-      type: odk
-      path: path/to/converted/form
-
-And then run the following command:
-
-    [path]/convert.py path/to/config.yaml
-
-In this example, we're specifying that the input form is an XLSForm
-located at 'path/to/form.xls', and that the output format should be
-ODK, with the converted form saved to
-'path/to/converted/form'. Running the command will start the
-conversion process using the specified configuration file.
-
+	multiple:
+		- healthcare
+		- amenity_type
+		- specialty
