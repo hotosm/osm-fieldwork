@@ -38,20 +38,12 @@ import requests
 logging.basicConfig(stream = sys.stdout,level=logging.INFO)
 
 class ValidateModel(object):
-    def __init__(self):
+    def __init__(self, taginfo=None):
         self.tags = dict()
-        self.wiki = "taginfo-wiki.db"
-        self.taginfo = "taginfo-db.db"
-        if not os.path.exists(f"{self.wiki}.bz2") and not os.path.exists(self.wiki):
-            log.error("""You need to download the taginfo wiki database from: 
-            https://taginfo.openstreetmap.org/download/taginfo-wiki.db.bz2""")
-            quit()
-        self.wikidb = sqlite3.connect(self.wiki)
-        self.wikicursor = self.wikidb.cursor()
-        if not os.path.exists(f"{self.taginfo}.bz2") and not os.path.exists(self.taginfo):
-            log.error("""You need to download the full taginfo database from: 
-            https://taginfo.openstreetmap.org/download/taginfo-db.db.bz2""")
-            quit()
+        if not taginfo:
+            self.taginfo = "taginfo-db.db"
+        else:
+            self.taginfo = taginfo
         self.db = sqlite3.connect(self.taginfo)
         self.cursor = self.db.cursor()
         self.threshold = dict()
@@ -79,7 +71,9 @@ class ValidateModel(object):
             index += 1
         return self.tags
 
-    def validateTaginfo(self):
+    def validateTaginfo(self, csv=None):
+        if csv:
+            csvfile = open(csv, "w")
         threshold = self.threshold
         for key in self.tags.keys():
             for value in self.tags[key]:
@@ -87,6 +81,7 @@ class ValidateModel(object):
                     continue
                 threshold = self.threshold
                 sql = f"SELECT value,count_all FROM tags where key='{key}'"
+                # logging.debug(sql)
                 result = self.cursor.execute(sql)
                 data = result.fetchall()
                 if len(data) == 0:
@@ -97,10 +92,12 @@ class ValidateModel(object):
                             if value[:3] == 'yes' or value[:2] == 'no' or value[0] == '<':
                                 continue
                             # logging.info(f"\"{value}\" exists in the taginfo for \"{key}\"!")
-                            if val[1] < threshold:
-                                logging.warning(f"\"{value}\" doesn't pass the threshold for \"{key}\"! Only {val[1]} occurances")
+                        if val[1] < threshold:
+                            logging.warning(f"\"{value}\" doesn't pass the threshold for \"{key}\"! Only {val[1]} occurances")
+                            if csv:
+                                csvfile.write(f"{key},{value},{val[1]}\n")
                             break
-            #import epdb; epdb.st()
+
 
 
 if __name__ == "__main__":
@@ -108,10 +105,25 @@ if __name__ == "__main__":
         description="Validate data_models using taginfo database"
     )
     parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
+    parser.add_argument("-t", "--taginfo", help="Taginfo database")
+    parser.add_argument("-c", "--csv", help="Output CSV")
     args = parser.parse_args()
 
-    model = ValidateModel()
+    # if verbose, dump to the termina
+    if not args.verbose:
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
+
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
+        ch.setFormatter(formatter)
+        root.addHandler(ch)
+
+    model = ValidateModel(args.taginfo)
     tags = model.parse()
     # import epdb; epdb.st()
-    model.validateTaginfo()
+    model.validateTaginfo(args.csv)
 
