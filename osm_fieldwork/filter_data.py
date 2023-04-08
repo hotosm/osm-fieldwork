@@ -2,7 +2,7 @@
 
 # Copyright (c) 2022, 2023 Humanitarian OpenStreetMap Team
 #
-# This file is part of oOsm-Fieldwork.
+# This file is part of osm-fieldwork.
 #
 #     Osm-Fieldwork is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
