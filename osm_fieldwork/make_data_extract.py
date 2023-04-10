@@ -89,7 +89,7 @@ class DatabaseAccess(object):
             except Exception as e:
                 logging.error("Couldn't connect to database: %r" % e)
 
-    def createJson(self, category, boundary):
+    def createJson(self, category, boundary, poly):
         path = xlsforms_path.replace("xlsforms", "data_models")
         file = open(f"{path}/{category}.yaml", "r").read()
         data = yaml.load(file, Loader=yaml.Loader)
@@ -117,7 +117,8 @@ class DatabaseAccess(object):
             elif table == "relations":
                 pass
         features["geometryType"] = tables
-        features["centroid"] = "true"
+        if not poly:
+            features["centroid"] = "true"
         return json.dumps(features)
 
     def createSQL(self, category):
@@ -210,7 +211,7 @@ class PostgresClient(DatabaseAccess):
         self.boundary = None
         super().__init__(dbhost, dbname)
 
-    def getFeatures(self, boundary=None, filespec=None, category="buildings"):
+    def getFeatures(self, boundary=None, filespec=None, polygon=False, category="buildings"):
         """Extract buildings from Postgres"""
         logging.info("Extracting features from Postgres...")
 
@@ -232,7 +233,7 @@ class PostgresClient(DatabaseAccess):
                 result = self.queryLocal(query, wkt)
             collection = FeatureCollection(result)
         else:
-            request = self.createJson(category, poly)
+            request = self.createJson(category, poly, polygon)
             collection = self.queryRemote(request)
 
         cleaned = FilterData()
@@ -244,8 +245,10 @@ class PostgresClient(DatabaseAccess):
         else:
             cleaned.parse(f"{file}x")
         new = cleaned.cleanData(collection)
+        new['features'].append(geom['features'][0])
         jsonfile = open(filespec, "w")
         dump(new, jsonfile)
+        jsonfile.close()
         return new
 
 class OverpassClient(object):
@@ -332,12 +335,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Make GeoJson data file for ODK from OSM"
     )
-    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
+    parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
     parser.add_argument(
         "-o", "--overpass", action="store_true", help="Use Overpass Turbo"
     )
     parser.add_argument(
-        "-p", "--postgres", action="store_true", help="Use a postgres database"
+        "-p", "--postgres", nargs="?", const="0", help="Use a postgres database"
+    )
+    parser.add_argument(
+        "-po", "--polygon", nargs="?", const=False, default=False, help="Output polygons instead of centroids"
     )
     parser.add_argument(
         "-g", "--geojson", default="tmp.geojson", help="Name of the GeoJson output file"
@@ -390,7 +396,7 @@ if __name__ == "__main__":
     if args.postgres:
         logging.info("Using a Postgres database for the data source")
         pg = PostgresClient(args.dbhost, args.dbname, outfile)
-        pg.getFeatures(args.boundary, args.geojson, args.category)
+        pg.getFeatures(args.boundary, args.geojson, args.polygon, args.category)
         # pg.cleanup(outfile)
     elif args.overpass:
         logging.info("Using Overpass Turbo for the data source")
