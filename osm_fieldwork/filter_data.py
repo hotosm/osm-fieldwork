@@ -2,7 +2,7 @@
 
 # Copyright (c) 2022, 2023 Humanitarian OpenStreetMap Team
 #
-# This file is part of oOsm-Fieldwork.
+# This file is part of osm-Fieldwork.
 #
 #     Osm-Fieldwork is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import pandas as pd
 from geojson import Feature, FeatureCollection
 import geojson
 from osm_fieldwork.xlsforms import xlsforms_path
+import yaml
 
 
 # Instantiate logger
@@ -61,6 +62,27 @@ class FilterData(object):
                 self.tags[key] = list()
             self.tags[key].append(value)
             index += 1
+
+        # The yaml config file for the query has a list of columns
+        # to keep in addition to this default set.
+        path = xlsforms_path.replace("xlsforms", "data_models")
+        category = os.path.basename(filespec).replace(".xls", "")
+        file = open(f"{path}/{category}.yaml", "r").read()
+        data = yaml.load(file, Loader=yaml.Loader)
+        self.keep = list()
+        self.keep.extend(("name",
+                         "name:en",
+                         "id",
+                         "operator",
+                         "addr:street",
+                         "addr:housenumber",
+                         "osm_id",
+                         "title",
+                         "tags",
+                         "label",
+                        ))
+        self.keep.extend(data['keep'])
+
         return self.tags
 
     def cleanData(self, data):
@@ -73,17 +95,6 @@ class FilterData(object):
             indata = eval(data.decode())
         else:
             indata = data
-        keep = ("name",
-                "name:en",
-                "id",
-                "operator",
-                "addr:street",
-                "addr:housenumber",
-                "osm_id",
-                "title",
-                "tags",
-                "label",
-                )
         # these just create noise in the log file
         ignore = (
             "timestamp",
@@ -94,7 +105,7 @@ class FilterData(object):
         for feature in indata['features']:
             properties = dict()
             for key, value in feature['properties'].items():
-                if key in keep:
+                if key in self.keep:
                     if key == 'tags':
                         for k, v in value.items():
                             if k[:4] == "name":
