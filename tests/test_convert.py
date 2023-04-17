@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021 Humanitarian OpenStreetMap Team
+# Copyright (c) 2021, 2022, 2023 Humanitarian OpenStreetMap Team
 #
 # This file is part of Osm-Fieldwork.
 #
@@ -20,10 +20,8 @@
 
 import os
 import sys
-
-sys.path.append(f"{os.getcwd()}/osm_fieldwork")
 import argparse
-from convert import Convert
+from osm_fieldwork.convert import Convert
 
 parser = argparse.ArgumentParser(
     description="Read and convert a CSV file from ODK Central"
@@ -31,12 +29,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument("--infile", default="tests/test.csv", help="The CSV input file")
 args = parser.parse_args()
 
-
-if os.path.exists("xforms.yaml"):
-    csv = Convert("xforms.yaml")
-elif os.path.exists("osm_fieldwork/xforms.yaml"):
-    csv = Convert("osm_fieldwork/xforms.yaml")
-
+csv = Convert("xforms.yaml")
 
 def test_get_keyword():
     """Convert a feature"""

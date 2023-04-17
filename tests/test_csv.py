@@ -21,9 +21,7 @@
 import argparse
 import os
 import sys
-
-sys.path.append(f"{os.getcwd()}/osm_fieldwork")
-from CSVDump import CSVDump
+from  osm_fieldwork.CSVDump import CSVDump
 
 parser = argparse.ArgumentParser(
     description="Read and parse a CSV file from ODK Central"
