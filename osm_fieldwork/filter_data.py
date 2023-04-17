@@ -68,20 +68,24 @@ class FilterData(object):
         path = xlsforms_path.replace("xlsforms", "data_models")
         category = os.path.basename(filespec).replace(".xls", "")
         file = open(f"{path}/{category}.yaml", "r").read()
-        data = yaml.load(file, Loader=yaml.Loader)
-        self.keep = ("name",
-                          "name:en",
-                          "id",
-                          "operator",
-                          "addr:street",
-                          "addr:housenumber",
-                          "osm_id",
-                          "title",
-                          "tags",
-                          "label",
-                          "buildings:levels",
-                        )
-        #self.keep.extend(data['keep'])
+        self.yaml = yaml.load(file, Loader=yaml.Loader)
+        keep = ("name",
+                     "name:en",
+                     "id",
+                     "operator",
+                     "addr:street",
+                     "addr:housenumber",
+                     "osm_id",
+                     "title",
+                     "tags",
+                     "label",
+                     "landuse",
+                     "opening_hours",
+                     "buildings:levels",
+                     )
+        self.keep = list(keep)
+        if 'keep' in self.yaml:
+            self.keep.extend(self.yaml['keep'])
 
         return self.tags
 
