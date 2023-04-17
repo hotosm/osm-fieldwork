@@ -41,13 +41,13 @@ class FilterData(object):
 
     def parse(self, filespec):
         # data = pd.read_excel(filespec, sheet_name="Overview - all Tags", usecols=["key", "value"])
-        data = pd.read_excel(filespec, sheet_name="choices", usecols=["list name", "name"])
+        data = pd.read_excel(filespec, sheet_name="choices", usecols=["list_name", "name"])
         
         entries = data.to_dict()
-        total = len(entries['list name'])
+        total = len(entries['list_name'])
         index = 1
         while index < total:
-            key = entries['list name'][index]
+            key = entries['list_name'][index]
             if key == 'model' or str(key) == "nan":
                 index += 1
                 continue
@@ -69,19 +69,19 @@ class FilterData(object):
         category = os.path.basename(filespec).replace(".xls", "")
         file = open(f"{path}/{category}.yaml", "r").read()
         data = yaml.load(file, Loader=yaml.Loader)
-        self.keep = list()
-        self.keep.extend(("name",
-                         "name:en",
-                         "id",
-                         "operator",
-                         "addr:street",
-                         "addr:housenumber",
-                         "osm_id",
-                         "title",
-                         "tags",
-                         "label",
-                        ))
-        self.keep.extend(data['keep'])
+        self.keep = ("name",
+                          "name:en",
+                          "id",
+                          "operator",
+                          "addr:street",
+                          "addr:housenumber",
+                          "osm_id",
+                          "title",
+                          "tags",
+                          "label",
+                          "buildings:levels",
+                        )
+        #self.keep.extend(data['keep'])
 
         return self.tags
 
