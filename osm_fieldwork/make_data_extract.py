@@ -38,7 +38,7 @@ import psycopg2
 from shapely.geometry import shape, Polygon
 import overpy
 import shapely
-
+from shapely import wkt
 
 # all possible queries
 choices = [
@@ -52,6 +52,7 @@ choices = [
     "water",
     "education",
     "healthcare",
+    "place",
 ]
 
 # Instantiate logger
@@ -121,7 +122,7 @@ class DatabaseAccess(object):
             features["centroid"] = "true"
         return json.dumps(features)
 
-    def createSQL(self, category):
+    def createSQL(self, category, polygon=False):
         path = xlsforms_path.replace("xlsforms", "data_models")
         file = open(f"{path}/{category}.yaml", "r").read()
         data = yaml.load(file, Loader=yaml.Loader)
@@ -132,13 +133,17 @@ class DatabaseAccess(object):
         for table in tables:
             query = "SELECT "
             select = data['select']
+            if polygon:
+                centroid = "geom"
+            else:
+                centroid = "ST_Centroid(geom)"
             # if tags exists, then only return those fields
             if 'tags' in select:
                 for tag in select['tags']:
                     query += f" {select[tag]} AS {tag}, "
-                query += "osm_id AS id, ST_AsEWKT(ST_Centroid(geom)) "
+                query += f"osm_id AS id, ST_AsEWKT({centroid} "
             else:
-                query += "osm_id AS id, ST_AsEWKT(ST_Centroid(geom)), tags "
+                query += f"osm_id AS id, ST_AsEWKT({centroid}), tags "
             query += f" FROM {table} "
             where = data['where']
             # if tags exists, then only query those fields
@@ -148,16 +153,21 @@ class DatabaseAccess(object):
                 for tag, value in tags.items():
                     if value == "not null":
                         query += f"tags->>\'{tag}\' IS NOT NULL OR "
+                    else:
+                        # in the yaml file, multiple values for the same tag
+                        # are seperated by a vertical bar '|'
+                        for val in value.split('|'):
+                            query += f"tags->>\'{tag}\'=\'{val}\' OR "
             sql.append(query[:-4])
         return sql
 
-    def queryLocal(self, query, wkt):
-        sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{wkt.wkt}'), geom)"
+    def queryLocal(self, query, ewkt):
+        sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         self.dbcursor.execute(sql)
-        sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{wkt.wkt}'), geom)"
+        sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         self.dbcursor.execute(sql)
 
-        sql = f"DROP VIEW IF EXISTS relations_view;CREATE TEMP VIEW relations_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{wkt.wkt}'), geom)"
+        sql = f"DROP VIEW IF EXISTS relations_view;CREATE TEMP VIEW relations_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         # self.dbcursor.execute(sql)
 
         if query.find(" ways_poly ") > 0:
@@ -171,15 +181,22 @@ class DatabaseAccess(object):
         logging.info("Query returned %d records" % len(result))
         for item in result:
             gps = item[1][16:-1].split(" ")
-            poi = Point((float(gps[0]), float(gps[1])))
+            if len(gps) == 2:
+                poi = Point((float(gps[0]), float(gps[1])))
+            else:
+                gps = item[1][10:]
+                poi = wkt.loads(gps)
             tags = item[2]
-            tags["id"] = item[1]
-            if "name" in tags:
+            tags["id"] = item[0]
+            if "name:en" in tags:
+                tags["title"] = tags["name:en"]
+                tags["label"] = tags["name:en"]
+            elif "name" in tags:
                 tags["title"] = tags["name"]
                 tags["label"] = tags["name"]
             else:
-                tags["title"] = None
-                tags["label"] = None
+                tags["title"] = tags["id"]
+                tags["label"] = tags["id"]
             features.append(Feature(geometry=poi, properties=tags))
         return features
 
@@ -228,7 +245,7 @@ class PostgresClient(DatabaseAccess):
 
         if self.dbshell:
             # features = list()
-            sql = self.createSQL(category)
+            sql = self.createSQL(category, polygon)
             for query in sql:
                 result = self.queryLocal(query, wkt)
             collection = FeatureCollection(result)
@@ -245,7 +262,6 @@ class PostgresClient(DatabaseAccess):
         else:
             cleaned.parse(f"{file}x")
         new = cleaned.cleanData(collection)
-        new['features'].append(geom['features'][0])
         jsonfile = open(filespec, "w")
         dump(new, jsonfile)
         jsonfile.close()
@@ -343,7 +359,7 @@ if __name__ == "__main__":
         "-p", "--postgres", nargs="?", const="0", help="Use a postgres database"
     )
     parser.add_argument(
-        "-po", "--polygon", nargs="?", const=False, default=False, help="Output polygons instead of centroids"
+        "-po", "--polygon", nargs="?", help="Output polygons instead of centroids"
     )
     parser.add_argument(
         "-g", "--geojson", default="tmp.geojson", help="Name of the GeoJson output file"
