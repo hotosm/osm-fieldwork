@@ -356,10 +356,10 @@ if __name__ == "__main__":
         "-o", "--overpass", action="store_true", help="Use Overpass Turbo"
     )
     parser.add_argument(
-        "-p", "--postgres", nargs="?", const="0", help="Use a postgres database"
+        "-p", "--postgres", action="store_true", help="Use a postgres database"
     )
     parser.add_argument(
-        "-po", "--polygon", nargs="?", help="Output polygons instead of centroids"
+        "-po", "--polygon", action="store_true", default=False,  help="Output polygons instead of centroids"
     )
     parser.add_argument(
         "-g", "--geojson", default="tmp.geojson", help="Name of the GeoJson output file"
