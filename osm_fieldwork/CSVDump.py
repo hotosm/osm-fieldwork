@@ -26,6 +26,7 @@ import sys
 from sys import argv
 from osm_fieldwork.convert import Convert
 from osm_fieldwork.osmfile import OsmFile
+from osm_fieldwork.xlsforms import xlsforms_path
 from geojson import Point, Feature, FeatureCollection, dump
 
 # set log level for urlib
@@ -46,13 +47,11 @@ class CSVDump(Convert):
         self.osm = None
         self.json = None
         self.features = list()
-        if yaml is None:
-            if os.path.exists("xforms.yaml"):
-                yaml = "xforms.yaml"
-            elif os.path.exists("osm_fieldwork/xforms.yaml"):
-                yaml = "osm_fieldwork/xforms.yaml"
-            elif argv[0][0] == "/" and os.path.dirname(argv[0]) != "/usr/local/bin":
-                yaml = os.path.dirname(argv[0]) + "/xforms.yaml"
+        path = xlsforms_path.replace("xlsforms", "")
+        if type(yaml) == str:
+            file = f"{path}{xform}"
+        else:
+            file = f"{path}/xforms.yaml"
         self.config = super().__init__(yaml)
 
     def createOSM(self, filespec="tmp.osm"):

@@ -34,15 +34,12 @@ class YamlFile(object):
 
     def __init__(self, data):
         self.filespec = None
-        if data == str:
-            self.filespec = data
-            self.file = open(data, "rb").read()
-            self.yaml = yaml.load(self.file, Loader=yaml.Loader)
-        else:
-            self.yaml = yaml.load(str(data), Loader=yaml.Loader)
-            
-        # print(self.file)
-        # pprint(self.yaml)
+        #if data == str:
+        self.filespec = data
+        self.file = open(data, "rb").read()
+        self.yaml = yaml.load(self.file, Loader=yaml.Loader)
+        #else:
+        #    self.yaml = yaml.load(str(data), Loader=yaml.Loader)
 
     def privateData(self, keyword: str):
         """See if a keyword is in the private data category"""

@@ -19,6 +19,7 @@
 import logging
 from datetime import datetime
 from osm_fieldwork.convert import Convert
+from osm_fieldwork.xlsforms import xlsforms_path
 import xmltodict
 import argparse
 from sys import argv
@@ -58,8 +59,8 @@ class OsmFile(object):
         self.addr = None
         # decrement the ID
         self.start = -1
-        top = pathlib.Path(__file__).resolve().parent
-        self.convert = Convert(str(top.absolute()) + "/xforms.yaml")
+        # path = xlsforms_path.replace("xlsforms", "")
+        self.convert = Convert("xforms.yaml")
         self.data = dict()
 
     def isclosed(self):
