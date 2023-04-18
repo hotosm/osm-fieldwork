@@ -49,7 +49,7 @@ choices = [
     "emergency",
     "shops",
     "waste",
-    "water",
+    "waterpoints",
     "education",
     "healthcare",
     "place",
@@ -105,6 +105,8 @@ class DatabaseAccess(object):
         for tag, value in tags.items():
             if value == "not null":
                 columns[tag] = []
+            else:
+                columns[tag] = value
         filters = {"tags": {"all_geometry": {"join_or": columns}}}
         features['filters'] = filters
         tables = list()
@@ -155,8 +157,8 @@ class DatabaseAccess(object):
                         query += f"tags->>\'{tag}\' IS NOT NULL OR "
                     else:
                         # in the yaml file, multiple values for the same tag
-                        # are seperated by a vertical bar '|'
-                        for val in value.split('|'):
+                        # are a list
+                        for val in value:
                             query += f"tags->>\'{tag}\'=\'{val}\' OR "
             sql.append(query[:-4])
         return sql
