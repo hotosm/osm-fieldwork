@@ -19,32 +19,38 @@
 # The Rob project on odk.hotosm.org
 PROJECT=19
 
-XLSFILES = buildings.xls
-POLY=university.geojson
+POLY=../thamel.geojson
 
-XXXXLSFILES = \
+XLSFILES = \
     buildings.xls \
-    cemeteries.xls \
     education.xls \
     healthcare.xls \
-    landuse.xls \
     natural.xls \
     place.xls \
-    regilious.xls \
-    school.xls \
     toilets.xls \
     waste.xls \
-    waterways.xls
+    waterways.xls \
+    religious.xls \
+    cemeteries.xls \
+    landusage.xls
 
 XMLFILES = $(XLSFILES:.xls=.xml)
+JSONFILES = $(XLSFILES:.xls=.geojson)
 
 all: $(XMLFILES)
 
-EXTRACT = make_data_extract.py
+EXTRACT = ../make_data_extract.py
 
 %.xml : %.xls
 	xls2xform --pretty_print $<
 	@xml=$(subst .xls,.xml,$<);
+
+%.geojson : %.xls
+	@target=$(<:.geojson=); \
+	base=$(basename $(notdir $(POLY))); \
+	category=$(subst .xls,,$<); \
+	echo "Generating data extract for \"$${category}\""; \
+	$(EXTRACT) -b $(POLY) -p -dn underpass -g $${base}.geojson -c $${category}
 
 # A simple naming convention is used to make it possible to automate as
 # much as possible. The basename of the XLSForm file matches the form_id
@@ -68,6 +74,11 @@ xform: $(XMLFILES)
 	sed -e "s:<data id=\"[a-zA-Z0-9_]*\":<data id=\"$${base} $${target}\":" \
 		-e "s/<h:title>[a-zA-Z0-9_]*</<h:title>$${base} $${target}</" \
 		-e "s,jr://file/[a-zA-Z0-9_]*.geojson,jr://file/$${base}$${target}.geojson," $< > $${base}$${target}.xml
+
+extract: $(JSONFILES)
+
+clean: 
+	rm *.xml *.geojson
 
 force:
 
