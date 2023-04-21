@@ -249,14 +249,18 @@ class PostgresClient(DatabaseAccess):
             poly = boundary
         wkt = shape(poly)
 
+        if len(xlsfile) > 0:
+            config = xlsfile.replace(".xls", "")
+        else:
+            config = category
         if self.dbshell:
             # features = list()
-            sql = self.createSQL(category, polygon)
+            sql = self.createSQL(config, polygon)
             for query in sql:
                 result = self.queryLocal(query, wkt)
             collection = FeatureCollection(result)
         else:
-            request = self.createJson(category, poly, polygon)
+            request = self.createJson(config, poly, polygon)
             collection = self.queryRemote(request)
 
         # Process the XLSForm source file and scan it for valid tags
@@ -272,6 +276,9 @@ class PostgresClient(DatabaseAccess):
             title, extract = cleaned.parse(f"{file}x")
         # Remove anything in the data extract not in the choices sheet.
         new = cleaned.cleanData(collection)
+        # This will be set if the XLSForm contains a select_one_from_file
+        if len(extract) > 0:
+            filespec = f"/tmp/{extract}"
         jsonfile = open(filespec, "w")
         dump(new, jsonfile)
         jsonfile.close()
@@ -379,7 +386,7 @@ if __name__ == "__main__":
         "-po", "--polygon", action="store_true", default=False,  help="Output polygons instead of centroids"
     )
     parser.add_argument(
-        "-g", "--geojson", default="tmp.geojson", help="Name of the GeoJson output file"
+        "-g", "--geojson", help="Name of the GeoJson output file"
     )
     parser.add_argument("-i", "--infile", help="Input data file")
     parser.add_argument("-dn", "--dbname", help="Database name")
@@ -430,8 +437,13 @@ if __name__ == "__main__":
     if args.postgres:
         logging.info("Using a Postgres database for the data source")
         pg = PostgresClient(args.dbhost, args.dbname, outfile)
-        pg.getFeatures(args.boundary, args.geojson, args.polygon, args.category, xlsfile)
-        log.info(f"Created extract for {args.category}")
+        if args.geojson:
+            extract = args.geojson
+        else:
+            infile = FilterData(xlsfile)
+            extract = infile.metadata[1]
+        pg.getFeatures(args.boundary, extract, args.polygon, args.category, xlsfile)
+        log.info(f"Created /tmp/{extract} for {args.category}")
         # pg.cleanup(outfile)
     elif args.overpass:
         logging.info("Using Overpass Turbo for the data source")
