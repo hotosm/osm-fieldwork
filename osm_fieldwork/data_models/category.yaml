@@ -8,7 +8,7 @@
 
 # natural is an official OSM tag
 - natural:
-  - natural.xls
+  - nature.xls
 
 - waterpoints:
   - waterpoints.xls
