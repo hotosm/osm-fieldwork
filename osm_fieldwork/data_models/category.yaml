@@ -1,0 +1,41 @@
+# landuse is an official OSM tag
+- landuse:
+  - landusage.xls
+
+# healthcare is an official OSM tag
+- heathcare:
+  - health.xls
+
+# natural is an official OSM tag
+- natural:
+  - natural.xls
+
+- waterpoints:
+  - waterpoints.xls
+
+- buildings:
+  - buildings.xls
+
+- cemetaries:
+  - cemeteries.xls
+
+- education:
+  - education.xls
+
+- places:
+  - places.xls
+
+- relgious:
+  - religious.xls
+
+- toilets:
+  - toilets.xls
+
+- transportation:
+  - transportation.xls
+
+- wastedisposal:
+  - wastedisposal.xls
+
+- waterways:
+  - waterways.xls
