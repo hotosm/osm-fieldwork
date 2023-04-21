@@ -232,8 +232,8 @@ class PostgresClient(DatabaseAccess):
                     boundary=None,
                     filespec=None,
                     polygon=False,
-                    xlsfile="buildings.xls",
-                    category="buildings"
+                    category=None,
+                    xlsfile=None,
                     ):
         """Extract buildings from Postgres"""
         logging.info("Extracting features from Postgres...")
@@ -263,11 +263,13 @@ class PostgresClient(DatabaseAccess):
         # and values.
         cleaned = FilterData()
         models = xlsforms_path.replace("xlsforms", "data_models")
+        if not xlsfile:
+            xlsfile = f"{category}.xls"
         file = f"{xlsforms_path}/{xlsfile}"
         if os.path.exists(file):
-            cleaned.parse(f"{xlsforms_path}/{xlsfile}")
-        else:
-            cleaned.parse(f"{file}x")
+            title, extract = cleaned.parse(file)
+        elif os.path.exists(f"{file}x"):
+            title, extract = cleaned.parse(f"{file}x")
         # Remove anything in the data extract not in the choices sheet.
         new = cleaned.cleanData(collection)
         jsonfile = open(filespec, "w")
@@ -428,7 +430,8 @@ if __name__ == "__main__":
     if args.postgres:
         logging.info("Using a Postgres database for the data source")
         pg = PostgresClient(args.dbhost, args.dbname, outfile)
-        pg.getFeatures(args.boundary, args.geojson, args.polygon, xlsfile, args.category)
+        pg.getFeatures(args.boundary, args.geojson, args.polygon, args.category, xlsfile)
+        log.info(f"Created extract for {args.category}")
         # pg.cleanup(outfile)
     elif args.overpass:
         logging.info("Using Overpass Turbo for the data source")

@@ -40,19 +40,26 @@ class FilterData(object):
             self.parse(filespec)
 
     def parse(self, filespec):
-        # data = pd.read_excel(filespec, sheet_name="Overview - all Tags", usecols=["key", "value"])
-        data = pd.read_excel(filespec, sheet_name="choices", usecols=["list_name", "name"])
+        """Read in the XLSForm and extract the data we want"""
+        entries = pd.read_excel(filespec, sheet_name=[0, 1, 2])
         
-        entries = data.to_dict()
-        total = len(entries['list_name'])
+        title = entries[2]['form_title'].to_list()[0]
+        extract = ""
+        for entry in entries[0]['type']:
+            if str(entry) == 'nan':
+                continue
+            if entry[:20] == "select_one_from_file":
+                extract = entry[21:]
+        log.info(f"Got data extract filename: \"{extract}\", title: \"{title}\"")
+        total = len(entries[1]['list_name'])
         index = 1
         while index < total:
-            key = entries['list_name'][index]
+            key = entries[1]['list_name'][index]
             if key == 'model' or str(key) == "nan":
                 index += 1
                 continue
             if 'name' in entries:
-                value = entries['name'][index]
+                value = entries[1]['name'][index]
             else:
                 value = None
             if value == "<text>" or str(value) == "null":
@@ -70,24 +77,23 @@ class FilterData(object):
         file = open(f"{path}/{category}.yaml", "r").read()
         self.yaml = yaml.load(file, Loader=yaml.Loader)
         keep = ("name",
-                     "name:en",
-                     "id",
-                     "operator",
-                     "addr:street",
-                     "addr:housenumber",
-                     "osm_id",
-                     "title",
-                     "tags",
-                     "label",
-                     "landuse",
-                     "opening_hours",
-                     "buildings:levels",
-                     )
+                "name:en",
+                "id",
+                "operator",
+                "addr:street",
+                "addr:housenumber",
+                "osm_id",
+                "title",
+                "tags",
+                "label",
+                "landuse",
+                "opening_hours",
+                )
         self.keep = list(keep)
         if 'keep' in self.yaml:
             self.keep.extend(self.yaml['keep'])
 
-        return self.tags
+        return title, extract
 
     def cleanData(self, data):
         tmpfile = data
