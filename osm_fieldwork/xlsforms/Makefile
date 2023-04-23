@@ -22,17 +22,19 @@ PROJECT=19
 POLY=../thamel.geojson
 
 XLSFILES = \
-    buildings.xls \
-    education.xls \
-    healthcare.xls \
-    natural.xls \
-    place.xls \
-    toilets.xls \
-    waste.xls \
-    waterways.xls \
-    religious.xls \
-    cemeteries.xls \
-    landusage.xls
+	landusage.xls \
+	nature.xls \
+	waterpoints.xls \
+	buildings.xls \
+	cemeteries.xls \
+	education.xls \
+	places.xls \
+	religious.xls \
+	toilets.xls \
+	transportation.xls \
+	wastedisposal.xls \
+	health.xls \
+	waterways.xls
 
 XMLFILES = $(XLSFILES:.xls=.xml)
 JSONFILES = $(XLSFILES:.xls=.geojson)
@@ -43,14 +45,13 @@ EXTRACT = ../make_data_extract.py
 
 %.xml : %.xls
 	xls2xform --pretty_print $<
-	@xml=$(subst .xls,.xml,$<);
 
 %.geojson : %.xls
 	@target=$(<:.geojson=); \
 	base=$(basename $(notdir $(POLY))); \
 	category=$(subst .xls,,$<); \
 	echo "Generating data extract for \"$${category}\""; \
-	$(EXTRACT) -b $(POLY) -p -dn underpass -g $${base}.geojson -c $${category}
+	$(EXTRACT) -b $(POLY) -p -dn underpass -g $${category}.geojson -c $${category}
 
 # A simple naming convention is used to make it possible to automate as
 # much as possible. The basename of the XLSForm file matches the form_id
