@@ -116,7 +116,7 @@ class DatabaseAccess(object):
             elif table == "ways_line":
                 tables.append("linestring")
             elif table == "relations":
-                pass
+                tables.append("linestring")
         features["geometryType"] = tables
         if not poly:
             features["centroid"] = "true"
@@ -203,6 +203,9 @@ class DatabaseAccess(object):
     def queryRemote(self, query):
         url = f"{self.url}/snapshot/"
         result = self.session.post(url, data=query, headers=self.headers)
+        if result.status_code != 200:
+            log.error(f"{result.json()['detail'][0]['msg']}")
+            return None
         task_id = result.json()['task_id']
         newurl = f"{self.url}/tasks/status/{task_id}"
         while True:
@@ -218,7 +221,10 @@ class DatabaseAccess(object):
         zfp = zipfile.ZipFile(fp, "r")
         zfp.extract("Export.geojson", "/tmp/")
         # Now take that taskid and hit /tasks/status url with get
-        return zfp.read("Export.geojson")
+        data = zfp.read("Export.geojson")
+        os.remove("/tmp/Export.geojson")
+        return data
+    #   return zfp.read("Export.geojson")
 
 class PostgresClient(DatabaseAccess):
     """Class to handle SQL queries for the categories"""
