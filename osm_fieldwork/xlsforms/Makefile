@@ -17,24 +17,23 @@
 #
 
 # The Rob project on odk.hotosm.org
-PROJECT=19
-
+PROJECT=56
+DBNAME=underpass
 POLY=../thamel.geojson
-
 XLSFILES = \
+	waterpoints.xls \
 	landusage.xls \
 	nature.xls \
-	waterpoints.xls \
 	buildings.xls \
 	cemeteries.xls \
 	education.xls \
 	places.xls \
 	religious.xls \
 	toilets.xls \
-	transportation.xls \
 	wastedisposal.xls \
 	health.xls \
 	waterways.xls
+#	transportation.xls
 
 XMLFILES = $(XLSFILES:.xls=.xml)
 JSONFILES = $(XLSFILES:.xls=.geojson)
@@ -42,16 +41,22 @@ JSONFILES = $(XLSFILES:.xls=.geojson)
 all: $(XMLFILES)
 
 EXTRACT = ../make_data_extract.py
+CLIENT = ../odk_client.py
 
 %.xml : %.xls
 	xls2xform --pretty_print $<
 
 %.geojson : %.xls
-	@target=$(<:.geojson=); \
+	target=$(<:.xls=); \
 	base=$(basename $(notdir $(POLY))); \
 	category=$(subst .xls,,$<); \
+	case $${category} in \
+		"landusage") category="landuse";; \
+		"health") category="healthcare";; \
+		"nature") category="natural";; \
+	esac; \
 	echo "Generating data extract for \"$${category}\""; \
-	$(EXTRACT) -b $(POLY) -p -dn underpass -g $${category}.geojson -c $${category}
+	$(EXTRACT) -b $(POLY) -p -dn $(DBNAME) -g $${target}.geojson -c $${category}
 
 # A simple naming convention is used to make it possible to automate as
 # much as possible. The basename of the XLSForm file matches the form_id
@@ -61,17 +66,20 @@ EXTRACT = ../make_data_extract.py
 # exists. Note that when using an external geojson file, Enketo doesn't
 # support that. It only works on a device.
 upload: $(XMLFILES)
-	@target=$(<:.xml=); \
-	if test -e $${target}.geojson; then \
-	  datafiles="$(DATAFILES) $${target}.geojson"; \
-	else \
-	  datafiles="$(DATAFILES)"; \
+	target=$(<:.xml=); \
+	if test -e /tmp/$${target}.geojson; then \
+	  datafiles="/tmp/$${target}.geojson"; \
 	fi; \
-	odk_client.py -i $(PROJECT) -f $${target} -x create $< $${datafiles}
+	$(CLIENT) -v -i $(PROJECT) -f $${target} -x create $< $${datafiles}
 
 xform: $(XMLFILES)
 	target=$(<:.xml=); \
 	base=$(basename $(notdir $(POLY))); \
+	case $${category} in \
+		"landusage") category="landuse";; \
+		"health") category="healthcare";; \
+		"nature") category="natural";; \
+	esac; \
 	sed -e "s:<data id=\"[a-zA-Z0-9_]*\":<data id=\"$${base} $${target}\":" \
 		-e "s/<h:title>[a-zA-Z0-9_]*</<h:title>$${base} $${target}</" \
 		-e "s,jr://file/[a-zA-Z0-9_]*.geojson,jr://file/$${base}$${target}.geojson," $< > $${base}$${target}.xml
