@@ -456,7 +456,10 @@ class OdkForm(OdkCentral):
     def publishForm(self, projectId=None, xmlFormId=None):
         """Publish a draft form. When creating a form that isn't a draft, it can get publised then"""
         version = now = datetime.now().strftime("%Y-%m-%dT%TZ")
-        xid = xmlFormId.split('_')[2]
+        if xmlFormId.find("_") > 0:
+            xid = xmlFormId.split('_')[2]
+        else:
+            xid = xmlFormId
 
         url = f"{self.base}projects/{projectId}/forms/{xid}/draft/publish?version={version}"
         result = self.session.post(url, auth=self.auth, verify=self.verify)
@@ -464,7 +467,7 @@ class OdkForm(OdkCentral):
             status = eval(result._content)
             log.error(f"Couldn't publish {xmlFormId} on Central: {status['message']}")
         else:
-            log.error(f"Published {xmlFormId} on Central.")
+            log.info(f"Published {xmlFormId} on Central.")
         return result.status_code
 
     def dump(self):
