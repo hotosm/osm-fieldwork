@@ -3,7 +3,7 @@
   - landusage.xls
 
 # healthcare is an official OSM tag
-- heathcare:
+- healthcare:
   - health.xls
 
 # natural is an official OSM tag
@@ -16,7 +16,7 @@
 - buildings:
   - buildings.xls
 
-- cemetaries:
+- cemeteries:
   - cemeteries.xls
 
 - education:
