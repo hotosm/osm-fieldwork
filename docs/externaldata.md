@@ -56,21 +56,36 @@ and values as similar as possible, with unique names. When using
 from a Postgres database, there is more control than when using
 Overpass, and larger datasets can be processed.
 
-To maintain consistency, the output column names can be redefined
-using the AS keyword in SQL queries, so that OSM standard names can be
-used in the survey and choices sheets. A technique for maintaining
-consistency is to append an _x_ to the end of each column name, so
-_healthcare_ becomes _healthcarex_. Then, in the XLSForm,
-_healthcarex_ can be used for the instance, and _xhealthcare_ can be
-used for the value in the calculation column in the survey sheet. The
-name column in the survey sheet can then be just _healthcare_, which
-will translate directly into its OSM tag equivalent. 
+As the GeoJson file gets turned into an XPATH components when
+converted to an XForm, the actual filename without the suffix becomes
+a node in the XPATH, so you can't have a survey question using the
+same name as the filename. It is prefered to have the name using the
+actual OSM tag instead of the file. If you get this error, you need to
+rename the GeoJson file.
+
+	Duplicate type: 'choice', Duplicate URI: 'None', Duplicate context: 'survey'.
+
+## Naming Conflicts
+
+If you do want to use an OSM tag name in a calculate field, a
+technique for maintaining consistency is to prefix an _x_ to the start
+of each column name, so _healthcare_ becomes _xhealthcare_. Then, in
+the XLSForm, _healthcare_ can be used for the instance, and
+_xhealthcare_ can be used for the value in the calculation column in
+the survey sheet. The name column in the survey sheet can then be just
+_healthcare_, which will translate directly into its OSM tag
+equivalent. For this example note that the GeoJson file must not be
+named healthcare.geojson, because it'll conflict with
+__healthcare_. You can also avoid this by having the calculation in
+the same row as the survey question and avoiding the variable. If you
+do that, add a trigger for the geojson file, and it'll populate the
+default value for the question.
 
 It's possible to support almost any value using a text type in the
 XLSForm, but it's better to have an approved value for tag validation
 and completeness. If using a data model, the list of choices for a tag
 is defined, and anything outside of that will cause an
-error. Therefore, it's important to adhere to approved data models to
+error. Therefore, it's important to adhere to validated data models to
 avoid introducing errors or inconsistencies into the dataset. If the
 SQL query returns columns that aren't compatible with the XLSForm,
 XPATH errors will occur in ODK Collect. 
