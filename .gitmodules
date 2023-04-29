@@ -1,0 +1,3 @@
+[submodule "map-icons"]
+	path = map-icons
+	url = https://github.com/openstreetmap/map-icons.git
