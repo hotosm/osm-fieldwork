@@ -235,11 +235,11 @@ class PostgresClient(DatabaseAccess):
         super().__init__(dbhost, dbname)
 
     def getFeatures(self,
-                    boundary=None,
-                    filespec=None,
-                    polygon=False,
-                    category=None,
-                    xlsfile=None,
+                    boundary,
+                    filespec: str,
+                    polygon: bool = False,
+                    category: str = "buildings",
+                    xlsfile: str = "buildings.xls",
                     ):
         """Extract buildings from Postgres"""
         logging.info("Extracting features from Postgres...")
@@ -254,6 +254,10 @@ class PostgresClient(DatabaseAccess):
         else:
             poly = boundary
         wkt = shape(poly)
+
+        if not xlsfile:
+            log.error("No XLSFile specified!")
+            return None
 
         if len(xlsfile) > 0:
             config = xlsfile.replace(".xls", "")
