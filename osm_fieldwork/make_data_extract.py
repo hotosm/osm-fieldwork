@@ -262,9 +262,11 @@ class PostgresClient(DatabaseAccess):
         if self.dbshell:
             # features = list()
             sql = self.createSQL(config, polygon)
+            all = list()
             for query in sql:
                 result = self.queryLocal(query, wkt)
-            collection = FeatureCollection(result)
+                all.extend(result)
+            collection = FeatureCollection(all)
         else:
             request = self.createJson(config, poly, polygon)
             collection = self.queryRemote(request)
