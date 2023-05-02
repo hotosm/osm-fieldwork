@@ -33,7 +33,9 @@ XLSFILES = \
 	toilets.xls \
 	wastedisposal.xls \
 	health.xls \
-	waterways.xls
+	waterways.xls \
+	camping.xls \
+	amenities.xls
 #	transportation.xls
 
 XMLFILES = $(XLSFILES:.xls=.xml)
@@ -67,11 +69,11 @@ landusage.stamp: landusage.xls
 		"landusage") category="landuse";; \
 		"health") category="healthcare";; \
 		"nature") category="natural";; \
+		"amenity") category="amenities";; \
 	esac; \
 	echo "Uploading data extract and XForm for \"$${category}\""; \
 	datafiles="/tmp/$${target}.geojson"; \
-	$(CLIENT) -v -i $(PROJECT) -f $${category} -x create $${target}.xml $${datafiles}; \
-	touch $(STAMPDIR)/odk-$${category}-stamp
+	$(CLIENT) -v -i $(PROJECT) -f $${category} -x create $${target}.xml $${datafiles}
 
 # Generate a data extract
 %.geojson : %.xls
@@ -82,6 +84,7 @@ landusage.stamp: landusage.xls
 		"landusage") category="landuse";; \
 		"health") category="healthcare";; \
 		"nature") category="natural";; \
+		"amenities") category="amenity";; \
 	esac; \
 	echo "Generating data extract for \"$${category}\""; \
 	$(EXTRACT) -b $(POLY) -p -dn $(DBNAME) -g $${target}.geojson -c $${category}; \
@@ -103,6 +106,7 @@ xform: $(XMLFILES)
 		"landusage") category="landuse";; \
 		"health") category="healthcare";; \
 		"nature") category="natural";; \
+		"amenities") category="amenity";; \
 	esac; \
 	sed -e "s:<data id=\"[a-zA-Z0-9_]*\":<data id=\"$${base} $${target}\":" \
 		-e "s/<h:title>[a-zA-Z0-9_]*</<h:title>$${base} $${target}</" \
