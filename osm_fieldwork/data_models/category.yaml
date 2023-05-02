@@ -10,6 +10,10 @@
 - natural:
   - nature.xls
 
+# historic is an official OSM tag
+- historic:
+  - historical.xls
+
 - waterpoints:
   - waterpoints.xls
 
@@ -43,3 +47,8 @@
 - camping:
   - camping.xls
 
+- amenity:
+  - amenities.xls
+
+- hotspring:
+  - hotspring.xls
