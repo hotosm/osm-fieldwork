@@ -20,6 +20,7 @@
 
 import os
 from osm_fieldwork.yamlfile import YamlFile
+from osm_fieldwork.xlsforms import xlsforms_path
 import logging
 import argparse
 import sys
@@ -31,14 +32,15 @@ log = logging.getLogger(__name__)
 class Convert(YamlFile):
     """A class to apply a YAML config file and convert ODK to OSM"""
 
-    def __init__(self, xform=None):
-        if xform is None:
-            if os.path.exists("xforms.yaml"):
-                xform = "xforms.yaml"
-            elif os.path.exists("osm_fieldwork/xforms.yaml"):
-                xform = "osm_fieldwork/xforms.yaml"
-        self.yaml = YamlFile(xform)
-        self.filespec = xform
+    def __init__(self, xform: str):
+        path = xlsforms_path.replace("xlsforms", "")
+        if type(xform) == str:
+            file = f"{path}{xform}"
+            xform = file
+        else:
+            file = f"{path}/xforms.yaml"
+        self.yaml = YamlFile(file)
+        self.filespec = file
         # Parse the file contents into a data structure to make it
         # easier to retrieve values
         self.convert = dict()
@@ -240,7 +242,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "-i",
         "--infile",
-        default="xlsforms/Ruwa/ruwanigerproject_waterpoint_form.csv",
         help="The CSV input file",
     )
     args = parser.parse_args()

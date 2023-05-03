@@ -17,34 +17,75 @@
 #
 
 # The Rob project on odk.hotosm.org
-PROJECT=19
-
-XLSFILES = buildings.xls
-POLY=university.geojson
-
-XXXXLSFILES = \
-    buildings.xls \
-    cemeteries.xls \
-    education.xls \
-    healthcare.xls \
-    landuse.xls \
-    natural.xls \
-    place.xls \
-    regilious.xls \
-    school.xls \
-    toilets.xls \
-    waste.xls \
-    waterways.xls
+PROJECT=56
+DBNAME=nepal
+# DBNAME=underpass
+POLY=../thamel.geojson
+XLSFILES = \
+	nature.xls \
+	landusage.xls \
+	waterpoints.xls \
+	buildings.xls \
+	cemeteries.xls \
+	education.xls \
+	places.xls \
+	religious.xls \
+	toilets.xls \
+	wastedisposal.xls \
+	health.xls \
+	waterways.xls
+#	transportation.xls
 
 XMLFILES = $(XLSFILES:.xls=.xml)
+JSONFILES = $(XLSFILES:.xls=.geojson)
+ODKFILES = $(XLSFILES:.xls=.odk)
 
 all: $(XMLFILES)
 
-EXTRACT = make_data_extract.py
+EXTRACT = ../make_data_extract.py
+CLIENT = ../odk_client.py
+STAMPDIR=/tmp
 
+# Convert XLSForm to XForm
 %.xml : %.xls
-	xls2xform --pretty_print $<
-	@xml=$(subst .xls,.xml,$<);
+	@xls2xform --pretty_print $<
+	@echo "Generating $<"
+
+%.stamp : %.xls
+	stamp=$(STAMPDIR)/odk-$@; \
+	touch $${stamp}; \
+	echo "Generating $${stamp}"
+
+landusage.geojson: landusage.stamp
+landusage.stamp: landusage.xls
+
+# Upload XForm and data extract to ODK Central
+%.odk : %.xml
+	@target=$*; \
+	category=$*; \
+	case $${category} in \
+		"landusage") category="landuse";; \
+		"health") category="healthcare";; \
+		"nature") category="natural";; \
+	esac; \
+	echo "Uploading data extract and XForm for \"$${category}\""; \
+	datafiles="/tmp/$${target}.geojson"; \
+	$(CLIENT) -v -i $(PROJECT) -f $${category} -x create $${target}.xml $${datafiles}; \
+	touch $(STAMPDIR)/odk-$${category}-stamp
+
+# Generate a data extract
+%.geojson : %.xls
+	@target=$(<:.xls=); \
+	base=$(basename $(notdir $(POLY))); \
+	category=$(subst .xls,,$<); \
+	case $${category} in \
+		"landusage") category="landuse";; \
+		"health") category="healthcare";; \
+		"nature") category="natural";; \
+	esac; \
+	echo "Generating data extract for \"$${category}\""; \
+	$(EXTRACT) -b $(POLY) -p -dn $(DBNAME) -g $${target}.geojson -c $${category}; \
+	touch $(STAMPDIR)/json-$${category}-stamp
 
 # A simple naming convention is used to make it possible to automate as
 # much as possible. The basename of the XLSForm file matches the form_id
@@ -53,25 +94,31 @@ EXTRACT = make_data_extract.py
 # Any associated data extract file from OSM is uploaded as well if it
 # exists. Note that when using an external geojson file, Enketo doesn't
 # support that. It only works on a device.
-upload: $(XMLFILES)
-	@target=$(<:.xml=); \
-	if test -e $${target}.geojson; then \
-	  datafiles="$(DATAFILES) $${target}.geojson"; \
-	else \
-	  datafiles="$(DATAFILES)"; \
-	fi; \
-	odk_client.py -i $(PROJECT) -f $${target} -x create $< $${datafiles}
 
+# Generate all XForms
 xform: $(XMLFILES)
-	target=$(<:.xml=); \
+	@target=$(<:.xml=); \
 	base=$(basename $(notdir $(POLY))); \
+	case $${category} in \
+		"landusage") category="landuse";; \
+		"health") category="healthcare";; \
+		"nature") category="natural";; \
+	esac; \
 	sed -e "s:<data id=\"[a-zA-Z0-9_]*\":<data id=\"$${base} $${target}\":" \
 		-e "s/<h:title>[a-zA-Z0-9_]*</<h:title>$${base} $${target}</" \
 		-e "s,jr://file/[a-zA-Z0-9_]*.geojson,jr://file/$${base}$${target}.geojson," $< > $${base}$${target}.xml
 
+# Upload all XForms and data extracts to ODK Central
+upload: $(ODKFILES)
+
+# Get data extract
+extract: $(JSONFILES)
+
+# Cleanup the mess
+clean: 
+	rm -f *.xml *.geojson
+
 force:
 
-clean:
-	rm -f *.xml
-
-.PHONEY: upload
+.SUFFIXES: .xml .xls .geojson .odk
+# .PHONEY: upload

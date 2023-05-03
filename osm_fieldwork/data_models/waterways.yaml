@@ -2,6 +2,10 @@ select:
     osm_id: id
 from:
     - ways_poly
+    - ways_line
+    - relations
 where:
-    tags:
-        - { waterway: not null, intermittent: not null }
+  tags:
+    - { waterway: not null }
+keep:
+  - waterway

@@ -26,6 +26,7 @@ import pandas as pd
 from geojson import Feature, FeatureCollection
 import geojson
 from osm_fieldwork.xlsforms import xlsforms_path
+import yaml
 
 
 # Instantiate logger
@@ -35,23 +36,43 @@ log = logging.getLogger(__name__)
 class FilterData(object):
     def __init__(self, filespec=None):
         self.tags = dict()
+        self.metadata = dict()
         if filespec:
-            self.parse(filespec)
+            self.metadata = self.parse(filespec)
+
+    def getMetadata(self, filespec: None):
+        """Extract"""
+        entries = pd.read_excel(filespec, sheet_name=[0, 1, 2])
+        self.metadata['title'] = entries[2]['form_title'].to_list()[0]
+        self.metadata['version'] = entries[2]['version'].to_list()[0]
+        for entry in entries[0]['type']:
+            if str(entry) == 'nan':
+                continue
+            if entry[:20] == "select_one_from_file":
+                self.metadata['extract'] = entry[21:]
+        return self.metadata
 
     def parse(self, filespec):
-        # data = pd.read_excel(filespec, sheet_name="Overview - all Tags", usecols=["key", "value"])
-        data = pd.read_excel(filespec, sheet_name="choices", usecols=["list name", "name"])
+        """Read in the XLSForm and extract the data we want"""
+        entries = pd.read_excel(filespec, sheet_name=[0, 1, 2])
         
-        entries = data.to_dict()
-        total = len(entries['list name'])
+        title = entries[2]['form_title'].to_list()[0]
+        extract = ""
+        for entry in entries[0]['type']:
+            if str(entry) == 'nan':
+                continue
+            if entry[:20] == "select_one_from_file":
+                extract = entry[21:]
+        log.info(f"Data extract filename: \"{extract}\", title: \"{title}\"")
+        total = len(entries[1]['list_name'])
         index = 1
         while index < total:
-            key = entries['list name'][index]
+            key = entries[1]['list_name'][index]
             if key == 'model' or str(key) == "nan":
                 index += 1
                 continue
             if 'name' in entries:
-                value = entries['name'][index]
+                value = entries[1]['name'][index]
             else:
                 value = None
             if value == "<text>" or str(value) == "null":
@@ -61,7 +82,31 @@ class FilterData(object):
                 self.tags[key] = list()
             self.tags[key].append(value)
             index += 1
-        return self.tags
+
+        # The yaml config file for the query has a list of columns
+        # to keep in addition to this default set.
+        path = xlsforms_path.replace("xlsforms", "data_models")
+        category = os.path.basename(filespec).replace(".xls", "")
+        file = open(f"{path}/{category}.yaml", "r").read()
+        self.yaml = yaml.load(file, Loader=yaml.Loader)
+        keep = ("name",
+                "name:en",
+                "id",
+                "operator",
+                "addr:street",
+                "addr:housenumber",
+                "osm_id",
+                "title",
+                "tags",
+                "label",
+                "landuse",
+                "opening_hours",
+                )
+        self.keep = list(keep)
+        if 'keep' in self.yaml:
+            self.keep.extend(self.yaml['keep'])
+
+        return title, extract
 
     def cleanData(self, data):
         tmpfile = data
@@ -73,17 +118,6 @@ class FilterData(object):
             indata = eval(data.decode())
         else:
             indata = data
-        keep = ("name",
-                "name:en",
-                "id",
-                "operator",
-                "addr:street",
-                "addr:housenumber",
-                "osm_id",
-                "title",
-                "tags",
-                "label",
-                )
         # these just create noise in the log file
         ignore = (
             "timestamp",
@@ -94,7 +128,7 @@ class FilterData(object):
         for feature in indata['features']:
             properties = dict()
             for key, value in feature['properties'].items():
-                if key in keep:
+                if key in self.keep:
                     if key == 'tags':
                         for k, v in value.items():
                             if k[:4] == "name":

@@ -38,21 +38,20 @@ import psycopg2
 from shapely.geometry import shape, Polygon
 import overpy
 import shapely
+from shapely import wkt
 
 
-# all possible queries
-choices = [
-    "buildings",
-    "amenities",
-    "toilets",
-    "landuse",
-    "emergency",
-    "shops",
-    "waste",
-    "water",
-    "education",
-    "healthcare",
-]
+def getChoices():
+    """Get the categories and associated XLSFiles fgrom the config file"""
+    data = dict()
+    path = xlsforms_path.replace("xlsforms", "data_models")
+    if os.path.exists(f"{path}/category.yaml"):
+        file = open(f"{path}/category.yaml", "r").read()
+        contents = yaml.load(file, Loader=yaml.Loader)
+        for entry in contents:
+            [[k,v]] = entry.items()
+            data[k] = v[0]
+    return data
 
 # Instantiate logger
 log_level = os.getenv("LOG_LEVEL", default="INFO")
@@ -89,7 +88,7 @@ class DatabaseAccess(object):
             except Exception as e:
                 logging.error("Couldn't connect to database: %r" % e)
 
-    def createJson(self, category, boundary):
+    def createJson(self, category, boundary, poly):
         path = xlsforms_path.replace("xlsforms", "data_models")
         file = open(f"{path}/{category}.yaml", "r").read()
         data = yaml.load(file, Loader=yaml.Loader)
@@ -104,6 +103,8 @@ class DatabaseAccess(object):
         for tag, value in tags.items():
             if value == "not null":
                 columns[tag] = []
+            else:
+                columns[tag] = value
         filters = {"tags": {"all_geometry": {"join_or": columns}}}
         features['filters'] = filters
         tables = list()
@@ -115,12 +116,13 @@ class DatabaseAccess(object):
             elif table == "ways_line":
                 tables.append("linestring")
             elif table == "relations":
-                pass
+                tables.append("linestring")
         features["geometryType"] = tables
-        features["centroid"] = "true"
+        if not poly:
+            features["centroid"] = "true"
         return json.dumps(features)
 
-    def createSQL(self, category):
+    def createSQL(self, category, polygon=False):
         path = xlsforms_path.replace("xlsforms", "data_models")
         file = open(f"{path}/{category}.yaml", "r").read()
         data = yaml.load(file, Loader=yaml.Loader)
@@ -131,13 +133,17 @@ class DatabaseAccess(object):
         for table in tables:
             query = "SELECT "
             select = data['select']
+            if polygon:
+                centroid = "geom"
+            else:
+                centroid = "ST_Centroid(geom)"
             # if tags exists, then only return those fields
             if 'tags' in select:
                 for tag in select['tags']:
                     query += f" {select[tag]} AS {tag}, "
-                query += "osm_id AS id, ST_AsEWKT(ST_Centroid(geom)) "
+                query += f"osm_id AS id, ST_AsEWKT({centroid} "
             else:
-                query += "osm_id AS id, ST_AsEWKT(ST_Centroid(geom)), tags "
+                query += f"osm_id AS id, ST_AsEWKT({centroid}), tags "
             query += f" FROM {table} "
             where = data['where']
             # if tags exists, then only query those fields
@@ -147,16 +153,21 @@ class DatabaseAccess(object):
                 for tag, value in tags.items():
                     if value == "not null":
                         query += f"tags->>\'{tag}\' IS NOT NULL OR "
+                    else:
+                        # in the yaml file, multiple values for the same tag
+                        # are a list
+                        for val in value:
+                            query += f"tags->>\'{tag}\'=\'{val}\' OR "
             sql.append(query[:-4])
         return sql
 
-    def queryLocal(self, query, wkt):
-        sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{wkt.wkt}'), geom)"
+    def queryLocal(self, query, ewkt):
+        sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         self.dbcursor.execute(sql)
-        sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{wkt.wkt}'), geom)"
+        sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         self.dbcursor.execute(sql)
 
-        sql = f"DROP VIEW IF EXISTS relations_view;CREATE TEMP VIEW relations_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{wkt.wkt}'), geom)"
+        sql = f"DROP VIEW IF EXISTS relations_view;CREATE TEMP VIEW relations_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         # self.dbcursor.execute(sql)
 
         if query.find(" ways_poly ") > 0:
@@ -170,21 +181,31 @@ class DatabaseAccess(object):
         logging.info("Query returned %d records" % len(result))
         for item in result:
             gps = item[1][16:-1].split(" ")
-            poi = Point((float(gps[0]), float(gps[1])))
+            if len(gps) == 2:
+                poi = Point((float(gps[0]), float(gps[1])))
+            else:
+                gps = item[1][10:]
+                poi = wkt.loads(gps)
             tags = item[2]
-            tags["id"] = item[1]
-            if "name" in tags:
+            tags["id"] = item[0]
+            if "name:en" in tags:
+                tags["title"] = tags["name:en"]
+                tags["label"] = tags["name:en"]
+            elif "name" in tags:
                 tags["title"] = tags["name"]
                 tags["label"] = tags["name"]
             else:
-                tags["title"] = None
-                tags["label"] = None
+                tags["title"] = tags["id"]
+                tags["label"] = tags["id"]
             features.append(Feature(geometry=poi, properties=tags))
         return features
 
     def queryRemote(self, query):
         url = f"{self.url}/snapshot/"
         result = self.session.post(url, data=query, headers=self.headers)
+        if result.status_code != 200:
+            log.error(f"{result.json()['detail'][0]['msg']}")
+            return None
         task_id = result.json()['task_id']
         newurl = f"{self.url}/tasks/status/{task_id}"
         while True:
@@ -200,7 +221,10 @@ class DatabaseAccess(object):
         zfp = zipfile.ZipFile(fp, "r")
         zfp.extract("Export.geojson", "/tmp/")
         # Now take that taskid and hit /tasks/status url with get
-        return zfp.read("Export.geojson")
+        data = zfp.read("Export.geojson")
+        os.remove("/tmp/Export.geojson")
+        return data
+    #   return zfp.read("Export.geojson")
 
 class PostgresClient(DatabaseAccess):
     """Class to handle SQL queries for the categories"""
@@ -210,7 +234,13 @@ class PostgresClient(DatabaseAccess):
         self.boundary = None
         super().__init__(dbhost, dbname)
 
-    def getFeatures(self, boundary=None, filespec=None, category="buildings"):
+    def getFeatures(self,
+                    boundary,
+                    filespec: str,
+                    polygon: bool = False,
+                    category: str = "buildings",
+                    xlsfile: str = "buildings.xls",
+                    ):
         """Extract buildings from Postgres"""
         logging.info("Extracting features from Postgres...")
 
@@ -225,27 +255,43 @@ class PostgresClient(DatabaseAccess):
             poly = boundary
         wkt = shape(poly)
 
+        if not xlsfile:
+            log.error("No XLSFile specified!")
+            return None
+
+        if len(xlsfile) > 0:
+            config = xlsfile.replace(".xls", "")
+        else:
+            config = category
         if self.dbshell:
             # features = list()
-            sql = self.createSQL(category)
+            sql = self.createSQL(config, polygon)
             for query in sql:
                 result = self.queryLocal(query, wkt)
             collection = FeatureCollection(result)
         else:
-            request = self.createJson(category, poly)
+            request = self.createJson(config, poly, polygon)
             collection = self.queryRemote(request)
 
+        # Process the XLSForm source file and scan it for valid tags
+        # and values.
         cleaned = FilterData()
         models = xlsforms_path.replace("xlsforms", "data_models")
-        # cleaned.parse(f"{models}/Impact Areas - Data Models V1.1.xlsx")
-        file = f"{xlsforms_path}/{category}.xls"
+        if not xlsfile:
+            xlsfile = f"{category}.xls"
+        file = f"{xlsforms_path}/{xlsfile}"
         if os.path.exists(file):
-            cleaned.parse(f"{xlsforms_path}/{category}.xls")
-        else:
-            cleaned.parse(f"{file}x")
+            title, extract = cleaned.parse(file)
+        elif os.path.exists(f"{file}x"):
+            title, extract = cleaned.parse(f"{file}x")
+        # Remove anything in the data extract not in the choices sheet.
         new = cleaned.cleanData(collection)
+        # This will be set if the XLSForm contains a select_one_from_file
+        if len(extract) > 0:
+            filespec = f"/tmp/{extract}"
         jsonfile = open(filespec, "w")
         dump(new, jsonfile)
+        jsonfile.close()
         return new
 
 class OverpassClient(object):
@@ -255,7 +301,12 @@ class OverpassClient(object):
         self.overpass = overpy.Overpass()
         #OutputFile.__init__(self, output)
 
-    def getFeatures(self, boundary=None, filespec=None, category="buildings"):
+    def getFeatures(self,
+                    boundary=None,
+                    filespec=None,
+                    xlsfile="buildings.xls",
+                    category="buildings"
+                    ):
         """Extract buildings from Overpass"""
         logging.info("Extracting features...")
 
@@ -294,9 +345,9 @@ class OverpassClient(object):
         collection = FeatureCollection(features)
 
         cleaned = FilterData()
-        file = f"{xlsforms_path}/{category}.xls"
+        file = f"{xlsforms_path}/{xlsfile}"
         if os.path.exists(file):
-            cleaned.parse(f"{xlsforms_path}/{category}.xls")
+            cleaned.parse(file)
         else:
             cleaned.parse(f"{file}x")
         new = cleaned.cleanData(collection)
@@ -329,10 +380,12 @@ class FileClient(object):
 
 
 if __name__ == "__main__":
+    choices = getChoices()
+    
     parser = argparse.ArgumentParser(
         description="Make GeoJson data file for ODK from OSM"
     )
-    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
+    parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
     parser.add_argument(
         "-o", "--overpass", action="store_true", help="Use Overpass Turbo"
     )
@@ -340,7 +393,10 @@ if __name__ == "__main__":
         "-p", "--postgres", action="store_true", help="Use a postgres database"
     )
     parser.add_argument(
-        "-g", "--geojson", default="tmp.geojson", help="Name of the GeoJson output file"
+        "-po", "--polygon", action="store_true", default=False,  help="Output polygons instead of centroids"
+    )
+    parser.add_argument(
+        "-g", "--geojson", help="Name of the GeoJson output file"
     )
     parser.add_argument("-i", "--infile", help="Input data file")
     parser.add_argument("-dn", "--dbname", help="Database name")
@@ -387,10 +443,17 @@ if __name__ == "__main__":
     else:
         outfile = args.geojson
 
+    xlsfile = choices[args.category]
     if args.postgres:
         logging.info("Using a Postgres database for the data source")
         pg = PostgresClient(args.dbhost, args.dbname, outfile)
-        pg.getFeatures(args.boundary, args.geojson, args.category)
+        if args.geojson:
+            extract = args.geojson
+        else:
+            infile = FilterData(xlsfile)
+            extract = infile.metadata[1]
+        pg.getFeatures(args.boundary, extract, args.polygon, args.category, xlsfile)
+        log.info(f"Created /tmp/{extract} for {args.category}")
         # pg.cleanup(outfile)
     elif args.overpass:
         logging.info("Using Overpass Turbo for the data source")
@@ -398,7 +461,7 @@ if __name__ == "__main__":
         clip = open(args.boundary, "r")
         geom = geojson.load(clip)
         #op.getFeatures(args.boundary, args.geojson, args.category)
-        op.getFeatures(geom, args.geojson, args.category)
+        op.getFeatures(geom, args.geojson, xlsfile, args.category)
     elif args.infile:
         f = FileClient(args.infile)
         f.getFeatures(args.boundary, args.geojson, args.category)

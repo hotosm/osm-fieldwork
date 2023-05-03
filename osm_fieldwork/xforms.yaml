@@ -68,9 +68,8 @@ convert:
   - brewery: craft=brewery
   - housing: building
   - xlocation: geometry
-  - bldmat: building:material
+  - healthcare_type: healthcare
   - building_material: building:material
-  - roofmat: roof:material
   - roof:material: roof:material
   - building_floor: building:floor
   - building_prefab: building:prefabricated
