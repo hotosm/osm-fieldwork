@@ -49,7 +49,7 @@ class CSVDump(Convert):
         self.features = list()
         path = xlsforms_path.replace("xlsforms", "")
         if type(yaml) == str:
-            file = f"{path}{xform}"
+            file = f"{path}{yaml}"
         else:
             file = f"{path}/xforms.yaml"
         self.config = super().__init__(yaml)
