@@ -33,7 +33,9 @@ XLSFILES = \
 	toilets.xls \
 	wastedisposal.xls \
 	health.xls \
-	waterways.xls
+	waterways.xls \
+	camping.xls \
+	amenities.xls
 #	transportation.xls
 
 XMLFILES = $(XLSFILES:.xls=.xml)
@@ -60,21 +62,21 @@ landusage.geojson: landusage.stamp
 landusage.stamp: landusage.xls
 
 # Upload XForm and data extract to ODK Central
-%.odk : %.xml
+%.odk: %.xml
 	@target=$*; \
 	category=$*; \
 	case $${category} in \
 		"landusage") category="landuse";; \
 		"health") category="healthcare";; \
 		"nature") category="natural";; \
+		"amenity") category="amenities";; \
 	esac; \
 	echo "Uploading data extract and XForm for \"$${category}\""; \
 	datafiles="/tmp/$${target}.geojson"; \
-	$(CLIENT) -v -i $(PROJECT) -f $${category} -x create $${target}.xml $${datafiles}; \
-	touch $(STAMPDIR)/odk-$${category}-stamp
+	$(CLIENT) -v -i $(PROJECT) -f $${category} -x create $${target}.xml $${datafiles}
 
 # Generate a data extract
-%.geojson : %.xls
+%.geojson: %.xls
 	@target=$(<:.xls=); \
 	base=$(basename $(notdir $(POLY))); \
 	category=$(subst .xls,,$<); \
@@ -82,10 +84,25 @@ landusage.stamp: landusage.xls
 		"landusage") category="landuse";; \
 		"health") category="healthcare";; \
 		"nature") category="natural";; \
+		"amenities") category="amenity";; \
 	esac; \
 	echo "Generating data extract for \"$${category}\""; \
 	$(EXTRACT) -b $(POLY) -p -dn $(DBNAME) -g $${target}.geojson -c $${category}; \
 	touch $(STAMPDIR)/json-$${category}-stamp
+
+%.clone: %.xml
+	@target=$(<:.xml=); \
+	base=$(basename $(notdir $(POLY))); \
+	case $${category} in \
+		"landusage") category="landuse";; \
+		"health") category="healthcare";; \
+		"nature") category="natural";; \
+		"amenities") category="amenity";; \
+	esac; \
+	sed -e "s:<data id=\"[a-zA-Z0-9_]*\":<data id=\"$${base} $${target}\":" \
+		-e "s/<h:title>[a-zA-Z0-9_]*</<h:title>$${base} $${target}</" \
+		-e "s,jr://file/[a-zA-Z0-9_]*.geojson,jr://file/$${base}_$${target}.geojson," $< > $${base}_$${target}.xml; \
+	cp -f /tmp/$${target}.geojson $${base}_$${target}.geojson
 
 # A simple naming convention is used to make it possible to automate as
 # much as possible. The basename of the XLSForm file matches the form_id
@@ -97,16 +114,6 @@ landusage.stamp: landusage.xls
 
 # Generate all XForms
 xform: $(XMLFILES)
-	@target=$(<:.xml=); \
-	base=$(basename $(notdir $(POLY))); \
-	case $${category} in \
-		"landusage") category="landuse";; \
-		"health") category="healthcare";; \
-		"nature") category="natural";; \
-	esac; \
-	sed -e "s:<data id=\"[a-zA-Z0-9_]*\":<data id=\"$${base} $${target}\":" \
-		-e "s/<h:title>[a-zA-Z0-9_]*</<h:title>$${base} $${target}</" \
-		-e "s,jr://file/[a-zA-Z0-9_]*.geojson,jr://file/$${base}$${target}.geojson," $< > $${base}$${target}.xml
 
 # Upload all XForms and data extracts to ODK Central
 upload: $(ODKFILES)
@@ -120,5 +127,4 @@ clean:
 
 force:
 
-.SUFFIXES: .xml .xls .geojson .odk
-# .PHONEY: upload
+.SUFFIXES: .xml .xls .geojson .odk .clone
