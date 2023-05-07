@@ -30,11 +30,7 @@ from osm_fieldwork.xlsforms import xlsforms_path
 from geojson import Point, Feature, FeatureCollection, dump
 
 # set log level for urlib
-log_level = os.getenv("LOG LEVEL", default="INFO")
-logging.getLogger("urllib3").setLevel(log_level)
-
 log = logging.getLogger(__name__)
-
 
 class CSVDump(Convert):
     """A class to parse the CSV files from ODK Central"""
@@ -56,9 +52,9 @@ class CSVDump(Convert):
 
     def createOSM(self, filespec="tmp.osm"):
         """Create an OSM XML output files"""
-        logging.debug("Creating OSM XML file: %s" % filespec)
+        log.debug("Creating OSM XML file: %s" % filespec)
         self.osm = OsmFile(filespec=filespec)
-        self.osm.header()
+        #self.osm.header()
 
     def writeOSM(self, feature):
         """Write a feature to an OSM XML output file"""
@@ -79,7 +75,7 @@ class CSVDump(Convert):
 
     def createGeoJson(self, file="tmp.geojson"):
         """Create a GeoJson output file"""
-        logging.debug("Creating GeoJson file: %s" % file)
+        log.debug("Creating GeoJson file: %s" % file)
         self.json = open(file, "w")
 
     def writeGeoJson(self, feature):
@@ -102,17 +98,19 @@ class CSVDump(Convert):
         collection = FeatureCollection(features)
         dump(collection, self.json)
 
-    def parse(self, filespec=None, data=None):
+    def parse(self,
+              filespec=None,
+              data=None):
         """Parse the CSV file from ODK Central and convert it to a data structure"""
         all_tags = list()
         if not data:
-            open(filespec, newline="")
-            reader = csv.DictReader(filespec, delimiter=",")
+            f = open(filespec, newline="")
+            reader = csv.DictReader(f, delimiter=",")
         else:
             reader = csv.DictReader(data, delimiter=",")
         for row in reader:
             tags = dict()
-            # logging.info(f"ROW: {row}")
+            # log.info(f"ROW: {row}")
             for keyword, value in row.items():
                 if keyword is None or len(keyword) == 0:
                     continue
@@ -145,7 +143,7 @@ class CSVDump(Convert):
                                     tags[k] = v
                     else:
                         tags[base] = value
-                # logging.debug(f"\tFIXME1: {tags}")
+                # log.debug(f"\tFIXME1: {tags}")
             all_tags.append(tags)
         return all_tags
 
@@ -166,7 +164,7 @@ class CSVDump(Convert):
         priv = dict()
         refs = list()
 
-        logging.debug("Creating entry")
+        # log.debug("Creating entry")
         # First convert the tag to the approved OSM equivalent
         for key, value in entry.items():
             attributes = (
@@ -190,7 +188,7 @@ class CSVDump(Convert):
 
             if key is not None and len(key) > 0 and key in attributes:
                 attrs[key] = value
-                logging.debug("Adding attribute %s with value %s" % (key, value))
+                log.debug("Adding attribute %s with value %s" % (key, value))
             else:
                 if key in self.multiple:
                     for item in value:
@@ -208,7 +206,7 @@ class CSVDump(Convert):
                 if value is not None and value != "no" and value != "unknown":
                     if key == "track" or key == "geoline":
                         refs.append(tag)
-                        logging.debug("Adding reference %s" % tag)
+                        log.debug("Adding reference %s" % tag)
                     elif len(value) > 0:
                         if self.privateData(key):
                             priv[key] = value
@@ -236,17 +234,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     
-    #logging
-    logging.basicConfig(
-        level=log_level,
-        format=(
-            "%(asctime)s.%(msec)03d [%(levelname)s]"
-            "%(name)s | %(funcName)s:%(lineno)d | %(message)s"
-        ),
-        datefmt="%y-%m-%d %H:%M:%S",
-        stream=sys.stdout,
-    )
-
     # if verbose, dump to the terminal.
     if args.verbose is not None:
         root = logging.getLogger()
@@ -270,7 +257,7 @@ if __name__ == "__main__":
     jsonoutfile = os.path.basename(args.infile.replace(".csv", ".geojson"))
     csvin.createGeoJson(jsonoutfile)
 
-    logging.debug("Parsing csv files %r" % args.infile)
+    log.debug("Parsing csv files %r" % args.infile)
     data = csvin.parse(args.infile)
     # This OSM XML file only has OSM appropriate tags and values
     for entry in data:
@@ -280,7 +267,7 @@ if __name__ == "__main__":
             continue
         if len(feature) > 0:
             if "lat" not in feature["attrs"]:
-                logging.warning("Bad record! %r" % feature)
+                log.warning("Bad record! %r" % feature)
                 continue
             csvin.writeOSM(feature)
             # This GeoJson file has all the data values
@@ -289,5 +276,5 @@ if __name__ == "__main__":
 
     csvin.finishOSM()
     csvin.finishGeoJson()
-    logging.info("Wrote OSM XML file: %r" % osmoutfile)
-    logging.info("Wrote GeoJson file: %r" % jsonoutfile)
+    log.info("Wrote OSM XML file: %r" % osmoutfile)
+    log.info("Wrote GeoJson file: %r" % jsonoutfile)
