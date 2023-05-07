@@ -54,8 +54,6 @@ def getChoices():
     return data
 
 # Instantiate logger
-log_level = os.getenv("LOG_LEVEL", default="INFO")
-logging.getLogger("urllib3").setLevel(log_level)
 log = logging.getLogger(__name__)
 
 
@@ -235,11 +233,11 @@ class PostgresClient(DatabaseAccess):
         super().__init__(dbhost, dbname)
 
     def getFeatures(self,
-                    boundary,
-                    filespec: str,
-                    polygon: bool = False,
-                    category: str = "buildings",
-                    xlsfile: str = "buildings.xls",
+                    boundary=None,
+                    filespec=None,
+                    polygon=False,
+                    category=None,
+                    xlsfile=None,
                     ):
         """Extract buildings from Postgres"""
         logging.info("Extracting features from Postgres...")
@@ -255,15 +253,12 @@ class PostgresClient(DatabaseAccess):
             poly = boundary
         wkt = shape(poly)
 
-        if not xlsfile:
-            log.error("No XLSFile specified!")
-            return None
-
         if len(xlsfile) > 0:
             config = xlsfile.replace(".xls", "")
         else:
             config = category
         if self.dbshell:
+            # features = list()
             sql = self.createSQL(config, polygon)
             all = list()
             for query in sql:
@@ -274,25 +269,33 @@ class PostgresClient(DatabaseAccess):
             request = self.createJson(config, poly, polygon)
             collection = self.queryRemote(request)
 
-        # Process the XLSForm source file and scan it for valid tags
-        # and values.
-        cleaned = FilterData()
-        models = xlsforms_path.replace("xlsforms", "data_models")
-        if not xlsfile:
-            xlsfile = f"{category}.xls"
-        file = f"{xlsforms_path}/{xlsfile}"
-        if os.path.exists(file):
-            title, extract = cleaned.parse(file)
-        elif os.path.exists(f"{file}x"):
-            title, extract = cleaned.parse(f"{file}x")
-        # Remove anything in the data extract not in the choices sheet.
-        new = cleaned.cleanData(collection)
+        if len(collection['features']) == 0:
+            tags = { 'title': category, 'label': category, 'id': 0}
+            center = shapely.centroid(wkt)
+            feature = [Feature(geometry=center, properties=tags)]
+            new = FeatureCollection(feature)
+            extract = "yes"
+        else:
+            # Process the XLSForm source file and scan it for valid tags
+            # and values.
+            cleaned = FilterData()
+            models = xlsforms_path.replace("xlsforms", "data_models")
+            if not xlsfile:
+                xlsfile = f"{category}.xls"
+            file = f"{xlsforms_path}/{xlsfile}"
+            if os.path.exists(file):
+                title, extract = cleaned.parse(file)
+            elif os.path.exists(f"{file}x"):
+                title, extract = cleaned.parse(f"{file}x")
+            # Remove anything in the data extract not in the choices sheet.
+            new = cleaned.cleanData(collection)
+
         # This will be set if the XLSForm contains a select_one_from_file
         if len(extract) > 0:
-            filespec = f"/tmp/{extract}"
-        jsonfile = open(filespec, "w")
-        dump(new, jsonfile)
-        jsonfile.close()
+            filespec = f"/tmp/{outfile}"
+            jsonfile = open(filespec, "w")
+            dump(new, jsonfile)
+            jsonfile.close()
         return new
 
 class OverpassClient(object):
@@ -417,7 +420,7 @@ if __name__ == "__main__":
     # if verbose, dump to the terminal.
     if args.verbose is not None:
         root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
+        log.setLevel(logging.DEBUG)
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
@@ -442,7 +445,7 @@ if __name__ == "__main__":
                 tmp = match.group().split("/")
         outfile = tmp[3]
     else:
-        outfile = args.geojson
+        outfile = args.geojson.lower()
 
     xlsfile = choices[args.category]
     if args.postgres:
@@ -454,7 +457,7 @@ if __name__ == "__main__":
             infile = FilterData(xlsfile)
             extract = infile.metadata[1]
         pg.getFeatures(args.boundary, extract, args.polygon, args.category, xlsfile)
-        log.info(f"Created /tmp/{extract} for {args.category}")
+        log.info(f"Created /tmp/{outfile} for {args.category}")
         # pg.cleanup(outfile)
     elif args.overpass:
         logging.info("Using Overpass Turbo for the data source")
