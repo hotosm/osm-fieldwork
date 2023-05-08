@@ -27,6 +27,8 @@ convert:
   - Record_your_current_location-Longitude: lon
   - Record_your_current_location-Latitide: lat
   # Other forms
+  - camptype: tourism
+  - openfire: leisure=firepit
   - latitude: lat
   - longitude: lon
   - altitude: ele
