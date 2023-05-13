@@ -50,7 +50,7 @@ convert:
   - well: well=yes
   - borehole: borehole=yes
   - drinkable_water: amenity=drinking_water
-  - drinking_water: menity=drinking_water
+  - drinking_water: amenity=drinking_water
   - irrigation: irrigation=yes
   - livestock: drinking_water=no
   - waterpoint_code: ref
@@ -64,10 +64,12 @@ convert:
       - cemetery: amenity=grave_yard
       - cremation: amenity=crematorium
   - xid: id
+  - camptype: tourism
   - food: amenity
   - brewery: craft=brewery
   - housing: building
   - xlocation: geometry
+  - coordinates: geometry
   - healthcare_type: healthcare
   - building_material: building:material
   - roof:material: roof:material
@@ -115,6 +117,18 @@ private:
 
 # All of these tags are in the CSV file, and can be ignored
 ignore:
+  - __id
+  - model
+  - type
+  - features
+  - accuracy
+  - meta
+  - __system
+  - attachmentsExpected
+  - status
+  - reviewState
+  - formVersion
+  - edits
   - attachmentsexpected
   - attachmentspresent
   - reviewstate
@@ -135,7 +149,6 @@ ignore:
   - what_are_you_mapping
   - highway_type
   - waterpoint_img
-  - warmup
   - enum_name
   - username
   - model
