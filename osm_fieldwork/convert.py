@@ -100,18 +100,9 @@ class Convert(YamlFile):
         else:
             return None
 
-    # def convertList(self, values=list()):
-    #     """Convert a python list of tags"""
-    #     features = list()
-    #     entry = dict()
-    #     for value in values:
-    #         entry[self.yaml.getKeyword(value)] = value
-    #         features.append(entry)
-    #     return features
-
     def convertEntry(self, tag=None, value=None):
         """Convert a tag and value from the ODK represention to an OSM one"""
-        all = list()
+        #all = list()
 
         # If it's not in any conversion data, pass it through unchanged.
         if (
@@ -119,7 +110,7 @@ class Convert(YamlFile):
             and tag not in self.ignore
             and tag not in self.private
         ):
-            return tag, value
+            return {tag: value}
 
         newtag = None
         newval = None
@@ -127,7 +118,7 @@ class Convert(YamlFile):
         if self.convertData(tag):
             newtag = self.convertTag(tag)
             if newtag != tag:
-                logging.debug("Converted Tag for entry '%s' to '%s'" % (tag, newtag))
+                logging.debug(f"Converted Tag for entry {tag} to {newtag}")
 
         if newtag is None:
             newtag = tag
@@ -141,9 +132,9 @@ class Convert(YamlFile):
                 key = list(i.keys())[0]
                 newtag = key
                 newval = i[key]
-                all.append({newtag: newval})
-        else:
-            all.append({newtag: newval})
+                #all.append({newtag: newval})
+        #else:
+        #    all.append({newtag: newval})
 
         # if newtag not in self.tags:
         #     tmp = { newtag: None }
@@ -154,7 +145,7 @@ class Convert(YamlFile):
         #     key = list(val.keys())[0]
         #     logging.debug("Converted Value for entry %s to %s" % (tag, value))
         #     # all = self.Value(tag, value)
-        return all
+        return {newtag: newval}
 
     def convertValue(self, tag=None, value=None):
         """Convert a single tag value"""
