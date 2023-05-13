@@ -325,23 +325,28 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         return result.json()
 
-    def getSubmission(self, projectId=None, formId=None, disk=False):
+    def getSubmissions(self, projectId=None, formId=None, disk=False, json=True):
         """Fetch a CSV file of the submissions without media to a survey form."""
-        url = self.base + f"projects/{projectId}/forms/{formId}/submissions"
-        result = self.session.get(url, auth=self.auth, verify=self.verify)
+        headers = {"Content-Type": "application/json"}
+        now = datetime.now()
+        timestamp = f"{now.year}_{now.hour}_{now.minute}"
+        if json:
+            url = self.base + f"projects/{projectId}/forms/{formId}.svc/Submissions/"
+            filespec = f"/tmp/{formId}_{timestamp}.json"
+        else:
+            url = self.base + f"projects/{projectId}/forms/{formId}/submissions"
+            filespec = f"/tmp/{formId}_{timestamp}.csv"
+        result = self.session.get(url, auth=self.auth, headers=headers, verify=self.verify)
         if result.status_code == 200:
             if disk:
-                now = datetime.now()
-                timestamp = f"{now.year}_{now.hour}_{now.minute}"
                 # id = self.forms[0]['xmlFormId']
-                filespec = f"/tmp/{formId}_{timestamp}.csv"
                 try:
                     file = open(filespec, "xb")
                     file.write(result.content)
                 except FileExistsError:
                     file = open(filespec, "wb")
                     file.write(result.content)
-                log.info("Wrote CSV file %s" % filespec)
+                log.info("Wrote output file %s" % filespec)
                 file.close()
             return result.content
         else:
