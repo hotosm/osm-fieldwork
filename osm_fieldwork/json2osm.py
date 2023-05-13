@@ -79,7 +79,6 @@ class JsonDump(Convert):
         log.debug("Creating OSM XML file: %s" % filespec)
         self.osm = OsmFile(filespec=filespec)
         #self.osm.header()
-
     def writeOSM(self, feature):
         """Write a feature to an OSM XML output file"""
         out = ""
@@ -130,10 +129,24 @@ class JsonDump(Convert):
         elif type(data) == dict:
             for k, v in data.items():
                 if type(v) == dict:
-                    tags = self.getAllTags(v)
+                    log.info(f"Processing tag {k} = {v}")
+                    for k1, v1 in v.items():
+                        # tags.update(self.getAllTags(v))
+                        if type(v1) == dict:
+                            for i, j in v1.items():
+                                if type(j) == dict:
+                                    # FIXME: this should handle more than one
+                                    # but so far I've only it be accuracy, no other
+                                    # tags
+                                    k2 = list(j.keys())[0]
+                                    tags[k2] = list(j.values())[0]
+                                else:
+                                    tags[i] = j
+                        else:
+                            tags[k1] = v1
+                    log.debug(f"TAGS: {tags}")
                 else:
                     if v:
-                        # log.info(f"Processing tag {k} = {v}")
                         # if k in self.saved:
                         #     if str(v) == 'nan' or len(v) == 0:
                         #         log.debug(f"FIXME: {k} {v}")
@@ -162,6 +175,7 @@ class JsonDump(Convert):
         else:
             reader = json.loads(data)
         
+        total = list()
         for row in reader['value']:
             # log.info(f"ROW: {row}")
             tags = dict()
@@ -179,22 +193,28 @@ class JsonDump(Convert):
                     continue
                 alltags = self.getAllTags(value)
                 print(f"FIXME3: {alltags}")
-                #if len(alltags) == 0:
-                #    import epdb; epdb.st()
                 for k, v in alltags.items():
-                    items = self.convertEntry(k, v)
-                    if len(items) > 0:
-                        if type(items[0]) == str:
-                            tags[items[0]] = items[1]
-                        elif type(items[0]) == dict:
-                            for entry in items:
-                                for k, v in entry.items():
-                                    tags[k] = v
-                    else:
-                        tags[base] = value
-                # log.debug(f"\tFIXME1: {tags}")
-            all_tags.append(tags)
-        return all_tags
+                    if k in self.ignore:
+                        continue
+                    if v:
+                        items = dict()
+                        if type(v) == dict:
+                            v1 = alltags[k]
+                            if len(v1) > 1:
+                                log.warning("Got more than 1 result! {v1}")
+                                v2 = v1[v1.keys()]
+                                items = self.convertEntry(k, v2)
+                        else:
+                            items = self.convertEntry(k, v)
+                        #    for entry in items:
+                        #        for k, v in entry.items():
+                        #            tags[k] = v
+                        #    else:
+                        #tags[k1] = v1
+                        tags.update(items)
+            log.debug(f"\tFIXME1: {tags}")
+            total.append(tags)
+        return total
 
     def createEntry(self, entry=None):
         """Create the feature data structure"""
@@ -221,10 +241,10 @@ class JsonDump(Convert):
             # When using existing OSM data, there's a special geometry field.
             # Otherwise use the GPS coordinates where you are.
             if key == "geometry":
-                if len(value) == 3:
+                if value and len(value) == 3:
                     attrs["lat"] = value[1]
                     attrs["lon"] = value[0]
-                continue
+                    continue
 
             if key is not None and len(key) > 0 and key in attributes:
                 attrs[key] = value
