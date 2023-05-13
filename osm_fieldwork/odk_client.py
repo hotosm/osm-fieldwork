@@ -77,12 +77,11 @@ parser.add_argument("-i", "--id", type=int, help="Project ID nunmber")
 parser.add_argument("-f", "--form", help="XForm name")
 parser.add_argument("-u", "--uuid", help="Submission UUID, needed to download the data")
 # This is for form specific requests
-parser.add_argument(
-    "-x",
-    "--xform",
+parser.add_argument("-x", "--xform",
     choices=[
         "attachments",
         "csv",
+        "json",
         "submissions",
         "upload",
         "download",
@@ -265,13 +264,22 @@ elif args.xform:
             print("%s: %s" % (file["instanceId"], file["createdAt"]))
 
     elif args.xform == "csv":
-        submissions = form.getSubmission(args.id, args.form, True)
+        submissions = form.getSubmissions(args.id, args.form, True, False)
         logging.info(
             "There are %d submissions for XForm %s" % (len(submissions), args.form)
         )
         for file in submissions:
             form.submissions.append(file)
             print("%s: %s" % (file["instanceId"], file["createdAt"]))
+
+    elif args.xform == "json":
+        submissions = form.getSubmissions(args.id, args.form, True, True)
+        logging.info(
+            "There are %d submissions for XForm %s" % (len(submissions), args.form)
+        )
+        for file in submissions:
+            form.submissions.append(file)
+            #print("%s: %s" % (file["instanceId"], file["createdAt"]))
 
     elif args.xform == "attachments":
         attachments = form.listMedia(args.id, args.form)
