@@ -124,8 +124,6 @@ class CSVDump(Convert):
         """Write the GeoJson FeatureCollection to the output file and close it"""
         features = list()
         for item in self.features:
-            if len(item["attrs"]["lon"]) == 0:
-                continue
             poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
             if "private" in item:
                 props = {**item["tags"], **item["private"]}
@@ -148,7 +146,7 @@ class CSVDump(Convert):
         last_saved = dict()
         for row in reader:
             tags = dict()
-            log.info(f"ROW: {row}")
+            # log.info(f"ROW: {row}")
             for keyword, value in row.items():
                 if keyword is None or len(keyword) == 0:
                     continue
@@ -169,7 +167,16 @@ class CSVDump(Convert):
                 #             tags['name'] = val
                 #     continue
                 else:
+                    # When using geopoint warmup, once the display changes to the map
+                    # location, there is not always a value if the accuracy is way
+                    # off. In this case use the warmup value, which is where we are
+                    # standing anyway.
+                    if base == 'latitude' and len(value) == 0:
+                        value = row['warmup-Latitude']
+                    if base == 'longitude' and len(value) == 0:
+                        value = row['warmup-Longitude']
                     items = self.convertEntry(base, value)
+                    log.info(f"ROW: {base} {value}")
                     if len(items) > 0:
                         if base in self.saved:
                             if str(value) == 'nan' or len(value) == 0:
