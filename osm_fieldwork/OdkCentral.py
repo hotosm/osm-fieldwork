@@ -56,7 +56,7 @@ class OdkCentral(object):
         self.passwd = passwd
         verify = os.getenv("ODK_CENTRAL_SECURE", default=True)
         if type(verify) == str:
-            self.verify=eval(verify)
+            self.verify = eval(verify)
         else:
             self.verify = verify
         # These are settings used by ODK Collect

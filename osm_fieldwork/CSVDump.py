@@ -28,6 +28,9 @@ from osm_fieldwork.convert import Convert
 from osm_fieldwork.osmfile import OsmFile
 from osm_fieldwork.xlsforms import xlsforms_path
 from geojson import Point, Feature, FeatureCollection, dump
+import pandas as pd
+import re
+
 
 # set log level for urlib
 log = logging.getLogger(__name__)
@@ -49,6 +52,38 @@ class CSVDump(Convert):
         else:
             file = f"{path}/xforms.yaml"
         self.config = super().__init__(yaml)
+        self.saved = dict()
+        self.defaults = dict()
+
+    def lastSaved(self, keyword: str):
+        if keyword is not None and len(keyword) > 0:
+            return self.saved[keyword]
+        return None
+
+    def updateSaved(self, keyword: str, value: str):
+        if keyword is not None and value is not None and len(value) > 0:
+            self.saved[keyword] = value
+
+    def parseXLS(self, xlsfile: str):
+        """Parse the source XLSFile if available to look for details we need"""
+        if xlsfile is not None and len(xlsfile) > 0:
+            entries = pd.read_excel(xlsfile, sheet_name=[0])
+            # There will only be a single sheet
+            names = entries[0]['name']
+            defaults = entries[0]['default']
+            total = len(names)
+            i = 0
+            while i < total:
+                entry = defaults[i]
+                if str(entry) != 'nan':
+                    pat = re.compile("..last-saved.*")
+                    if pat.match(entry):
+                        name = entry.split('#')[1][:-1]
+                        self.saved[name] = None
+                    else:
+                        self.defaults[names[i]] = entry
+                i += 1
+        return True
 
     def createOSM(self, filespec="tmp.osm"):
         """Create an OSM XML output files"""
@@ -108,6 +143,7 @@ class CSVDump(Convert):
             reader = csv.DictReader(f, delimiter=",")
         else:
             reader = csv.DictReader(data, delimiter=",")
+        last_saved = dict()
         for row in reader:
             tags = dict()
             # log.info(f"ROW: {row}")
@@ -117,11 +153,9 @@ class CSVDump(Convert):
 
                 base = self.basename(keyword).lower()
                 # There's many extraneous fields in the input file which we don't need.
-                if (
-                    base is None
+                if (base is None
                     or base in self.ignore
                     or value is None
-                    or len(value) == 0
                 ):
                     continue
                 # if base in self.multiple:
@@ -133,10 +167,32 @@ class CSVDump(Convert):
                 #             tags['name'] = val
                 #     continue
                 else:
+                    # When using geopoint warmup, once the display changes to the map
+                    # location, there is not always a value if the accuracy is way
+                    # off. In this case use the warmup value, which is where we are
+                    # standing anyway.
+                    if base == 'latitude' and len(value) == 0:
+                        value = row['warmup-Latitude']
+                    if base == 'longitude' and len(value) == 0:
+                        value = row['warmup-Longitude']
                     items = self.convertEntry(base, value)
+                    log.info(f"ROW: {base} {value}")
                     if len(items) > 0:
+                        if base in self.saved:
+                            if str(value) == 'nan' or len(value) == 0:
+                                # log.debug(f"FIXME: {base} {value}")
+                                val = self.saved[base]
+                                if val and len(value) == 0:
+                                    log.warning(f"Using last saved value for \"{base}\"! Now \"{val}\"" )
+                                    value = val
+                            else:
+                                self.saved[base] = value
+                                log.debug(f"Updating last saved value for \"{base}\" with \"{value}\"")
                         if type(items[0]) == str:
-                            tags[items[0]] = items[1]
+                            if len(items[1]) > 0:
+                                tags[items[0]] = items[1]
+                            else:
+                                tags[items[0]] = value
                         elif type(items[0]) == dict:
                             for entry in items:
                                 for k, v in entry.items():
@@ -166,6 +222,9 @@ class CSVDump(Convert):
 
         # log.debug("Creating entry")
         # First convert the tag to the approved OSM equivalent
+        if 'lat' in entry and 'lon' in entry:
+            attrs["lat"] = entry['lat']
+            attrs["lon"] = entry['lon']
         for key, value in entry.items():
             attributes = (
                 "id",
@@ -177,15 +236,18 @@ class CSVDump(Convert):
                 "version",
                 "action",
             )
+
             # When using existing OSM data, there's a special geometry field.
             # Otherwise use the GPS coordinates where you are.
-            if key == "geometry":
+            if key == "geometry" and len(value) > 0:
                 geometry = value.split(" ")
                 if len(geometry) == 4:
                     attrs["lat"] = geometry[0]
                     attrs["lon"] = geometry[1]
                 continue
 
+            if len(attrs['lat']) == 0:
+                continue
             if key is not None and len(key) > 0 and key in attributes:
                 attrs[key] = value
                 log.debug("Adding attribute %s with value %s" % (key, value))
@@ -229,6 +291,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-y", "--yaml", help="Alternate YAML file")
+    parser.add_argument("-x", "--xlsfile", help="Source XLSFile")
     parser.add_argument(
         "-i", "--infile", help="The input file downloaded from ODK Central"
     )
@@ -251,6 +314,7 @@ if __name__ == "__main__":
         csvin = CSVDump(args.yaml)
     else:
         csvin = CSVDump()
+    csvin.parseXLS(args.xlsfile)
     osmoutfile = os.path.basename(args.infile.replace(".csv", ".osm"))
     csvin.createOSM(osmoutfile)
 
