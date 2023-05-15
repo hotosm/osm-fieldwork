@@ -2,7 +2,7 @@
 
 # Copyright (c) 2022, 2023 Humanitarian OpenStreetMap Team
 #
-# This file is part of osm-fieldwork.
+# This file is part of osm-Fieldwork.
 #
 #     Osm-Fieldwork is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -36,21 +36,8 @@ log = logging.getLogger(__name__)
 class FilterData(object):
     def __init__(self, filespec=None):
         self.tags = dict()
-        self.metadata = dict()
         if filespec:
-            self.metadata = self.parse(filespec)
-
-    def getMetadata(self, filespec: None):
-        """Extract"""
-        entries = pd.read_excel(filespec, sheet_name=[0, 1, 2])
-        self.metadata['title'] = entries[2]['form_title'].to_list()[0]
-        self.metadata['version'] = entries[2]['version'].to_list()[0]
-        for entry in entries[0]['type']:
-            if str(entry) == 'nan':
-                continue
-            if entry[:20] == "select_one_from_file":
-                self.metadata['extract'] = entry[21:]
-        return self.metadata
+            self.parse(filespec)
 
     def parse(self, filespec):
         """Read in the XLSForm and extract the data we want"""
@@ -63,7 +50,7 @@ class FilterData(object):
                 continue
             if entry[:20] == "select_one_from_file":
                 extract = entry[21:]
-        log.info(f"Data extract filename: \"{extract}\", title: \"{title}\"")
+        log.info(f"Got data extract filename: \"{extract}\", title: \"{title}\"")
         total = len(entries[1]['list_name'])
         index = 1
         while index < total:
@@ -101,6 +88,7 @@ class FilterData(object):
                 "label",
                 "landuse",
                 "opening_hours",
+                "tourism",
                 )
         self.keep = list(keep)
         if 'keep' in self.yaml:
