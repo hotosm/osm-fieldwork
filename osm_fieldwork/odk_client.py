@@ -217,7 +217,6 @@ elif args.project:
 
 elif args.xform:
     # This downloads files from the ODK server
-    print("XForm ops %r" % files)
     if not args.id:
         print('Need to specify a project ID using "--id" and an XForm id using "--"!')
         quit()
