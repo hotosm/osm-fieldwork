@@ -112,9 +112,9 @@ class DatabaseAccess(object):
             elif table == "ways_poly":
                 tables.append("polygon")
             elif table == "ways_line":
-                tables.append("linestring")
+                tables.append("line")
             elif table == "relations":
-                tables.append("linestring")
+                tables.append("line")
         features["geometryType"] = tables
         if not poly:
             features["centroid"] = "true"
@@ -221,7 +221,7 @@ class DatabaseAccess(object):
         # Now take that taskid and hit /tasks/status url with get
         data = zfp.read("Export.geojson")
         os.remove("/tmp/Export.geojson")
-        return data
+        return eval(data)
     #   return zfp.read("Export.geojson")
 
 class PostgresClient(DatabaseAccess):
@@ -253,7 +253,7 @@ class PostgresClient(DatabaseAccess):
             poly = boundary
         wkt = shape(poly)
 
-        if len(xlsfile) > 0:
+        if xlsfile and len(xlsfile) > 0:
             config = xlsfile.replace(".xls", "")
         else:
             config = category
@@ -268,6 +268,8 @@ class PostgresClient(DatabaseAccess):
         else:
             request = self.createJson(config, poly, polygon)
             collection = self.queryRemote(request)
+        if not collection):
+            return None
 
         if len(collection['features']) == 0:
             tags = { 'title': category, 'label': category, 'id': 0}
