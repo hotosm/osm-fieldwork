@@ -18,8 +18,8 @@
 
 # The Rob project on odk.hotosm.org
 PROJECT=56
-DBNAME=nepal
-# DBNAME=underpass
+#DBNAME=nepal
+DBNAME=underpass
 POLY=../thamel.geojson
 XLSFILES = \
 	nature.xls \
