@@ -87,8 +87,7 @@ landusage.stamp: landusage.xls
 		"amenities") category="amenity";; \
 	esac; \
 	echo "Generating data extract for \"$${category}\""; \
-	$(EXTRACT) -b $(POLY) -p -dn $(DBNAME) -g $${target}.geojson -c $${category}; \
-	touch $(STAMPDIR)/json-$${category}-stamp
+	$(EXTRACT) -b $(POLY) -p -dn $(DBNAME) -g $${target}.geojson -c $${category}
 
 %.clone: %.xml
 	@target=$(<:.xml=); \
