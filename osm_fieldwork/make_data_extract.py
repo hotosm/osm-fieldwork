@@ -268,7 +268,7 @@ class PostgresClient(DatabaseAccess):
         else:
             request = self.createJson(config, poly, polygon)
             collection = self.queryRemote(request)
-        if not collection):
+        if not collection:
             return None
 
         if len(collection['features']) == 0:
