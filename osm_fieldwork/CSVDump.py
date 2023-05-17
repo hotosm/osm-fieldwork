@@ -172,11 +172,12 @@ class CSVDump(Convert):
                     # off. In this case use the warmup value, which is where we are
                     # standing anyway.
                     if base == 'latitude' and len(value) == 0:
-                        value = row['warmup-Latitude']
-                    if base == 'longitude' and len(value) == 0:
-                        value = row['warmup-Longitude']
+                        if 'warmup-Latitude' in row:
+                            value = row['warmup-Latitude']
+                            if base == 'longitude' and len(value) == 0:
+                                value = row['warmup-Longitude']
                     items = self.convertEntry(base, value)
-                    log.info(f"ROW: {base} {value}")
+                    # log.info(f"ROW: {base} {value}")
                     if len(items) > 0:
                         if base in self.saved:
                             if str(value) == 'nan' or len(value) == 0:
@@ -188,15 +189,8 @@ class CSVDump(Convert):
                             else:
                                 self.saved[base] = value
                                 log.debug(f"Updating last saved value for \"{base}\" with \"{value}\"")
-                        if type(items[0]) == str:
-                            if len(items[1]) > 0:
-                                tags[items[0]] = items[1]
-                            else:
-                                tags[items[0]] = value
-                        elif type(items[0]) == dict:
-                            for entry in items:
-                                for k, v in entry.items():
-                                    tags[k] = v
+                        for k, v in items.items():
+                            tags[k] = v
                     else:
                         tags[base] = value
                 # log.debug(f"\tFIXME1: {tags}")
