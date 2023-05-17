@@ -325,16 +325,18 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         return result.json()
 
-    def getSubmissions(self, projectId=None, formId=None, disk=False, json=True):
+    def getSubmissions(self, projectId=None, formId=None, submission_id=None, disk=False, json=True):
         """Fetch a CSV file of the submissions without media to a survey form."""
         headers = {"Content-Type": "application/json"}
         now = datetime.now()
         timestamp = f"{now.year}_{now.hour}_{now.minute}"
+        
+        # If submission_id is None, all the submissions are returned
         if json:
-            url = self.base + f"projects/{projectId}/forms/{formId}.svc/Submissions/"
+            url = self.base + f"projects/{projectId}/forms/{formId}.svc/Submissions('{submission_id}')"
             filespec = f"/tmp/{formId}_{timestamp}.json"
         else:
-            url = self.base + f"projects/{projectId}/forms/{formId}/submissions"
+            url = self.base + f"projects/{projectId}/forms/{formId}/submissions('{submission_id}')"
             filespec = f"/tmp/{formId}_{timestamp}.csv"
         result = self.session.get(url, auth=self.auth, headers=headers, verify=self.verify)
         if result.status_code == 200:
