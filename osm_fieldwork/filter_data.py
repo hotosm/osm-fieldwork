@@ -34,12 +34,16 @@ log = logging.getLogger(__name__)
 
 
 class FilterData(object):
-    def __init__(self, filespec=None):
+    def __init__(self,
+                 filespec: str
+                 ):
         self.tags = dict()
         if filespec:
             self.parse(filespec)
 
-    def parse(self, filespec):
+    def parse(self,
+              filespec: str
+              ):
         """Read in the XLSForm and extract the data we want"""
         entries = pd.read_excel(filespec, sheet_name=[0, 1, 2])
         
@@ -96,7 +100,9 @@ class FilterData(object):
 
         return title, extract
 
-    def cleanData(self, data):
+    def cleanData(self,
+                  data
+                  ):
         tmpfile = data
         if type(data) == str:
             outfile = open(f"new-{data}", "x")

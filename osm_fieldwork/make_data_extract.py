@@ -58,7 +58,10 @@ log = logging.getLogger(__name__)
 
 
 class DatabaseAccess(object):
-    def __init__(self, dbhost=None, dbname=None):
+    def __init__(self,
+                 dbhost: str = None,
+                 dbname: str = None
+                 ):
         self.dbshell = None
         self.dbcursor = None
         self.category = None
@@ -86,7 +89,11 @@ class DatabaseAccess(object):
             except Exception as e:
                 logging.error("Couldn't connect to database: %r" % e)
 
-    def createJson(self, category, boundary, poly):
+    def createJson(self,
+                   category: str,
+                   boundary,
+                   poly: bool = False
+                   ):
         path = xlsforms_path.replace("xlsforms", "data_models")
         file = open(f"{path}/{category}.yaml", "r").read()
         data = yaml.load(file, Loader=yaml.Loader)
@@ -120,7 +127,10 @@ class DatabaseAccess(object):
             features["centroid"] = "true"
         return json.dumps(features)
 
-    def createSQL(self, category, polygon=False):
+    def createSQL(self,
+                  category: str,
+                  polygon: bool = False
+                  ):
         path = xlsforms_path.replace("xlsforms", "data_models")
         file = open(f"{path}/{category}.yaml", "r").read()
         data = yaml.load(file, Loader=yaml.Loader)
@@ -159,7 +169,10 @@ class DatabaseAccess(object):
             sql.append(query[:-4])
         return sql
 
-    def queryLocal(self, query, ewkt):
+    def queryLocal(self,
+                   query: str = None,
+                   ewkt: str = None
+                   ):
         sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         self.dbcursor.execute(sql)
         sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
@@ -198,7 +211,9 @@ class DatabaseAccess(object):
             features.append(Feature(geometry=poi, properties=tags))
         return features
 
-    def queryRemote(self, query):
+    def queryRemote(self,
+                    query: str = None
+                    ):
         url = f"{self.url}/snapshot/"
         result = self.session.post(url, data=query, headers=self.headers)
         if result.status_code != 200:
@@ -226,18 +241,22 @@ class DatabaseAccess(object):
 
 class PostgresClient(DatabaseAccess):
     """Class to handle SQL queries for the categories"""
-    def __init__(self, dbhost=None, dbname=None, output=None):
+    def __init__(self,
+                 dbhost: str = None,
+                 dbname: str = None,
+                 output: str = None
+    ):
         """Initialize the postgres handler"""
         # OutputFile.__init__( self, output)
         self.boundary = None
         super().__init__(dbhost, dbname)
 
     def getFeatures(self,
-                    boundary=None,
-                    filespec=None,
-                    polygon=False,
-                    category=None,
-                    xlsfile=None,
+                    boundary,
+                    filespec: str,
+                    polygon: bool,
+                    category: str,
+                    xlsfile: str,
                     ):
         """Extract buildings from Postgres"""
         logging.info("Extracting features from Postgres...")
@@ -253,7 +272,7 @@ class PostgresClient(DatabaseAccess):
             poly = boundary
         wkt = shape(poly)
 
-        if xlsfile and len(xlsfile) > 0:
+        if len(xlsfile) > 0:
             config = xlsfile.replace(".xls", "")
         else:
             config = category
@@ -302,16 +321,17 @@ class PostgresClient(DatabaseAccess):
 
 class OverpassClient(object):
     """Class to handle Overpass queries"""
-    def __init__(self, output=None):
+    def __init__(self,
+                 output: str = None):
         """Initialize Overpass handler"""
         self.overpass = overpy.Overpass()
         #OutputFile.__init__(self, output)
 
     def getFeatures(self,
-                    boundary=None,
-                    filespec=None,
-                    xlsfile="buildings.xls",
-                    category="buildings"
+                    boundary,
+                    filespec: str,
+                    xlsfile: str,
+                    category: str
                     ):
         """Extract buildings from Overpass"""
         logging.info("Extracting features...")
@@ -364,12 +384,19 @@ class OverpassClient(object):
 class FileClient(object):
     """Class to handle Overpass queries"""
 
-    def __init__(self, infile=None, output=None):
+    def __init__(self,
+                 infile: str,
+                 output: str
+                 ):
         """Initialize Overpass handler"""
         OutputFile.__init__(self, output)
         self.infile = infile
 
-    def getFeatures(self, boundary=None, infile=None, outfile=None):
+    def getFeatures(self,
+                    boundary,
+                    infile: str,
+                    outfile: str
+                    ):
         """Extract buildings from a disk file"""
         logging.info("Extracting buildings from %s..." % infile)
         if boundary:
