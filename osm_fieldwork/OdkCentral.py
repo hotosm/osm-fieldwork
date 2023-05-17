@@ -331,13 +331,16 @@ class OdkForm(OdkCentral):
         now = datetime.now()
         timestamp = f"{now.year}_{now.hour}_{now.minute}"
         
-        # If submission_id is None, all the submissions are returned
         if json:
-            url = self.base + f"projects/{projectId}/forms/{formId}.svc/Submissions('{submission_id}')"
+            url = self.base + f"projects/{projectId}/forms/{formId}.svc/Submissions"
             filespec = f"/tmp/{formId}_{timestamp}.json"
         else:
-            url = self.base + f"projects/{projectId}/forms/{formId}/submissions('{submission_id}')"
+            url = self.base + f"projects/{projectId}/forms/{formId}/submissions"
             filespec = f"/tmp/{formId}_{timestamp}.csv"
+
+        if submission_id:
+            url = url + f"('{submission_id}')"
+
         result = self.session.get(url, auth=self.auth, headers=headers, verify=self.verify)
         if result.status_code == 200:
             if disk:
