@@ -38,8 +38,9 @@ log = logging.getLogger(__name__)
 class JsonDump(Convert):
     """A class to parse the CSV files from ODK Central"""
 
-    def __init__(self, yaml=None):
-        """"""
+    def __init__(self,
+                 yaml: str = None
+                 ):
         self.fields = dict()
         self.nodesets = dict()
         self.data = list()
@@ -47,7 +48,7 @@ class JsonDump(Convert):
         self.json = None
         self.features = list()
         path = xlsforms_path.replace("xlsforms", "")
-        if type(yaml) == str:
+        if yaml:
             file = f"{path}{yaml}"
         else:
             file = f"{path}/xforms.yaml"
@@ -74,12 +75,16 @@ class JsonDump(Convert):
     #             i += 1
     #     return True
 
-    def createOSM(self, filespec="tmp.osm"):
+    def createOSM(self,
+                  filespec: str = "tmp.osm"
+                  ):
         """Create an OSM XML output files"""
         log.debug("Creating OSM XML file: %s" % filespec)
-        self.osm = OsmFile(filespec=filespec)
+        self.osm = OsmFile(filespec)
         #self.osm.header()
-    def writeOSM(self, feature):
+    def writeOSM(self,
+                 feature: dict
+                 ):
         """Write a feature to an OSM XML output file"""
         out = ""
         if "id" in feature["tags"]:
@@ -101,7 +106,9 @@ class JsonDump(Convert):
         log.debug("Creating GeoJson file: %s" % file)
         self.json = open(file, "w")
 
-    def writeGeoJson(self, feature):
+    def writeGeoJson(self,
+                     feature: dict
+                     ):
         """Write a feature to a GeoJson output file"""
         # These get written later when finishing , since we have to create a FeatureCollection
         if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
@@ -121,7 +128,9 @@ class JsonDump(Convert):
         collection = FeatureCollection(features)
         dump(collection, self.json)
 
-    def getAllTags(self, data):
+    def getAllTags(self,
+                   data
+                   ):
         all_tags = dict()
         tags = dict()
         if type(data) == str:
@@ -165,8 +174,9 @@ class JsonDump(Convert):
         return all_tags
 
     def parse(self,
-              filespec=None,
-              data=None):
+              filespec: str,
+              data: str = None
+              ):
         """Parse the JSON file from ODK Central and convert it to a data structure"""
         all_tags = list()
         if not data:
@@ -216,7 +226,9 @@ class JsonDump(Convert):
             total.append(tags)
         return total
 
-    def createEntry(self, entry=None):
+    def createEntry(self,
+                    entry: dict
+                    ):
         """Create the feature data structure"""
         # print(line)
         feature = dict()

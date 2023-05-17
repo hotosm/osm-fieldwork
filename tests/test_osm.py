@@ -35,7 +35,7 @@ args = parser.parse_args()
 if os.path.exists("tests/test.osm"):
     os.remove("tests/test.osm")
 
-osm = OsmFile(filespec="tests/test.osm")
+osm = OsmFile("tests/test.osm")
 
 
 def test_init():

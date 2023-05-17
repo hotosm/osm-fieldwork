@@ -32,7 +32,9 @@ log = logging.getLogger(__name__)
 class Convert(YamlFile):
     """A class to apply a YAML config file and convert ODK to OSM"""
 
-    def __init__(self, xform: str):
+    def __init__(self,
+                 xform: str
+                 ):
         path = xlsforms_path.replace("xlsforms", "")
         if type(xform) == str:
             file = f"{path}{xform}"
@@ -66,24 +68,34 @@ class Convert(YamlFile):
         self.private = self.yaml.yaml["private"]
         self.multiple = self.yaml.yaml["multiple"]
 
-    def privateData(self, keyword):
+    def privateData(self,
+                    keyword: str
+                    ):
         """See is a keyword is in the private data category"""
         return keyword in self.private
 
-    def convertData(self, keyword):
+    def convertData(self,
+                    keyword: str
+                    ):
         """See is a keyword is in the convert data category"""
         return keyword in self.convert
 
-    def ignoreData(self, keyword):
+    def ignoreData(self,
+                   keyword: str
+                   ):
         """See is a keyword is in the convert data category"""
         return keyword in self.ignore
 
-    def escape(self, value):
+    def escape(self,
+               value: str
+               ):
         """Escape characters like embedded quotes in text fields"""
         tmp = value.replace(" ", "_")
         return tmp.replace("'", "&apos;")
 
-    def getKeyword(self, value):
+    def getKeyword(self,
+                   value: str
+                   ):
         """Get the value for a keyword from the yaml file"""
         key = self.yaml.yaml(value)
         if type(key) == bool:
@@ -92,7 +104,9 @@ class Convert(YamlFile):
             key = self.yaml.getKeyword(value)
         return key
 
-    def getValues(self, tag=None):
+    def getValues(self,
+                  tag: str = None
+                  ):
         """Get the values for a primary key"""
         if tag is not None:
             if tag in self.convert:
@@ -100,7 +114,10 @@ class Convert(YamlFile):
         else:
             return None
 
-    def convertEntry(self, tag=None, value=None):
+    def convertEntry(self,
+                     tag: str,
+                     value: str
+                     ):
         """Convert a tag and value from the ODK represention to an OSM one"""
         #all = list()
 
@@ -147,7 +164,10 @@ class Convert(YamlFile):
         #     # all = self.Value(tag, value)
         return {newtag: newval}
 
-    def convertValue(self, tag=None, value=None):
+    def convertValue(self,
+                     tag: str,
+                     value: str
+                     ):
         """Convert a single tag value"""
         all = list()
 
@@ -179,7 +199,9 @@ class Convert(YamlFile):
                 all.append(entry)
         return all
 
-    def convertTag(self, tag=None):
+    def convertTag(self,
+                   tag: str
+                   ):
         """Convert a single tag"""
         if tag in self.convert:
             newtag = self.convert[tag]
