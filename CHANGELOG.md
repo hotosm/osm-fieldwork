@@ -1,3 +1,49 @@
+## 0.3.1rc1 (2023-05-18)
+
+### Fix
+
+- xform in getSubmissions function
+- output file in osm extracts
+- add a default value
+- use type for parameters to methods
+- Use type for all parameters to methods
+- conversion now returns a dict
+- Remove accidental map-icons submodule, use types with all method parameters
+- Drop paren
+- Use line not linestring as a type, turn data into a dict from queryRemote()
+- Default to using the underpass database for raw OSM data
+- Remove debug message
+- Add XLSForms for camping and small town amenity mapping
+- Changes made while camping, mostly minor tweaks
+- Remove stamp file
+- Extract the metadata from the XLSForm
+- Use the warmup location if there isn't one for the geopoint
+- Add json as an input source
+- Download the josn file of submissions from Central
+- add more tags to ignore
+- Process the json file from Central and write OSM XML and Geojsaon files
+- return a dict instead of a list
+- Convert the JSON fike from ODATA into OSM
+- Process the defaults from the XLSFile
+- process all rows to get the fields, as not all files have the same ones
+- COnvert openfire tpo leisure=firepit, which is more common
+- If the extract would be empty, write dummy entry so ODK Collect will still launch
+- Fix logging
+- Write dummy geojson file if there ios nothing in the extract
+- fix logging setup, readoing CSV file
+- use yaml as the config file if it exists
+- Add support for generating variants of an XLSForm
+- Add new non humanitarian XLSForms
+- add support for amenities XLSForm
+- Update the column names in all XLSForms to use the same name so they can all be scanned for the title and ID
+- Add config file for amenities
+- Add XLSForm for historical sites
+- When querying a local database, collect all results
+- Add support for new camping form
+- refactor the groups of survey questions
+- Add OSM map-icons as submodule
+- fix typo in comment
+
 ## 0.3.1rc0 (2023-05-04)
 
 ### Fix
