@@ -380,10 +380,10 @@ class OdkForm(OdkCentral):
         
         if json:
             url = self.base + f"projects/{projectId}/forms/{xform}.svc/Submissions"
-            filespec = f"/tmp/{formId}_{timestamp}.json"
+            filespec = f"/tmp/{xform}_{timestamp}.json"
         else:
             url = self.base + f"projects/{projectId}/forms/{xform}/submissions"
-            filespec = f"/tmp/{formId}_{timestamp}.csv"
+            filespec = f"/tmp/{xform}_{timestamp}.csv"
 
         if submission_id:
             url = url + f"('{submission_id}')"
@@ -402,7 +402,7 @@ class OdkForm(OdkCentral):
                 file.close()
             return result.content
         else:
-            log.error(f'Submissions for {projectId}, Form {formId}' + "doesn't exist")
+            log.error(f'Submissions for {projectId}, Form {xform}' + "doesn't exist")
             return None
 
     def getSubmissionMedia(self,

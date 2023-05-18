@@ -313,7 +313,7 @@ class PostgresClient(DatabaseAccess):
 
         # This will be set if the XLSForm contains a select_one_from_file
         if len(extract) > 0:
-            filespec = f"/tmp/{outfile}"
+            # filespec = f"/tmp/{outfile}"
             jsonfile = open(filespec, "w")
             dump(new, jsonfile)
             jsonfile.close()
