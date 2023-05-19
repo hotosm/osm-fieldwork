@@ -506,7 +506,7 @@ class OdkForm(OdkCentral):
             self.draft = draft
         headers = {"Content-Type": "application/xml"}
         if self.draft:
-            url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/draft?ignoreWarnings=true&publish=false"
+            url = f"{self.base}projects/{projectId}/forms/{xform}/draft?ignoreWarnings=true&publish=false"
         else:
             url = f"{self.base}projects/{projectId}/forms?ignoreWarnings=true&publish=true"
 
@@ -521,10 +521,10 @@ class OdkForm(OdkCentral):
         # FIXME: should update self.forms with the new form
         if result.status_code != 200:
             if result.status_code == 409:
-                log.error(f"{xmlFormId} already exists on Central")
+                log.error(f"{xform} already exists on Central")
             else:
                 status = eval(result._content)
-                log.error(f"Couldn't create {xmlFormId} on Central: {status['message']}")
+                log.error(f"Couldn't create {xform} on Central: {status['message']}")
 
         return result.status_code
 
@@ -558,9 +558,9 @@ class OdkForm(OdkCentral):
         result = self.session.post(url, auth=self.auth, verify=self.verify)
         if result.status_code != 200:
             status = eval(result._content)
-            log.error(f"Couldn't publish {xmlFormId} on Central: {status['message']}")
+            log.error(f"Couldn't publish {xform} on Central: {status['message']}")
         else:
-            log.info(f"Published {xmlFormId} on Central.")
+            log.info(f"Published {xform} on Central.")
         return result.status_code
 
     def dump(self):
