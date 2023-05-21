@@ -272,7 +272,7 @@ elif args.xform:
             print("%s: %s" % (file["instanceId"], file["createdAt"]))
 
     elif args.xform == "json":
-        submissions = form.getSubmissions(args.id, args.form, True, True)
+        submissions = form.getSubmissions(args.id, args.form, False, True, True)
         logging.info(
             "There are %d submissions for XForm %s" % (len(submissions), args.form)
         )
