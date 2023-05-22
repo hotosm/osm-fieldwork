@@ -72,6 +72,7 @@ class OdkCentral(object):
         # so we don't have to supply this all the time. This is only used
         # when odk_client is used, and no parameters are passed in.
         if not self.url:
+            log.debug("Configuring ODKCentral from file .odkcentral")
             home = os.getenv("HOME")
             config = ".odkcentral"
             filespec = home + "/" + config
@@ -90,9 +91,12 @@ class OdkCentral(object):
                     if tmp[0] == "passwd":
                         self.passwd = tmp[1].strip("\n")
             else:
-                log.warning("You can put authentication settings in %s" % filespec)
+                log.warning(f"Authentication settings missing from {filespec}")
+        else:
+            log.debug(f"ODKCentral configuration parsed: {self.url}")
         # Base URL for the REST API
         self.version = "v1"
+        log.debug(f"Using {self.version} API")
         self.base = self.url + "/" + self.version + "/"
 
         # Authentication data
@@ -143,18 +147,27 @@ class OdkCentral(object):
                       ):
         """Create a new project on an ODK Central server if it doesn't
         already exist"""
+        log.debug(f"Checking if project named {name} exists already")
         exists = self.findProject(name)
         if exists:
-            log.debug(f"Project \"{name}\" already exists.")
+            log.debug(f"Project named {name} already exists.")
             return exists
         else:
             url = f"{self.base}projects"
-            result = self.session.post(
-                url, auth=self.auth, json={"name": name}, verify=self.verify
-            )
+            log.debug(f"POSTing project {name} to {url} with verify={self.verify}")
+            try:
+                result = self.session.post(
+                    url, auth=self.auth, json={"name": name}, verify=self.verify, timeout=4
+                )
+                result.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                log.error(e)
+                log.error("Failed to submit to ODKCentral")
+            json_response = result.json()
+            log.debug(f"Returned: {json_response}")
             # update the internal list of projects
             self.listProjects()
-        return result.json()
+            return json_response
 
     def deleteProject(self,
                       project_id: int
