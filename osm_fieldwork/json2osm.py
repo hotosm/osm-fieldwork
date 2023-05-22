@@ -202,7 +202,7 @@ class JsonDump(Convert):
                 if keyword is None or len(keyword) == 0:
                     continue
                 alltags = self.getAllTags(value)
-                print(f"FIXME3: {alltags}")
+                # print(f"FIXME3: {alltags}")
                 for k, v in alltags.items():
                     if k in self.ignore:
                         continue
