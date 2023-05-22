@@ -21,6 +21,8 @@ import sys
 import logging
 import xmltodict
 import argparse
+import os
+import re
 
 # from shapely.geometry import Point, LineString, Polygon
 from collections import OrderedDict
@@ -28,185 +30,85 @@ from collections import OrderedDict
 # Logging
 log = logging.getLogger(__name__)
 
-class ODKObject(object):
-    def __init__(self, name=str(), type=str(), data=str()):
-        self.name = name
-        self.type = type
-        self.data = data
-
-    def dump(self):
-        print("Name: %s, Type %s" % (self.name, self.type))
-        print("\tValue: %s" % self.data)
-
-
 class ODKInstance(object):
-    def __init__(self, file):
-        self.odkobjs = list()
-        # super(ODKInstance, self).__init__()
-        self.name = file
-        self.odkobjs = list()
+    def __init__(self,
+                 filespec: str = None,
+                 data: str = None
+                 ):
+        self.data = data
+        self.filespec = filespec
+        if filespec:
+            self.data = self.parse(filespec=filespec)
+        elif data:
+            self.data = self.parse(data)
 
-    # def parse(self, instance):
-    #     print("Parsing Instance: %s" % instance)
-    #     with open(instance, 'rb') as file:
-    #         xml = file.read(10000)  # Instances are small, read the whole file
-    #         doc = xmltodict.parse(xml)
-    #     try:
-    #         field = doc['data']
-    #     except:
-    #         logging.warning("No data in this instance")
-    #         return False
-    #     for field in doc['data']:
-    #         if field == 'meta' or field == '@id':
-    #             continue
-    #         # Get the type of this nodeset
-    #         ftype = form.getNodeType(field)
-    #         if not ftype:
-    #             continue
-    #         value = doc['data'][field]
-    #         # A Some field types contains multiple internal fields,
-    #         # Location - latitude, longitude, altitude, accuracy
-    #         print("\tFTYPE = %r" % ftype)
-    #         print("\tFVAL = %r" % field)
-    #         print("\tVALUE = %r" % value)
-    #         obj = ODKObject(field, ftype, value)
-    #         if len(ftype) == 0:
-    #             continue
-    #         elif ftype == 'geotrace':
-    #             #gps = doc['data'][field].split(' ')
-    #             print("\tGEOTRACE: %r" % doc['data'][field])
-    #         elif ftype == 'geopoint':
-    #             gps = doc['data'][field].split(' ')
-    #             #print("\tGPS: %r" % gps)
-    #         elif ftype == 'string':
-    #             #logging.debug("\tString: %r" % doc['data'][field])
-    #             # tmptag = osm.makeTag(field, doc['data'][field])
-    #             if doc['data'][field] is not None:
-    #                 # alltags.append(osm.makeTag(field, doc['data'][field]))
-    #                 pass
-    #         elif ftype == 'int':
-    #             number = doc['data'][field]
-    #             print('\tInt %r' % number)
-    #             if number is not None:
-    #                 # alltags.append(osm.makeTag(field, number))
-    #                 # Select fields usually are a yes/no.
-    #                 pass
-    #         elif ftype == 'select':
-    #             print('\tMulti Select: %r' % str(doc['data'][field]))
-    #             if doc['data'][field]:
-    #                 for data in doc['data'][field].split(' '):
-    #                     print("DATA1: %r" % data)
-    #                     tmptag = osm.makeTag(field, data)
-    #                     print("FOOOO1: %r" % tmptag)
-    #                     if len(tmptag) > 0:
-    #                         # alltags.append(osm.makeTag(field, data))
-    #                         pass
-    #         elif ftype == 'select1':
-    #             print('Select')
-    #             if doc['data'][field]:
-    #                 for data in doc['data'][field].split(' '):
-    #                     print("DATA2: %r" % data)
-    #                     tmptag = osm.makeTag(field, data)
-    #                     print("FOOOO2: %r" % tmptag)
-    #                     # alltags.append(osm.makeTag(field, data))
-    #                     #print("FIXME: %r" % (gps, field))
-
-    #     self.odkobjs = list()
-
-    def dump(self):
-        print("Dumping ODKInstance: %s" % self.name)
-        for obj in self.odkobjs:
-            obj.dump()
-
-    def parse(self, instance):
-        print("Parsing Instance: %s" % instance)
-        with open(instance, "rb") as file:
-            xml = file.read(10000)  # Instances are small, read the whole file
-            doc = xmltodict.parse(xml)
-        try:
-            field = doc["data"]
-        except:
-            logging.warning("No data in this instance")
-            return False
-        for i, j in field.items():
-            print(i, j)
-            if type(j) == OrderedDict:
+    def parse(self,
+              filespec: str,
+              data: str = None
+              ):
+        rows = list()
+        if filespec:
+            logging.info("Processing instance file: %s" % filespec)
+            file = open(filespec, "rb")
+            # Instances are small, read the whole file
+            xml = file.read(os.path.getsize(filespec))
+        elif data:
+            xml = data
+        doc = xmltodict.parse(xml)
+        import json
+        json.dumps(doc)
+        tags = dict()
+        data = doc["data"]
+        for i, j in data.items():
+            if j is None or i == 'meta':
+                continue
+            print(f"tag: {i} == {j}")
+            pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
+            if pat.match(str(j)):
+                if i == 'warmup':
+                    continue
+                gps = j.split(" ")
+                tags["lat"] = gps[0]
+                tags["lon"] = gps[1]
+                continue
+            if type(j) == OrderedDict or type(j) == dict:
                 for ii, jj in j.items():
-                    print(ii, jj)
-
-        # for field in doc['data']:
-        #     if field == 'meta' or field == '@id':
-        #         continue
-        #     # Get the type of this nodeset
-        #     ftype = form.getNodeType(field)
-        #     if not ftype:
-        #         continue
-        #     value = doc['data'][field]
-        #     # A Some field types contains multiple internal fields,
-        #     # Location - latitude, longitude, altitude, accuracy
-        #     print("\tFTYPE = %r" % ftype)
-        #     print("\tFVAL = %r" % field)
-        #     print("\tVALUE = %r" % value)
-        #     obj = ODKObject(field, ftype, value)
-        #     if len(ftype) == 0:
-        #         continue
-        #     elif ftype == 'geotrace':
-        #         #gps = doc['data'][field].split(' ')
-        #         print("\tGEOTRACE: %r" % doc['data'][field])
-        #     elif ftype == 'geopoint':
-        #         gps = doc['data'][field].split(' ')
-        #         #print("\tGPS: %r" % gps)
-        #     elif ftype == 'string':
-        #         #logging.debug("\tString: %r" % doc['data'][field])
-        #         # tmptag = osm.makeTag(field, doc['data'][field])
-        #         if doc['data'][field] is not None:
-        #             # alltags.append(osm.makeTag(field, doc['data'][field]))
-        #             pass
-        #     elif ftype == 'int':
-        #         number = doc['data'][field]
-        #         print('\tInt %r' % number)
-        #         if number is not None:
-        #             # alltags.append(osm.makeTag(field, number))
-        #             # Select fields usually are a yes/no.
-        #             pass
-        #     elif ftype == 'select':
-        #         print('\tMulti Select: %r' % str(doc['data'][field]))
-        #         if doc['data'][field]:
-        #             for data in doc['data'][field].split(' '):
-        #                 print("DATA1: %r" % data)
-        #                 tmptag = osm.makeTag(field, data)
-        #                 print("FOOOO1: %r" % tmptag)
-        #                 if len(tmptag) > 0:
-        #                     # alltags.append(osm.makeTag(field, data))
-        #                     pass
-        #     elif ftype == 'select1':
-        #         print('Select')
-        #         if doc['data'][field]:
-        #             for data in doc['data'][field].split(' '):
-        #                 print("DATA2: %r" % data)
-        #                 tmptag = osm.makeTag(field, data)
-        #                 print("FOOOO2: %r" % tmptag)
-        #                 # alltags.append(osm.makeTag(field, data))
-        #                 #print("FIXME: %r" % (gps, field))
-
-        #     self.odkobjs.append(obj)
-
-        return self.odkobjs
-
+                    pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
+                    if pat.match(str(jj)):
+                        gps = jj.split(" ")
+                        tags["lat"] = gps[0]
+                        tags["lon"] = gps[1]
+                        continue
+                    if jj is None:
+                        continue
+                    print(f"tag: {i} == {j}")
+                    if type(jj) == OrderedDict or type(jj) == dict:
+                        for iii, jjj in jj.items():
+                            if jjj is not None:
+                                tags[iii] = jjj
+                                # print(iii, jjj)
+                            else:
+                                print(ii, jj)
+                                tags[ii] = jj
+                    else:
+                        if i[0:1] != "@":
+                            tags[i] = j
+            rows.append(tags)
+        return rows
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
-    parser.add_argument(
-        "-i", "--infile", required=True, help="instance data in XML format"
+    parser.add_argument("-i", "--infile", required=True, help="instance data in XML format"
     )
     args = parser.parse_args()
 
+    os.path.basename(args.infile)
+
     # if verbose, dump to the terminal as well as the logfile.
     if not args.verbose:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
+        log.setLevel(logging.DEBUG)
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
@@ -214,8 +116,12 @@ if __name__ == "__main__":
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
-    xinst = args.infile
-    inst = ODKInstance(xinst)
+
+    if not args.infile:
+        parser.print_help()
+        quit()
+
+    inst = ODKInstance(args.infile)
     data = inst.parse(args.infile)
