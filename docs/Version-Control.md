@@ -26,9 +26,21 @@ Example `fix: fixed the bug in issue #123`
 
 ### Bumping a Version
 
-- When you decide it is time to create a new version, run:
+- When you decide it is time to create a new version:
 
-`cz bump --check-consistency --changelog`
+1. Create a new branch
+
+`git checkout -b bump/new_release`
+
+2. Bump the version and push
+
+```bash
+pip install commitizen # (if not installed)
+
+cz bump --check-consistency --changelog
+
+git push
+```
 
 This will:
 - Update the SemVer version number in locations specific in `pyproject.toml`, throughout the codebase.
@@ -36,13 +48,7 @@ This will:
 - Automatically update CHANGELOG.md with all changes since the last version.
 - Create a tag matching the version number.
 
-In a repo where you have direct push access, you would:
-```bash
-git push
-git push --tag
-```
-
-But as we are using a git-flow PR-based model, the tags must be made as part of a release instead.
+> Note: in a repo where you have direct push access, you would simply update on main and push. As we are using Git-Flow, a PR is necessary.
 
 ## Creating Releases
 
