@@ -24,19 +24,22 @@ import os
 import logging
 import sys
 import json
+import geojson
 from sys import argv
 from osm_fieldwork.convert import Convert
 from osm_fieldwork.osmfile import OsmFile
 from osm_fieldwork.xlsforms import xlsforms_path
 from geojson import Point, Feature, FeatureCollection, dump
+from pathlib import Path
 #import pandas as pd
-#import re
+import math
+import re
 
 # set log level for urlib
 log = logging.getLogger(__name__)
 
 class JsonDump(Convert):
-    """A class to parse the CSV files from ODK Central"""
+    """A class to parse the JSON files from ODK Central or odk2geojson"""
 
     def __init__(self,
                  yaml: str = None
@@ -53,6 +56,19 @@ class JsonDump(Convert):
         else:
             file = f"{path}/xforms.yaml"
         self.config = super().__init__(yaml)
+
+        self.ignore = ('@id',
+                       '@xmlns:ev',
+                       '@xmlns:orx',
+                       '@xmlns:odk',
+                       '@xmlns:h',
+                       '@xmlns:jr',
+                       '@xmlns:xsd',
+                       'start',
+                       'end',
+                       'today',
+                       'meta',
+                       )
 
     # def parseXLS(self, xlsfile: str):
     #     """Parse the source XLSFile if available to look for details we need"""
@@ -81,7 +97,7 @@ class JsonDump(Convert):
         """Create an OSM XML output files"""
         log.debug("Creating OSM XML file: %s" % filespec)
         self.osm = OsmFile(filespec)
-        #self.osm.header()
+
     def writeOSM(self,
                  feature: dict
                  ):
@@ -119,7 +135,15 @@ class JsonDump(Convert):
         """Write the GeoJson FeatureCollection to the output file and close it"""
         features = list()
         for item in self.features:
-            poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
+            poi = Point()
+            # poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
+            # else:
+            #     if 'geometry' in item['tags']:
+            #         coords = eval(item['tags']["geometry"])
+            #         print(f"{coords}")
+            #         poi = Point((float(coords[1]), float(coords[0])))
+            #         # item["attrs"]["lon"] = coords[1]
+            #         # item["attrs"]["lat"] = coords[0]
             if "private" in item:
                 props = {**item["tags"], **item["private"]}
             else:
@@ -133,13 +157,12 @@ class JsonDump(Convert):
                    ):
         all_tags = dict()
         tags = dict()
-        if type(data) == str:
-            return data
-        elif type(data) == dict:
+        if type(data) == dict:
             for k, v in data.items():
                 if type(v) == dict:
-                    log.info(f"Processing tag {k} = {v}")
+                    log.debug(f"Processing tag {k} = {v}")
                     for k1, v1 in v.items():
+                        log.debug(f"Processing sub tag {k} = {v}")
                         # tags.update(self.getAllTags(v))
                         if type(v1) == dict:
                             for i, j in v1.items():
@@ -153,7 +176,7 @@ class JsonDump(Convert):
                                     tags[i] = j
                         else:
                             tags[k1] = v1
-                    log.debug(f"TAGS: {tags}")
+                        # log.debug(f"TAGS: {tags}")
                 else:
                     if v:
                         # if k in self.saved:
@@ -166,7 +189,7 @@ class JsonDump(Convert):
                         #         else:
                         #             self.saved[k] = value
                         #             log.debug(f"Updating last saved value for \"{k}\" with \"{value}\"")
-                        if type(v) == float:
+                        if type(v) != str:
                             tags[k] = str(v)
                         else:
                             tags[k] = v
@@ -180,16 +203,35 @@ class JsonDump(Convert):
         """Parse the JSON file from ODK Central and convert it to a data structure"""
         all_tags = list()
         if not data:
-            f = open(filespec, newline="")
-            reader = json.load(f)
+            file = open(filespec, "r")
+            infile = Path(filespec)
+            if infile.suffix == ".geojson":
+                reader = geojson.load(file)
+            elif infile.suffix == ".json":
+                reader = json.load(file)
+            else:
+                log.error("Need to specify a JSON or GeoJson file!")
+                return all_tags
         else:
-            reader = json.loads(data)
+            reader = geojson.loads(data)
         
         total = list()
-        for row in reader['value']:
+        # JSON files from Central use value as the keyword, whereas
+        # GeoJSON uses features for the same thing.
+        if 'value' in reader:
+            data = reader['value']
+        elif 'features' in reader:
+            data = reader['features']
+        for row in data:
             # log.info(f"ROW: {row}")
             tags = dict()
-            for keyword, value in row.items():
+            if 'geometry' in row:
+                tags['geometry'] = row['geometry']
+            if 'properties' in row:
+                indata = row['properties'] # A GeoJson formatted file
+            else:
+                indata = row    # A JOSM file from ODK Central
+            for keyword, value in indata.items():
                 # There's many extraneous fields in the input file which we don't need.
                 base = keyword.lower()
                 if (
@@ -201,28 +243,30 @@ class JsonDump(Convert):
                     continue
                 if keyword is None or len(keyword) == 0:
                     continue
-                alltags = self.getAllTags(value)
-                # print(f"FIXME3: {alltags}")
-                for k, v in alltags.items():
-                    if k in self.ignore:
-                        continue
-                    if v:
-                        items = dict()
-                        if type(v) == dict:
-                            v1 = alltags[k]
-                            if len(v1) > 1:
-                                log.warning("Got more than 1 result! {v1}")
-                                v2 = v1[v1.keys()]
-                                items = self.convertEntry(k, v2)
-                        else:
-                            items = self.convertEntry(k, v)
-                        #    for entry in items:
-                        #        for k, v in entry.items():
-                        #            tags[k] = v
-                        #    else:
-                        #tags[k1] = v1
+                if type(value) == str:
+                    items = self.convertEntry(keyword, value)
+                    tags.update(items)
+                else:
+                    alltags = self.getAllTags(value)
+                    for k, v in alltags.items():
+                        # if k in self.ignore:
+                        #     continue
+                        if v:
+                            items = dict()
+                            if type(v) == dict:
+                                v1 = alltags[k]
+                                if len(v1) > 1:
+                                    log.warning("Got more than 1 result! {v1}")
+                                    v2 = v1[v1.keys()]
+                                    items = self.convertEntry(k, v2)
+                            else:
+                                items = self.convertEntry(k, v)
+                                #    for entry in items:
+                                #        for k, v in entry.items():
+                                #            tags[k] = v
+                                #    else:
+                                #tags[k1] = v1
                         tags.update(items)
-            log.debug(f"\tFIXME1: {tags}")
             total.append(tags)
         return total
 
@@ -252,11 +296,32 @@ class JsonDump(Convert):
             )
             # When using existing OSM data, there's a special geometry field.
             # Otherwise use the GPS coordinates where you are.
+            lat = None
+            lon = None
+            if type(value) == float:
+                continue
             if key == "geometry":
-                if value and len(value) == 3:
-                    attrs["lat"] = value[1]
-                    attrs["lon"] = value[0]
-                    continue
+                # The GeoJson file has the geometry field. Usually it's a dict
+                # but on occasion it's a string instead, so turn it into a list
+                # log.debug(f"FIXME: {value} {type(value)}")
+                if type(value) == str:
+                    if value[0] ==  '[':
+                        coords = eval(value)
+                    else:
+                        coords = value.split(' ')
+                    lat = coords[0]
+                    lon = coords[1]
+                    # log.debug(f"VALUE STRING: {coords}")
+                elif type(value) == geojson.geometry.Point:
+                    lat = value['coordinates'][1]
+                    lon = value['coordinates'][0]
+                    # log.debug(f"VALUE POINT: {lat}/{lon}")
+                elif type(value) == list:
+                    lat = float(value[1])
+                    lon = float(value[0])
+                attrs["lat"] = lat
+                attrs["lon"] = lon
+                # log.debug(f"ATTRS: {attrs}")
 
             if key is not None and len(key) > 0 and key in attributes:
                 attrs[key] = value
@@ -297,7 +362,7 @@ class JsonDump(Convert):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="convert CSV from ODK Central to OSM XML"
+        description="convert JSON from ODK Central to OSM XML"
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-y", "--yaml", help="Alternate YAML file")
@@ -324,15 +389,20 @@ if __name__ == "__main__":
         jsonin = JsonDump(args.yaml)
     else:
         jsonin = JsonDump()
-    # jsonin.parseXLS(args.xlsfile)    
-    osmoutfile = os.path.basename(args.infile.replace(".json", ".osm"))
+    # jsonin.parseXLS(args.xlsfile)
+
+    # Modify the input file name for the 2 output files, which will get written
+    # to the current directory.
+    infile = Path(args.infile)
+    base = os.path.splitext(infile.name)[0]
+    osmoutfile = f"{base}-out.osm"
     jsonin.createOSM(osmoutfile)
 
-    jsonoutfile = os.path.basename(args.infile.replace(".json", ".geojson"))
+    jsonoutfile = f"{base}-out.geojson"
     jsonin.createGeoJson(jsonoutfile)
 
-    log.debug("Parsing csv files %r" % args.infile)
-    data = jsonin.parse(args.infile)
+    log.debug("Parsing JSON file %r" % args.infile)
+    data = jsonin.parse(infile.as_posix())
     # This OSM XML file only has OSM appropriate tags and values
     for entry in data:
         feature = jsonin.createEntry(entry)
@@ -341,12 +411,20 @@ if __name__ == "__main__":
             continue
         if len(feature) > 0:
             if "lat" not in feature["attrs"]:
-                log.warning("Bad record! %r" % feature)
-                continue
+                if 'geometry' in feature['tags']:
+                    if type(feature['tags']['geometry']) == str:
+                        coords = list(feature['tags']['geometry'])
+                        # del feature['tags']['geometry']
+                    else:
+                        coords = feature['tags']['geometry']['coordinates']
+                        # del feature['tags']['geometry']
+                    feature['attrs'] = {'lat': coords[1], 'lon': coords[0]}
+                else:
+                    log.warning("Bad record! %r" % feature)
+                    continue
             jsonin.writeOSM(feature)
             # This GeoJson file has all the data values
             jsonin.writeGeoJson(feature)
-            # print("TAGS: %r" % feature['tags'])
 
     jsonin.finishOSM()
     jsonin.finishGeoJson()
