@@ -135,15 +135,8 @@ class JsonDump(Convert):
         """Write the GeoJson FeatureCollection to the output file and close it"""
         features = list()
         for item in self.features:
-            poi = Point()
-            # poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
-            # else:
-            #     if 'geometry' in item['tags']:
-            #         coords = eval(item['tags']["geometry"])
-            #         print(f"{coords}")
-            #         poi = Point((float(coords[1]), float(coords[0])))
-            #         # item["attrs"]["lon"] = coords[1]
-            #         # item["attrs"]["lat"] = coords[0]
+            #poi = Point()
+            poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
             if "private" in item:
                 props = {**item["tags"], **item["private"]}
             else:
@@ -160,15 +153,15 @@ class JsonDump(Convert):
         if type(data) == dict:
             for k, v in data.items():
                 if type(v) == dict:
-                    log.debug(f"Processing tag {k} = {v}")
+                    # log.debug(f"Processing tag {k} = {v}")
                     for k1, v1 in v.items():
-                        log.debug(f"Processing sub tag {k} = {v}")
+                        # log.debug(f"Processing sub tag {k} = {v}")
                         # tags.update(self.getAllTags(v))
                         if type(v1) == dict:
                             for i, j in v1.items():
                                 if type(j) == dict:
                                     # FIXME: this should handle more than one
-                                    # but so far I've only it be accuracy, no other
+                                    # but so far I've only it to be accuracy, no other
                                     # tags
                                     k2 = list(j.keys())[0]
                                     tags[k2] = list(j.values())[0]
@@ -307,10 +300,12 @@ class JsonDump(Convert):
                 if type(value) == str:
                     if value[0] ==  '[':
                         coords = eval(value)
+                        lat = coords[1]
+                        lon = coords[0]
                     else:
                         coords = value.split(' ')
-                    lat = coords[0]
-                    lon = coords[1]
+                        lat = coords[0]
+                        lon = coords[1]
                     # log.debug(f"VALUE STRING: {coords}")
                 elif type(value) == geojson.geometry.Point:
                     lat = value['coordinates'][1]
@@ -350,6 +345,8 @@ class JsonDump(Convert):
                         else:
                             tags[key] = value
             if len(tags) > 0:
+                if 'geometry' in tags:
+                    del tags['geometry']
                 feature["attrs"] = attrs
                 feature["tags"] = tags
             if len(refs) > 0:
