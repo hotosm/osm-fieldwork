@@ -109,7 +109,7 @@ if __name__ == "__main__":
     collection = FeatureCollection(features)
 
     now = datetime.now()
-    timestamp = f"_{now.year}_{now.hour}_{now.minute}"
+    timestamp = f"_{now.year}_{now.month}-{now.day}-{now.hour}-{now.minute}"
     outfile = args.instance.replace("*", "") + timestamp + ".geojson"
     json = open(outfile, 'w')
     dump(collection, json)
