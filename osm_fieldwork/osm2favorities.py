@@ -30,29 +30,34 @@ from geojson import Point, Feature, FeatureCollection, dump
 from pathlib import Path
 import gpxpy
 import gpxpy.gpx
+from lxml import etree
 
 
 # set log level for urlib
 log = logging.getLogger(__name__)
 
-class GpxWriter(object):
-    def __init__(self):
-        pass
+def createExtension(icon):
+    # camp_pitch.png, tourism_camp_site.png, topo_camp_pitch.png, topo_camp_site.png
+    # trailhead.png, tourism_picnic_site.png, tourism_picnic_site.png,
+    # tourism_attraction.png, tourism_information.png, information_board.png,
+    # firepit.png, historic_ruins.png, amenity_drinking_water.png,
+    # amenity_toilets.png
+    # amenity_parking.png
 
-    def addExtension(self, icon):
-        # camp_pitch.png, tourism_camp_site.png, topo_camp_pitch.png, topo_camp_site.png
-        # trailhead.png, tourism_picnic_site.png, tourism_picnic_site.png,
-        # tourism_attraction.png, tourism_information.png, information_board.png,
-        # firepit.png, historic_ruins.png, amenity_drinking_water.png,
-        # amenity_toilets.png
-        # amenity_parking.png
 
-        template = f"""<extensions>\n
-          <osmand:icon>{icon}</osmand:icon>\n
-          <osmand:background>circle</osmand:background>\n
-          <osmand:color>#ff5020</osmand:color>\n
-        </extensions>n\n
-        """
+    # template = f"""<extensions><osmand:icon>{icon}</osmand:icon>
+    # <osmand:background>circle</osmand:background>
+    # <osmand:color>#ff5020</osmand:color>
+    # </extensions>
+    # """
+    nsmap = {'osmand': 'https://osmand.net'}
+    png = etree.Element('{osmand}icon', nsmap=nsmap)
+    png.text = icon
+    back = etree.Element('{osmand}background', nsmap=nsmap)
+    back.text = "circle"
+    color = etree.Element('{osmand}color', nsmap=nsmap)
+    color.text = '#ff5020'
+    return (png, back, color)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -82,7 +87,10 @@ if __name__ == "__main__":
         infile = open(args.infile, "r")
         indata = geojson.load(infile)
 
+        # gpxpy.gpxfield.GPXField()
         gpx = gpxpy.gpx.GPX()
+        gpx.nsmap['osmand'] = "https://osmand.net"
+        gpx.creator = "osm2favorites 0.1"
         for feature in indata['features']:
             coords = feature['geometry']['coordinates']
             lat = coords[1]
@@ -104,11 +112,12 @@ if __name__ == "__main__":
                 # symbol="",
                 # comment="",
             )
+            extensions = createExtension("tourism_camp_site")
+            for ext in extensions:
+                way.extensions.append(ext)
             gpx.waypoints.append(way)
-        with open("output.gpx", "w") as f:
+        outfile = "output.gpx"
+        with open(outfile, "w") as f:
             f.write(gpx.to_xml())
-                
-            # gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(2.1234, 5.1234, elevation=1234))
-        # gpx_file = open('test.gpx', 'w')
-        # gpx = gpxpy.parse(gpx_file)
 
+        log.info(f"Wrote {outfile}")
