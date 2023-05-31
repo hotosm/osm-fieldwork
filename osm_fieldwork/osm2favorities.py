@@ -58,7 +58,7 @@ def createExtension(icon):
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="convert JSON from ODK Central to OSM XML"
+        description="convert GeoJson to a GPX favorites file for Osmand"
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-i", "--infile", help="The data extract")
