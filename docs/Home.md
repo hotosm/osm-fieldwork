@@ -64,10 +64,12 @@ these are now part of the backend for the [Field Mapping Tasking Manager](https:
 
 To install osm-fieldwork, you can use pip. Here are two options:
 
-- Directly from the main branch:
+1. Directly from the main branch:
   `pip install git+https://github.com/hotosm/osm-fieldwork.git`
+  
+   -OR-
 
-- Latest on PyPi:
+2. Latest on PyPi:
   `pip install Osm-Fieldwork`
 
 ## Configure
