@@ -269,6 +269,12 @@ if args.source:
     basemap = BaseMapper(args.boundary, base, args.source)
 else:
     logging.error("You need to specify a source!")
+    parser.print_help()
+    quit()
+
+if args.outfile is None:
+    logging.error("You need to specify an mbtiles or sqlitedb file!!")
+    parser.print_help()
     quit()
 
 outf = DataFile(args.outfile, basemap.getFormat())
