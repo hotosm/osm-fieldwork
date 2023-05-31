@@ -2,35 +2,41 @@
 
 ## History
 
-OSM Fieldwork was a project which took place in 2008/2009.
+![Rob Savoye](https://github.com/hotosm/osm-fieldwork/assets/97789856/0e25966e-cb3e-4634-9730-1c4606cf937a)
 
-At the [State Of The Map 2008](https://wiki.openstreetmap.org/wiki/State_Of_The_Map_2008) 
-conference in Limerick, Ireland,Ed Parsons spoke about the recently-launched
- [Google Map Maker](https://wiki.openstreetmap.org/wiki/Google_Map_Maker),
-Google's process for getting the public to supply map data for them.
-The countries initially covered by Map Maker included many Caribbean islands,
-leading Ed to express sadness that fieldwork was not involved.
+**The History of the OSM Fieldwork Project begins with Rob Savoye,
+Senior Technical Lead at Humanitarian OpenStreetMap Team.**
 
-This off-the-cuff suggestion, and a spirit of friendly competition,
-caused Gervase Markham, an OpenStreetMap contributor, to set up a 
-[pledge on Pledgebank](http://www.pledgebank.com/osmfieldwork).
- People pledged to improve OpenStreetMap's coverage in the
-Caribbean themselves by tracing over available aerial imagery, and to
-donate £10 each towards sending one lucky mapper on just such a field trip.
+In 2010, Rob's rural volunteer fire department(he is also a long time
+free software developer for the GNU project, fire-fighter, climber,
+disaster tech support.) faced the challenge of outdated giant paper
+mapbooks with incomplete information. Despite Google having limited
+address and remote road coverage, the lack of cell service made it
+impossible to rely on it for verification. Determined to find a solution,
+Rob turned to OpenStreetMap (OSM).
+His first step involved importing building footprints and addresses
+into OSM, greatly aiding the fire department in locating places quickly
+and easily. The response time was significantly reduced, nearly halved.
+Given that most of the roads were dirt jeep trails, Rob undertook 
+ground-truthing the highway and trail data in OSM. Over the course of
+several years, he diligently added precise information about all the
+highways in his area, enabling the fire department to determine the 
+appropriate response vehicles for each scenario. Once Rob had successfully 
+improved the fire district maps, he expanded his efforts to map the remote
+regions of Colorado and a few neighboring states, proving invaluable 
+during large wildland fires. Ground-truthing became an integral part of
+his work, conducted using mobile devices in the field. To streamline the
+data collection process, Rob heavily relied on OpenDataKit and eventually
+created additional software to facilitate data processing, which had 
+previously been time-consuming and tedious. Now, transferring data 
+seamlessly from his phone to OSM requires minimal effort. To this day,
+Rob continues his weekly field mapping every few months while continuously
+enhancing the software used in the project.
 
-74 people, including Ed Parsons himself, signed the pledge, raising £740
-to fund the expedition in order to significantly improve the OpenStreetMap data.
-One name from the pledgelist was chosen by a verifiable random process -
-[Steve Chilton](https://wiki.openstreetmap.org/wiki/User:Steve8) 
-from Middlesex University, UK (who happens to be a professional
-cartographer, and is the driving force behind the look of the default
-cartographic styling for OpenStreetMap). The OpenStreetMap Foundation
-sponsored him to travel to Antigua from 5th to 12th of June to add GPS traces,
-classify roads, and to add road names and points of interest, building on the
-work already done from aerial photos by the pledgers.
+**The image below shows an example of osm fieldwork being done by Rob Savoye (editing the data that he collected during the day!)**
 
-[Osmfieldwork Press Release](https://wiki.openstreetmap.org/wiki/Osmfieldwork_Press_Release)
-and [blog post](http://old.opengeodata.org/2009/05/30/volunteer-mapper-flies-out-to-antigua/index.html)
+![osm-fieldwork](https://github.com/hotosm/osm-fieldwork/assets/97789856/a008e149-11a3-4d4e-b3e4-342cc6320c4b)
+
 
 ## About OSM Fieldwork
 
