@@ -2,7 +2,7 @@
 
 ## History
 
-![Rob Savoye](https://github.com/hotosm/osm-fieldwork/assets/97789856/0e25966e-cb3e-4634-9730-1c4606cf937a)
+<img align="right" width="500px" src="https://github.com/hotosm/osm-fieldwork/assets/97789856/97ace314-1205-408b-a3c0-4c355642a98d"/>
 
 **The History of the OSM Fieldwork Project begins with Rob Savoye,
 Senior Technical Lead at Humanitarian OpenStreetMap Team.**
@@ -14,6 +14,7 @@ mapbooks with incomplete information. Despite Google having limited
 address and remote road coverage, the lack of cell service made it
 impossible to rely on it for verification. Determined to find a solution,
 Rob turned to OpenStreetMap (OSM).
+<img align="left" width="300px" src="https://github.com/hotosm/osm-fieldwork/assets/97789856/afc791c7-6cc9-4496-aa93-ab02733f30b8"/>
 His first step involved importing building footprints and addresses
 into OSM, greatly aiding the fire department in locating places quickly
 and easily. The response time was significantly reduced, nearly halved.
@@ -33,11 +34,11 @@ seamlessly from his phone to OSM requires minimal effort. To this day,
 Rob continues his weekly field mapping every few months while continuously
 enhancing the software used in the project.
 
-**The image below shows an example of osm fieldwork being done by Rob Savoye (editing the data that he collected during the day!)**
 
-![osm-fieldwork](https://github.com/hotosm/osm-fieldwork/assets/97789856/a008e149-11a3-4d4e-b3e4-342cc6320c4b)
+<!-- ![Rob Savoye](https://github.com/hotosm/osm-fieldwork/assets/97789856/0e25966e-cb3e-4634-9730-1c4606cf937a) -->
+<!-- ![osm-fieldwork](https://github.com/hotosm/osm-fieldwork/assets/97789856/a008e149-11a3-4d4e-b3e4-342cc6320c4b) -->
 
-
+<br><br/>
 ## About OSM Fieldwork
 
 Osm-Fieldwork is a project for processing data collection using
