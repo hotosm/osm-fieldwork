@@ -51,13 +51,13 @@ control of the conversion process.
         - geothermal: generator::source=geothermal,power=generator
         - grid: generator::source=electricity_network,power=generator
 
-The configuration file has three sections: ignore, private, and convert.
+The configuration file has three sections: `ignore`, `private`, and `convert`.
 
-The ignore section lists the names of data fields that should be ignored during the conversion process. These fields will not be included in any output files.
+The `ignore` section lists the names of data fields that should be ignored during the conversion process. These fields will not be included in any output files.
 
-The private section lists the names of data fields that are considered private and should not be included in the OSM output file. However, they will be included in a separate GeoJson formatted file. This file contains all the data from whoever is organizing the mapping campaign. An example of private data is gender, which is useful to the organizers but not relevant to OSM.
+The `private` section lists the names of data fields that are considered private and should not be included in the OSM output file. However, they will be included in a separate GeoJson formatted file. This file contains all the data from whoever is organizing the mapping campaign. An example of private data is gender, which is useful to the organizers but not relevant to OSM.
 
-The convert section is the real control of the conversion process. It lists the survey questions and their corresponding OSM tags and values. In this section, each survey question is represented by a tag name, and each answer to the survey question is represented by a value. If the answer matches the value, it returns both the tag and the value for OSM. An equal sign is used to delimit them.
+The `convert` section is the real control of the conversion process. It lists the survey questions and their corresponding OSM tags and values. In this section, each survey question is represented by a tag name, and each answer to the survey question is represented by a value. If the answer matches the value, it returns both the tag and the value for OSM. An equal sign is used to delimit them.
 
 For example, in the configuration file above, the survey question about waterpoints has two possible answers: "well" and "natural". If the answer is "well", the corresponding OSM tag and value is "man_made=water_well". If the answer is "natural", the corresponding OSM tag and value is "natural=water".
 
@@ -92,4 +92,4 @@ answer. To handle this case, all entries are deliminated by a comma.
       - geothermal: generator::source=geothermal,power=generator
       - grid: generator::source=electricity_network,power=generator
 
-Overall, the configuration file is a powerful tool for customizing the conversion of ODK data into OSM tags and values. By carefully defining the ignore, private, and convert sections, you can control the output of the conversion process and ensure that it meets your needs.
+Overall, the configuration file is a powerful tool for customizing the conversion of ODK data into OSM tags and values. By carefully defining the `ignore`, `private`, and `convert` sections, you can control the output of the conversion process and ensure that it meets your needs.
