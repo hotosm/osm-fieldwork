@@ -136,7 +136,6 @@ ignore:
   - reviewstate
   - edits
   - gps_type
-  - accuracy
   - deviceid
   - key
   - start
