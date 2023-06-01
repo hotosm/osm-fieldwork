@@ -18,7 +18,7 @@
 
 PACKAGE := org.osm_fieldwork.py
 NAME := Osm-Fieldwork
-VERSION := 0.3.1rc1
+VERSION := 0.3.1rc2
 
 # Make a python package for pip
 pip:
