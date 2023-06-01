@@ -1,3 +1,27 @@
+## 0.3.1rc2 (2023-06-01)
+
+### Fix
+
+- Add utility that generates a fovorites file for Osmand
+- Trap error for no output file and print usage()
+- Add accuracy to ignore section
+- Fix message in usage
+- Added Osmand extensions for styling the favorites
+- Write GPX file with Osmand specific styling
+- Convert a GeoJson file into a favorites.gpx file for Osmand complete with all the tags
+- Delete geometry tag from input datata stream so it doesn't casue confusion later
+- Add support for processing either GeoJson (usually from odk2geojson) or JSON from Central
+- Make timestamp for filename longer
+- Change gosm to osm-fieldwork. Oops
+- New program that converts the ODK XML instance files off your phone and turns it into good GeoJson for JOSM
+- Disable debug message
+- Major refactoring, it actually works now
+- Always grab all the submissions
+
+### Refactor
+
+- improve logging for OdkCentral + createProject
+
 ## 0.3.1rc1 (2023-05-18)
 
 ### Fix
