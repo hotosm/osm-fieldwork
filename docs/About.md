@@ -1,7 +1,7 @@
 ![](images/hot_logo.png)
 
 ## OSM-Fieldwork Project
-Osm_Fieldwork is a project that aims to simplify the process of processing data collected using OpenDataKit into OpenStreetMap format. It consists of several utility programs that automate different parts of the data flow. These include creating satellite imagery basemaps and data extracts from OpenStreetMap so they can be used with ODK Collect. It is maintained by the [Humanitarian OpenStreetMap Team (HOT)](https://www.hotosm.org/) and designed to work with ODK Collect, an Android app for data collection, and ODK Central, a web-based platform for managing and visualizing data.
+Osm_Fieldwork is a project that aims to simplify the process of processing data collected using OpenDataKit into OpenStreetMap format. It consists of several utility programs that automate different parts of the data flow. These include creating satellite imagery basemaps and data extracts from OpenStreetMap so they can be used with ODK Collect. It is maintained by the [Humanitarian OpenStreetMap Team (HOT)](https://www.hotosm.org/) and designed to work with [ODK Collect](https://docs.getodk.org/collect-intro/), an Android app for data collection, and [ODK Central](https://docs.getodk.org/central-intro/), a web-based platform for managing and visualizing data.
 
 ## osm_fieldwork
 This program converts the data collected from ODK Collect into the proper OpenStreetMap tagging schema. The conversion is controlled by a YAML file, which makes it easy to modify for other projects. The output is an OSM XML formatted file for JOSM. However, it is important to note that no converted data should ever be uploaded to OSM without first validating the conversion in JOSM. To do high-quality conversion from ODK to OSM, it's best to use the XLSForm library as template, as everything is designed to work together.
@@ -18,11 +18,15 @@ Osm_Fieldwork includes the following utilities:
 Osm_Fieldwork also includes support modules, such as convert.py for processing YAML config files and osmfile.py for writing OSM XML output files.
 
 ## Installation
-To install Osm_Fieldwork, you can either install it directly from the main branch using the command:
+To install osm-fieldwork, you can use pip. Here are two options:
 
-`pip install git+https://github.com/hotosm/osm_fieldwork.git`
+1. Directly from the main branch:
+  `pip install git+https://github.com/hotosm/osm-fieldwork.git`
+  
+   -OR-
 
-Or install the latest version from PyPI using: `pip install Osm_Fieldwork`
+2. Latest on PyPi:
+  `pip install Osm-Fieldwork`
 
 > Note: installation requires GDAL >3.4 installed on your system.
 ## Usage
@@ -40,7 +44,7 @@ To convert a CSV file from ODK Central to OSM XML format, run:
 This will generate two output files - one OSM XML of public data, and the other a GeoJson file with all the data.
 
 ## Contributing
-Osm_Fieldwork is an open-source project, and contributions are always welcome! If you want to contribute, please read the [Contribution Guidelines](https://github.com/hotosm/osm_fieldwork/blob/main/CONTRIBUTING.md) and [Code of Conduct](https://github.com/hotosm/osm_fieldwork/blob/main/CODE_OF_CONDUCT.md) first.
+Osm_Fieldwork is an open-source project, and contributions are always welcome! If you want to contribute, please read the [Contribution Guidelines](https://github.com/hotosm/osm-fieldwork/wiki/Contribution) and [Code of Conduct](https://github.com/hotosm/osm-fieldwork/wiki/Code-of-Conduct) first.
 
 ## License
 Osm_Fieldwork is released under the [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html).
