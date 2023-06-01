@@ -6,7 +6,9 @@ from:
 where:
   tags:
     - { amenity: [brewery, cafe, bar, pub, fuel, fire_station, library,
-    townhall, courthouse, hospital, restaurant, clinic], shop: not null}
+    townhall, courthouse, hospital, restaurant, clinic], shop:
+    [alcohol, bakery, car_parts, hardware, convienience, general],
+    cusine: not null}
 
 keep:
   - leisure
