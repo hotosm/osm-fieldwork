@@ -25,6 +25,7 @@ import sys
 import re
 import yaml
 import json
+from sys import argv
 from geojson import Point, Feature, FeatureCollection, dump, Polygon
 import geojson
 from osm_fieldwork.filter_data import FilterData
@@ -446,6 +447,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    if len(argv) <= 1:
+        parser.print_help()
+        quit()
+
     # if verbose, dump to the terminal.
     if args.verbose is not None:
         root = logging.getLogger()
@@ -486,7 +491,7 @@ if __name__ == "__main__":
             infile = FilterData(xlsfile)
             extract = infile.metadata[1]
         pg.getFeatures(args.boundary, extract, args.polygon, args.category, xlsfile)
-        log.info(f"Created /tmp/{outfile} for {args.category}")
+        log.info(f"Created {outfile} for {args.category}")
         # pg.cleanup(outfile)
     elif args.overpass:
         logging.info("Using Overpass Turbo for the data source")
