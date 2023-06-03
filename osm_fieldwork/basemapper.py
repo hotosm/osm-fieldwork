@@ -242,7 +242,7 @@ zooms = list()
 if args.zooms:
     if args.zooms.find("-") > 0:
         start = int(args.zooms.split("-")[0])
-        end = int(args.zooms.split("-")[1])
+        end = int(args.zooms.split("-")[1]) + 1
         x = range(start, end)
         for i in x:
             zooms.append(i)
