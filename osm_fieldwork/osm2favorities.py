@@ -31,6 +31,8 @@ from pathlib import Path
 import gpxpy
 import gpxpy.gpx
 from lxml import etree
+from shapely.geometry import shape, Polygon
+import shapely
 
 
 # set log level for urlib
@@ -90,8 +92,14 @@ if __name__ == "__main__":
         gpx.creator = "osm2favorites 0.1"
         for feature in indata['features']:
             coords = feature['geometry']['coordinates']
-            lat = coords[1]
-            lon = coords[0]
+            if feature['geometry']['type'] == "Polygon":
+                wkt = shape(feature['geometry'])
+                center = shapely.centroid(wkt)
+                lat = center.y
+                lon = center.x
+            else:
+                lat = coords[1]
+                lon = coords[0]
             name = ""
             if 'name' in feature['properties']:
                 name = feature['properties']['name']
