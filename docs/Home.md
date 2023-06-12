@@ -1,6 +1,6 @@
-# OSM Fieldwork Project
+# :hugs: Welcome to OSM Fieldwork Project :hugs:
 
-## History
+## History :open_book:
 
 <img align="right" width="500px" src="https://github.com/hotosm/osm-fieldwork/assets/97789856/97ace314-1205-408b-a3c0-4c355642a98d"/>
 
