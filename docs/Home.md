@@ -48,7 +48,7 @@ imagery basemaps and data extracts from
 [OpenStreetMap](https://www.openstreetmap.org) so they can be
 used with [ODK Collect](https://www.getodk.org). Many of these steps
 are currently a manual process.
-
+<img align="right" width="500px" src="https://github.com/hotosm/osm-fieldwork/assets/97789856/52b33f76-0ec2-4371-bb70-1528161a3c77"/>
 All of the programs in osm-fieldwork are designed to function as the
 backend of a webpage, but to also work standalone and offline. The
 standalone functionality are simple command line programs run in a
@@ -60,7 +60,10 @@ the tech and usage is explained in these [tech
 briefs](https://www.senecass.com/projects/Mapping/tech/). Currently
 these are now part of the backend for the [Field Mapping Tasking Manager](https://github.com/hotosm/fmtm/wiki) project at
 [HOT](https://www.hotosm.org).
-
+<br>
+<br>
+<br>
+<br>
 ## Installation
 
 To install osm-fieldwork, you can use pip. Here are two options:
