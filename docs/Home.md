@@ -192,7 +192,8 @@ practices to follow:
 - If you're having trouble with the conversion process, try using the
   utility programs included with Osm-Fieldwork to troubleshoot common
   issues.
-
+) .
+For more visit [Troubleshooting](https://github.com/hotosm/osm-fieldwork/wiki/troubleshooting) .
 By following these best practices and using the utility programs
 included with Osm-Fieldwork, you can effectively process data collection
 from OpenDataKit into OpenStreetMap format. However, please note that
