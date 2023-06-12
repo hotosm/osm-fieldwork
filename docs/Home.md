@@ -208,6 +208,10 @@ many categories like healthcare, waterpoints, waste distribution,
 etc... All of these XLSForms are designed to have an efficient mapper
 data flow, edit existing OSM data, and support the data models.
 
+
+<img align="right" width="500px" src="https://github.com/hotosm/osm-fieldwork/assets/97789856/fcfa1d87-78c3-42a1-9568-94d25cfb2711"/>
+
+
 The data models specify the preferred tag values for each data item,
 with a goal of both tag completeness and tag correctness. Each data item
 is broken down into a basic and extended survey questions when
