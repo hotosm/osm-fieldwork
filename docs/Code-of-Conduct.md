@@ -1,4 +1,4 @@
-# Code of conduct
+# :scroll: Code of conduct
 
 (The latest version can be found at <https://www.hotosm.org/code-of-conduct>)
 

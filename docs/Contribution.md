@@ -1,4 +1,4 @@
-## Welcome
+## :hugs: Welcome
 
 :+1::tada: First off, I'm really glad you're reading this, because we need volunteer developers to help improve the Osm_Fieldwork and it's integration with FMTM! :tada::+1:
 
@@ -23,7 +23,7 @@ Create pull requests (PRs) for changes that you think are needed. We would reall
 - [FAQs](https://github.com/hotosm/osm-fieldwork/wiki/FAQ)
 
 
-## Thank you
+## :handshake: Thank you
 
 Thank you very much in advance for your contributions!! Please ensure you refer to our [Code of Conduct](https://github.com/hotosm/osm-fieldwork/wiki/Code-of-Conduct).
 If you've read the guidelines, but you are still not sure how to contribute on Github, please reach out to us via our Slack #geospatial-tech-and-innovation.

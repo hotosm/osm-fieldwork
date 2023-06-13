@@ -1,6 +1,6 @@
-# OSM Fieldwork Project
+# :hugs: Welcome to OSM Fieldwork Project :hugs:
 
-## History
+## History :open_book:
 
 <img align="right" width="500px" src="https://github.com/hotosm/osm-fieldwork/assets/97789856/97ace314-1205-408b-a3c0-4c355642a98d"/>
 
@@ -48,7 +48,7 @@ imagery basemaps and data extracts from
 [OpenStreetMap](https://www.openstreetmap.org) so they can be
 used with [ODK Collect](https://www.getodk.org). Many of these steps
 are currently a manual process.
-
+<img align="right" width="500px" src="https://github.com/hotosm/osm-fieldwork/assets/97789856/52b33f76-0ec2-4371-bb70-1528161a3c77"/>
 All of the programs in osm-fieldwork are designed to function as the
 backend of a webpage, but to also work standalone and offline. The
 standalone functionality are simple command line programs run in a
@@ -60,7 +60,10 @@ the tech and usage is explained in these [tech
 briefs](https://www.senecass.com/projects/Mapping/tech/). Currently
 these are now part of the backend for the [Field Mapping Tasking Manager](https://github.com/hotosm/fmtm/wiki) project at
 [HOT](https://www.hotosm.org).
-
+<br>
+<br>
+<br>
+<br>
 ## Installation
 
 To install osm-fieldwork, you can use pip. Here are two options:
@@ -192,7 +195,8 @@ practices to follow:
 - If you're having trouble with the conversion process, try using the
   utility programs included with Osm-Fieldwork to troubleshoot common
   issues.
-
+) .
+For more visit [Troubleshooting](https://github.com/hotosm/osm-fieldwork/wiki/troubleshooting) .
 By following these best practices and using the utility programs
 included with Osm-Fieldwork, you can effectively process data collection
 from OpenDataKit into OpenStreetMap format. However, please note that
@@ -207,6 +211,10 @@ new HOT data models for humanitarian data collection. These cover
 many categories like healthcare, waterpoints, waste distribution,
 etc... All of these XLSForms are designed to have an efficient mapper
 data flow, edit existing OSM data, and support the data models.
+
+
+<img align="right" width="500px" src="https://github.com/hotosm/osm-fieldwork/assets/97789856/fcfa1d87-78c3-42a1-9568-94d25cfb2711"/>
+
 
 The data models specify the preferred tag values for each data item,
 with a goal of both tag completeness and tag correctness. Each data item
