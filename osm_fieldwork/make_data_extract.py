@@ -61,7 +61,9 @@ log = logging.getLogger(__name__)
 class DatabaseAccess(object):
     def __init__(self,
                  dbhost: str = None,
-                 dbname: str = None
+                 dbname: str = None,
+                 dbuser: str = None,
+                 dbpass: str = None,
                  ):
         self.dbshell = None
         self.dbcursor = None
@@ -81,6 +83,11 @@ class DatabaseAccess(object):
                 connect = f"dbname={dbname}"
             else:
                 connect = f"host={dbhost} dbname={dbname}"
+            if dbuser:
+                connect += f" user={dbuser}"
+            if dbpass:
+                connect += f" password={dbpass}"
+            logging.debug(connect)
             try:
                 self.dbshell = psycopg2.connect(connect)
                 self.dbshell.autocommit = True
@@ -245,12 +252,14 @@ class PostgresClient(DatabaseAccess):
     def __init__(self,
                  dbhost: str = None,
                  dbname: str = None,
-                 output: str = None
+                 dbuser: str = None,
+                 dbpass: str = None,
+                 #output: str = None
     ):
         """Initialize the postgres handler"""
         # OutputFile.__init__( self, output)
         self.boundary = None
-        super().__init__(dbhost, dbname)
+        super().__init__(dbhost, dbname, dbuser, dbpass)
 
     def getFeatures(self,
                     boundary,
