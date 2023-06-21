@@ -1,3 +1,12 @@
+## 0.3.1 (2023-06-21)
+
+### Fix
+
+- For polygons in the data file, just use the centroids
+- Add one to the ending zoom level so range() stops loosing the last zoom level
+- Display usage() if no arguments are given
+- Add qualifiers to limit the shops that get returned
+
 ## 0.3.1rc2 (2023-06-01)
 
 ### Fix
