@@ -173,7 +173,7 @@ class OsmFile(object):
                     continue
                 if key not in attrs:
                     newkey = self.convert.escape(key)
-                    osm += "\n    <tag k='%s' v=%r/>" % (newkey, value)
+                    osm += "\n    <tag k='%s' v=%r/>" % (newkey, str(value))
             if modified:
                 osm += (
                     '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
@@ -226,7 +226,7 @@ class OsmFile(object):
                 if not value:
                     continue
                 if key not in attrs:
-                    osm += "\n    <tag k='%s' v=%r/>" % (key, value)
+                    osm += "\n    <tag k='%s' v=%r/>" % (key, str(value))
             if modified:
                 osm += (
                     '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
