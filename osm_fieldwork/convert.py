@@ -36,9 +36,8 @@ class Convert(YamlFile):
                  xform: str
                  ):
         path = xlsforms_path.replace("xlsforms", "")
-        if type(xform) == str:
-            file = f"{path}{xform}"
-            xform = file
+        if xform is not None:
+            file = xform
         else:
             file = f"{path}/xforms.yaml"
         self.yaml = YamlFile(file)
@@ -66,7 +65,10 @@ class Convert(YamlFile):
                 self.convert[key] = vals
         self.ignore = self.yaml.yaml["ignore"]
         self.private = self.yaml.yaml["private"]
-        self.multiple = self.yaml.yaml["multiple"]
+        if "multiple" in  self.yaml.yaml:
+            self.multiple = self.yaml.yaml["multiple"]
+        else:
+            self.multiple = list()
 
     def privateData(self,
                     keyword: str
@@ -122,6 +124,9 @@ class Convert(YamlFile):
         #all = list()
 
         # If it's not in any conversion data, pass it through unchanged.
+        if tag in self.ignore:
+            # logging.debug(f"FIXME: Ignoring {tag}")
+            return None
         if (
             tag not in self.convert
             and tag not in self.ignore
@@ -224,14 +229,18 @@ class Convert(YamlFile):
     def dump(self):
         """Dump the contents of the yaml file"""
         print("YAML file: %s" % self.filespec)
+        print("Convert section")
         for key, val in self.convert.items():
             if type(val) is list:
-                print("Tag %s is" % key)
+                print("\tTag %s is" % key)
                 for data in val:
-                    print("\t%r" % data)
+                    print("\t\t%r" % data)
             else:
-                print("Tag %s is %s" % (key, val))
+                print("\tTag %s is %s" % (key, val))
 
+        print("Ignore Section")
+        for item in self.ignore:
+            print(f"\tIgnoring tag {item}")
 
 #
 # This script can be run standalone for debugging purposes. It's easier to debug
