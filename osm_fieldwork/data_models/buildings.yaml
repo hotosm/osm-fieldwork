@@ -11,3 +11,5 @@ keep:
     - building:levels
     - building:material
     - roof:material
+    - roof:shape
+    - roof:levels
