@@ -1,3 +1,13 @@
+## 0.3.2 (2023-06-27)
+
+### Fix
+
+- Convert the currt JSON format as downloaded from FMTM
+- Fix processing of the ignore section
+- Always write the value as a sting
+- Remove the sldes.xls file
+- Also use an optional user and password for database access
+
 ## 0.3.1 (2023-06-21)
 
 ### Fix
