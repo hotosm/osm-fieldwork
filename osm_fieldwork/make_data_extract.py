@@ -493,7 +493,7 @@ if __name__ == "__main__":
     xlsfile = choices[args.category]
     if args.postgres:
         logging.info("Using a Postgres database for the data source")
-        pg = PostgresClient(args.dbhost, args.dbname, outfile)
+        pg = PostgresClient(args.dbhost, args.dbname)
         if args.geojson:
             extract = args.geojson
         else:
@@ -516,4 +516,4 @@ if __name__ == "__main__":
     else:
         logging.error("You need to supply either --overpass or --postgres")
 
-        logging.info("Wrote output data file to: %s" % outfile)
+        # logging.info("Wrote output data file to: %s" % outfile)
