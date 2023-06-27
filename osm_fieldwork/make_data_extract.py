@@ -244,7 +244,7 @@ class DatabaseAccess(object):
         # Now take that taskid and hit /tasks/status url with get
         data = zfp.read("Export.geojson")
         os.remove("/tmp/Export.geojson")
-        return eval(data)
+        return json.loads(data)
     #   return zfp.read("Export.geojson")
 
 class PostgresClient(DatabaseAccess):
