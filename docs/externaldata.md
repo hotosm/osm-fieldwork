@@ -24,8 +24,8 @@ import may have a weird value for an OSM tag, and it's usually better
 to update to a more community approved data model. The beauty and the
 curse of OSM data is its wonderful flexibility. People do invent new
 tags for a specific mapping campaign or import that doesn't get
-reviewd. Sometimes values have embedded quote marks or weird
-capitalization, and other weird values worth correcting.
+reviewed. Sometimes values have embedded quote marks or weird
+capitalization, and other strange formatting worth correcting.
 
 ## Creating the GeoJson file
 
@@ -54,7 +54,9 @@ a smooth data flow. To maintain clarity, it's best to keep all tags
 and values as similar as possible, with unique names. When using
 [ogr2ogr](https://gdal.org/programs/ogr2ogr.html) for data extraction
 from a Postgres database, there is more control than when using
-Overpass, and larger datasets can be processed.
+Overpass, and larger datasets can be processed. You can clean up all
+the tag names later if you add a custom config file for the
+conversion.
 
 As the GeoJson file gets turned into an XPATH components when
 converted to an XForm, the actual filename without the suffix becomes
@@ -105,7 +107,7 @@ wiki whenever possible, or at least have high frequency counts.
 
 For the external file to load properly in ODK Collect, any tags and
 values in the data extract must be in the choices sheet. Otherwise ODK
-Collect will fail to load. The [OSM
+Collect will fail to launch. The [OSM
 Fieldwork](https://github.com/hotosm/osm-fieldwork/wiki) project has a
 [utility
 program](https://github.com/hotosm/osm-fieldwork/blob/main/osm_fieldwork/filter_data.py)
@@ -120,7 +122,11 @@ files, and ODK Collect can be a challenging task. Here are a few
 tricks to help debug what is going on. I strongly suggest developing
 your XLSForm initially without the data extracts. That way you can use
 [Enketo](https://enketo.org/), which you can access using the
-**Preview** button in ODK Central.
+**Preview** button in ODK Central. Get all the survey questions,
+grouping, conditional, etc... so it's easy to test with
+Enketo. Enketo doesn't work with the GeoJson based data extract. Then
+add the data extract, and the calculation column entries to use the
+OSM data to set the survey question default value.
 
 ### Disable the map appearance
 
@@ -135,14 +141,14 @@ To use the placement map, here's an example.
 
 | type                                    | name     | label              | appearance |
 | --------------------------------------- | -------- | ------------------ | ---------- |
-| select_one_from_file camp_sites.geojson | existing | Existing Campsites | map        |
+| select_one_from_file **camp_sites.geojson** | existing | Existing Campsites | map        |
 
 And an example where the values in the data file are an inline select
 menu instead.
 
 | type                                    | name     | label              | appearance |
 | --------------------------------------- | -------- | ------------------ | ---------- |
-| select_one_from_file camp_sites.geojson | existing | Existing Campsites | minimal    |
+| select_one_from_file **camp_sites.geojson** | existing | Existing Campsites | minimal    |
 
 ### Display calculated values
 
@@ -159,10 +165,21 @@ question to display any of the values. Here's an example:
 | calculate | xlocation | Location         | instance(“camp_sites”)/root/item[id=${existing}]/geometry |             |
 | calculate | xtourism  | camping type     | instance(“camp_sites”)/root/item[id=${existing}]/tourism  |             |
 | calculate | xleisure  | leisure type     | instance(“camp_sites”)/root/item[id=${existing}]/leisure  |             |
-| text      | debug1    | Leisure          | ${xleisure}                                               | ${existing} |
-| text      | debug2    | OSM ID           | ${xid}                                                    | ${existing} |
-| text      | debug3    | Ref number       | ${xref}                                                   | ${existing} |
-| text      | debug4    | Tourism          | ${xtourism}                                               | ${existing} |
+| text      | debug1    | Leisure          | ${<span style="color:red">xleisure}                       | ${existing} |
+| text      | debug2    | OSM ID           | ${<span style="color:red">xid</span>}                     | ${existing} |
+| text      | debug3    | Ref number       | ${<span style="color:red">xref</span>}                    | ${existing} |
+| text      | debug4    | Tourism          | ${<span style="color:red">xtourism</span>}                | ${existing} |
+|           |           |                  |                                                           |             |
+| text      | name      | Business Name    | ${<span style="color:red">xlabel</span>}                  | ${existing} |
+
+For a value that is only used once to set the default value in
+Collect, you can also reference it in the same row. This saves
+potential naming conflicts, although is why I use an **x** prefix for
+gobal values.
+
+| type      | name      | label            | calculation                                               | trigger     |
+| --------- | --------- | ---------------- | --------------------------------------------------------- | ----------- |
+| text      | name      | Business Name    | instance(“camp_sites”)/root/item[id=${existing}]/name     | ${existing} |
 
 ### Error Dialog
 
@@ -171,7 +188,7 @@ ODK Collect when switching screens. You'll see this when you have a
 value in your data file for a _select_one_ survey question, but that
 value is not in the list of values in the choices sheet for that tag. In
 this example, there is no _doctor_ value in the _healthcare_
-selection in the choices sheet. If you use the utility programs
-mentioned above, you'll never see this error.
+selection in the choices sheet. If you use the data filtering utility
+program mentioned above, you'll never see this error.
 
 ![XPath Error](xlsimages/image1.jpg){width=500}
