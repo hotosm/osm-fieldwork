@@ -52,23 +52,10 @@ class JsonDump(Convert):
         self.features = list()
         path = xlsforms_path.replace("xlsforms", "")
         if yaml:
-            file = f"{path}{yaml}"
+            file = f"{yaml}"
         else:
             file = f"{path}/xforms.yaml"
         self.config = super().__init__(yaml)
-
-        self.ignore = ('@id',
-                       '@xmlns:ev',
-                       '@xmlns:orx',
-                       '@xmlns:odk',
-                       '@xmlns:h',
-                       '@xmlns:jr',
-                       '@xmlns:xsd',
-                       'start',
-                       'end',
-                       'today',
-                       'meta',
-                       )
 
     # def parseXLS(self, xlsfile: str):
     #     """Parse the source XLSFile if available to look for details we need"""
@@ -215,6 +202,8 @@ class JsonDump(Convert):
             data = reader['value']
         elif 'features' in reader:
             data = reader['features']
+        else:
+            data = reader
         for row in data:
             # log.info(f"ROW: {row}")
             tags = dict()
@@ -229,7 +218,6 @@ class JsonDump(Convert):
                 base = keyword.lower()
                 if (
                     base is None
-                    or base in self.ignore
                     or value is None
                     or len(value) == 0
                 ):
@@ -237,13 +225,16 @@ class JsonDump(Convert):
                 if keyword is None or len(keyword) == 0:
                     continue
                 if type(value) == str:
+                    if keyword not in self.ignore:
+                        continue
                     items = self.convertEntry(keyword, value)
-                    tags.update(items)
+                    if items is not None and tags is not None:
+                        tags.update(items)
+                    else:
+                        continue
                 else:
                     alltags = self.getAllTags(value)
                     for k, v in alltags.items():
-                        # if k in self.ignore:
-                        #     continue
                         if v:
                             items = dict()
                             if type(v) == dict:
@@ -259,7 +250,8 @@ class JsonDump(Convert):
                                 #            tags[k] = v
                                 #    else:
                                 #tags[k1] = v1
-                        tags.update(items)
+                        if items is not None:
+                            tags.update(items)
             total.append(tags)
         return total
 
@@ -412,9 +404,8 @@ if __name__ == "__main__":
                     if type(feature['tags']['geometry']) == str:
                         coords = list(feature['tags']['geometry'])
                         # del feature['tags']['geometry']
-                    else:
-                        coords = feature['tags']['geometry']['coordinates']
-                        # del feature['tags']['geometry']
+                elif 'coordinates' in feature['tags']:
+                    coords = feature['tags']['coordinates']
                     feature['attrs'] = {'lat': coords[1], 'lon': coords[0]}
                 else:
                     log.warning("Bad record! %r" % feature)
