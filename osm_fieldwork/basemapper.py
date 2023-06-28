@@ -50,12 +50,16 @@ def dlthread(dest, mirrors, tiles):
         % (len(tiles), threading.get_ident(), dest)
     )
     for tile in tiles:
+        bingkey = mercantile.quadkey(tile)
         filespec = f"{tile[2]}/{tile[1]}/{tile[0]}"
         for site in mirrors:
             if site["source"] != "topo":
                 filespec += "." + site["suffix"]
             url = site["url"]
-            remote = url % filespec
+            if  site["source"] == "bing":
+                remote = url % bingkey
+            else:
+                remote = url % filespec
             print("Getting file from: %s" % remote)
             # Create the subdirectories as pySmartDL doesn't do it for us
             if os.path.isdir(dest) is False:
@@ -98,11 +102,11 @@ class BaseMapper(object):
         self.sources = dict()
 
         # Bing hybrid imagery
-        url = "http://ecn.t0.tiles.virtualearth.net/tiles/h%s.png?g=129&mkt=en&stl=H"
+        url = "http://ecn.t0.tiles.virtualearth.net/tiles/h%s.jpg?g=129&mkt=en&stl=H"
         source = {
             "name": "Bing Maps Hybrid",
             "url": url,
-            "suffix": "png",
+            "suffix": "jpg",
             "source": "bing",
         }
         self.sources["bing"] = source
