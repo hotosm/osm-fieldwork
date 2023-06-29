@@ -58,6 +58,9 @@ def dlthread(dest, mirrors, tiles):
             url = site["url"]
             if  site["source"] == "bing":
                 remote = url % bingkey
+            elif  site["source"] == "google":
+                path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
+                remote = url % path
             else:
                 remote = url % filespec
             print("Getting file from: %s" % remote)
@@ -132,11 +135,12 @@ class BaseMapper(object):
         self.sources["topo"] = source
 
         # Google Hybrid
-        url = "https://mt0.google.com/vt?lyrs=h&x={x}&s=&y={y}&z={z}"
+        # url = "https://mt0.google.com/vt?lyrs=s&x={x}&s=&y={y}&z={z}"
+        url = "https://mt0.google.com/vt?lyrs=s&%s"
         source = {
-            "name": "Google Hybrid",
+            "name": "Google Imagery",
             "url": url,
-            "suffix": "png",
+            "suffix": "jpg",
             "source": "google",
         }
         self.sources["google"] = source
