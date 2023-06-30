@@ -50,11 +50,11 @@ class JsonDump(Convert):
         self.osm = None
         self.json = None
         self.features = list()
-        path = xlsforms_path.replace("xlsforms", "")
-        if yaml:
-            file = f"{yaml}"
-        else:
-            file = f"{path}/xforms.yaml"
+        #path = xlsforms_path.replace("xlsforms", "")
+        #if yaml:
+        #    file = f"{yaml}"
+        #else:
+        #    file = f"{path}/xforms.yaml"
         self.config = super().__init__(yaml)
 
     # def parseXLS(self, xlsfile: str):
