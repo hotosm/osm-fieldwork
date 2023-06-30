@@ -64,7 +64,7 @@ class OsmFile(object):
         # decrement the ID
         self.start = -1
         # path = xlsforms_path.replace("xlsforms", "")
-        self.convert = Convert("xforms.yaml")
+        self.convert = Convert(None)
         self.data = dict()
 
     def isclosed(self):
