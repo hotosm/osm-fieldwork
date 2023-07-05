@@ -64,7 +64,7 @@ class OsmFile(object):
         # decrement the ID
         self.start = -1
         # path = xlsforms_path.replace("xlsforms", "")
-        self.convert = Convert(None)
+        self.convert = Convert()
         self.data = dict()
 
     def isclosed(self):
@@ -269,19 +269,31 @@ class OsmFile(object):
                 logging.warning("No data in this instance")
                 return False
             field = doc["osm"]
-        for node in field["node"]:
-            attrs = {
-                "id": node["@id"],
-                "lat": node["@lat"],
-                "lon": node["@lon"],
-                "timestamp": node["@timestamp"],
-            }
+        if type(field["node"]) == dict:
+            attrs = dict()
             tags = dict()
-            if "tag" in node:
-                for tag in node["tag"]:
-                    tags[tag["@k"]] = tag["@v"].strip()
-                node = {"attrs": attrs, "tags": tags}
-                self.data[node["attrs"]["id"]] = node
+            for k, v in field["node"].items():
+                if k[0] == '@':
+                    attrs[k[1:]] = v
+                else:
+                    for pair in field["node"]['tag']:
+                        tags[pair['@k']] = pair['@v']
+            node = {"attrs": attrs, "tags": tags}
+            self.data[node["attrs"]["id"]] = node
+        else:
+            for node in field["node"]:
+                attrs = {
+                    "id": node["@id"],
+                    "lat": node["@lat"],
+                    "lon": node["@lon"],
+                    "timestamp": node["@timestamp"],
+                }
+                tags = dict()
+                if "tag" in node:
+                    for tag in node["tag"]:
+                        tags[tag["@k"]] = tag["@v"].strip()
+                    node = {"attrs": attrs, "tags": tags}
+                    self.data[node["attrs"]["id"]] = node
 
     def dump(self):
         """Dump the contents of an OSM file"""
