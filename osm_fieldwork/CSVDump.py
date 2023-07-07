@@ -301,7 +301,7 @@ if __name__ == "__main__":
     parser.add_argument("-y", "--yaml", help="Alternate YAML file")
     parser.add_argument("-x", "--xlsfile", help="Source XLSFile")
     parser.add_argument(
-        "-i", "--infile", help="The input file downloaded from ODK Central"
+        "-i", "--infile", required=True, help="The input file downloaded from ODK Central"
     )
     args = parser.parse_args()
     
