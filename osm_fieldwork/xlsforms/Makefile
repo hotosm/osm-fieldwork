@@ -101,7 +101,7 @@ landusage.stamp: landusage.xls
 	sed -e "s:<data id=\"[a-zA-Z0-9_]*\":<data id=\"$${base} $${target}\":" \
 		-e "s/<h:title>[a-zA-Z0-9_]*</<h:title>$${base} $${target}</" \
 		-e "s,jr://file/[a-zA-Z0-9_]*.geojson,jr://file/$${base}_$${target}.geojson," $< > $${base}_$${target}.xml; \
-	cp -f /tmp/$${target}.geojson $${base}_$${target}.geojson
+	cp -f $${target}.geojson $${base}_$${target}.geojson
 
 # A simple naming convention is used to make it possible to automate as
 # much as possible. The basename of the XLSForm file matches the form_id
