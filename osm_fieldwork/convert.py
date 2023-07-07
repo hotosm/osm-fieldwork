@@ -29,11 +29,18 @@ import sys
 log = logging.getLogger(__name__)
 
 
+def escape(value: str):
+    """Escape characters like embedded quotes in text fields"""
+    tmp = value.replace(" ", "_")
+    tmp = tmp.replace("&", " and ")
+    return tmp.replace("'", "&apos;")
+
+
 class Convert(YamlFile):
     """A class to apply a YAML config file and convert ODK to OSM"""
 
     def __init__(self,
-                 xform: str
+                 xform: str = None
                  ):
         path = xlsforms_path.replace("xlsforms", "")
         if xform is not None:
@@ -87,13 +94,6 @@ class Convert(YamlFile):
                    ):
         """See is a keyword is in the convert data category"""
         return keyword in self.ignore
-
-    def escape(self,
-               value: str
-               ):
-        """Escape characters like embedded quotes in text fields"""
-        tmp = value.replace(" ", "_")
-        return tmp.replace("'", "&apos;")
 
     def getKeyword(self,
                    value: str
