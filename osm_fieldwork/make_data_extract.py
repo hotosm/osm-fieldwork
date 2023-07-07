@@ -41,6 +41,61 @@ import overpy
 import shapely
 from shapely import wkt
 
+def uriParser(source):
+    """Parse a URI into it's components"""
+    dbhost = None
+    dbname = None
+    dbuser = None
+    dbpass = None
+    dbport = None
+
+    # if dbhost is 'localhost' then this tries to
+    # connect to that hostname's tcp/ip port. If dbhost
+    # is None, the datbase connection is done locally
+    # through the named pipe.
+    colon = source.find(':')
+    rcolon = source.rfind(':')
+    atsign = source.find('@')
+    slash = source.find('/')
+    # If nothing but a string, then it's a local postgres database
+    # that doesn't require a user or password to login.
+    if colon < 0 and atsign < 0 and slash < 0:
+        dbname = source
+    # Get the database name, which is always after the slash
+    if slash > 0:
+        dbname = source[slash+1:]
+    # The user field is either between the beginning of the string,
+    # and either a colon or atsign as the end.
+    if colon > 0:
+        dbuser = source[:colon]
+    if colon < 0 and atsign > 0:
+        dbuser = source[:atsign]
+    # The password field is between a colon and the atsign
+    if colon > 0 and atsign > 0:
+        dbpass = source[colon+1:atsign]
+    # The hostname for the database is after an atsign, and ends
+    # either with the end of the string or a slash.
+    if atsign > 0:
+        if rcolon > 0 and rcolon > atsign:
+            dbhost = source[atsign+1:rcolon]
+        elif slash > 0:
+            dbhost = source[atsign+1:slash]
+        else:
+            dbhost = source[atsign+1:]
+    # rcolon is only above zero if there is a port number
+    if rcolon > 0 and rcolon > atsign:
+        if slash > 0:
+            dbport = source[rcolon+1:slash]
+        else:
+            dbport = source[rcolon+1:]
+            # import epdb; epdb.st()
+    if colon > 0 and atsign < 0 and slash > 0:
+        dbpass = source[colon+1:slash]
+
+        # print(f"{source}\n\tcolon={colon} rcolon={rcolon} atsign={atsign} slash={slash}")
+    db = {'dbname': dbname, 'dbhost': dbhost, 'dbuser': dbuser, 'dbpass': dbpass, 'dbport': dbport}
+
+    return db
 
 def getChoices():
     """Get the categories and associated XLSFiles fgrom the config file"""
@@ -258,7 +313,6 @@ class PostgresClient(DatabaseAccess):
     ):
         """Initialize the postgres handler"""
         # OutputFile.__init__( self, output)
-        self.boundary = None
         super().__init__(dbhost, dbname, dbuser, dbpass)
 
     def getFeatures(self,
