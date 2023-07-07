@@ -21,6 +21,7 @@
 import os
 import sys
 import argparse
+from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.convert import Convert
 
 parser = argparse.ArgumentParser(
@@ -29,7 +30,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument("--infile", default="tests/test.csv", help="The CSV input file")
 args = parser.parse_args()
 
-csv = Convert("xforms.yaml")
+path = xlsforms_path.replace("/xlsforms", "")
+csv = Convert(f"{path}/xforms.yaml")
 
 def test_get_keyword():
     """Convert a feature"""

@@ -21,18 +21,18 @@
 import argparse
 import sys
 import os
-
-sys.path.append(f"{os.getcwd()}/osm_fieldwork")
-from yamlfile import YamlFile
+from osm_fieldwork.xlsforms import xlsforms_path
+from osm_fieldwork.yamlfile import YamlFile
 
 parser = argparse.ArgumentParser(description="Read and parse a YAML file")
 parser.add_argument(
-    "--infile", default="osm_fieldwork/xforms.yaml", help="The YAML input file"
+    "--infile", help="The YAML input file"
 )
 args = parser.parse_args()
 
-data = YamlFile(args.infile)
-
+path = xlsforms_path.replace("/xlsforms", "")
+infile = f"{path}/xforms.yaml"
+data = YamlFile(infile)
 
 def test_validate():
     """Tests for things under validate"""
