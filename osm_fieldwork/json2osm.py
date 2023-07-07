@@ -26,7 +26,7 @@ import sys
 import json
 import geojson
 from sys import argv
-from osm_fieldwork.convert import Convert
+from osm_fieldwork.convert import Convert, escape
 from osm_fieldwork.osmfile import OsmFile
 from osm_fieldwork.xlsforms import xlsforms_path
 from geojson import Point, Feature, FeatureCollection, dump
@@ -34,6 +34,7 @@ from pathlib import Path
 #import pandas as pd
 import math
 import re
+
 
 # set log level for urlib
 log = logging.getLogger(__name__)
@@ -50,11 +51,6 @@ class JsonDump(Convert):
         self.osm = None
         self.json = None
         self.features = list()
-        #path = xlsforms_path.replace("xlsforms", "")
-        #if yaml:
-        #    file = f"{yaml}"
-        #else:
-        #    file = f"{path}/xforms.yaml"
         self.config = super().__init__(yaml)
 
     # def parseXLS(self, xlsfile: str):
@@ -172,7 +168,7 @@ class JsonDump(Convert):
                         if type(v) != str:
                             tags[k] = str(v)
                         else:
-                            tags[k] = v
+                            tags[k] = escape(v)
                 all_tags.update(tags)
         return all_tags
 
@@ -357,7 +353,7 @@ if __name__ == "__main__":
     parser.add_argument("-y", "--yaml", help="Alternate YAML file")
     parser.add_argument("-x", "--xlsfile", help="Source XLSFile")
     parser.add_argument(
-        "-i", "--infile", help="The input file downloaded from ODK Central"
+        "-i", "--infile", required=True, help="The input file downloaded from ODK Central"
     )
     args = parser.parse_args()
     
