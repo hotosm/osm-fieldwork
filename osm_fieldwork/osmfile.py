@@ -65,6 +65,10 @@ class OsmFile(object):
         self.convert = Convert()
         self.data = dict()
 
+    def __del__(self):
+        log.debug("Closing output file")
+        self.footer()
+
     def isclosed(self):
         return self.file.closed
 
@@ -282,15 +286,22 @@ class OsmFile(object):
         else:
             for node in field["node"]:
                 attrs = {
-                    "id": node["@id"],
-                    "lat": node["@lat"],
-                    "lon": node["@lon"],
+                    "id": int(node["@id"]),
+                    "lat": node["@lat"][:10],
+                    "lon": node["@lon"][:10],
                     "timestamp": node["@timestamp"],
                 }
                 tags = dict()
                 if "tag" in node:
                     for tag in node["tag"]:
-                        tags[tag["@k"]] = tag["@v"].strip()
+                        print(f"NODE: {node}")
+                        # Only one tag is a dictionary
+                        if type(tag) == dict:
+                            tags[tag["@k"]] = tag["@v"].strip()
+                            continue
+                        # Multiple tags is a list
+                        elif type(tag) == list:
+                            tags[tag["@k"]] = tag["@v"].strip()
                     node = {"attrs": attrs, "tags": tags}
                     self.data[node["attrs"]["id"]] = node
         return self.data
