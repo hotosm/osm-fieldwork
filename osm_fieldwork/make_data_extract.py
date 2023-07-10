@@ -31,7 +31,6 @@ import geojson
 from osm_fieldwork.filter_data import FilterData
 from osm_fieldwork.xlsforms import xlsforms_path
 import requests
-# from requests.auth import HTTPBasicAuth
 from io import BytesIO
 import zipfile
 import time
@@ -236,9 +235,11 @@ class DatabaseAccess(object):
                    query: str = None,
                    ewkt: str = None
                    ):
-        sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
+        # sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
+        sql = f"DROP VIEW IF EXISTS ways_view;CREATE VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         self.dbcursor.execute(sql)
-        sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
+        # sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
+        sql = f"DROP VIEW IF EXISTS nodes_view;CREATE VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         self.dbcursor.execute(sql)
 
         sql = f"DROP VIEW IF EXISTS relations_view;CREATE TEMP VIEW relations_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
@@ -320,7 +321,7 @@ class PostgresClient(DatabaseAccess):
                     filespec: str,
                     polygon: bool,
                     category: str,
-                    xlsfile: str,
+                    xlsfile: str
                     ):
         """Extract buildings from Postgres"""
         logging.info("Extracting features from Postgres...")
@@ -336,7 +337,7 @@ class PostgresClient(DatabaseAccess):
             poly = boundary
         wkt = shape(poly)
 
-        if len(xlsfile) > 0:
+        if xlsfile and len(xlsfile) > 0:
             config = xlsfile.replace(".xls", "")
         else:
             config = category
@@ -354,13 +355,14 @@ class PostgresClient(DatabaseAccess):
         if not collection:
             return None
 
+        extract = "no"
         if len(collection['features']) == 0:
             tags = { 'title': category, 'label': category, 'id': 0}
             center = shapely.centroid(wkt)
             feature = [Feature(geometry=center, properties=tags)]
             new = FeatureCollection(feature)
             extract = "yes"
-        else:
+        elif xlsfile:
             # Process the XLSForm source file and scan it for valid tags
             # and values.
             cleaned = FilterData()
@@ -374,9 +376,11 @@ class PostgresClient(DatabaseAccess):
                 title, extract = cleaned.parse(f"{file}x")
             # Remove anything in the data extract not in the choices sheet.
             new = cleaned.cleanData(collection)
+        else:
+            new = collection
 
         # This will be set if the XLSForm contains a select_one_from_file
-        if len(extract) > 0:
+        if len(extract) > 0 and filespec is not None:
             # filespec = f"/tmp/{outfile}"
             jsonfile = open(filespec, "w")
             dump(new, jsonfile)
