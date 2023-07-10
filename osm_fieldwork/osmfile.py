@@ -179,7 +179,7 @@ class OsmFile(object):
                     osm += "\n    <tag k='%s' v=%r/>" % (newkey, str(value))
             if modified:
                 osm += (
-                    '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
+                    '\n    <tag k="note" v="Do not upload this without validation!"/>'
                 )
             osm += "\n"
 
@@ -232,9 +232,9 @@ class OsmFile(object):
                     osm += "\n    <tag k='%s' v=%r/>" % (key, str(value))
             if modified:
                 osm += (
-                    '\n    <tag k="fixme" v="Do not upload this without validation!"/>'
+                    '\n    <tag k="note" v="Do not upload this without validation!"/>'
                 )
-            osm += "\n  </node>"
+            osm += "\n  </node>\n"
         else:
             osm += "/>"
 
@@ -294,14 +294,12 @@ class OsmFile(object):
                 tags = dict()
                 if "tag" in node:
                     for tag in node["tag"]:
-                        print(f"NODE: {node}")
-                        # Only one tag is a dictionary
                         if type(tag) == dict:
                             tags[tag["@k"]] = tag["@v"].strip()
-                            continue
-                        # Multiple tags is a list
-                        elif type(tag) == list:
-                            tags[tag["@k"]] = tag["@v"].strip()
+                            # continue
+                        else:
+                            tags[node['tag']["@k"]] = node['tag']["@v"].strip()
+                            # continue
                     node = {"attrs": attrs, "tags": tags}
                     self.data[node["attrs"]["id"]] = node
         return self.data
