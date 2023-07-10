@@ -31,8 +31,8 @@ log = logging.getLogger(__name__)
 
 def escape(value: str):
     """Escape characters like embedded quotes in text fields"""
-    tmp = value.replace(" ", "_")
-    tmp = tmp.replace("&", " and ")
+    # tmp = value.replace(" ", "_")
+    tmp = value.replace("&", " and ")
     return tmp.replace("'", "&apos;")
 
 
