@@ -33,8 +33,11 @@ convert:
   - longitude: lon
   - altitude: ele
   - submitterid: uid
+  - submitterId: uid
   - submittername: user
+  - submitterName: user
   - submissiondate: timestamp
+  - submissionDate: timestamp
   - comment: note
   - view: viewpoint
   - cell: cellular
@@ -137,6 +140,7 @@ ignore:
   - edits
   - gps_type
   - deviceid
+  - deviceId
   - key
   - start
   - end
@@ -157,6 +161,12 @@ ignore:
   - category
   - existing
   - formversion
+  - building_menu
+  - food_menu
+  - medical_menu
+  - retail_menu
+  - note
+  - instanceID
 
 multiple:
   - healthcare
