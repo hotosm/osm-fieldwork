@@ -183,6 +183,9 @@ elif args.project:
         quit()
     if args.project == "forms":
         forms = project.listForms(args.id)
+        if type(forms) != list:
+            log.error(forms['message'])
+            quit()
         ordered = sorted(forms, key=lambda item: item.get("xmlFormId"))
         for form in ordered:
             print("\t%r: %r" % (form["xmlFormId"], form["name"]))
