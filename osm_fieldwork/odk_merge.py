@@ -233,22 +233,6 @@ class OdkMerge(PostgresClient):
 
         return data
 
-    def querySource(self,
-                    entry: dict
-                    ):
-        """See if the entry has a match in existing data"""
-        if len(self.geometries) == 0 and self.source[:3] == "PG:":
-            id = int(entry['attrs']['id'])
-            # any feature with a negative ID was collected via GPS,
-            # and not by editing existing data with ODK
-            if id < 0:
-                results = self.conflateNode(entry)
-                if len(results) > 0:
-                    import epdb; epdb.st()
-                    return results
-                else:
-                    return entry
-
     def makeNewFeature(self,
                        attrs: dict = None,
                        tags: dict = None
@@ -301,7 +285,7 @@ class OdkMerge(PostgresClient):
                 # Use a Geography data type to get the answer in meters, which
                 # is easier to deal with than degress of the earth.
                 cleanval = escape(value)
-                query = f"SELECT osm_id,geom,tags FROM nodes_view WHERE ST_Distance(geom::geography, ST_GeogFromText(\'SRID=4326;{wkt.wkt}\')) < {self.tolerance} AND levenshtein(tags->>'{key}', '{cleanval}') > 0"
+                query = f"SELECT osm_id,geom,tags FROM nodes_view WHERE ST_Distance(geom::geography, ST_GeogFromText(\'SRID=4326;{wkt.wkt}\')) < {self.tolerance} AND levenshtein(tags->>'{key}', '{cleanval}') <= 1"
                 # print(query)
                 # FIXME: this currently only works with a local database, not underpass yet
                 self.dbcursor.execute(query)
@@ -493,7 +477,10 @@ be either the data extract used by the XLSForm, or a postgresql database.
         quit()
 
     data = extract.conflateData(osm)
-    odkf.write(data)
+    out = ""
+    for id, feature in data.items():
+        out += odkf.createNode(feature, True)
+    odkf.write(out)
         
     # for id, entry in osm.items():
     #     hits = extract.querySource(entry)
