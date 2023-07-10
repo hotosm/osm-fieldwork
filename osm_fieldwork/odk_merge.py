@@ -37,9 +37,8 @@ from codetiming import Timer
 import concurrent.futures
 from cpuinfo import get_cpu_info
 from time import sleep
-from thefuzz import fuzz
-from thefuzz import process
-
+from haversine import haversine, Unit
+from thefuzz import fuzz, process
 
 # Instantiate logger
 log = logging.getLogger(__name__)
@@ -54,14 +53,15 @@ class OdkMerge(PostgresClient):
                  boundary: str = None
                  ):
         """Initialize Input data source"""
-        self.geojson = None
-        self.source = source
-        self.original = dict()
-        self.tags = dict()
+        # self.geojson = None
+        # self.original = dict()
         # self.versions = dict()
-        self.geometries = dict()
+        # self.geometries = dict()
         # Distance in meters for conflating with postgis
+        self.source = source
+        self.tags = dict()
         self.tolerance = 2
+        self.data = dict()
         self.analyze = ("name", "amenity", "landuse", "cuisine", "tourism", "leisure")
         # PG: is the same prefix as ogr2ogr
         # "[user[:password]@][netloc][:port][/dbname]"
@@ -69,47 +69,49 @@ class OdkMerge(PostgresClient):
             uri = uriParser(source[3:])
             # self.source = "underpass"
             super().__init__(dbhost=uri['dbhost'], dbname=uri['dbname'], dbuser=uri['dbuser'], dbpass=uri['dbpass'])
-            if boundary:
-                self.clip(boundary)
         else:
             log.info("Opening data file: %s" % source)
             src = open(source, "r")
-            data = geojson.load(src)
-            id = 0
-            for feature in data['features']:
-                geom = feature['geometry']
-                if 'tags' in feature['properties']:
-                    tags = feature['properties']['tags']
-                else:
-                    tags = feature['properties']
-                if 'version' in feature['properties']:
-                    version = feature['properties']['version']
-                else:
-                    version = 1
-                if 'osm_id' not in feature['properties'] and 'id' not in feature['properties']:
-                    log.error(f"Bad feature! {feature['properties']}")
-                else:
-                    if 'osm_id' in feature['properties']:
-                        id = int(feature['properties']['osm_id'])
-                    elif 'id' in feature['properties']:
-                        id = int(feature['properties']['id'])
-                    # store just the tags, not the atttributes
-                    self.original[id] = tags
-                    # the only attribute other than the ID we want is the version,
-                    # since it has to be incremented if changed
-                    # self.versions[id] = version
-                    # if type(geom) == geojson.geometry.Polygon:
-                    #     # import epdb; epdb.st()
-                    #     wkt = shape(geom)
-                    #     center = shapely.centroid(wkt)
-                    #     self.geometries[id] = center
-                    # else:
-                    self.geometries[id] = geom
+            self.data = geojson.load(src)
+        if boundary:
+            self.clip(boundary)
+
+            # id = 0
+            # for feature in data['features']:
+            #     geom = feature['geometry']
+            #     if 'tags' in feature['properties']:
+            #         tags = feature['properties']['tags']
+            #     else:
+            #         tags = feature['properties']
+            #     if 'version' in feature['properties']:
+            #         version = feature['properties']['version']
+            #     else:
+            #         version = 1
+            #     if 'osm_id' not in feature['properties'] and 'id' not in feature['properties']:
+            #         log.error(f"Bad feature! {feature['properties']}")
+            #     else:
+            #         if 'osm_id' in feature['properties']:
+            #             id = int(feature['properties']['osm_id'])
+            #         elif 'id' in feature['properties']:
+            #             id = int(feature['properties']['id'])
+            #         # store just the tags, not the atttributes
+            #         self.original[id] = tags
+            #         # the only attribute other than the ID we want is the version,
+            #         # since it has to be incremented if changed
+            #         # self.versions[id] = version
+            #         # if type(geom) == geojson.geometry.Polygon:
+            #         #     # import epdb; epdb.st()
+            #         #     wkt = shape(geom)
+            #         #     center = shapely.centroid(wkt)
+            #         #     self.geometries[id] = center
+            #         # else:
+            #         self.geometries[id] = geom
 
     def clip(self,
              boundary: str
              ):
         """Clip a data source by a boundary"""
+        remove = list()
         if not boundary:
             return False
 
@@ -124,41 +126,19 @@ class OdkMerge(PostgresClient):
             poly = boundary
         ewkt = shape(poly)
 
-        remove = list()
-        if len(self.original) > 0:
-            for id, feature in self.original.items():
-                obj = shape(self.geometries[id])
-                contains = shapely.contains(ewkt, obj)
-                if not contains:
-                    remove.append(id)
-            for id in remove:
-                del self.original[id]
-                # FIXME: as long as self.original is used as the primary
-                # data source, the other dictionaries don't need to
-                # have items removed.
-                # del self.versions[id]
-                # del self.geometries[id]
-            return True
-
-        if self.dbcursor is not None:
-            log.info("Clipping using %s" % (boundary))
-            sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
-            self.dbcursor.execute(sql)
-            sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
-            self.dbcursor.execute(sql)
-            sql = f"DROP VIEW IF EXISTS relations_view;CREATE TEMP VIEW relations_view AS SELECT * FROM relations WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
-            self.dbcursor.execute(sql)
-
-            result = self.dbcursor.execute(f"SELECT COUNT(uid) FROM ways_view")
-            result = self.dbcursor.fetchone()
-            ways = int(result[0])
-
-            nodes = self.dbcursor.execute(f"SELECT COUNT(uid) FROM nodes_view")
-            result = self.dbcursor.fetchone()
-            nodes = int(result[0])
-            if ways + nodes == 0:
-                return False
-
+        if len(self.data) > 0:
+            # TODO: FMTM produces data extracts the exact size of the boundary
+            # polygon, so  we don't need to clip it. In the future though we
+            # want this to produce a subset from a larger file.
+            # for feature in self.data['features']:
+            #     entry = shapely.from_geojson(str(feature))
+            #     if not shapely.contains(ewkt, entry):
+            #         del self.data[self.data['features']]
+            pass
+        else:
+            # setup the postgres VIEWs with a dummy SQL query
+            sql = f"SELECT COUNT(osm_id) FROM nodes"
+            result = self.queryLocal(sql, ewkt)
         return True
 
     def compareTags(self,
@@ -181,19 +161,19 @@ class OdkMerge(PostgresClient):
         data = list()
         newf = dict()
         if type(odkdata) == dict:
-            if len(self.original) > 0:
+            if len(self.data) > 0:
                 for id, feature in odkdata.items():
                     if id == 'attrs':
                         id = feature['attrs']['id']
                     if int(id) < 0:
                         data.append(feature)
                         continue
-                    if int(id) in self.original:
+                    if int(id) in self.data:
                         # print(f"Got match for {self.original[int(id)]}")
                         newf['attrs'] = feature['attrs']
                         newf['attrs']['id'] = int(id)
                         newf['tags'] = dict()
-                        tags = self.original[int(id)]
+                        tags = self.data[int(id)]
                         for k, v in tags.items():
                             tag = dict()
                             if k in feature['tags']:
@@ -248,6 +228,49 @@ class OdkMerge(PostgresClient):
         else:
             newf['tags'] = dict()
         return newf
+
+    def conflateFile(self, feature):
+        """Conflate a POI against all the features in a GeoJson file"""
+        # Most smartphone GPS are 5-10m off most of the time, plus sometimes
+        # we're standing in front of an amenity and recording that location
+        # instead of in the building.
+        gps_accuracy = 10
+        # this is the treshold for fuzzy string matching
+        match_threshold = 80
+        log.debug(f"conflateFile({feature})")
+        hits = False
+        geom = Point((float(feature["attrs"]["lon"]), float(feature["attrs"]["lat"])))
+        wkt = shape(geom)
+        for existing in self.data['features']:
+            entry = shapely.from_geojson(str(existing))
+            if entry.geom_type != 'Point':
+                center = shapely.centroid(entry)
+            else:
+                center = entry
+                # dist = shapely.hausdorff_distance(center, wkt)
+                # if 'name' in existing['properties']:
+                #     print(f"DIST1: {dist}, {existing['properties']['name']}")
+            # x = shapely.distance(wkt, entry)
+            # haversine reverses the order of lat & lon from what shapely uses. We
+            # use this as meters is easier to deal with than cartesian coordinates.
+            x1 = (center.coords[0][1], center.coords[0][0])
+            x2 = (wkt.coords[0][1], wkt.coords[0][0])
+            dist = haversine(x1, x2, unit=Unit.METERS)
+            if dist < gps_accuracy:
+                # if 'name' in existing['properties']:
+                #     print(f"DIST2: {dist}")
+                # log.debug(f"Got a Hit! , {feature['tags']['name']}")
+                for key,value in feature['tags'].items():
+                    if key in self.analyze:
+                        if key in existing['properties']:
+                            result = fuzz.ratio(value, existing['properties'][key])
+                            if result > match_threshold:
+                                log.debug(f"Matched: {result}: {feature['tags']['name']}")
+                                # existing['properties']['id'] = existing['properties']['id']
+                                existing['properties']['fixme'] = "Probably a duplicate!"
+                                return existing
+        return dict()
+
 
     def conflateWay(self, feature):
         """Conflate a POI against all the ways in the view"""
@@ -310,10 +333,9 @@ class OdkMerge(PostgresClient):
 
         newf = self.makeNewFeature()
         existing = dict()
-        if len(self.original) > 0 and id > 0:
-            if id in self.original:
-                existing = self.original[id]
-                geom = self.geometries[id]
+        if len(self.data) > 0 and id > 0:
+            if id in self.data:
+                existing = self.data[id]
                 ewkt = shape(geom)
         else:
             poi = Point((float(feature["attrs"]["lon"]), float(feature["attrs"]["lat"])))
@@ -346,9 +368,10 @@ class OdkMerge(PostgresClient):
     def dump(self):
         """Dump internal data"""
         print(f"Data source is: {self.source}")
-        print(f"There are {len(self.original)} existing features")
-        for k, v in self.original.items():
-            print(f"{k}(v{self.versions[k]}) = {v}")
+        print(f"There are {len(self.data)} existing features")
+        # if len(self.versions) > 0:
+        #     for k, v in self.original.items():
+        #         print(f"{k}(v{self.versions[k]}) = {v}")
 
     def conflateData(self,
                      odkdata: list,
@@ -358,9 +381,10 @@ class OdkMerge(PostgresClient):
         # timer.start()
         # Use fuzzy string matching to handle minor issues in the name column,
         # which is often used to match an amenity.
-        self.dbcursor.execute("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch")
+        if len(self.data) == 0:
+            self.dbcursor.execute("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch")
         odkf = OsmFile() # output file
-        osm = odkf.loadFile(osmdata) # input file
+        osm = odkf.loadFile(odkdata) # input file
         log.debug(f"OdkMerge::conflateThread() called! {len(osm)} features")
 
         # A chunk is a group of threads
@@ -383,7 +407,7 @@ class OdkMerge(PostgresClient):
                 i += 1
 
         # timer.stop()
-        log.debug(f"{len(newdata)} features after conflation")
+        # log.debug(f"{len(newdata)} features after conflation")
         return newdata
 
 def conflateThread(features: dict,
@@ -395,16 +419,16 @@ def conflateThread(features: dict,
     source.dump()
     log.debug(f"conflateThread() called! {len(features)} features")
     for key, value in features.items():
-        # log.debug(f"{key} = {value}")
-        attrs = value['attrs']
-        tags = value['tags']
+        log.debug(f"{key} = {value}")
+        # attrs = value['attrs']
+        # tags = value['tags']
         if int(value['attrs']['id']) > 0:
             result = source.conflateById(value)
         else:
             result = source.conflateNode(value)
             if len(result) == 0:
                 result = source.conflateWay(value)
-        log.debug(f"RESULT: {len(result)}")
+        # log.debug(f"RESULT: {len(result)}")
     # timer.stop()
     return features
 
@@ -476,71 +500,23 @@ be either the data extract used by the XLSForm, or a postgresql database.
         parser.print_help()
         quit()
 
-    data = extract.conflateData(osm)
+    # data = extract.conflateData(osm)
+    # out = ""
+    # for id, feature in data.items():
+    #     out += odkf.createNode(feature, True)
+    # odkf.write(out)        
+    # log.info(f"Wrote {outfile}")
+
     out = ""
-    for id, feature in data.items():
-        out += odkf.createNode(feature, True)
-    odkf.write(out)
-        
-    # for id, entry in osm.items():
-    #     hits = extract.querySource(entry)
-    #     if len(hits) > 0:
-    #         print(f"FIXME: {entry}")
-
-    # # Get all the keys
-    # key = list(osm.keys())[0]
-    # data = list() # extract.mergeTags(osm[key])
-
-    # for entry in data:
-    #     if int(entry['attrs']['id']) < 0:
-    #         # FIXME: Should scan the source spatially
-    #         osmf.write(osmf.createNode(entry, True))
-    #         continue
-    #     else:
-    #         log.debug(f"Need to conflate! {entry}")
-    #         # FIXME: find the best key
-    #         if 'id' in entry:
-    #             feature = extract.conflateById(entry)
-    #         if 'building' in feature['tags'] and feature['tags']['building'] == 'yes':
-    #             entry['refs'] = {}
-    #             osmf.write(osmf.createWay(entry, True))
-    #         else:
-    #             osmf.write(osmf.createNode(entry, True))
-
-    # odkf.footer()
+    for id, feature in osm.items():
+        result = extract.conflateFile(feature)
+        if len(result) > 0:
+            node = odkf.featureToNode(result)
+        else:
+            node = feature
+        out += odkf.createNode(node, True)
+    odkf.write(out)        
     log.info(f"Wrote {outfile}")
-
-    # # And also loads the POIs from the ODK Central submission
-    # odkf.loadFile(args.odkfile)
-
-    # for id in odkf.data:
-    #     # print(odkf.data[id])
-    #     feature = osmf.getFeature(odkf.data[id])
-    #     out = list()
-    #     if not feature:
-    #         # logging.debug(f"No feature found for ID {id}")
-    #         # feature = osmf.createFeature(odkf.data[id])
-    #         out.append(odkf.createNode(odkf.data[id], modified=True))
-    #     else:
-    #         tags = osmf.mergeTags(feature["tags"], odkf.data[id]["tags"])
-    #         if tags:
-    #             odkf.data[id]["tags"] = tags
-    #         if "name" in feature["tags"]:
-    #             # if tags and odkf.data[id]['tags']['name'] != feature['tags']['name']:
-    #             if tags:
-    #                 out.append(odkf.createNode(odkf.data[id], modified=True))
-    #         else:
-    #             out.append(odkf.createWay(feature, modified=True))
-    #     odkf.write(out)
-
-    # # # FIXME: for now just copy the data file from Central
-    # # # to test input parsing, and output accuracy.
-    # # out = list()
-    # # for id, node in odkf.data.items():
-    # #     out.append(odkf.createNode(node, modified=True))
-    # # odkf.write(out)
-    # odkf.footer()
-    # log.info("Wrote %s: " % args.outfile)
 
 # osmoutfile = os.path.basename(args.infile.replace(".csv", ".osm"))
 # csvin.createOSM(osmoutfile)
