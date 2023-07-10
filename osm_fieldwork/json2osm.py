@@ -410,7 +410,7 @@ if __name__ == "__main__":
             # This GeoJson file has all the data values
             jsonin.writeGeoJson(feature)
 
-    jsonin.finishOSM()
+    # jsonin.finishOSM()
     jsonin.finishGeoJson()
     log.info("Wrote OSM XML file: %r" % osmoutfile)
     log.info("Wrote GeoJson file: %r" % jsonoutfile)
