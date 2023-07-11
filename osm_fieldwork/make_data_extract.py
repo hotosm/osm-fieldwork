@@ -39,6 +39,11 @@ from shapely.geometry import shape, Polygon
 import overpy
 import shapely
 from shapely import wkt
+import logging
+
+# Instantiate logger
+log = logging.getLogger(__name__)
+
 
 def uriParser(source):
     """Parse a URI into it's components"""
@@ -108,10 +113,6 @@ def getChoices():
             data[k] = v[0]
     return data
 
-# Instantiate logger
-log = logging.getLogger(__name__)
-
-
 class DatabaseAccess(object):
     def __init__(self,
                  dbhost: str = None,
@@ -131,7 +132,7 @@ class DatabaseAccess(object):
             self.url = "https://raw-data-api0.hotosm.org/v1"
             self.headers = {"accept": "application/json", "Content-Type": "application/json"}
         else:
-            logging.info("Opening database connection to: %s" % dbhost)
+            log.info("Opening database connection to: %s" % dbhost)
             connect = "PG: dbname=" + dbname
             if dbhost is None or dbhost == "localhost":
                 connect = f"dbname={dbname}"
@@ -141,15 +142,15 @@ class DatabaseAccess(object):
                 connect += f" user={dbuser}"
             if dbpass:
                 connect += f" password={dbpass}"
-            logging.debug(connect)
+            log.debug(connect)
             try:
                 self.dbshell = psycopg2.connect(connect)
                 self.dbshell.autocommit = True
                 self.dbcursor = self.dbshell.cursor()
                 if self.dbcursor.closed == 0:
-                    logging.info(f"Opened cursor in {dbname}")
+                    log.info(f"Opened cursor in {dbname}")
             except Exception as e:
-                logging.error("Couldn't connect to database: %r" % e)
+                log.error("Couldn't connect to database: %r" % e)
 
     def createJson(self,
                    category: str,
@@ -211,9 +212,9 @@ class DatabaseAccess(object):
             if 'tags' in select:
                 for tag in select['tags']:
                     query += f" {select[tag]} AS {tag}, "
-                query += f"osm_id AS id, ST_AsEWKT({centroid} "
+                query += f"osm_id AS id, ST_AsEWKT({centroid}, version "
             else:
-                query += f"osm_id AS id, ST_AsEWKT({centroid}), tags "
+                query += f"osm_id AS id, ST_AsEWKT({centroid}), tags, version "
             query += f" FROM {table} "
             where = data['where']
             # if tags exists, then only query those fields
@@ -253,8 +254,10 @@ class DatabaseAccess(object):
         log.debug(query)
         self.dbcursor.execute(query)
         result = self.dbcursor.fetchall()
-        logging.info("Query returned %d records" % len(result))
+        log.info("Query returned %d records" % len(result))
         for item in result:
+            if len(item) <= 1:
+                break
             gps = item[1][16:-1].split(" ")
             if len(gps) == 2:
                 poi = Point((float(gps[0]), float(gps[1])))
@@ -263,6 +266,7 @@ class DatabaseAccess(object):
                 poi = wkt.loads(gps)
             tags = item[2]
             tags["id"] = item[0]
+            tags['version'] = item[3]
             if "name:en" in tags:
                 tags["title"] = tags["name:en"]
                 tags["label"] = tags["name:en"]
@@ -324,7 +328,7 @@ class PostgresClient(DatabaseAccess):
                     xlsfile: str
                     ):
         """Extract buildings from Postgres"""
-        logging.info("Extracting features from Postgres...")
+        log.info("Extracting features from Postgres...")
 
         if type(boundary) != dict:
             clip = open(boundary, "r")
@@ -402,7 +406,7 @@ class OverpassClient(object):
                     category: str
                     ):
         """Extract buildings from Overpass"""
-        logging.info("Extracting features...")
+        log.info("Extracting features...")
 
         poly = ""
         if type(boundary) == str:
@@ -466,7 +470,7 @@ class FileClient(object):
                     outfile: str
                     ):
         """Extract buildings from a disk file"""
-        logging.info("Extracting buildings from %s..." % infile)
+        log.info("Extracting buildings from %s..." % infile)
         if boundary:
             poly = ogr.Open(boundary)
             layer = poly.GetLayer()
@@ -537,7 +541,7 @@ if __name__ == "__main__":
         outfile = None
         filename = args.category + ".xml"
         if not os.path.exists(filename):
-            logging.error("Please run xls2xform or make to produce %s" % filename)
+            log.error("Please run xls2xform or make to produce %s" % filename)
             quit()
         with open(filename, "r") as f:
             txt = f.read()
@@ -550,7 +554,7 @@ if __name__ == "__main__":
 
     xlsfile = choices[args.category]
     if args.postgres:
-        logging.info("Using a Postgres database for the data source")
+        log.info("Using a Postgres database for the data source")
         pg = PostgresClient(args.dbhost, args.dbname)
         if args.geojson:
             extract = args.geojson
@@ -561,7 +565,7 @@ if __name__ == "__main__":
         log.info(f"Created {outfile} for {args.category}")
         # pg.cleanup(outfile)
     elif args.overpass:
-        logging.info("Using Overpass Turbo for the data source")
+        log.info("Using Overpass Turbo for the data source")
         op = OverpassClient(outfile)
         clip = open(args.boundary, "r")
         geom = geojson.load(clip)
@@ -570,8 +574,8 @@ if __name__ == "__main__":
     elif args.infile:
         f = FileClient(args.infile)
         f.getFeatures(args.boundary, args.geojson, args.category)
-        logging.info("Using file %s for the data source" % args.infile)
+        log.info("Using file %s for the data source" % args.infile)
     else:
-        logging.error("You need to supply either --overpass or --postgres")
+        log.error("You need to supply either --overpass or --postgres")
 
         # logging.info("Wrote output data file to: %s" % outfile)
