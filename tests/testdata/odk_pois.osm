@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM'>
+  <node id='-25369' action='modify' timestamp='2023-07-11T18:25:41Z' visible='true' version='1' lat='38.5367095' lon='-105.99275'>
+    <tag k='name' v='146 taphousr' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </node>
+  <node id='-25370' action='modify' timestamp='2023-07-11T18:25:41Z' visible='true' version='1' lat='38.536522' lon='-105.99221'>
+    <tag k='cuisine' v='mexican' />
+    <tag k='name' v='Las carmelinas' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </node>
+  <node id='-25371' action='modify' timestamp='2023-07-11T18:25:41Z' visible='true' version='1' lat='38.5367069' lon='-105.99145'>
+    <tag k='name' v='The great divide' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </node>
+  <node id='-25372' action='modify' timestamp='2023-07-11T18:25:41Z' visible='true' version='1' lat='38.5358726' lon='-105.99112'>
+    <tag k='cuisine' v='steak_house' />
+    <tag k='name' v='Osake' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </node>
+  <node id='-25373' action='modify' timestamp='2023-07-11T18:25:41Z' visible='true' version='1' lat='38.5349753' lon='-105.99351'>
+    <tag k='cuisine' v='pizza' />
+    <tag k='name' v='Moonlight' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </node>
+  <node id='-25374' action='modify' timestamp='2023-07-11T18:25:41Z' visible='true' version='1' lat='38.5351868' lon='-105.99472'>
+    <tag k='cuisine' v='coffee_shop' />
+    <tag k='name' v='Little red hen' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </node>
+  <node id='4379975394' action='modify' timestamp='2023-07-11T18:25:41Z' visible='true' version='4' lat='38.5363656' lon='-105.992169'>
+    <tag k='addr:city' v='Salida' />
+    <tag k='addr:housenumber' v='123' />
+    <tag k='addr:state' v='CO' />
+    <tag k='addr:street' v='West 1st Street' />
+    <tag k='amenity' v='cafe' />
+    <tag k='cuisine' v='thai' />
+    <tag k='fixme' v='Probably a duplicate!' />
+    <tag k='name' v='Crispy Duck' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </node>
+  <node id='4379975990' action='modify' timestamp='2023-07-11T18:25:41Z' visible='true' version='4' lat='38.5367795' lon='-105.9928306'>
+    <tag k='addr:city' v='Salida' />
+    <tag k='addr:housenumber' v='151' />
+    <tag k='addr:state' v='CO' />
+    <tag k='addr:street' v='West 1st Street' />
+    <tag k='amenity' v='restaurant' />
+    <tag k='cuisine' v='burger' />
+    <tag k='fixme' v='Probably a duplicate!' />
+    <tag k='name' v='Sprockets' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </node>
+  <way id='421485070' action='delete' timestamp='2023-07-11T18:25:41Z' visible='true' version='5'>
+    <tag k='addr:city' v='Salida' />
+    <tag k='addr:housenumber' v='128' />
+    <tag k='addr:state' v='CO' />
+    <tag k='addr:street' v='North F Street' />
+    <tag k='amenity' v='pub' />
+    <tag k='building' v='yes' />
+    <tag k='fixme' v='Probably a duplicate!' />
+    <tag k='name' v='Benson&apos;s' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </way>
+  <way id='421486093' action='delete' timestamp='2023-07-11T18:25:41Z' visible='true' version='5'>
+    <tag k='amenity' v='cafe' />
+    <tag k='building' v='yes' />
+    <tag k='building:levels' v='1' />
+    <tag k='cuisine' v='coffee_shop' />
+    <tag k='fixme' v='Probably a duplicate!' />
+    <tag k='internet_access' v='yes' />
+    <tag k='internet_access:fee' v='yes' />
+    <tag k='name' v='Cafe Dawn' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </way>
+  <way id='441860749' action='delete' timestamp='2023-07-11T18:25:41Z' visible='true' version='5'>
+    <tag k='addr:city' v='Salida' />
+    <tag k='addr:housenumber' v='203' />
+    <tag k='addr:state' v='CO' />
+    <tag k='addr:street' v='West 1st Street' />
+    <tag k='amenity' v='cafe' />
+    <tag k='building' v='yes' />
+    <tag k='cuisine' v='coffee_shop' />
+    <tag k='fixme' v='Probably a duplicate!' />
+    <tag k='internet_access' v='yes' />
+    <tag k='internet_access:fee' v='no' />
+    <tag k='name' v='Bunny and Clydes' />
+    <tag k='note' v='Do not upload this without validation!' />
+    <tag k='outdoor_seating' v='yes' />
+  </way>
+  <way id='441860751' action='delete' timestamp='2023-07-11T18:25:41Z' visible='true' version='5'>
+    <tag k='addr:city' v='Salida' />
+    <tag k='addr:housenumber' v='105' />
+    <tag k='addr:state' v='CO' />
+    <tag k='addr:street' v='F Street' />
+    <tag k='amenity' v='cafe' />
+    <tag k='building' v='yes' />
+    <tag k='cuisine' v='coffee_shop' />
+    <tag k='fixme' v='Probably a duplicate!' />
+    <tag k='name' v='Brown Dog Coffee Co.' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </way>
+  <way id='441863932' action='delete' timestamp='2023-07-11T18:25:41Z' visible='true' version='4'>
+    <tag k='amenity' v='restaurant' />
+    <tag k='building' v='yes' />
+    <tag k='cuisine' v='chinese' />
+    <tag k='fixme' v='Probably a duplicate!' />
+    <tag k='name' v='Great Wall' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </way>
+  <way id='441864868' action='delete' timestamp='2023-07-11T18:25:41Z' visible='true' version='4'>
+    <tag k='amenity' v='restaurant' />
+    <tag k='building' v='yes' />
+    <tag k='cuisine' v='pizza' />
+    <tag k='fixme' v='Probably a duplicate!' />
+    <tag k='name' v='Amicas' />
+    <tag k='note' v='Do not upload this without validation!' />
+  </way>
+</osm>
