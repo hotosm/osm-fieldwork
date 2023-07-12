@@ -25,7 +25,6 @@ ways, but needed to be automated to be used for FMTM.
      -c {buildings,amenities}, --category {buildings,amenities}
                         Which category to extract
 
-
 ## Examples
 
 ### Postgres Database:
@@ -40,6 +39,26 @@ _--dbname_ option. The program extracts the buildings category of OSM
 data by default. The size of the extracted data can be limited using
 the _--boundary_ option. The program outputs the data in GeoJSON
 format.
+
+For raw OSM data, the existing country data is downloaded from [GeoFabrik](
+https://download.geofabrik.de/index.html), and imported using a
+modified schema for osm2pgsql. First create the database and install
+two postgres extensions:
+
+	# createdb nigeria
+	psql -d nigeria -c "CREATE EXTENSION postgis"
+	psql -d nigeria -c "CREATE EXTENSION hstore"
+
+And then import the OSM data.
+
+> osm2pgsql --create -d nigeria --extra-attributes --output=flex --style raw.lua nigeria-latest-internal.osm.pbf
+
+The *raw.lua* script is [available
+here](https://github.com/hotosm/underpass/blob/master/utils/raw.lua). It's
+part of the [Underpass
+project](https://hotosm.github.io/underpass/index.html). It uses a
+more compressed and efficient data schema.
+
 
 ### Example:
 
