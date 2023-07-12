@@ -20,17 +20,24 @@
 
 import argparse
 import os
-import sys
 from  osm_fieldwork.CSVDump import CSVDump
+
+# find the path to the test data files
+rootdir = os.path.basename(os.getcwd())
+if rootdir == 'tests':
+    rootdir = "."
+elif rootdir == 'main':
+    rootdir = os.getcwd() + "/tests"
 
 parser = argparse.ArgumentParser(
     description="Read and parse a CSV file from ODK Central"
 )
-parser.add_argument("--infile", default="tests/test.csv", help="The CSV input file")
+parser.add_argument("--infile", default=f"{rootdir}/testdata/test.csv", help="The CSV input file")
 args = parser.parse_args()
 csv = CSVDump()
-data = csv.parse("tests/test.csv")
-# print(data)
+print(args)
+data = csv.parse(args.infile)
+print(data)
 
 
 def test_csv():
@@ -44,7 +51,7 @@ def test_init():
 
 
 def test_osm_entry():
-    csv.createOSM("tests/test.osm")
+    csv.createOSM(args.infile)
     line = {
         "timestamp": "2021-09-25T14:27:43.862Z",
         "end": "2021-09-24T17:55:26.194-06:00",
@@ -64,4 +71,4 @@ def test_osm_entry():
 if __name__ == "__main__":
     test_init()
     test_csv()
-    test_osm_entry()
+    # test_osm_entry()

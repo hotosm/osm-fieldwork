@@ -19,37 +19,44 @@
 #
 
 import os
-import sys
 from osm_fieldwork.convert import escape
 import argparse
 from osm_fieldwork.osmfile import OsmFile
 
+# find the path to the test data files
+rootdir = os.path.basename(os.getcwd())
+if rootdir == 'tests':
+    rootdir = "."
+elif rootdir == 'main':
+    rootdir = os.getcwd() + "/tests"
+
 parser = argparse.ArgumentParser(
     description="Read and parse a CSV file from ODK Central"
 )
-parser.add_argument("--infile", default="tests/test.csv", help="The CSV input file")
+parser.add_argument("--infile", default=f"{rootdir}/testdata/odk_pois.osm", help="The CSV input file")
+parser.add_argument("--outfile", default=f"{rootdir}/testdata/test-out.osm", help="The output OSM XML file")
 args = parser.parse_args()
 
 # Delete the test output file
-if os.path.exists("tests/test.osm"):
-    os.remove("tests/test.osm")
+if os.path.exists(args.outfile):
+    os.remove(args.outfile)
 
-osm = OsmFile("tests/test.osm")
+osm = OsmFile(args.outfile)
 
 
 def test_init():
     """Make sure the OSM file is initialized"""
-    assert os.path.exists("tests/test.osm")
+    assert os.path.exists(args.infile)
 
 
 def test_header():
     osm.header()
-    assert os.stat("tests/test.osm").st_size > 0
+    assert os.stat(args.infile).st_size > 0
 
 
 def test_footer():
     osm.footer()
-    tmp = open("tests/test.osm", "r")
+    tmp = open(args.infile, "r")
     lines = tmp.readlines()
     for line in lines:
         last = line
@@ -115,5 +122,5 @@ if __name__ == "__main__":
     test_create_way()
     test_create_node_modified()
     # Delete the test output file
-    if os.path.exists("tests/test.osm"):
-        os.remove("tests/test.osm")
+    if os.path.exists(args.outfile):
+        os.remove(args.outfile)
