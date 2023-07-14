@@ -165,6 +165,7 @@ ignore:
   - food_menu
   - medical_menu
   - retail_menu
+  - government_menu
   - note
   - instanceID
 
