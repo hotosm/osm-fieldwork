@@ -1,5 +1,6 @@
 select:
-    osm_id: id
+    - osm_id: id
+    - version
 from:
     - nodes
     - ways_poly
@@ -13,3 +14,8 @@ keep:
     - roof:material
     - roof:shape
     - roof:levels
+    - cusine
+    - amenity
+    - convenience
+    - diesel
+    - version
