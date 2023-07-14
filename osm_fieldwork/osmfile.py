@@ -183,8 +183,28 @@ class OsmFile(object):
                 )
             osm += "\n"
 
-        osm += "  </way>"
+        osm += "  </way>\n"
 
+        return osm
+
+    def featureToNode(self,
+                     feature: dict
+                     ):
+        """Convert a GeoJson feature into the data structures used here"""
+        osm = dict()
+        ignore = ("label", "title")
+        tags = dict()
+        attrs = dict()
+        for tag, value in feature['properties'].items():
+            if tag == 'id':
+                attrs['osm_id'] = value
+            elif tag not in ignore:
+                tags[tag] = value
+        coords = feature['geometry']['coordinates']
+        attrs['lat'] = coords[1]
+        attrs['lon'] = coords[0]
+        osm['attrs'] = attrs
+        osm['tags'] = tags
         return osm
 
     def createNode(self,
@@ -205,7 +225,7 @@ class OsmFile(object):
         if "version" not in node["attrs"]:
             attrs["version"] = "1"
         else:
-            attrs["version"] = int(node["version"]) + 1
+            attrs["version"] = int(node['attrs']["version"]) + 1
         attrs["lat"] = node["attrs"]["lat"]
         attrs["lon"] = node["attrs"]["lon"]
         attrs["timestamp"] = datetime.now().strftime("%Y-%m-%dT%TZ")
@@ -326,7 +346,7 @@ class OsmFile(object):
             for key in keys:
                 if key not in fields:
                     fields.append(key)
-        print(fields)
+        # print(fields)
 
 
 if __name__ == "__main__":
