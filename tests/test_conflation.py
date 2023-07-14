@@ -34,13 +34,18 @@ elif rootdir == 'main':
 parser = argparse.ArgumentParser(description="Test odk_merge")
 parser.add_argument("--odk", default=f"{rootdir}/testdata/odk_pois.osm", help="The ODK file")
 parser.add_argument("--osm", default=f"{rootdir}/testdata/osm_buildings.geojson", help="The OSM data")
+parser.add_argument("-d", "--database", default=f"PG:colorado", help="The database name")
+parser.add_argument("-b", "--boundary", default=f"{rootdir}/testdata/Salida.geojson", help="The project AOI")
 args = parser.parse_args()
 
 def test_file():
+    """This tests conflating against the GeoJson data extract file"""
     passes = 0
     osm = OsmFile()
     osmdata = osm.loadFile(args.odk)
     odk = OdkMerge(args.osm)
+    # Although the code is multi-threaded, we can call the function that
+    # does all the work directly without threading. Easier to debug this qay.
     data = conflateThread(osmdata, odk)
     # There are 8 features in the test data
     if len(data) == 8:
@@ -49,13 +54,49 @@ def test_file():
     # feature doesn't match, so negative ID
     if data[0]['attrs']['id'] > 0 and data[1]['attrs']['id'] < 0:
         passes += 1
-    # feature doesn't match, so negative ID
+    # duplicates have a fixme tag added
     if 'fixme' in data[0]['tags'] and 'fixme' not in data[1]['tags']:
         passes += 1
     assert(passes == 3)
 
+def test_db():
+    """This test against a local database. If there is no postgres, then
+    none of the tests get run."""
+    passes = 0
+    # this database always exists on this developer's machine
+    odk = OdkMerge("PG:colorado", args.boundary)
+    if odk.dbcursor is not None:
+        passes += 1
+    else:
+        return
+    # We also want to trap a bad database name
+    # odk = OdkMerge("PG:foobar")
+    # if odk.dbcursor is None:
+    #     passes += 1
+
+    osm = OsmFile()
+    osmdata = osm.loadFile(args.odk)
+    if len(osmdata) == 8:
+        passes += 1
+
+    # The first feature is a match, so has the OSM ID, the second
+    # feature doesn't match, so negative ID. Here we're just making
+    # sure it got loaded as a sanity check
+    keys = list(osmdata.keys())
+    if osmdata[keys[6]]['attrs']['id'] > 0 and osmdata[keys[0]]['attrs']['id'] < 0:
+        passes += 1
+
+    odk = OdkMerge(args.database, args.boundary)
+    # Although the code is multi-threaded, we can call the function that
+    # does all the work directly without threading. Easier to debug this way.
+    data = conflateThread(osmdata, odk)
+    if len(data[6]['attrs']) > 0 and data[6]['attrs']['id'] > 0 and data[0]['attrs']['id'] < 0:
+        passes += 1
+    assert(passes == 4)
 
 if __name__ == "__main__":
-    print("--- test_dbname_only() ---")
+    print("--- test_file() ---")
     test_file()
+    print("--- test_db() ---")
+    test_db()
     print("--- done ---")
