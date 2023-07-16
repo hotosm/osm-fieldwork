@@ -309,8 +309,10 @@ class OsmFile(object):
                     "id": int(node["@id"]),
                     "lat": node["@lat"][:10],
                     "lon": node["@lon"][:10],
-                    "timestamp": node["@timestamp"],
                 }
+                if '@timestamp' in node:
+                    attrs["timestamp"] = node["@timestamp"]
+
                 tags = dict()
                 if "tag" in node:
                     for tag in node["tag"]:
