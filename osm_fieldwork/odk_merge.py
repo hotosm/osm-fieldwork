@@ -48,19 +48,16 @@ info = get_cpu_info()
 cores = info['count']
 
 
-class OdkMerge(PostgresClient):
+class OdkMerge(object):
     def __init__(self,
                  source: str,
                  boundary: str = None
                  ):
         """Initialize Input data source"""
-        # self.geojson = None
-        # self.original = dict()
-        # self.versions = dict()
-        # self.geometries = dict()
-        # Distance in meters for conflating with postgis
+        self.postgres = list()
         self.source = source
         self.tags = dict()
+        # Distance in meters for conflating with postgis
         self.tolerance = 7
         self.data = dict()
         self.analyze = ("name", "amenity", "landuse", "cuisine", "tourism", "leisure")
@@ -68,8 +65,11 @@ class OdkMerge(PostgresClient):
         # "[user[:password]@][netloc][:port][/dbname]"
         if source[0:3] == "PG:":
             uri = uriParser(source[3:])
-            # self.source = "underpass"
-            super().__init__(dbhost=uri['dbhost'], dbname=uri['dbname'], dbuser=uri['dbuser'], dbpass=uri['dbpass'])
+            # self.source = "underpass" is not support yet
+            # Each thread needs it's own connection to postgres to avoid problems.
+            for thread in range(0, cores + 1):
+                db = PostgresClient(dbhost=uri['dbhost'], dbname=uri['dbname'], dbuser=uri['dbuser'], dbpass=uri['dbpass'])
+                self.postgres.append(db)
         else:
             log.info("Opening data file: %s" % source)
             src = open(source, "r")
@@ -187,7 +187,10 @@ class OdkMerge(PostgresClient):
                 return {'attrs': attrs, 'tags': tags}
         return dict()
 
-    def conflateWay(self, feature):
+    def conflateWay(self,
+                    feature: dict,
+                    dbindex: int
+                    ):
         """Conflate a POI against all the ways in the view"""
         # log.debug(f"conflateWay({feature})")
         hits = False
@@ -200,8 +203,12 @@ class OdkMerge(PostgresClient):
                 cleanval = escape(value)
                 query = f"SELECT osm_id,tags,version,ST_AsText(ST_Centroid(geom)) FROM ways_view WHERE ST_Distance(geom::geography, ST_GeogFromText(\'SRID=4326;{wkt.wkt}\')) < {self.tolerance} AND levenshtein(tags->>'{key}', '{cleanval}') <= 1"
                 # log.debug(query)
-                self.dbcursor.execute(query)
-                result = self.dbcursor.fetchall()
+                self.postgres[dbindex].dbcursor.execute(query)
+                try:
+                    result = self.postgres[dbindex].dbcursor.fetchall()
+                except:
+                    result = list()
+                    # log.warning(f"No results at all for {query}")
                 if len(result) > 0:
                     hits = True
                     break
@@ -223,7 +230,7 @@ class OdkMerge(PostgresClient):
             return {'attrs': attrs, 'tags': tags, 'refs': refs}
         return dict()
 
-    def conflateNode(self, feature):
+    def conflateNode(self, feature, dbindex):
         """Conflate a POI against all the nodes in the view"""
         # log.debug(f"conflateNode({feature})")
         hits = False
@@ -240,14 +247,17 @@ class OdkMerge(PostgresClient):
                 query = f"SELECT osm_id,tags,version,ST_AsEWKT(geom) FROM nodes_view WHERE ST_Distance(geom::geography, ST_GeogFromText(\'SRID=4326;{wkt.wkt}\')) < {self.tolerance} AND levenshtein(tags->>'{key}', '{cleanval}') <= {ratio}"
                 # print(query)
                 # FIXME: this currently only works with a local database, not underpass yet
-                self.dbcursor.execute(query)
-                result = self.dbcursor.fetchall()
+                self.postgres[dbindex].dbcursor.execute(query)
+                try:
+                    result = self.postgres[dbindex].dbcursor.fetchall()
+                except:
+                    result = list()
+                    # log.warning(f"No results at all for {query}")
                 if len(result) > 0:
                     hits = True
                     break
         if hits:
             log.debug(f"Got a dup in nodes!!! {feature['tags']['name']}")
-            # the result is a list from what we specify for SELECT
             version = int(result[0][2]) + 1
             coords = shapely.from_wkt(result[0][3][10:])
             lat = coords.y
@@ -258,16 +268,16 @@ class OdkMerge(PostgresClient):
             return {'attrs': attrs, 'tags': tags}
         return dict()
 
-    def conflateById(self, feature):
+    def conflateById(self, feature, dbindex):
         """Conflate a feature with existing ways"""
-        # log.debug(f"conflateById({feature})")
+        log.debug(f"conflateById({feature})")
         id = int(feature['attrs']['id'])
         if id > 0:
             if self.source[:3] != "PG:":
                 sql = f"SELECT osm_id,tags,version,ST_AsText(geom) FROM ways_view WHERE tags->>'id'='{id}'"
                 # log.debug(sql)
-                self.dbcursor.execute(sql)
-                result = self.dbcursor.fetchone()
+                self.postgres[0].dbcursor.execute(sql)
+                result = self.postgres[0].dbcursor.fetchone()
                 if result:
                     version = int(result[0][2]) + 1
                     attrs = {'id': int(result[0][0]), 'version': version}
@@ -278,8 +288,8 @@ class OdkMerge(PostgresClient):
                 else:
                     sql = f"SELECT osm_id,tags,version,ST_AsText(geom) FROM ways_view WHERE tags->>'id'='{id}'"
                     # log.debug(sql)
-                    self.dbcursor.execute(sql)
-                    result = self.dbcursor.fetchone()
+                    self.postgres[dbindex].dbcursor.execute(sql)
+                    result = self.postgres[dbindex].dbcursor.fetchone()
                     if result:
                         version = int(result[0][2]) + 1
                         attrs = {'id': int(result[0][0]), 'version': version}
@@ -317,12 +327,12 @@ class OdkMerge(PostgresClient):
                      odkdata: list,
                      ):
         """Conflate all the data"""
-        # timer = Timer("conflateData()")
-        # timer.start()
+        timer = Timer(text="conflateData() took {seconds:.0f}s")
+        timer.start()
         # Use fuzzy string matching to handle minor issues in the name column,
         # which is often used to match an amenity.
         if len(self.data) == 0:
-            self.dbcursor.execute("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch")
+            self.postgres[0].dbcursor.execute("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch")
         log.debug(f"OdkMerge::conflateData() called! {len(odkdata)} features")
 
         # A chunk is a group of threads
@@ -330,33 +340,43 @@ class OdkMerge(PostgresClient):
         cycle = range(0, len(odkdata), chunk)
         # Chop the data into a subset for each thread
         newdata = list()
-        with concurrent.futures.ThreadPoolExecutor(max_workers = cores) as executor:
+        future = None
+        result = None
+        index = 0
+        with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
             i = 0
             subset = dict()
+            futures = list()
             for key, value in odkdata.items():
                 subset[key] = value
                 if i == chunk:
                     i = 0
-                    result = {executor.submit(conflateThread, subset, self)}
+                    result = executor.submit(conflateThread, subset, self, index)
+                    index += 1
+                    # result.add_done_callback(callback)
+                    futures.append(result)
                     subset = dict()
-                    for future in concurrent.futures.as_completed(result):
-                        log.debug(f"Waiting for thread to complete...")
-                        newdata.append(future.result()[0])
                 i += 1
-
-        # timer.stop()
-        log.debug(f"{len(newdata)} features after conflation")
+            for future in concurrent.futures.as_completed(futures):
+            # # for future in concurrent.futures.wait(futures, return_when='ALL_COMPLETED'):
+                log.debug(f"Waiting for thread to complete..")
+                # print(f"YYEESS!! {future.result(timeout=10)}")
+                newdata.append(future.result(timeout=5))
+        timer.stop()
         return newdata
+        # return alldata
 
 def conflateThread(features: dict,
-                   source: str
+                   source: str,
+                   dbindex: int
                    ):
     """Conflate a subset of the data"""
-    # timer = Timer("conflateThread()")
-    # timer.start()
+    timer = Timer(text="conflateThread() took {seconds:.0f}s")
+    timer.start()
     log.debug(f"conflateThread() called! {len(features)} features")
     merged = list()
     result = dict()
+    dups = 0
     # This is brute force, slow but accurate. Process each feature
     # and look for a possible match with existing data.
     for key, value in features.items():
@@ -371,18 +391,19 @@ def conflateThread(features: dict,
             else:
                 # Any feature ID less than zero is new data collected
                 # using geopoint in the XLSForm.
-                result = source.conflateById(value)
+                result = source.conflateById(value, dbindex)
         elif id < 0:
             if source.source[:3] != "PG:":
                 result = source.conflateFile(value)
             else:
-                result = source.conflateNode(value)
+                result = source.conflateNode(value, dbindex)
                 if len(result) == 0:
-                    result = source.conflateWay(value)
+                    result = source.conflateWay(value, dbindex)
         if result and len(result) > 0:
             # Merge the tags and attributes together, the OSM data and ODK data.
             # If no match is found, the ODK data is used to create a new feature.
             if 'fixme' in result['tags']:
+                dups += 1
                 # newf = source.cleanFeature(result)
                 attrs = value['attrs'] | result['attrs']
                 tags = value['tags'] | result['tags']
@@ -392,7 +413,8 @@ def conflateThread(features: dict,
         else:
             merged.append(value)
             # log.error(f"There are no results!")
-    # timer.stop()
+    timer.stop()
+    log.debug(f"Found {dups} duplicates")
     return merged
 
 
@@ -418,7 +440,7 @@ be either the data extract used by the XLSForm, or a postgresql database.
     parser.add_argument("-o", "--outfile",  help="Output file from the conflation")
     # parser.add_argument("-e", "--extract",  help="OSM data extract created by Osm-Fieldwork")
     # parser.add_argument("-f", "--odkfile",  required=True, help="OSM XML file created by Osm-Field")
-    parser.add_argument("-b", "--boundary", required=True, help="Boundary polygon to limit the data size")
+    parser.add_argument("-b", "--boundary", help="Boundary polygon to limit the data size")
 
     args, unknown = parser.parse_known_args()
     osmdata = None
@@ -438,7 +460,7 @@ be either the data extract used by the XLSForm, or a postgresql database.
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
         root.addHandler(ch)
@@ -463,17 +485,19 @@ be either the data extract used by the XLSForm, or a postgresql database.
         parser.print_help()
         quit()
 
-    # data = conflateThread(osm, extract)
+    # This returns a list of lists of dictionaries. Each thread returns
+    # a list of the features, and len(data) is thre number of CPU cores.
     data = extract.conflateData(osm)
     out = list()
     #print(data)
-    for feature in data:
+    for entry in data:
         # if 'refs' in feature or 'building' in feature['tags']:
-        if 'refs' in feature:
-            feature['refs'] = list()
-            out.append(odkf.createWay(feature, True))
-        else:
-            out.append(odkf.createNode(feature, True))
+        for feature in entry:
+            if 'refs' in feature:
+                feature['refs'] = list()
+                out.append(odkf.createWay(feature, True))
+            else:
+                out.append(odkf.createNode(feature, True))
 
     # out = ""
     # for id, feature in osm.items():
