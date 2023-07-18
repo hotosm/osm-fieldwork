@@ -456,22 +456,26 @@ class OdkForm(OdkCentral):
         self.media = result.json()
         return self.media
 
+
     def uploadMedia(self,
                     projectId: int,
                     xform: str,
-                    filespec: str
+                    filespec: str,
+                    convert_to_draft: bool = True
                     ):
         """Upload an attachement to the ODK Central server"""
         title = os.path.basename(os.path.splitext(filespec)[0])
         datafile = f"{title}.geojson"
         xid = xform.split('_')[2]
-        url = f"{self.base}projects/{projectId}/forms/{xid}/draft"
-        result = self.session.post(url, auth=self.auth, verify=self.verify)
-        if result.status_code == 200:
-            log.debug(f"Modified {title} to draft")
-        else:
-            status = eval(result._content)
-            log.error(f"Couldn't modify {title} to draft: {status['message']}")
+
+        if convert_to_draft: 
+            url = f"{self.base}projects/{projectId}/forms/{xid}/draft"
+            result = self.session.post(url, auth=self.auth, verify=self.verify)
+            if result.status_code == 200:
+                log.debug(f"Modified {title} to draft")
+            else:
+                status = eval(result._content)
+                log.error(f"Couldn't modify {title} to draft: {status['message']}")
 
         url = f"{self.base}projects/{projectId}/forms/{xid}/draft/attachments/{datafile}"
         headers = {"Content-Type": "*/*"}
