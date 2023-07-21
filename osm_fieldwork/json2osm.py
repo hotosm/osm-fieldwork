@@ -344,8 +344,7 @@ class JsonDump(Convert):
 
         return feature
 
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         description="convert JSON from ODK Central to OSM XML"
     )
@@ -414,3 +413,6 @@ if __name__ == "__main__":
     jsonin.finishGeoJson()
     log.info("Wrote OSM XML file: %r" % osmoutfile)
     log.info("Wrote GeoJson file: %r" % jsonoutfile)
+
+if __name__ == "__main__":
+    main()
