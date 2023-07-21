@@ -141,7 +141,3 @@ from remote mapping, so we'd also want to merge the tags from the
 collected data into the building way. Multiple shops within the same
 building remain as a POI in that building.
 
-# Making imagery Basemaps
-
-# Making data extracts
-

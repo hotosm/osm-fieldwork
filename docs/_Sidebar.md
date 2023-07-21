@@ -6,6 +6,8 @@
 
 [Contribution](https://github.com/hotosm/osm-fieldwork/wiki/Contribution)
 
+[User Manual](https://github.com/hotosm/osm-fieldwork/blob/main/docs/user-manual.md)
+
 [FAQ](https://github.com/hotosm/osm-fieldwork/wiki/FAQ)
 
 [Verion Control](https://github.com/hotosm/osm-fieldwork/wiki/Version-Control)
