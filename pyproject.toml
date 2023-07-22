@@ -19,10 +19,13 @@ dependencies = [
     "xmltodict>=0.13.0",
     "shapely>=1.8.5",
     "overpy>=0.6",
+    "thefuzz>=0.19.0",
+    "haversine>=2.8.0"
+
 ]
 requires-python = ">=3.9"
 readme = "README.md"
-license = "GPL-3.0-only"
+# license = "GPL-3.0-only"
 keywords = ["fmtm", "odk", "hot", "openstreetmap", "opendatakit"]
 classifiers = [
     "Topic :: Utilities",
@@ -47,9 +50,9 @@ test = [
     "pytest>=7.2.1",
 ]
 
-[build-system]
-requires = ["pdm-pep517>=1.0.0"]
-build-backend = "pdm.pep517.api"
+#[build-system]
+#requires = ["pdm-pep517>=1.0.0"]
+#build-backend = "pdm.pep517.api"
 
 [tool.pytest.ini_options]
 addopts = "-ra -q"
@@ -66,3 +69,12 @@ version_files = [
     "osm_fieldwork/__version__.py",
     "Makefile:VERSION",
 ]
+
+[project.scripts]
+json2osm = "osm_fieldwork.json2osm:main"
+csv2osm = "osm_fieldwork.CSVDump:main"
+odk2csv = "osm_fieldwork.odk2csv:main"
+odk2osm = "osm_fieldwork.odk2osm:main"
+odk2geojson = "osm_fieldwork.odk2geojson:main"
+odk_merge = "osm_fieldwork.odk_merge:main"
+odk_client = "osm_fieldwork.odk_client:main"
