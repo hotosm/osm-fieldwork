@@ -32,13 +32,12 @@ from datetime import datetime
 log = logging.getLogger(__name__)
 
 
-if __name__ == "__main__":
+def main()
     parser = argparse.ArgumentParser(
         description="Convert ODK XML instance file to CSV format"
     )
     parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
-    parser.add_argument(
-        "-i", "--instance", help="The instance file(s) from ODK Collect"
+    parser.add_argument("-i", "--instance", required=True, help="The instance file(s) from ODK Collect"
     )
     # parser.add_argument("-d","--directories", help='A local directory pato to instance files.')
     # parser.add_argument("-o","--outfile", default='tmp.csv', help='The output file for JOSM')
@@ -140,3 +139,6 @@ if __name__ == "__main__":
             csv.writerow(row)
 
     print("Wrote: %s" % outfile)
+
+if __name__ == "__main__":
+    main()

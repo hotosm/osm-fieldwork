@@ -42,9 +42,7 @@ if __name__ == "__main__":
         description="Convert ODK XML instance file to GeoJson"
     )
     parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
-    parser.add_argument(
-        "-i", "--instance", help="The instance file(s) from ODK Collect"
-    )
+    parser.add_argument("-i", "--instance", required=True, help="The instance file(s) from ODK Collect")
     parser.add_argument("-o","--outfile", default='tmp.geojson', help='The output file for JOSM')
     args = parser.parse_args()
 

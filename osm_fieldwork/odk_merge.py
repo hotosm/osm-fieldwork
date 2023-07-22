@@ -418,7 +418,7 @@ def conflateThread(features: dict,
     return merged
 
 
-if __name__ == "__main__":
+def main():
     # Command Line options
     parser = argparse.ArgumentParser(
         prog="odk_merge.py",
@@ -509,3 +509,6 @@ be either the data extract used by the XLSForm, or a postgresql database.
     #     out += odkf.createNode(node, True)
     odkf.write(out)
     log.info(f"Wrote {outfile}")
+
+if __name__ == "__main__":
+    main()
