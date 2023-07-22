@@ -293,7 +293,7 @@ class CSVDump(Convert):
         return feature
 
 
-def main()
+def main():
     parser = argparse.ArgumentParser(
         description="convert CSV from ODK Central to OSM XML"
     )

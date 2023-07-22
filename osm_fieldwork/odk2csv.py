@@ -32,7 +32,7 @@ from datetime import datetime
 log = logging.getLogger(__name__)
 
 
-def main()
+def main():
     parser = argparse.ArgumentParser(
         description="Convert ODK XML instance file to CSV format"
     )
