@@ -105,35 +105,33 @@ def main():
         "-b", "--bulk", choices=["qrcodes", "update"], help="Bulk operations"
     )
 
-    # Creating a basic logger
-    if __name__ == '__main__':
-        logging.basicConfig(
-            level=log_level,
-            format=(
-                "%(asctime)s.%(msecs)03d [%(levelname)s]"
-                "%(name)s | %(funcName)s:%(lineno)d | %(message)s"
-            ),
-            datefmt="%y-%m-%d %H:%M:%S",
-            stream=sys.stdout,
-        )
+    logging.basicConfig(
+        level=log_level,
+        format=(
+            "%(asctime)s.%(msecs)03d [%(levelname)s]"
+            "%(name)s | %(funcName)s:%(lineno)d | %(message)s"
+        ),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=sys.stdout,
+    )
 
-        # Caching isn't implemented yet. That's for fancier queries that require multiple
-        # requests to the ODK server. Caching allows for data like names for IDs to
-        # be more user friendly.
-        # parser.add_argument('-c', '--cache', action="store_true", help = 'cache data from ODK Central')
-        # For now read these from the $HOME/.odkcentral config file
-        # parser.add_argument('-u', '--user', help = 'ODK Central username (usually email)')
-        # parser.add_argument('-pw', '--password', help = 'ODK Central password')
-        # parser.add_argument("-d", "--download", choices=['xml', 'xlsx', 'attach', 'submit', 'zip'], help="Download files from ODK Central")
-        # parser.add_argument("-u", "--upload", choices=['xml', 'xlsx', 'attach', 'submit', 'zip'], help="Upload files to ODK Central")
+    # Caching isn't implemented yet. That's for fancier queries that require multiple
+    # requests to the ODK server. Caching allows for data like names for IDs to
+    # be more user friendly.
+    # parser.add_argument('-c', '--cache', action="store_true", help = 'cache data from ODK Central')
+    # For now read these from the $HOME/.odkcentral config file
+    # parser.add_argument('-u', '--user', help = 'ODK Central username (usually email)')
+    # parser.add_argument('-pw', '--password', help = 'ODK Central password')
+    # parser.add_argument("-d", "--download", choices=['xml', 'xlsx', 'attach', 'submit', 'zip'], help="Download files from ODK Central")
+    # parser.add_argument("-u", "--upload", choices=['xml', 'xlsx', 'attach', 'submit', 'zip'], help="Upload files to ODK Central")
 
-        # Any files we want to use are specified on the command line with an argument.
-        # Multiple files are stored in a list.
-        args, unknown = parser.parse_known_args()
+    # Any files we want to use are specified on the command line with an argument.
+    # Multiple files are stored in a list.
+    args, unknown = parser.parse_known_args()
 
-        # Get any files for upload or download
-        files = list()
-    if unknown:
+    # Get any files for upload or download
+    files = list()
+    if unknown is not None:
         files = unknown
 
     # if verbose, dump to the terminal.

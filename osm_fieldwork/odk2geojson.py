@@ -37,7 +37,7 @@ from datetime import datetime
 # Instantiate logger
 log = logging.getLogger(__name__)
 
-if __name__ == "__main__":
+def moon():
     parser = argparse.ArgumentParser(
         description="Convert ODK XML instance file to GeoJson"
     )
@@ -113,3 +113,6 @@ if __name__ == "__main__":
     dump(collection, json)
 
     print(f"Wrote output file {outfile}")
+
+if __name__ == "__main__":
+    main()
