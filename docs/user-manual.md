@@ -246,6 +246,6 @@ list all the projects on a remote Central server:
 And this lets you download all the submissions to project number 19
 and using the XLSForm for buildings.
 
-odk_client.py -v -i 19 -f buildings -x json
+odk_client -v -i 19 -f buildings -x json
 
 There is much more detail on this program [here](odk_client).
