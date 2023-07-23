@@ -70,15 +70,18 @@ class OdkMerge(object):
             for thread in range(0, cores + 1):
                 db = PostgresClient(dbhost=uri['dbhost'], dbname=uri['dbname'], dbuser=uri['dbuser'], dbpass=uri['dbpass'])
                 self.postgres.append(db)
+                if boundary:
+                    self.clip(boundary, db)
         else:
             log.info("Opening data file: %s" % source)
             src = open(source, "r")
             self.data = geojson.load(src)
-        if boundary:
-            self.clip(boundary)
+            if boundary:
+                self.clip(boundary)
 
     def clip(self,
-             boundary: str
+             boundary: str,
+             db: PostgresClient,
              ):
         """Clip a data source by a boundary"""
         remove = list()
@@ -109,7 +112,7 @@ class OdkMerge(object):
         else:
             # setup the postgres VIEWs with a dummy SQL query
             sql = f"SELECT COUNT(osm_id) FROM nodes"
-            result = self.queryLocal(sql, ewkt)
+            result = db.queryLocal(sql, ewkt)
         return True
 
     def makeNewFeature(self,
@@ -257,7 +260,7 @@ class OdkMerge(object):
                     hits = True
                     break
         if hits:
-            log.debug(f"Got a dup in nodes!!! {feature['tags']['name']}")
+            log.debug(f"Got a dup in nodes!!! {feature['tags']}")
             version = int(result[0][2]) + 1
             coords = shapely.from_wkt(result[0][3][10:])
             lat = coords.y
