@@ -180,6 +180,9 @@ def main():
             quit()
         if args.project == "forms":
             forms = project.listForms(args.id)
+            if type(forms) == dict:
+                log.error(f"{forms['message']}, {forms['code']} ")
+                quit()
             if type(forms) != list:
                 log.error(forms['message'])
                 quit()
@@ -254,9 +257,14 @@ def main():
                 print("\t%r" % role)
         elif args.xform == "submissions":
             submissions = form.listSubmissions(args.id, args.form)
-            logging.info(
-                "There are %d submissions for XForm %s" % (len(submissions), args.form)
-            )
+            if not submissions:
+                submissions = list()
+            elif type(submissions) == dict:
+                log.error(f"{submissions['message']}, {submissions['code']} ")
+            else:
+                logging.info(
+                    "There are %d submissions for XForm %s" % (len(submissions), args.form)
+                )
             for file in submissions:
                 # form.submissions.append(file)
                 print("%s: %s" % (file["instanceId"], file["createdAt"]))
