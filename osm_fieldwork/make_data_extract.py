@@ -484,7 +484,7 @@ class FileClient(object):
         layer.SetAttributeFilter("tags->>'building' IS NOT NULL")
 
 
-if __name__ == "__main__":
+def main():
     choices = getChoices()
     
     parser = argparse.ArgumentParser(
@@ -579,3 +579,6 @@ if __name__ == "__main__":
         log.error("You need to supply either --overpass or --postgres")
 
         # logging.info("Wrote output data file to: %s" % outfile)
+
+if __name__ == "__main__":
+    main()
