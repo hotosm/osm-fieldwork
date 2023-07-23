@@ -51,6 +51,37 @@ have to do it. FMTM handles the creation of the data extract, as well
 as processing the data into a format suitable to edit with JOSM or
 QGIS. The FMTM backend is a FastAPI wrapped around this project.
 
+## Getting Started
+
+This project is available from PyPi.org, and can be installed like
+this:
+
+	pip install osm-fieldwork
+
+It contains multiple programs, each one that handles a specific part
+of the conversion process. Each program is a single class so it can be
+used as part of a FastAPI backend, but also runs standalone for
+debugging, and working offline. These are all terminal based, as the
+website frontend is the actual GUI.
+
+- json2osm
+	- Convert JSON from Central to OSM XML
+- csv2osm
+	- Convert CSV from Central to OSM XML
+- odk2csv
+	- Convert the ODK Instance to CSV
+- odk2geojson
+	- Convert the ODK Instance to GeoJson
+- odk_merge
+	- Conflate POIs from Collect with existing OSM data
+- odk_client
+	- Remotely control an ODK Central server
+
+You can also to run the terminal based programs from the source
+tree, which can be gotten from here:
+
+	git clone git@github.com:hotosm/osm-fieldwork.git
+
 ## Processing Submissions
 
 This section will focus on converting the JSON format, but the process
@@ -84,7 +115,7 @@ is already done, but any custom XLSForms will need to modify it to get
 a good conversion, or fix it in JOSM later. For a one-off project,
 like an import, I usually get lazy and fix it in JOSM. But for
 anything used several times, that gets old, so it's better to improve
-the config file. 
+the config file.
 
 To convert the JSON format file downloaded for ODK Central, run this
 program:
@@ -122,8 +153,8 @@ state, country, ect... You can also use the data extract from FMTM, as it
 covers the same area the data was collected in. FMTM allow you to
 download the data extract used for this task. Postgres works
 much faster, but the GeoJson data extract works too as the files per
-task are relativly small..
-	
+task are relativly small.
+
 	odk_merge.py Submissions.osm PG:"nepal" -b kathmanu.geojson
 	or
 	odk_merge.py Submissions.osm kathmandu.geojson
@@ -141,3 +172,80 @@ from remote mapping, so we'd also want to merge the tags from the
 collected data into the building way. Multiple shops within the same
 building remain as a POI in that building.
 
+There is much more detail on this program [here](odk_merge).
+
+# Utility Programs
+
+## Making basemaps
+
+Basemaps are very useful when using ODK Collect in areas where the map
+data is poor. Imagery is particular is very useful, as you can use
+that to select a location other than where you are standing. This
+project has a utility that makes basemaps from several sources. It
+builds a local tile store, so larger areas can be downloaded and in
+the field when offline, smaller basemaps can be made from the tile
+store. Since downloading map tiles is very time consuming, I usually
+download larger areas and let it download for a few days.
+
+	basemapper -s esri -b Pokara.geojson -z 8-15 -o pokara.mbtiles
+
+This command will download all the map tiles from
+[ESRI](https://www.esri.com) into an XYZ tile store for zoom levels 8
+to 15. Since downloading imagery is slow, I often download larger
+areas, and then use a subset of the tiles to make smaller
+basemaps. The mbtiles file can be manually loaded into [ODK
+Collect](https://docs.getodk.org/collect-intro) as a layer, and used
+to adjust the location of the POI when mapping.
+
+Since it often useful for navigation, basemapper can also produce a
+basemap from the same map tiles for
+[Osmand](https://osmand.net/). This is very useful when in areas with
+little map data, for example during a remote backcountry trip. This
+example downloads Bing imagery for Pokara, Nepal.
+
+basemapper -s bing -b Pokara.geojson -z 8-19 -o pokara.sqlitedb
+
+There is much more detail on this program [here](basemapper).
+
+## Converting for an Instance File
+
+### odk2osm.py, odk2geojson.py, odk2csv.py
+
+These programs read the XML format used by ODK Collect for Instance
+files. Since each submission has a separate Instance file, this takes
+a regular expression, and produces a single output file. This is only
+used when working offline, so it's possible to edit the recently
+collected data and update the map data. Very useful when working
+offline during big disasters.
+
+	odk2osm -i Highways Paths_2023-07-17\* 
+
+On your phone, you can find the instance files here:
+
+/sdcard/Android/data/org.odk.collect.android/files/projects/[UUID]/instances
+
+You can also manually update your data extracts by copying them to /sdcard/Android/data/org.odk.collect.android/files/projects/[UUID]/forms/[Form name]-media/
+
+And manually update the XForm by copying them to
+/sdcard/Android/data/org.odk.collect.android/files/projects/[UUID]/forms/
+
+### Managing ODK Central
+
+[ODK Central](https://docs.getodk.org/central-intro/ is the server
+side of ODK Collect. It's where XForms are downloaded from, and where
+submissions go after being sent by Collect. As there are a lot of
+options, this program is not very user friendly as it's primarily used
+as part of the backend for the FMTM project, and most people would
+just use the Central website.
+
+However, this can be useful for scripting the server. For example to
+list all the projects on a remote Central server:
+
+	odk_client -s projects
+
+And this lets you download all the submissions to project number 19
+and using the XLSForm for buildings.
+
+odk_client.py -v -i 19 -f buildings -x json
+
+There is much more detail on this program [here](odk_client).
