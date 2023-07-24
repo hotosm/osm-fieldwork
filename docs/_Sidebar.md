@@ -36,6 +36,8 @@
 
 ## Technical Deep Dives
 
+[Conflation](https://github.com/hotosm/osm-fieldwork/wiki/conflation)
+
 [External Data](https://github.com/hotosm/osm-fieldwork/wiki/externaldata)
 
 [XLS Forms](https://github.com/hotosm/osm-fieldwork/wiki/xlsforms)
