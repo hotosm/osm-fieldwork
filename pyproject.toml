@@ -25,7 +25,7 @@ dependencies = [
 ]
 requires-python = ">=3.9"
 readme = "README.md"
-# license = "GPL-3.0-only"
+license = "GPL-3.0-only"
 keywords = ["fmtm", "odk", "hot", "openstreetmap", "opendatakit"]
 classifiers = [
     "Topic :: Utilities",
@@ -50,9 +50,9 @@ test = [
     "pytest>=7.2.1",
 ]
 
-#[build-system]
-#requires = ["pdm-pep517>=1.0.0"]
-#build-backend = "pdm.pep517.api"
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
 
 [tool.pytest.ini_options]
 addopts = "-ra -q"
