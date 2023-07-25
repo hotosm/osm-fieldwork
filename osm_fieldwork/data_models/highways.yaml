@@ -2,7 +2,7 @@ select:
     - osm_id: id
     - version
 from:
-    - ways_poly
+    - ways_line
 where:
   tags:
     - { highway: not null }
