@@ -1,15 +1,3 @@
-# This section corrently isn't being used yet, but will be used to
-# test for tag completeness for some features.
-validate:
-  - highway:
-      - smoothness
-      - surface
-      - tracktype
-      - smoothness
-  - leisure:
-      - firepit
-      - picnic_table
-
 # This section is for simple tag translation. Sometimes the value from
 # the choices sheet of the XLSXForm is very close, but not an exact
 # match to an approved OSM tags. Many XLSXForms that used OMK tried
@@ -90,6 +78,7 @@ convert:
       - toilets: amenity=toilets
   - amenity:
       - coffee: amenity=cafe,cuisine=coffee_shop
+  - goverment: amenity
 
 # All of the data that goes in a different non-OSM file
 private:
@@ -174,36 +163,3 @@ multiple:
   - amenity_type
   - specialty
 
-# This section matches values to the correct keyword. Often a multiple
-# selection in the XLSXForm survey sheet may have values that don't
-# all share the same keyword. This corrects that.
-tags:
-  - leisure:
-      - firepit
-      - picnic_table
-      - fishing
-      - park
-      - resort
-  - tourism:
-      - picnic_table
-      - caravans
-      - camp_site
-      - camp_pitch
-      - viewpoint
-  - bear box: yes
-  - barbeque_grill: yes
-  - power_supply: yes
-  - path:
-      - sac_scale
-      - mtb:scale
-      - mtb:scale:imba
-  - internet_access:
-      - wlan
-      - cellular
-      - internet
-
-  - toilets:disposal:
-      - flush
-      - urinal
-      - squat
-      - seated

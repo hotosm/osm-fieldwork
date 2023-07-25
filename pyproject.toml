@@ -63,7 +63,7 @@ pythonpath = "osm_fieldwork"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.3.2"
+version = "0.3.3"
 version_files = [
     "pyproject.toml:version",
     "osm_fieldwork/__version__.py",

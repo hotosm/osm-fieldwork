@@ -221,6 +221,7 @@ class OdkMerge(object):
             version = int(result[0][2]) + 1
             attrs = {'id': int(result[0][0]), 'version': version}
             tags = result[0][1]
+            tags[f'old_{key}'] = value
             tags['fixme'] = "Probably a duplicate!"
             geom = mapping(shapely.from_wkt(result[0][3]))
             refs = list()
@@ -267,6 +268,7 @@ class OdkMerge(object):
             lon = coords.x
             attrs = {'id': int(result[0][0]), 'version': version, 'lat': lat, 'lon': lon}
             tags = result[0][1]
+            tags[f'old_{key}'] = value
             tags['fixme'] = "Probably a duplicate!"
             return {'attrs': attrs, 'tags': tags}
         return dict()
@@ -285,6 +287,7 @@ class OdkMerge(object):
                     version = int(result[0][2]) + 1
                     attrs = {'id': int(result[0][0]), 'version': version}
                     tags = result[0][1]
+                    # tags[f'old_{key}'] = value
                     tags['fixme'] = "Probably a duplicate!"
                     geom = mapping(shapely.from_wkt(result[0][3]))
                     return {'attrs': attrs, 'tags': tags}
@@ -297,6 +300,7 @@ class OdkMerge(object):
                         version = int(result[0][2]) + 1
                         attrs = {'id': int(result[0][0]), 'version': version}
                         tags = result[0][1]
+                        # tags[f'old_{key}'] = value
                         tags['fixme'] = "Probably a duplicate!"
                         geom = mapping(shapely.from_wkt(result[0][3]))
                     return {'attrs': attrs, 'tags': tags, 'refs': refs}

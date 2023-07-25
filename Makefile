@@ -17,18 +17,18 @@
 #
 
 PACKAGE := org.osm_fieldwork.py
-NAME := Osm-Fieldwork
-VERSION := 0.3.2
+NAME := osm-fieldwork
+VERSION := 0.3.3
 
 # Make a python package for pip
 pip:
 	zip -r $(NAME).zip .
 
-pip-install: pip
-	pip3 install $(NAME).zip
-
-pip-uninstall:
+uninstall:
 	pip3 uninstall $(NAME)
+
+install:
+	pip3 install -e .
 
 check:
 	pytest
