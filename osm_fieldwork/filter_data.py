@@ -46,7 +46,6 @@ class FilterData(object):
               ):
         """Read in the XLSForm and extract the data we want"""
         entries = pd.read_excel(filespec, sheet_name=[0, 1, 2])
-        
         title = entries[2]['form_title'].to_list()[0]
         extract = ""
         for entry in entries[0]['type']:
@@ -54,7 +53,9 @@ class FilterData(object):
                 continue
             if entry[:20] == "select_one_from_file":
                 extract = entry[21:]
-        log.info(f"Got data extract filename: \"{extract}\", title: \"{title}\"")
+                log.info(f"Got data extract filename: \"{extract}\", title: \"{title}\"")
+            else:
+                extract = "none"
         total = len(entries[1]['list_name'])
         index = 1
         while index < total:
@@ -103,6 +104,7 @@ class FilterData(object):
     def cleanData(self,
                   data
                   ):
+        """Filter out any data not in the data_model"""
         tmpfile = data
         if type(data) == str:
             outfile = open(f"new-{data}", "x")
@@ -122,6 +124,7 @@ class FilterData(object):
         for feature in indata['features']:
             properties = dict()
             for key, value in feature['properties'].items():
+                # log.debug(f"{key} = {value}")
                 if key in self.keep:
                     if key == 'tags':
                         for k, v in value.items():
