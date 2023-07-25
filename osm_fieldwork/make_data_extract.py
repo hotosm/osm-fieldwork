@@ -204,7 +204,7 @@ class DatabaseAccess(object):
         for table in tables:
             query = "SELECT "
             select = data['select']
-            if polygon:
+            if polygon or category == "highways":
                 centroid = "geom"
             else:
                 centroid = "ST_Centroid(geom)"
@@ -242,12 +242,15 @@ class DatabaseAccess(object):
         # sql = f"DROP VIEW IF EXISTS nodes_view;CREATE TEMP VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         sql = f"DROP VIEW IF EXISTS nodes_view;CREATE VIEW nodes_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         self.dbcursor.execute(sql)
-
+        sql = f"DROP VIEW IF EXISTS lines_view;CREATE VIEW lines_view AS SELECT * FROM ways_line WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
+        self.dbcursor.execute(sql)
         sql = f"DROP VIEW IF EXISTS relations_view;CREATE TEMP VIEW relations_view AS SELECT * FROM nodes WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         # self.dbcursor.execute(sql)
 
         if query.find(" ways_poly ") > 0:
             query = query.replace("ways_poly", "ways_view")
+        if query.find(" ways_line ") > 0:
+            query = query.replace("ways_line", "lines_view")
         elif query.find(" nodes ") > 0:
             query = query.replace("nodes", "nodes_view")
         features = list()
@@ -553,10 +556,10 @@ def main():
         outfile = args.geojson.lower()
 
     xlsfile = choices[args.category]
-    if args.postgres:
+    if args.postgres is not None:
         log.info("Using a Postgres database for the data source")
         pg = PostgresClient(args.dbhost, args.dbname)
-        if args.geojson:
+        if args.geojson is not None:
             extract = args.geojson
         else:
             infile = FilterData(xlsfile)
@@ -564,21 +567,21 @@ def main():
         pg.getFeatures(args.boundary, extract, args.polygon, args.category, xlsfile)
         log.info(f"Created {outfile} for {args.category}")
         # pg.cleanup(outfile)
-    elif args.overpass:
+    elif args.overpass is not None:
         log.info("Using Overpass Turbo for the data source")
         op = OverpassClient(outfile)
         clip = open(args.boundary, "r")
         geom = geojson.load(clip)
         #op.getFeatures(args.boundary, args.geojson, args.category)
         op.getFeatures(geom, args.geojson, xlsfile, args.category)
-    elif args.infile:
+    elif args.infile is not None:
         f = FileClient(args.infile)
         f.getFeatures(args.boundary, args.geojson, args.category)
         log.info("Using file %s for the data source" % args.infile)
     else:
         log.error("You need to supply either --overpass or --postgres")
 
-        # logging.info("Wrote output data file to: %s" % outfile)
+    # logging.info("Wrote output data file to: %s" % outfile)
 
 if __name__ == "__main__":
     main()
