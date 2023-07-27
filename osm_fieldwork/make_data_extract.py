@@ -186,7 +186,7 @@ class DatabaseAccess(object):
             elif table == "relations":
                 tables.append("line")
         features["geometryType"] = tables
-        if not poly:
+        if not poly and category != 'highways':
             features["centroid"] = "true"
         return json.dumps(features)
 
