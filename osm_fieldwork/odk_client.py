@@ -186,14 +186,14 @@ def main():
             if type(forms) != list:
                 log.error(forms['message'])
                 quit()
-                ordered = sorted(forms, key=lambda item: item.get("xmlFormId"))
-                for form in ordered:
-                    print("\t%r: %r" % (form["xmlFormId"], form["name"]))
-                    # if args.project == "submissions":
-                    #     submit = project.listSubmissions(args.id, args.form)
-                    #     # ordered = sorted(submit, key=lambda item: item.get('xmlFormId'))
-                    #     for data in submit:
-                    #         print("\t%s by user %s" % (data['instanceId'], data['submitterId']))
+            ordered = sorted(forms, key=lambda item: item.get("xmlFormId"))
+            for form in ordered:
+                print("\t%r: %r" % (form["xmlFormId"], form["name"]))
+                # if args.project == "submissions":
+                #     submit = project.listSubmissions(args.id, args.form)
+                #     # ordered = sorted(submit, key=lambda item: item.get('xmlFormId'))
+                #     for data in submit:
+                #         print("\t%s by user %s" % (data['instanceId'], data['submitterId']))
         elif args.project == "app-users":
             users = project.listAppUsers(args.id)
             logging.info("There are %d app users on this ODK Central server" % len(users))
