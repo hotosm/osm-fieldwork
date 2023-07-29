@@ -1,11 +1,12 @@
 select:
-    osm_id: id
+    - osm_id: id
+    - version
 from:
-    - ways_poly
     - ways_line
-    - relations
 where:
   tags:
     - { waterway: not null }
 keep:
-  - waterway
+    - name
+    - intermittent
+
