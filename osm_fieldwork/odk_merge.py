@@ -343,7 +343,8 @@ class OdkMerge(object):
         log.debug(f"OdkMerge::conflateData() called! {len(odkdata)} features")
 
         # A chunk is a group of threads
-        chunk =  round(len(odkdata)/cores)
+        chunk = round(len(odkdata) / cores) if round(len(odkdata) / cores) > 0 else 1
+
         cycle = range(0, len(odkdata), chunk)
         # Chop the data into a subset for each thread
         newdata = list()
