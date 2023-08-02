@@ -37,7 +37,7 @@ from datetime import datetime
 # Instantiate logger
 log = logging.getLogger(__name__)
 
-def moon():
+def main():
     parser = argparse.ArgumentParser(
         description="Convert ODK XML instance file to GeoJson"
     )
