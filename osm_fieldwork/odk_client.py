@@ -27,6 +27,7 @@ from pathlib import Path
 from sys import argv
 from geojson import Feature, FeatureCollection, dump
 from datetime import datetime
+from codetiming import Timer
 
 
 # Set log level
@@ -156,6 +157,8 @@ def main():
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
+    timer = Timer(text="odk_client() took {seconds:.0f}s")
+    timer.start()
     # Commands to the ODK Central server, which gets data that applies
     # to all projects on the server.
     if args.server:
@@ -421,6 +424,7 @@ def main():
                 users = central.listAppUsers(args.id)
                 for user in users:
                     result = appuser.updateRole(args.id, args.form, role, user["id"])
+    timer.stop()
 
 if __name__ == "__main__":
     main()
