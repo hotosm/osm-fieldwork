@@ -20,7 +20,6 @@ import logging
 import sys
 import os
 from sys import argv
-from osgeo import ogr
 from osm_fieldwork.osmfile import OsmFile
 from geojson import Point, Feature, FeatureCollection, dump, Polygon
 import geojson
