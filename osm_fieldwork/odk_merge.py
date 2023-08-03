@@ -345,7 +345,7 @@ class OdkMerge(object):
         # A chunk is a group of threads
         chunk = round(len(odkdata) / cores)
 
-        cycle = range(0, len(odkdata), chunk)
+        # cycle = range(0, len(odkdata), chunk)
 
         # Chop the data into a subset for each thread
         newdata = list()
