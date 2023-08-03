@@ -173,7 +173,7 @@ class JsonDump(Convert):
         return all_tags
 
     def parse(self,
-              filespec: str,
+              filespec: str = None,
               data: str = None
               ):
         """Parse the JSON file from ODK Central and convert it to a data structure"""
@@ -188,8 +188,10 @@ class JsonDump(Convert):
             else:
                 log.error("Need to specify a JSON or GeoJson file!")
                 return all_tags
-        else:
+        elif type(data) == str:
             reader = geojson.loads(data)
+        elif type(data) == list:
+            reader = data
         
         total = list()
         # JSON files from Central use value as the keyword, whereas
@@ -205,6 +207,13 @@ class JsonDump(Convert):
             tags = dict()
             if 'geometry' in row:
                 tags['geometry'] = row['geometry']
+            else:
+                pat = re.compile("[\-0-9.]*, [0-9.-]*, [0-9.]*")
+                gps = re.findall(pat, str(row))
+                # If geopoint warmup is used, there will be two matches, we only
+                # want the second one, which is the location.
+                for coords in gps:
+                    tags['geometry'] = coords
             if 'properties' in row:
                 indata = row['properties'] # A GeoJson formatted file
             else:
@@ -307,7 +316,10 @@ class JsonDump(Convert):
                 # log.debug(f"ATTRS: {attrs}")
 
             if key is not None and len(key) > 0 and key in attributes:
-                attrs[key] = value
+                if key == 'id' and value.find('/') > 0:
+                    attrs['id'] = value.split('/')[1]
+                else:
+                    attrs[id] = value
                 log.debug("Adding attribute %s with value %s" % (key, value))
             else:
                 if key in self.multiple:
