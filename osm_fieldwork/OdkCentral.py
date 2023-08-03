@@ -294,6 +294,16 @@ class OdkProject(OdkCentral):
         self.data = result.json()
         return self.data
 
+    def getFullDetails(self,
+                   projectId: int
+                   ):
+        """Get extended details for a project on an ODK Central server"""
+        url = f"{self.base}projects/{projectId}"
+        self.session.headers.update({"X-Extended-Metadata": "true"})
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
+        self.data = result.json()
+        return self.data
+
     def dump(self):
         """Dump internal data structures, for debugging purposes only"""
         super().dump()
