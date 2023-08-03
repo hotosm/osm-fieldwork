@@ -337,46 +337,6 @@ class OdkProject(OdkCentral):
         timer.stop()
         return newdata
 
-    # def to_geojson(self):
-    #     ignore = ('__id',
-    #               'start',
-    #               'end',
-    #               'today',
-    #               'phonenumber',
-    #               'deviceid',
-    #               'username',
-    #               'email',
-    #               'warmup',
-    #               'meta',
-    #               '__system'
-    #               )
-    #     features = list()
-    #     if len(self.submissions) == 0:
-    #         log.error("There are no submissions yet!")
-    #         return None
-    #     pat = re.compile("[\-0-9.]*, [0-9.-]*, [0-9.]*")
-    #     for feature in self.submissions:
-    #         poi = Point()
-    #         coords = ""
-    #         tags = dict()
-    #         gps = re.findall(pat, str(feature))
-    #         # If geopoint warmup is used, there will be two matches, we only
-    #         # want the second one, which is the location.
-    #         for coords in gps:
-    #             tmp = coords.split(',')
-    #             lat = float(tmp[1])
-    #             lon = float(tmp[0])
-    #             poi = Point(lon, lat)
-    #         for key in feature.keys():
-    #             if key in ignore:
-    #                 continue
-    #             if feature[key] is not None:
-    #                 tags.update(feature[key])
-    #         print(f"FIXME: {len(coords)} {tags.keys()}")
-    #         features.append(Feature(geometry=poi, properties=tags))
-    #     collection = FeatureCollection(features)
-    #     return collection
-
     def listAppUsers(self,
                      projectId: int
                      ):
