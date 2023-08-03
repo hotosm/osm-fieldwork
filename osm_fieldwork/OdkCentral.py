@@ -34,6 +34,14 @@ from datetime import datetime
 from base64 import b64encode
 import segno
 import zlib
+import re
+from shapely.geometry import Point
+from geojson import Feature, FeatureCollection, dump
+from cpuinfo import get_cpu_info
+from time import sleep
+from codetiming import Timer
+import concurrent.futures
+
 
 # Set log level for urllib
 log_level = os.getenv("LOG_LEVEL", default="INFO")
@@ -41,6 +49,28 @@ logging.getLogger("urllib3").setLevel(log_level)
 
 log = logging.getLogger(__name__)
 
+def downloadThread(
+        project_id: int,
+        xforms: list,
+):
+    """Download a list of submissions from ODK Central"""
+    timer = Timer(text="downloadThread() took {seconds:.0f}s")
+    timer.start()
+    data = list()
+    # log.debug(f"downloadThread() called! {len(xforms)} xforms")
+    for task in xforms:
+        form = OdkForm()
+        submissions = form.getSubmissions(project_id, task['xmlFormId'], 0, False, True)
+        subs = form.listSubmissions(project_id, task['xmlFormId'])
+        if type(subs) == dict:
+            log.error(f"{subs['message']}, {subs['code']} ")
+            continue
+        # log.debug(f"There are {len(subs)} submissions for {task['xmlFormId']}")
+        if len(subs) > 0:
+            data += subs
+    # log.debug(f"There are {len(xforms)} Xforms, and {len(submissions)} submissions total")
+    timer.stop()
+    return data
 
 class OdkCentral(object):
     def __init__(self,
@@ -72,7 +102,7 @@ class OdkCentral(object):
         # so we don't have to supply this all the time. This is only used
         # when odk_client is used, and no parameters are passed in.
         if not self.url:
-            log.debug("Configuring ODKCentral from file .odkcentral")
+            # log.debug("Configuring ODKCentral from file .odkcentral")
             home = os.getenv("HOME")
             config = ".odkcentral"
             filespec = home + "/" + config
@@ -96,7 +126,7 @@ class OdkCentral(object):
             log.debug(f"ODKCentral configuration parsed: {self.url}")
         # Base URL for the REST API
         self.version = "v1"
-        log.debug(f"Using {self.version} API")
+        # log.debug(f"Using {self.version} API")
         self.base = self.url + "/" + self.version + "/"
 
         # Authentication data
@@ -107,7 +137,10 @@ class OdkCentral(object):
 
         # These are just cached data from the queries
         self.projects = dict()
-        self.users = None
+        self.users = list()
+        # The number of threads is based on the CPU cores
+        info = get_cpu_info()
+        self.cores = info['count']
 
     def authenticate(self,
                      url:str = None,
@@ -248,8 +281,8 @@ class OdkProject(OdkCentral):
 
     def __init__(self, url=None, user=None, passwd=None):
         super().__init__(url, user, passwd)
-        self.forms = None
-        self.submissions = None
+        self.forms = list()
+        self.submissions = list()
         self.data = None
         self.appusers = None
         self.id = None
@@ -267,6 +300,82 @@ class OdkProject(OdkCentral):
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.forms = result.json()
         return self.forms
+
+    def getAllSubmissions(self,
+                        project_id: int,
+                        ):
+        """Fetch a list of submissions in a project on an ODK Central server."""
+        timer = Timer(text="getAllSubmissions() took {seconds:.0f}s")
+        timer.start()
+        xforms = self.listForms(project_id)
+        chunk = round(len(xforms) / self.cores) if round(len(xforms) / self.cores) > 0 else 1
+        cycle = range(0, len(xforms), chunk)
+        future = None
+        result = None
+        previous = 0
+
+        # for current in cycle:
+        #     if previous == current:
+        #         continue
+        #     result = downloadThread(project_id, xforms[previous:current])
+        #     print(f"RESULT: {result}")
+
+        newdata = list()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.cores) as executor:
+            futures = list()
+            for current in cycle:
+                if previous == current:
+                    continue
+                result = executor.submit(downloadThread, project_id, xforms[previous:current])
+                previous = current
+                futures.append(result)
+            for future in concurrent.futures.as_completed(futures):
+                log.debug(f"Waiting for thread to complete..")
+                data = future.result(timeout=10)
+                if len(data) > 0:
+                    newdata += data
+        timer.stop()
+        return newdata
+
+    # def to_geojson(self):
+    #     ignore = ('__id',
+    #               'start',
+    #               'end',
+    #               'today',
+    #               'phonenumber',
+    #               'deviceid',
+    #               'username',
+    #               'email',
+    #               'warmup',
+    #               'meta',
+    #               '__system'
+    #               )
+    #     features = list()
+    #     if len(self.submissions) == 0:
+    #         log.error("There are no submissions yet!")
+    #         return None
+    #     pat = re.compile("[\-0-9.]*, [0-9.-]*, [0-9.]*")
+    #     for feature in self.submissions:
+    #         poi = Point()
+    #         coords = ""
+    #         tags = dict()
+    #         gps = re.findall(pat, str(feature))
+    #         # If geopoint warmup is used, there will be two matches, we only
+    #         # want the second one, which is the location.
+    #         for coords in gps:
+    #             tmp = coords.split(',')
+    #             lat = float(tmp[1])
+    #             lon = float(tmp[0])
+    #             poi = Point(lon, lat)
+    #         for key in feature.keys():
+    #             if key in ignore:
+    #                 continue
+    #             if feature[key] is not None:
+    #                 tags.update(feature[key])
+    #         print(f"FIXME: {len(coords)} {tags.keys()}")
+    #         features.append(Feature(geometry=poi, properties=tags))
+    #     collection = FeatureCollection(features)
+    #     return collection
 
     def listAppUsers(self,
                      projectId: int
@@ -361,14 +470,17 @@ class OdkForm(OdkCentral):
         return result
 
     def listSubmissions(self,
-                        projectId,
+                        projectId: int,
                         xform: str
                         ):
         """Fetch a list of submission instances for a given form."""
-        url = f"{self.base}projects/{projectId}/forms/{xform}/submissions"
+        url = f"{self.base}projects/{projectId}/forms/{xform}.svc/Submissions"
         result = self.session.get(url, auth=self.auth, verify=self.verify)
-        self.submissions = result.json()
-        return self.submissions
+        if result.ok:
+            self.submissions = result.json()
+            return self.submissions['value']
+        else:
+            return list()
 
     def listAssignments(self,
                         projectId: int,
@@ -393,10 +505,10 @@ class OdkForm(OdkCentral):
         
         if json:
             url = self.base + f"projects/{projectId}/forms/{xform}.svc/Submissions"
-            filespec = f"/tmp/{xform}_{timestamp}.json"
+            filespec = f"{xform}_{timestamp}.json"
         else:
             url = self.base + f"projects/{projectId}/forms/{xform}/submissions"
-            filespec = f"/tmp/{xform}_{timestamp}.csv"
+            filespec = f"{xform}_{timestamp}.csv"
 
         if submission_id:
             url = url + f"('{submission_id}')"
@@ -415,8 +527,8 @@ class OdkForm(OdkCentral):
                 file.close()
             return result.content
         else:
-            log.error(f'Submissions for {projectId}, Form {xform}' + "doesn't exist")
-            return None
+            log.error(f'Submissions for {projectId}, Form {xform}' + " doesn't exist")
+            return list()
 
     def getSubmissionMedia(self,
                            projectId: int,
@@ -556,7 +668,6 @@ class OdkForm(OdkCentral):
             url = f"{self.base}projects/{projectId}/forms/{xform}/draft"
         else:
             url = f"{self.base}projects/{projectId}/forms/{xform}"
-        print(url)
         result = self.session.delete(url, auth=self.auth, verify=self.verify)
         return result
 
@@ -584,7 +695,7 @@ class OdkForm(OdkCentral):
         """Dump internal data structures, for debugging purposes only"""
         # super().dump()
         entries = len(self.media)
-        print("Form has %d attachements" % entries)
+        print("Form has %d attachments" % entries)
         for form in self.media:
             if "name" in form:
                 print("Name: %s" % form["name"])
