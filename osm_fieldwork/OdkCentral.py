@@ -360,6 +360,15 @@ class OdkForm(OdkCentral):
         self.data = result.json()
         return result
 
+    def getFullDetails(self,
+                       projectId: int,
+                       xform: str):
+        url = f"{self.base}projects/{projectId}/forms/{xform}"
+        self.session.headers.update({"X-Extended-Metadata": "true"})
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
+        self.data = result.json()
+        return result
+
     def listSubmissions(self,
                         projectId,
                         xform: str
