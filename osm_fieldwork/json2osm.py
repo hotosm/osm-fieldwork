@@ -34,6 +34,7 @@ from pathlib import Path
 #import pandas as pd
 import math
 import re
+import flatdict
 
 
 # set log level for urlib
@@ -90,10 +91,16 @@ class JsonDump(Convert):
             feature["id"] = feature["tags"]["id"]
         if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
             return None
+        if 'user' in feature['tags'] and 'user' not in feature["attrs"]:
+            feature["attrs"]['user'] = feature['tags']['user']
+            del feature['tags']['user']
+        if 'uid' in feature['tags'] and 'uid' not in ["attrs"]:
+            feature["attrs"]['uid'] = feature['tags']['uid']
+            del feature['tags']['uid']
         if "refs" not in feature:
-            out += self.osm.createNode(feature)
+            out += self.osm.createNode(feature, True)
         else:
-            out += self.osm.createWay(feature)
+            out += self.osm.createWay(feature, True)
         self.osm.write(out)
 
     def finishOSM(self):
@@ -127,50 +134,6 @@ class JsonDump(Convert):
             features.append(Feature(geometry=poi, properties=props))
         collection = FeatureCollection(features)
         dump(collection, self.json)
-
-    def getAllTags(self,
-                   data
-                   ):
-        all_tags = dict()
-        tags = dict()
-        if type(data) == dict:
-            for k, v in data.items():
-                if type(v) == dict:
-                    # log.debug(f"Processing tag {k} = {v}")
-                    for k1, v1 in v.items():
-                        # log.debug(f"Processing sub tag {k} = {v}")
-                        # tags.update(self.getAllTags(v))
-                        if type(v1) == dict:
-                            for i, j in v1.items():
-                                if type(j) == dict:
-                                    # FIXME: this should handle more than one
-                                    # but so far I've only it to be accuracy, no other
-                                    # tags
-                                    k2 = list(j.keys())[0]
-                                    tags[k2] = list(j.values())[0]
-                                else:
-                                    tags[i] = j
-                        else:
-                            tags[k1] = v1
-                        # log.debug(f"TAGS: {tags}")
-                else:
-                    if v:
-                        # if k in self.saved:
-                        #     if str(v) == 'nan' or len(v) == 0:
-                        #         log.debug(f"FIXME: {k} {v}")
-                        #         val = self.saved[k]
-                        #         if val and len(v) == 0:
-                        #             log.warning(f"Using last saved value for \"{k}\"! Now \"{val}\"" )
-                        #             value = val
-                        #         else:
-                        #             self.saved[k] = value
-                        #             log.debug(f"Updating last saved value for \"{k}\" with \"{value}\"")
-                        if type(v) != str:
-                            tags[k] = str(v)
-                        else:
-                            tags[k] = escape(v)
-                all_tags.update(tags)
-        return all_tags
 
     def parse(self,
               filespec: str = None,
@@ -218,45 +181,32 @@ class JsonDump(Convert):
                 indata = row['properties'] # A GeoJson formatted file
             else:
                 indata = row    # A JOSM file from ODK Central
-            for keyword, value in indata.items():
-                # There's many extraneous fields in the input file which we don't need.
-                base = keyword.lower()
-                if (
-                    base is None
-                    or value is None
-                    or len(value) == 0
-                ):
+
+            # flatten all the groups into a single data structure
+            flattened = flatdict.FlatDict(row)
+            for k, v in flattened.items():
+                last = k.rfind(':') + 1
+                key = k[last:]
+                # log.debug(f"Processing tag {key} = {v}")
+                # names and comments may have spaces, otherwise
+                # it's from a select_multiple
+                pat = re.compile("name[:a-z]*")
+                names = re.findall(pat, key)
+                if len(names) > 0:
+                    for name in names:
+                        tags[name] = v
                     continue
-                if keyword is None or len(keyword) == 0:
+                if key == 'comment':
+                    tags[key] = v
+                # a JSON file from ODK Central always uses coordinates as
+                # the keyword
+                if key == 'coordinates':
+                    if type(v) == list:
+                        lat = v[1]
+                        lon = v[0]
+                        tags['geometry'] = f"{lat} {lon}"
                     continue
-                if type(value) == str:
-                    if keyword not in self.ignore:
-                        continue
-                    items = self.convertEntry(keyword, value)
-                    if items is not None and tags is not None:
-                        tags.update(items)
-                    else:
-                        continue
-                else:
-                    alltags = self.getAllTags(value)
-                    for k, v in alltags.items():
-                        if v:
-                            items = dict()
-                            if type(v) == dict:
-                                v1 = alltags[k]
-                                if len(v1) > 1:
-                                    log.warning("Got more than 1 result! {v1}")
-                                    v2 = v1[v1.keys()]
-                                    items = self.convertEntry(k, v2)
-                            else:
-                                items = self.convertEntry(k, v)
-                                #    for entry in items:
-                                #        for k, v in entry.items():
-                                #            tags[k] = v
-                                #    else:
-                                #tags[k1] = v1
-                        if items is not None:
-                            tags.update(items)
+                tags[key] = v
             total.append(tags)
         return total
 
@@ -315,35 +265,36 @@ class JsonDump(Convert):
                 attrs["lon"] = lon
                 # log.debug(f"ATTRS: {attrs}")
 
-            if key is not None and len(key) > 0 and key in attributes:
-                if key == 'id' and value.find('/') > 0:
-                    attrs['id'] = value.split('/')[1]
-                else:
-                    attrs[id] = value
-                log.debug("Adding attribute %s with value %s" % (key, value))
-            else:
-                if key in self.multiple:
-                    for item in value:
-                        if key in item:
-                            for entry in item[key].split():
-                                vals = self.getValues(key)
-                                if entry in vals:
-                                    if vals[entry].find("="):
-                                        tmp = vals[entry].split("=")
-                                        tags[tmp[0]] = tmp[1]
-                                else:
-                                    tags[entry] = "yes"
-                    continue
+            # Some tags are actually attributes
+            # print(f"FIXME: {key} {key in attributes}")
+            # if key in self.multiple:
+            #     for item in value:
+            #         if key in item:
+            #             for entry in item[key].split():
+            #                 vals = self.getValues(key)
+            #                 if entry in vals:
+            #                     if vals[entry].find("="):
+            #                         tmp = vals[entry].split("=")
+            #                         tags[tmp[0]] = tmp[1]
+            #                 else:
+            #                     tags[entry] = "yes"
+            #     continue
 
-                if value is not None and value != "no" and value != "unknown":
-                    if key == "track" or key == "geoline":
-                        refs.append(tag)
-                        log.debug("Adding reference %s" % tag)
-                    elif len(str(value)) > 0:
-                        if self.privateData(key):
-                            priv[key] = value
-                        else:
-                            tags[key] = value
+            if value is not None and value != "no" and value != "unknown":
+                if key == "track" or key == "geoline":
+                    refs.append(tag)
+                    log.debug("Adding reference %s" % tag)
+                elif len(str(value)) > 0:
+                    if self.privateData(key):
+                        priv[key] = value
+                    else:
+                        item = self.convertEntry(key, value)
+                        if item is not None and type(item) == dict:
+                            tags.update(item)
+                        elif type(item) == list:
+                            for entry in item:
+                                tags.update(entry)
+
             if len(tags) > 0:
                 if 'geometry' in tags:
                     del tags['geometry']
