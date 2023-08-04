@@ -301,6 +301,7 @@ class OdkProject(OdkCentral):
         self.forms = result.json()
         return self.forms
 
+
     def getAllSubmissions(self,
                         project_id: int,
                         ):
@@ -308,8 +309,9 @@ class OdkProject(OdkCentral):
         timer = Timer(text="getAllSubmissions() took {seconds:.0f}s")
         timer.start()
         xforms = self.listForms(project_id)
-        chunk = round(len(xforms) / self.cores) if round(len(xforms) / self.cores) > 0 else 1
-        cycle = range(0, len(xforms), chunk)
+        chunk = round(len(xforms) / self.cores) if round(len(xforms) / self.cores) > 0 else 1        
+        last_slice = len(xforms) if len(xforms) % chunk == 0 else len(xforms) - 1
+        cycle = range(0, last_slice + chunk, chunk)
         future = None
         result = None
         previous = 0
@@ -337,6 +339,7 @@ class OdkProject(OdkCentral):
                     newdata += data
         timer.stop()
         return newdata
+
 
     def listAppUsers(self,
                      projectId: int
