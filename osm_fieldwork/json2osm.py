@@ -208,7 +208,7 @@ class JsonDump(Convert):
             if 'geometry' in row:
                 tags['geometry'] = row['geometry']
             else:
-                pat = re.compile("[\-0-9.]*, [0-9.-]*, [0-9.]*")
+                pat = re.compile("[-0-9.]*, [0-9.-]*, [0-9.]*")
                 gps = re.findall(pat, str(row))
                 # If geopoint warmup is used, there will be two matches, we only
                 # want the second one, which is the location.
