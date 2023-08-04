@@ -314,6 +314,7 @@ class OdkProject(OdkCentral):
         result = None
         previous = 0
 
+        # single threaded for easier debugging
         # for current in cycle:
         #     if previous == current:
         #         continue
