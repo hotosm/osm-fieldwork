@@ -49,7 +49,6 @@ convert:
       - cemetery: amenity=grave_yard
       - cremation: amenity=crematorium
   - xid: id
-  - camptype: tourism
   - food: amenity
   - brewery: craft=brewery
   - housing: building
@@ -100,6 +99,7 @@ private:
   - lateral_material
   - lateral_system
   - access_roof
+  - updatedat
 
 # All of these tags are in the CSV file, and can be ignored
 ignore:
@@ -110,7 +110,6 @@ ignore:
   - accuracy
   - meta
   - __system
-  - attachmentsExpected
   - status
   - reviewState
   - formVersion
@@ -131,7 +130,6 @@ ignore:
   - image
   - phonenumber
   - detail
-  - what_are_you_mapping
   - highway_type
   - waterpoint_img
   - enum_name
