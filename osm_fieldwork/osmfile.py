@@ -292,6 +292,11 @@ class OsmFile(object):
                 logging.warning("No data in this instance")
                 return False
             field = doc["osm"]
+
+            if "node" not in field:
+                logging.warning("No nodes in this instance")
+                return False
+
         if type(field["node"]) == dict:
             attrs = dict()
             tags = dict()
