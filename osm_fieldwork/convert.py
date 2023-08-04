@@ -81,19 +81,19 @@ class Convert(YamlFile):
                     keyword: str
                     ):
         """See is a keyword is in the private data category"""
-        return keyword in self.private
+        return keyword.lower() in self.private
 
     def convertData(self,
                     keyword: str
                     ):
         """See is a keyword is in the convert data category"""
-        return keyword in self.convert
+        return keyword.lower() in self.convert
 
     def ignoreData(self,
                    keyword: str
                    ):
         """See is a keyword is in the convert data category"""
-        return keyword in self.ignore
+        return keyword.lower() in self.ignore
 
     def getKeyword(self,
                    value: str
@@ -121,53 +121,44 @@ class Convert(YamlFile):
                      value: str
                      ):
         """Convert a tag and value from the ODK represention to an OSM one"""
-        #all = list()
+        all = list()
 
         # If it's not in any conversion data, pass it through unchanged.
-        if tag in self.ignore:
-            # logging.debug(f"FIXME: Ignoring {tag}")
+        if tag.lower() in self.ignore:
+            logging.debug(f"FIXME: Ignoring {tag}")
             return None
+        low = tag.lower()
         if (
-            tag not in self.convert
-            and tag not in self.ignore
-            and tag not in self.private
+            low not in self.convert
+            and low not in self.ignore
+            and low not in self.private
         ):
             return {tag: value}
 
-        newtag = None
-        newval = None
+        newtag = tag.lower()
+        newval = value
         # If the tag is in the config file, convert it.
-        if self.convertData(tag):
-            newtag = self.convertTag(tag)
+        if self.convertData(newtag):
+            newtag = self.convertTag(newtag)
             if newtag != tag:
                 logging.debug(f"Converted Tag for entry {tag} to {newtag}")
 
-        if newtag is None:
-            newtag = tag
         # Truncate the elevation, as it's really long
         if newtag == "ele":
             value = value[:7]
         newval = self.convertValue(newtag, value)
-        if newval != value:
-            logging.debug("Converted Value for entry '%s' to '%s'" % (value, newval))
-            for i in newval:
-                key = list(i.keys())[0]
-                newtag = key
-                newval = i[key]
-                #all.append({newtag: newval})
-        #else:
-        #    all.append({newtag: newval})
-
-        # if newtag not in self.tags:
-        #     tmp = { newtag: None }
-        #     key = list()
-        #     all.append(tmp)
-        # else:
-        #     val = self.tags[newtag]
-        #     key = list(val.keys())[0]
-        #     logging.debug("Converted Value for entry %s to %s" % (tag, value))
-        #     # all = self.Value(tag, value)
-        return {newtag: newval}
+        logging.debug("Converted Value for entry '%s' to '%s'" % (value, newval))
+        # there can be multiple new tag/value pairs for some values from ODK
+        if type(newval) == str:
+            all.append({newtag: newval})
+        elif type(newval) == list:
+            for entry in newval:
+                if type(entry) == str:
+                    all.append({newtag: newval})
+                elif type(entry) == dict:
+                    for k, v in entry.items():
+                        all.append({k: v})
+        return all
 
     def convertValue(self,
                      tag: str,
@@ -208,8 +199,9 @@ class Convert(YamlFile):
                    tag: str
                    ):
         """Convert a single tag"""
-        if tag in self.convert:
-            newtag = self.convert[tag]
+        low = tag.lower()
+        if low in self.convert:
+            newtag = self.convert[low]
             if type(newtag) is str:
                 logging.debug("\tTag '%s' converted to '%s'" % (tag, newtag))
                 tmp = newtag.split("=")
@@ -218,13 +210,13 @@ class Convert(YamlFile):
             elif type(newtag) is list:
                 logging.error("FIXME: list()")
                 # epdb.st()
-                return tag
+                return low
             elif type(newtag) is dict:
                 # logging.error("FIXME: dict()")
-                return tag
-            return newtag
+                return low
+            return newtag.lower()
         else:
-            return tag
+            return low
 
     def dump(self):
         """Dump the contents of the yaml file"""
