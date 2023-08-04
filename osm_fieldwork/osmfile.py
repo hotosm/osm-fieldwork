@@ -292,6 +292,11 @@ class OsmFile(object):
                 logging.warning("No data in this instance")
                 return False
             field = doc["osm"]
+
+            if "node" not in field:
+                logging.warning("No nodes in this instance")
+                return False
+
         if type(field["node"]) == dict:
             attrs = dict()
             tags = dict()
@@ -299,8 +304,12 @@ class OsmFile(object):
                 if k[0] == '@':
                     attrs[k[1:]] = v
                 else:
-                    for pair in field["node"]['tag']:
-                        tags[pair['@k']] = pair['@v']
+                    if type(field["node"]['tag']) == dict:
+                        tags[field["node"]['tag']["@k"]] = field["node"]['tag']["@v"].strip()
+                    else:
+                        for pair in field['node']['tag']:
+                            tags[pair['@k']] = pair['@v']
+
             node = {"attrs": attrs, "tags": tags}
             self.data[node["attrs"]["id"]] = node
         else:
