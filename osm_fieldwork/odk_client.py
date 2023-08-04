@@ -166,6 +166,12 @@ def main():
         # central.authenticate()
         if args.server == "projects":
             projects = central.listProjects()
+            if not projects:
+                projects = list()
+            elif 'message' in projects:
+                log.error(f"{projects['message']}, {projects['code']} ")
+                quit()
+
             print("There are %d projects on this ODK Central server" % len(projects))
             ordered = sorted(projects, key=lambda item: item.get("id"))
             for project in ordered:
@@ -200,8 +206,7 @@ def main():
                 quit()
             ordered = sorted(forms, key=lambda item: item.get("xmlFormId"))
             for form in ordered:
-                # print("\t%r: %r" % (form["xmlFormId"], form["name"]))
-                print("\t%r" % (form["name"]))
+                print("\t%r: %r" % (form["xmlFormId"], form["name"]))
 
         elif args.project == "submissions":
             submissions = project.getAllSubmissions(args.id)
