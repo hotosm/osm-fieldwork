@@ -20,8 +20,8 @@ dependencies = [
     "shapely>=1.8.5",
     "overpy>=0.6",
     "thefuzz>=0.19.0",
-    "haversine>=2.8.0"
-
+    "haversine>=2.8.0",
+    "flatdict>=4.0.1"
 ]
 requires-python = ">=3.9"
 readme = "README.md"
