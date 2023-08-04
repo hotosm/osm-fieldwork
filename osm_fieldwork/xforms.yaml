@@ -10,22 +10,14 @@
 # data we need to handle converting the tag name back to the colon
 # version for OSM.
 convert:
-  # From the Saint Lucia XForm
-  - _record_your_current_location_altitude: ele
-  - Record_your_current_location-Longitude: lon
-  - Record_your_current_location-Latitide: lat
-  # Other forms
   - camptype: tourism
   - openfire: leisure=firepit
   - latitude: lat
   - longitude: lon
   - altitude: ele
   - submitterid: uid
-  - submitterId: uid
   - submittername: user
-  - submitterName: user
   - submissiondate: timestamp
-  - submissionDate: timestamp
   - comment: note
   - view: viewpoint
   - cell: cellular
@@ -135,7 +127,6 @@ ignore:
   - end
   - today
   - status
-  - instanceid
   - audio
   - image
   - phonenumber
@@ -156,7 +147,7 @@ ignore:
   - retail_menu
   - government_menu
   - note
-  - instanceID
+  - instanceid
 
 multiple:
   - healthcare
