@@ -299,8 +299,12 @@ class OsmFile(object):
                 if k[0] == '@':
                     attrs[k[1:]] = v
                 else:
-                    for pair in field["node"]['tag']:
-                        tags[pair['@k']] = pair['@v']
+                    if type(field["node"]['tag']) == dict:
+                        tags[field["node"]['tag']["@k"]] = field["node"]['tag']["@v"].strip()
+                    else:
+                        for pair in field['node']['tag']:
+                            tags[pair['@k']] = pair['@v']
+
             node = {"attrs": attrs, "tags": tags}
             self.data[node["attrs"]["id"]] = node
         else:
