@@ -46,7 +46,7 @@ def test_file():
     odk = OdkMerge(args.osm)
     # Although the code is multi-threaded, we can call the function that
     # does all the work directly without threading. Easier to debug this qay.
-    data = conflateThread(osmdata, odk)
+    data = conflateThread(osmdata, odk, 0)
     # There are 8 features in the test data
     if len(data) == 8:
         passes += 1
@@ -65,7 +65,7 @@ def test_db():
     passes = 0
     # this database always exists on this developer's machine
     odk = OdkMerge("PG:colorado", args.boundary)
-    if odk.dbcursor is not None:
+    if odk.postgres is not None:
         passes += 1
     else:
         return
@@ -89,7 +89,7 @@ def test_db():
     odk = OdkMerge(args.database, args.boundary)
     # Although the code is multi-threaded, we can call the function that
     # does all the work directly without threading. Easier to debug this way.
-    data = conflateThread(osmdata, odk)
+    data = conflateThread(osmdata, odk, 0)
     if len(data[6]['attrs']) > 0 and data[6]['attrs']['id'] > 0 and data[0]['attrs']['id'] < 0:
         passes += 1
     assert(passes == 4)
