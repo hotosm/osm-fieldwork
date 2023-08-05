@@ -125,7 +125,7 @@ class Convert(YamlFile):
 
         # If it's not in any conversion data, pass it through unchanged.
         if tag.lower() in self.ignore:
-            logging.debug(f"FIXME: Ignoring {tag}")
+            # logging.debug(f"FIXME: Ignoring {tag}")
             return None
         low = tag.lower()
         if (
