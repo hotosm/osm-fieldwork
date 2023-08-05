@@ -303,27 +303,30 @@ class OdkProject(OdkCentral):
 
 
     def getAllSubmissions(self,
-                        project_id: int,
+                          project_id: int,
+                          xforms: list = None
                         ):
         """Fetch a list of submissions in a project on an ODK Central server."""
         timer = Timer(text="getAllSubmissions() took {seconds:.0f}s")
         timer.start()
-        xforms = self.listForms(project_id)
+        if not xforms:
+            xforms = self.listForms(project_id)
         chunk = round(len(xforms) / self.cores) if round(len(xforms) / self.cores) > 0 else 1        
         last_slice = len(xforms) if len(xforms) % chunk == 0 else len(xforms) - 1
-        cycle = range(0, last_slice + chunk, chunk)
+        cycle = range(0, (last_slice + chunk) +1, chunk)
         future = None
         result = None
         previous = 0
+        newdata = list()
 
         # single threaded for easier debugging
         # for current in cycle:
         #     if previous == current:
         #         continue
         #     result = downloadThread(project_id, xforms[previous:current])
-        #     print(f"RESULT: {result}")
+        #     previous = current
+        #     newdata += result
 
-        newdata = list()
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.cores) as executor:
             futures = list()
             for current in cycle:
@@ -496,6 +499,7 @@ class OdkForm(OdkCentral):
         if submission_id:
             url = url + f"('{submission_id}')"
 
+        # log.debug(f'Getting submissions for {projectId}, Form {xform}')
         result = self.session.get(url, auth=self.auth, headers=headers, verify=self.verify)
         if result.status_code == 200:
             if disk:
