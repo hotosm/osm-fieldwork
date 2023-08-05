@@ -55,7 +55,7 @@ requires = ["pdm-pep517>=1.0.0"]
 build-backend = "pdm.pep517.api"
 
 [tool.pytest.ini_options]
-addopts = "-ra -q"
+addopts = "-ra -q -p no:warnings"
 testpaths = [
     "tests",
 ]
