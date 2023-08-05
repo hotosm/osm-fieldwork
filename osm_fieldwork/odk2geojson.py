@@ -32,6 +32,7 @@ import json
 from geojson import Feature, FeatureCollection, dump
 from shapely.geometry import Point
 from datetime import datetime
+import flatdict
 
 
 # Instantiate logger
@@ -89,28 +90,33 @@ def main():
         # Instances are small, read the whole file
         data = file.read(os.path.getsize(xml))
         doc = xmltodict.parse(data)
-        # This is pretty ugly. We know that somewhere in the lower level
-        # dicts there are GPS coordinates, which luckily are easy to
-        # find and should always be a unique field in a feature. While
-        # is ugly, it's also way more efficient than looping through
-        # levels to find that one value. Plus htis doesn't care what the
-        # key is.
-        pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
-        data = json.dumps(doc)
-        gps = re.findall(pat, str(data))
-        for coords in gps:
-            tmp = coords.split(' ')
-            lat = float(tmp[0])
-            lon = float(tmp[1])                
-            poi = Point(lon, lat)
-        features.append(Feature(geometry=poi, properties=doc['data']))
+
+        flattened = flatdict.FlatDict(doc['data'])
+        poi = Point()
+        feature = dict()
+        for key, value in flattened.items():
+            if key[0] == '@' or value is None:
+                continue
+            last = key.rfind(':') + 1
+            key = key[last:]
+            pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
+            gps = re.findall(pat, value)
+            if len(gps) > 0:
+                tmp = gps[0].split(' ')
+                lat = float(tmp[0])
+                lon = float(tmp[1])
+                poi = Point(lon, lat)
+            else:
+                feature[key] = value
+        features.append(Feature(geometry=poi, properties=feature))
     collection = FeatureCollection(features)
 
     now = datetime.now()
     timestamp = f"_{now.year}_{now.month}-{now.day}-{now.hour}-{now.minute}"
     outfile = args.instance.replace("*", "") + timestamp + ".geojson"
-    json = open(outfile, 'w')
-    dump(collection, json)
+    outfile = outfile.replace(' ', '')
+    fout = open(outfile, 'w')
+    dump(collection, fout)
 
     print(f"Wrote output file {outfile}")
 
