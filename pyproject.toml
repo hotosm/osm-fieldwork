@@ -21,7 +21,8 @@ dependencies = [
     "overpy>=0.6",
     "thefuzz>=0.19.0",
     "haversine>=2.8.0",
-    "flatdict>=4.0.1"
+    "flatdict>=4.0.1",
+    "ogr>=0.44.0",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -63,7 +64,7 @@ pythonpath = "osm_fieldwork"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.3.3"
+version = "0.3.4"
 version_files = [
     "pyproject.toml:version",
     "osm_fieldwork/__version__.py",

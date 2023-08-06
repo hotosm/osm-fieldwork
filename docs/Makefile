@@ -42,6 +42,11 @@ all: $(HTML) $(PDF)
 	$(PANDOC) $(PFLAGS) --toc --to=pdf $<  --metadata title="$${title}" -o $*.pdf
 	@echo "Wrote $*.pdf"
 
+%.man: %.md
+	@title="$(shell grep "^#" $< | head -1 | tr -d '#')"; \
+	$(PANDOC) $(PFLAGS) --toc --to=man $<  --metadata title="$${title}" -o $*.1
+	@echo "Wrote $*.man"
+
 clean: force
 	@rm -f $(HTML) $(PDF)
 

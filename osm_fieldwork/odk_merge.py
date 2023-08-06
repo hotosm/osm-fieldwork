@@ -462,16 +462,14 @@ be either the data extract used by the XLSForm, or a postgresql database.
 
     # if verbose, dump to the terminal.
     if args.verbose:
-        root = logging.getLogger()
         log.setLevel(logging.DEBUG)
-
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
             "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
     if args.outfile:
         outfile = args.outfile
