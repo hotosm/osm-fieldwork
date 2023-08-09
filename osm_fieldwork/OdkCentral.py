@@ -457,6 +457,16 @@ class OdkForm(OdkCentral):
         self.data = result.json()
         return result
 
+    def listSubmissionBasicInfo(self,
+                        projectId: int,
+                        xform: str
+                        ):
+        """Fetch a list of submission instances basic information for a given form."""
+        url = f"{self.base}projects/{projectId}/forms/{xform}/submissions"
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
+        return result.json()
+
+
     def listSubmissions(self,
                         projectId: int,
                         xform: str
