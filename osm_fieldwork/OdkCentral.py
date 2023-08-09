@@ -60,12 +60,12 @@ def downloadThread(
     # log.debug(f"downloadThread() called! {len(xforms)} xforms")
     for task in xforms:
         form = OdkForm()
-        submissions = form.getSubmissions(project_id, task['xmlFormId'], 0, False, True)
-        subs = form.listSubmissions(project_id, task['xmlFormId'])
+        submissions = form.getSubmissions(project_id, task, 0, False, True)
+        subs = form.listSubmissions(project_id, task)
         if type(subs) == dict:
             log.error(f"{subs['message']}, {subs['code']} ")
             continue
-        # log.debug(f"There are {len(subs)} submissions for {task['xmlFormId']}")
+        # log.debug(f"There are {len(subs)} submissions for {task}")
         if len(subs) > 0:
             data += subs
     # log.debug(f"There are {len(xforms)} Xforms, and {len(submissions)} submissions total")
@@ -310,7 +310,9 @@ class OdkProject(OdkCentral):
         timer = Timer(text="getAllSubmissions() took {seconds:.0f}s")
         timer.start()
         if not xforms:
-            xforms = self.listForms(project_id)
+            xforms_data = self.listForms(project_id)
+            xforms = [d['xmlFormId'] for d in xforms_data]
+
         chunk = round(len(xforms) / self.cores) if round(len(xforms) / self.cores) > 0 else 1        
         last_slice = len(xforms) if len(xforms) % chunk == 0 else len(xforms) - 1
         cycle = range(0, (last_slice + chunk) +1, chunk)
@@ -454,6 +456,16 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.data = result.json()
         return result
+
+    def listSubmissionBasicInfo(self,
+                        projectId: int,
+                        xform: str
+                        ):
+        """Fetch a list of submission instances basic information for a given form."""
+        url = f"{self.base}projects/{projectId}/forms/{xform}/submissions"
+        result = self.session.get(url, auth=self.auth, verify=self.verify)
+        return result.json()
+
 
     def listSubmissions(self,
                         projectId: int,
