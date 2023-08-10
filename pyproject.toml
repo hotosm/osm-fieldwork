@@ -23,6 +23,7 @@ dependencies = [
     "haversine>=2.8.0",
     "flatdict>=4.0.1",
     "ogr>=0.44.0",
+    "mercantile>=1.2.1",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
