@@ -42,7 +42,6 @@ homepage = "https://github.com/hotosm/osm-fieldwork/wiki"
 documentation = "https://github.com/hotosm/osm-fieldwork/wiki"
 repository = "https://github.com/hotosm/osm-fieldwork"
 
-[project.optional-dependencies]
 [tool.pdm]
 version = {from = "osm_fieldwork/__version__.py"}
 [tool.pdm.build]
