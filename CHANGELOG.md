@@ -1,3 +1,116 @@
+## 0.3.5 (2023-08-11)
+
+### Fix
+
+- Add mercantile
+- indentation error in basemapper
+
+## 0.3.4 (2023-08-06)
+
+### Feat
+
+- get extended details of a project
+- get form full details
+- Handle geometries better in the other json variant from Central
+
+### Fix
+
+- Improve methods to test data contents for tags
+- Add more real tests
+- conflateThread() takes an additional argument now
+- Add some real tests for conversion
+- Add test data for JSON to OSM conversion
+- disable warnings from depenancies when running pytest
+- getAllSubmissions() now takes an optional argument, which is the list of XForms
+- Use flatfic module instead of traversing it ourselves
+- comment out debug message
+- handle uid/user in attrs better
+- add flatdict module
+- use a flattened dictionary instead of traversing everything ourselves
+- use lower case for string matching, it's faster than fuzzy matching
+- Minor update
+- all tags should be in lower case
+- if node is not present, return False in loadFIle in osmfile class
+- load file in osmfile class
+- no of threads missing some data at the end
+- Add comment on commented out code block
+- Drop escaping - in regex
+- Trap bad auth with the ODK Central server
+- Add timer to see how long it takes to process the data
+- Add support to download all submissions for all tasks in a project
+- Remove large block of commented out code
+- Add support to download all submissions for all tasks in a project
+- main, not moon
+- Add new XLSForm for highways
+- chunk set to 1 when the chunk value is 1
+- fix indenting mistake that prevented display forms
+- Add support to the underpass query to return linestrings
+- Add support for highways
+- handle XLSForms that don't use a data extract
+- Add support for highways
+- highways use ways_line, not ways_poly
+- Add config file for highway query
+
+## 0.3.3 (2023-07-25)
+
+### Fix
+
+- uncomment my stupid mistakes
+- Add the new conflatin doc to the sidebar
+- Add doc on how this project does conflation
+- fix minor type
+- Add make_data_extract to scripts
+- Add more content
+- Now that there are multiple postgres connections, clip all of them
+- Handle no data returned errors
+- Addd main() so it can be called when run standalone
+- Add standalone scripts so all programs can be run from the install package
+- Fix type in maion
+- make a main function to they can run standalone
+- Add a main function to this can run standalone from the installed python package
+- Add new user manual to the sidebar
+- Add new user manual
+- Refactor to use an array of database connections, one for each thread to avoid proble
+- Not all data has a timestamp, and it gets set anyone to the current time
+- Major refactoring to support conflation with either postgis or the data extract used for FMTM
+- keep more tags for the output file
+- add more tags to keep for the output file
+- Add newline after writing </way>
+- Add government_menu to ignore
+- Add tests for conflating with a database
+- Add test prpoject boundary
+- Improve test cases so they can find the test data files under pytest
+- Update test data, and add test case for odk_merge
+- Add section on importing the data into postgres
+- use log so it works in FMTM, get the feature version in SQL queries
+- Add support for using a GeoJson data extract as the conflation source
+- Implement writing the OSM XML output file
+- There are weird capitalization in the keywords
+- Put the modified warning in a note instead of fixme
+- Handle errors if there is no forms or project
+- handle xlsfile better
+- osmfile.footer() is now called by a destructor
+- Don't escape spaces
+- Implement conflating a  POI against ways
+- Add a destructor so the footer gets added when class is deleted
+- Make output file optional
+- Conversion from gdal is done, startin gto implement threads
+- output files go into current dir, not /tmp
+- escape is now a standalone function
+- Make infile a required argument
+- escape is now a standalone function so it can be used by other classes
+- Update test cases since now data files get installed
+- Add function for parsing database URIs, add test case for URI parser
+- parse the OSM XML file if the data is in a dict
+- THis gets processed lower down, so this is duplicate code
+- Don't pass bogus config file
+- Fix support to use Google imagery
+- Fix support for bing imagery
+- Update section on setting the default in Collect from OSM data
+- Drop outfile from calling PostgresClient()
+- Add roof:shape and roof:levels to keep
+- Add shop to keep
+
 ## 0.3.2 (2023-06-27)
 
 ### Fix
