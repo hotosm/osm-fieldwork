@@ -52,6 +52,7 @@ log = logging.getLogger(__name__)
 def downloadThread(
         project_id: int,
         xforms: list,
+        odk_credentials: dict
 ):
     """Download a list of submissions from ODK Central"""
     timer = Timer(text="downloadThread() took {seconds:.0f}s")
@@ -59,7 +60,11 @@ def downloadThread(
     data = list()
     # log.debug(f"downloadThread() called! {len(xforms)} xforms")
     for task in xforms:
-        form = OdkForm()
+        form = OdkForm(
+            odk_credentials["url"],
+            odk_credentials["user"],
+            odk_credentials["passwd"]
+        )
         submissions = form.getSubmissions(project_id, task, 0, False, True)
         subs = form.listSubmissions(project_id, task)
         if type(subs) == dict:
@@ -329,12 +334,18 @@ class OdkProject(OdkCentral):
         #     previous = current
         #     newdata += result
 
+        odk_credentials = {
+            "url": self.url,
+            "user": self.user,
+            "passwd": self.passwd
+        }
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.cores) as executor:
             futures = list()
             for current in cycle:
                 if previous == current:
                     continue
-                result = executor.submit(downloadThread, project_id, xforms[previous:current])
+                result = executor.submit(downloadThread, project_id, xforms[previous:current], odk_credentials)
                 previous = current
                 futures.append(result)
             for future in concurrent.futures.as_completed(futures):
