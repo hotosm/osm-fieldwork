@@ -5,6 +5,7 @@ repo_name: "hotosm/osm-fieldwork"
 repo_url: "https://github.com/hotosm/osm-fieldwork"
 edit_uri: "blob/main/docs/compiled/"
 site_url: "https://www.hotosm.org"
+docs_dir: compiled
 
 extra:
   social:
