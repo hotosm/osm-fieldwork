@@ -1,0 +1,15 @@
+sources_dir: compiled/api
+templates_dir: templates
+repo: https://github.com/hotosm/osm-fieldwork
+version: main
+
+pages:
+  - page: "OdkCentral.md"
+    source: "../osm_fieldwork/OdkCentral.py"
+    functions:
+      - downloadThread
+    classes:
+      - OdkCentral
+      - OdkProject
+      - OdkForm
+      - OdkAppUser
