@@ -1,9 +1,9 @@
-name: Publish Docs to Wiki
+name: Publish Wiki
 
 on:
   push:
     paths:
-      - docs/**
+      - wiki/**
     branches: [main]
   # Allow manual trigger (workflow_dispatch)
   workflow_dispatch:
@@ -16,8 +16,8 @@ env:
   REPO_NAME: ${{ github.event.repository.name }}
 
 jobs:
-  publish_docs_to_wiki:
-    name: Publish Docs to Wiki
+  publish_wiki_dir:
+    name: Publish Wiki Dir
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -35,7 +35,7 @@ jobs:
       - name: Push content to wiki
         run: |
           apt update && apt install -y rsync
-          rsync -av --delete docs/ tmp_wiki/ --exclude .git
+          rsync -av --delete wiki/ tmp_wiki/ --exclude .git
           cd tmp_wiki
           git add .
           git commit -m "docs: automated wiki update on push"
