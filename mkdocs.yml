@@ -4,7 +4,7 @@ site_description: Processing collected OpenDataKit data into OpenStreetMap forma
 site_url: "https://www.hotosm.org"
 
 repo_name: "hotosm/osm-fieldwork"
-repo_url: "https://github.com/hotosm/osm-fieldwork"
+repo_url: "https://github.com/hotosm/osm-fieldwork/"
 edit_uri: "edit/main/docs/"
 
 extra:
@@ -58,7 +58,6 @@ plugins:
 
 nav:
 - Get Started:
-  - Welcome to OSM-Fieldwork: about/Home.md
   - About: about/About.md
   - FAQ: about/FAQ.md
   - Changelog: CHANGELOG.md
