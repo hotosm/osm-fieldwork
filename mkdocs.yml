@@ -1,0 +1,72 @@
+site_name: osm-fieldwork
+site_description: Processing collected OpenDataKit data into OpenStreetMap format, and other utility programs for field data collection.
+# strict: true
+site_url: "https://www.hotosm.org"
+
+repo_name: "hotosm/osm-fieldwork"
+repo_url: "https://github.com/hotosm/osm-fieldwork"
+edit_uri: "edit/main/docs/"
+
+extra:
+  social:
+    - icon: "fontawesome/brands/github"
+      link: "https://github.com/hotosm/"
+    - icon: "fontawesome/brands/twitter"
+      link: "https://twitter.com/hotosm"
+    - icon: "fontawesome/solid/globe"
+      link: "https://www.hotosm.org"
+
+theme:
+  name: material
+  palette:
+    scheme: default
+
+extra_css:
+  - css/extra.css
+
+markdown_extensions:
+- tables
+- toc:
+    permalink: true
+    title: Page contents
+- admonition
+- pymdownx.details
+- pymdownx.superfences
+- pymdownx.highlight
+- pymdownx.extra
+- pymdownx.emoji:
+- pymdownx.tabbed:
+    alternate_style: true
+
+plugins:
+  - search
+  - exclude:
+      glob:
+      - plugins/*
+      - __pycache__/*
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            members_order: source
+            separate_signature: true
+            filters: ["!^_"]
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
+
+nav:
+- Welcome to OSM-Fieldwork: about/Home.md
+- Get Started:
+  - About: about/About.md
+  - FAQ: about/FAQ.md
+  - Changelog: CHANGELOG.md
+  - Code of Conduct: Code-of-Conduct.md
+  - License: LICENSE.md
+- User Manual: about/user-manual.md
+- Usage:
+  - ODK Client: about/odk_client.md
+- API:
+  - ODK Central: api/OdkCentral.md
+  - ODK Form: api/ODKForm.md

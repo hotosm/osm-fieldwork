@@ -1,0 +1,44 @@
+name: Publish Docs
+
+on:
+  push:
+    paths:
+      - docs/**
+      - osm_fieldwork/**
+    branches: [main]
+  # Allow manual trigger (workflow_dispatch)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish_docs:
+    name: Publish Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV 
+
+      - name: Read cache
+        uses: actions/cache@v3
+        with:
+          key: mkdocs-material-${{ env.cache_id }}
+          path: .cache
+          restore-keys: |
+            mkdocs-material-
+
+      - name: Install PDM
+        run: |
+          python3 -m pip install pdm
+
+      - name: Publish
+        run: |
+          pdm install -G docs
+          mkdocs gh-deploy --force
