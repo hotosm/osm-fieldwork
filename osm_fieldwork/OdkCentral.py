@@ -186,7 +186,7 @@ class OdkCentral(object):
         """Create a new project on an ODK Central server if it doesn't
         already exist"""
         log.debug(f"Checking if project named {name} exists already")
-        exists = self.findProject(name)
+        exists = self.findProject(name=name)
         if exists:
             log.debug(f"Project named {name} already exists.")
             return exists
@@ -215,21 +215,28 @@ class OdkCentral(object):
         self.session.delete(url, auth=self.auth, verify=self.verify)
         # update the internal list of projects
         self.listProjects()
-        return self.findProject(project_id)
+        return self.findProject(project_id=project_id)
 
     def findProject(self,
-                    project_id: int,
-                    name:str = None
+                    project_id: int = None,
+                    name: str = None
                     ):
         """Get the project data from Central"""
+        # First, populate self.projects
+        self.listProjects()
+
         if self.projects:
             if name:
+                log.debug(f"Finding project by name: {name}")
                 for key, value in self.projects.items():
                     if name == value["name"]:
+                        log.info(f"ODK project found: {name}")
                         return value
             if project_id:
+                log.debug(f"Finding project by id: {project_id}")
                 for key, value in self.projects.items():
                     if project_id == value["id"]:
+                        log.info(f"ODK project found: {project_id}")
                         return value
         return None
 
