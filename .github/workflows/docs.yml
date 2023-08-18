@@ -1,8 +1,9 @@
-name: Publish API Docs
+name: Publish Docs
 
 on:
   push:
     paths:
+      - docs/**
       - osm_fieldwork/**
     branches: [main]
   # Allow manual trigger (workflow_dispatch)
@@ -12,8 +13,8 @@ permissions:
   contents: write
 
 jobs:
-  publish_api_docs:
-    name: Publish API Docs
+  publish_docs:
+    name: Publish Docs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -40,5 +41,4 @@ jobs:
       - name: Publish
         run: |
           pdm install -G docs
-          cd docs
           mkdocs gh-deploy --force
