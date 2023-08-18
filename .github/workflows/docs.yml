@@ -41,4 +41,4 @@ jobs:
       - name: Publish
         run: |
           pdm install -G docs
-          mkdocs gh-deploy --force
+          pdm run mkdocs gh-deploy --force
