@@ -57,8 +57,8 @@ plugins:
             merge_init_into_class: true
 
 nav:
-- Welcome to OSM-Fieldwork: about/Home.md
 - Get Started:
+  - Welcome to OSM-Fieldwork: about/Home.md
   - About: about/About.md
   - FAQ: about/FAQ.md
   - Changelog: CHANGELOG.md
