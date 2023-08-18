@@ -76,6 +76,7 @@ docs = [
     "mkdocs-material>=9.1.21",
     "mkdocstrings-python>=1.4.0",
     "mkdocs-exclude>=1.0.2",
+    "black>=23.7.0",
 ]
 
 [project.scripts]

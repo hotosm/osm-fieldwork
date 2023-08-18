@@ -62,4 +62,4 @@ build
 dist
 
 # Docs
-docs/site
+site

@@ -1,12 +1,11 @@
 site_name: osm-fieldwork
 site_description: Processing collected OpenDataKit data into OpenStreetMap format, and other utility programs for field data collection.
-strict: true
+# strict: true
 site_url: "https://www.hotosm.org"
 
 repo_name: "hotosm/osm-fieldwork"
 repo_url: "https://github.com/hotosm/osm-fieldwork"
-edit_uri: "edit/main/docs/api/"
-docs_dir: api
+edit_uri: "edit/main/docs/"
 
 extra:
   social:
@@ -36,8 +35,6 @@ markdown_extensions:
 - pymdownx.highlight
 - pymdownx.extra
 - pymdownx.emoji:
-    emoji_index: !!python/name:materialx.emoji.twemoji
-    emoji_generator: !!python/name:materialx.emoji.to_svg
 - pymdownx.tabbed:
     alternate_style: true
 
@@ -50,7 +47,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: [..]
+          paths: [.]
           options:
             members_order: source
             separate_signature: true
@@ -58,5 +55,18 @@ plugins:
             docstring_options:
               ignore_init_summary: true
             merge_init_into_class: true
-            extensions:
-              - docs/plugins/griffe_doclinks.py
+
+nav:
+- Welcome to OSM-Fieldwork: about/Home.md
+- Get Started:
+  - About: about/About.md
+  - FAQ: about/FAQ.md
+  - Changelog: CHANGELOG.md
+  - Code of Conduct: Code-of-Conduct.md
+  - License: LICENSE.md
+- User Manual: about/user-manual.md
+- Usage:
+  - ODK Client: about/odk_client.md
+- API:
+  - ODK Central: api/OdkCentral.md
+  - ODK Form: api/ODKForm.md
