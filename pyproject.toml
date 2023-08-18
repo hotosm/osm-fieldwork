@@ -74,7 +74,8 @@ test = [
 docs = [
     "mkdocs>=1.5.2",
     "mkdocs-material>=9.1.21",
-    "mkgendocs>=0.9.2",
+    "mkdocstrings-python>=1.4.0",
+    "mkdocs-exclude>=1.0.2",
 ]
 
 [project.scripts]
