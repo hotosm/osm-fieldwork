@@ -19,7 +19,7 @@ extra:
 theme:
   name: material
   palette:
-    scheme: default
+    primary: custom
 
 extra_css:
   - css/extra.css
