@@ -1,11 +1,12 @@
 site_name: osm-fieldwork
 site_description: Processing collected OpenDataKit data into OpenStreetMap format, and other utility programs for field data collection.
+strict: true
+site_url: "https://www.hotosm.org"
 
 repo_name: "hotosm/osm-fieldwork"
 repo_url: "https://github.com/hotosm/osm-fieldwork"
-edit_uri: "blob/main/docs/compiled/"
-site_url: "https://www.hotosm.org"
-docs_dir: compiled
+edit_uri: "edit/main/docs/api/"
+docs_dir: api
 
 extra:
   social:
@@ -16,9 +17,6 @@ extra:
     - icon: "fontawesome/solid/globe"
       link: "https://www.hotosm.org"
 
-plugins:
-  - search
-
 theme:
   name: material
   palette:
@@ -28,28 +26,37 @@ extra_css:
   - css/extra.css
 
 markdown_extensions:
-  - admonition
-  - attr_list
-  - codehilite:
-      guess_lang: false
-  - def_list
-  - footnotes
-  - pymdownx.arithmatex
-  - pymdownx.betterem
-  - pymdownx.caret:
-      insert: false
-  - pymdownx.details
-  - pymdownx.emoji
-  - pymdownx.escapeall:
-      hardbreak: true
-      nbsp: true
-  - pymdownx.magiclink:
-      hide_protocol: true
-      repo_url_shortener: true
-  - pymdownx.smartsymbols
-  - pymdownx.superfences
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - pymdownx.tilde
-  - toc:
-      permalink: true
+- tables
+- toc:
+    permalink: true
+    title: Page contents
+- admonition
+- pymdownx.details
+- pymdownx.superfences
+- pymdownx.highlight
+- pymdownx.extra
+- pymdownx.emoji:
+    emoji_index: !!python/name:materialx.emoji.twemoji
+    emoji_generator: !!python/name:materialx.emoji.to_svg
+- pymdownx.tabbed:
+    alternate_style: true
+
+plugins:
+  - search
+  - exclude:
+      glob:
+      - plugins/*
+      - __pycache__/*
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [..]
+          options:
+            members_order: source
+            separate_signature: true
+            filters: ["!^_"]
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
+            extensions:
+              - docs/plugins/griffe_doclinks.py
