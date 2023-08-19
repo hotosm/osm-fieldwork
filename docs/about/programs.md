@@ -18,7 +18,7 @@ Collect. This function allows users to select from a list of options
 generated from an external file. The `make_data_extract.py` program
 creates a data extract that can be used as an external file with the
 `select_one_from_file` function. There is more detailed information on
-the program for making data extracts [here](dataextracts.md).
+the program for making data extracts [here](make_data_extract.md).
 
 ## CSVDump.py
 

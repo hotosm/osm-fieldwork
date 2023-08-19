@@ -22,7 +22,13 @@ import sys
 import os
 import json
 from osm_fieldwork.OdkCentral import OdkCentral, OdkProject, OdkForm, OdkAppUser
+from osm_fieldwork.json2osm import JsonDump
 from pathlib import Path
+from sys import argv
+from geojson import Feature, FeatureCollection, dump
+from datetime import datetime
+from codetiming import Timer
+
 
 # Set log level
 log_level = os.getenv("LOG_LEVEL", default="INFO")
@@ -71,7 +77,7 @@ def main():
     parser.add_argument(
         "-p",
         "--project",
-        choices=["forms", "app-users", "assignments", "delete"],
+        choices=["forms", "app-users", "assignments", "delete", "submissions"],
         help="project operations",
     )
     parser.add_argument("-i", "--id", type=int, help="Project ID nunmber")
@@ -129,6 +135,10 @@ def main():
     # Multiple files are stored in a list.
     args, unknown = parser.parse_known_args()
 
+    if len(argv) <= 1:
+        parser.print_help()
+        quit()
+
     # Get any files for upload or download
     files = list()
     if unknown is not None:
@@ -147,6 +157,8 @@ def main():
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
+    timer = Timer(text="odk_client() took {seconds:.0f}s")
+    timer.start()
     # Commands to the ODK Central server, which gets data that applies
     # to all projects on the server.
     if args.server:
@@ -154,6 +166,12 @@ def main():
         # central.authenticate()
         if args.server == "projects":
             projects = central.listProjects()
+            if not projects:
+                projects = list()
+            elif 'message' in projects:
+                log.error(f"{projects['message']}, {projects['code']} ")
+                quit()
+
             print("There are %d projects on this ODK Central server" % len(projects))
             ordered = sorted(projects, key=lambda item: item.get("id"))
             for project in ordered:
@@ -189,11 +207,38 @@ def main():
             ordered = sorted(forms, key=lambda item: item.get("xmlFormId"))
             for form in ordered:
                 print("\t%r: %r" % (form["xmlFormId"], form["name"]))
-                # if args.project == "submissions":
-                #     submit = project.listSubmissions(args.id, args.form)
-                #     # ordered = sorted(submit, key=lambda item: item.get('xmlFormId'))
-                #     for data in submit:
-                #         print("\t%s by user %s" % (data['instanceId'], data['submitterId']))
+
+        elif args.project == "submissions":
+            submissions = project.getAllSubmissions(args.id)
+            jsonin = JsonDump()
+            now = datetime.now().strftime("%Y-%m-%dT%TZ")
+            outfile = f"{args.project}_{now}"
+            jsonin.createOSM(f"{outfile}.osm")
+            # jsonin.createGeoJson(f"{outfile}.geojson")
+            data = jsonin.parse(data=submissions)
+            log.debug(f"There are a total of {len(submissions)} submissions")
+            for entry in data:
+                feature = jsonin.createEntry(entry)
+                # Sometimes bad entries, usually from debugging XForm design, sneak in
+                if len(feature) == 0:
+                    continue
+                if "lat" not in feature["attrs"]:
+                    if 'geometry' in feature['tags']:
+                        if type(feature['tags']['geometry']) == str:
+                            coords = list(feature['tags']['geometry'])
+                            # del feature['tags']['geometry']
+                    elif 'coordinates' in feature['tags']:
+                        coords = feature['tags']['coordinates']
+                        feature['attrs'] = {'lat': coords[1], 'lon': coords[0]}
+                    else:
+                        log.warning("Bad record! %r" % feature)
+                        continue
+                jsonin.writeOSM(feature)
+                log.info(f"Wrote {outfile}.osm")
+                # This GeoJson file has all the data values
+                # jsonin.writeGeoJson(feature)
+                #log.info(f"Wrote {outfile}.geojson")
+
         elif args.project == "app-users":
             users = project.listAppUsers(args.id)
             logging.info("There are %d app users on this ODK Central server" % len(users))
@@ -249,37 +294,50 @@ def main():
                     file.close()
         elif args.xform == "assignments":
             assign = form.listAssignments(args.id, args.form)
+            if type(assign) == dict:
+                log.error(f"{assign['message']}, {assign['code']} ")
+                quit()
             logging.info(
                 "There are %d assignments  on this ODK Central server" % len(assign)
             )
             # ordered = sorted(assign, key=lambda item: item.get('id'))
             for role in assign:
                 print("\t%r" % role)
+
         elif args.xform == "submissions":
             submissions = form.listSubmissions(args.id, args.form)
             if not submissions:
                 submissions = list()
-            elif type(submissions) == dict:
+            elif 'message' in submissions:
                 log.error(f"{submissions['message']}, {submissions['code']} ")
-            else:
-                logging.info(
-                    "There are %d submissions for XForm %s" % (len(submissions), args.form)
+                quit()
+
+            logging.info(
+                "There are %d submissions for XForm %s" % (len(submissions), args.form)
                 )
             for file in submissions:
                 # form.submissions.append(file)
-                print("%s: %s" % (file["instanceId"], file["createdAt"]))
+                print("%s: %s" % (file['meta']['instanceID'], file["end"]))
 
         elif args.xform == "csv":
             submissions = form.getSubmissions(args.id, args.form, True, False)
+            if type(submissions) == dict:
+                log.error(f"{submissions['message']}, {submissions['code']} ")
             logging.info(
                 "There are %d submissions for XForm %s" % (len(submissions), args.form)
             )
             for file in submissions:
                 form.submissions.append(file)
-                print("%s: %s" % (file["instanceId"], file["createdAt"]))
+                print("%s: %s" % (file['meta']['instanceID'], file["end"]))
 
         elif args.xform == "json":
             submissions = form.getSubmissions(args.id, args.form, False, True, True)
+            if type(submissions) == dict:
+                log.error(f"{submissions['message']}, {submissions['code']} ")
+                quit()
+            else:
+                if submissions is None:
+                    submissions = list()
             logging.info(
                 "There are %d submissions for XForm %s" % (len(submissions), args.form)
             )
@@ -289,6 +347,9 @@ def main():
 
         elif args.xform == "attachments":
             attachments = form.listMedia(args.id, args.form)
+            if type(attachments) == dict:
+                log.error(f"{attachments['message']}, {attachments['code']} ")
+                quit()
             logging.info(
                 "There are %d attachments for XForm %s" % (len(attachments), args.form)
             )
@@ -368,6 +429,7 @@ def main():
                 users = central.listAppUsers(args.id)
                 for user in users:
                     result = appuser.updateRole(args.id, args.form, role, user["id"])
+    timer.stop()
 
 if __name__ == "__main__":
     main()

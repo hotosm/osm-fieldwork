@@ -245,54 +245,54 @@ if __name__ == "__main__":
         root.addHandler(ch)
 
 
-# Get all the zoom levels we want
-zooms = list()
-if args.zooms:
-    if args.zooms.find("-") > 0:
-        start = int(args.zooms.split("-")[0])
-        end = int(args.zooms.split("-")[1]) + 1
-        x = range(start, end)
-        for i in x:
-            zooms.append(i)
-    elif args.zooms.find(",") > 0:
-        levels = args.zooms.split(",")
-        for level in levels:
-            zooms.append(int(level))
+    # Get all the zoom levels we want
+    zooms = list()
+    if args.zooms:
+        if args.zooms.find("-") > 0:
+            start = int(args.zooms.split("-")[0])
+            end = int(args.zooms.split("-")[1]) + 1
+            x = range(start, end)
+            for i in x:
+                zooms.append(i)
+        elif args.zooms.find(",") > 0:
+            levels = args.zooms.split(",")
+            for level in levels:
+                zooms.append(int(level))
+        else:
+            zooms.append(int(args.zooms))
+
+    # Make a bounding box from the boundary file
+    if not args.boundary:
+        logging.error("You need to specify a boundary file!")
+        parser.print_help()
+        quit()
+
+    if not args.outdir:
+        base = "/var/www/html"
     else:
-        zooms.append(int(args.zooms))
+        base = args.outdir
+    base = f"{base}/{args.source}tiles"
 
-# Make a bounding box from the boundary file
-if not args.boundary:
-    logging.error("You need to specify a boundary file!")
-    parser.print_help()
-    quit()
-
-if not args.outdir:
-    base = "/var/www/html"
-else:
-    base = args.outdir
-base = f"{base}/{args.source}tiles"
-
-if args.source:
-    basemap = BaseMapper(args.boundary, base, args.source)
-else:
-    logging.error("You need to specify a source!")
-    parser.print_help()
-    quit()
-
-if args.outfile is None:
-    logging.error("You need to specify an mbtiles or sqlitedb file!!")
-    parser.print_help()
-    quit()
-
-outf = DataFile(args.outfile, basemap.getFormat())
-suffix = os.path.splitext(args.outfile)[1]
-if suffix == ".mbtiles":
-    outf.addBounds(basemap.bbox)
-for level in zooms:
-    basemap.getTiles(level)
-    if args.outfile:
-        # Create output database and specify image format, png, jpg, or tif
-        outf.writeTiles(basemap.tiles, base)
+    if args.source:
+        basemap = BaseMapper(args.boundary, base, args.source)
     else:
-        logging.info("Only downloading tiles to %s!" % base)
+        logging.error("You need to specify a source!")
+        parser.print_help()
+        quit()
+
+    if args.outfile is None:
+        logging.error("You need to specify an mbtiles or sqlitedb file!!")
+        parser.print_help()
+        quit()
+
+    outf = DataFile(args.outfile, basemap.getFormat())
+    suffix = os.path.splitext(args.outfile)[1]
+    if suffix == ".mbtiles":
+        outf.addBounds(basemap.bbox)
+    for level in zooms:
+        basemap.getTiles(level)
+        if args.outfile:
+            # Create output database and specify image format, png, jpg, or tif
+            outf.writeTiles(basemap.tiles, base)
+        else:
+            logging.info("Only downloading tiles to %s!" % base)

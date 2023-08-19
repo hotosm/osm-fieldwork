@@ -1,0 +1,86 @@
+site_name: osm-fieldwork
+site_description: Processing collected OpenDataKit data into OpenStreetMap format, and other utility programs for field data collection.
+# strict: true
+site_url: "https://www.hotosm.org"
+
+repo_name: "hotosm/osm-fieldwork"
+repo_url: "https://github.com/hotosm/osm-fieldwork/"
+edit_uri: "edit/main/docs/"
+
+extra:
+  social:
+    - icon: "fontawesome/brands/github"
+      link: "https://github.com/hotosm/"
+    - icon: "fontawesome/brands/twitter"
+      link: "https://twitter.com/hotosm"
+    - icon: "fontawesome/solid/globe"
+      link: "https://www.hotosm.org"
+
+theme:
+  name: material
+  palette:
+    primary: custom
+
+extra_css:
+  - css/extra.css
+
+markdown_extensions:
+- tables
+- toc:
+    permalink: true
+    title: Page contents
+- admonition
+- pymdownx.details
+- pymdownx.superfences
+- pymdownx.highlight
+- pymdownx.extra
+- pymdownx.emoji:
+- pymdownx.tabbed:
+    alternate_style: true
+
+plugins:
+  - search
+  - exclude:
+      glob:
+      - plugins/*
+      - __pycache__/*
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            members_order: source
+            separate_signature: true
+            filters: ["!^_"]
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
+
+nav:
+- Get Started:
+  - About: about/About.md
+  - FAQ: about/FAQ.md
+  - Changelog: CHANGELOG.md
+  - Code of Conduct: Code-of-Conduct.md
+  - License: LICENSE.md
+- User Manual: about/user-manual.md
+- Core Program Usage:
+  - ODK Client: about/odk_client.md
+  - make_data_extract: about/make_data_extract.md
+  - odk_merge: about/odk_merge.md
+  - json2osm: about/json2osm.md
+- Utility Program Usage:
+  - odk2geojson: about/odk2geojson.md
+  - odk2osm: about/odk2osm.md
+  - odk2csv: about/odk2csv.md
+- API:
+  - ODK Central: api/OdkCentral.md
+  - ODK Form: api/ODKForm.md
+  - basemapper: api/basemapper.md
+  - sqlite: api/sqlite.md
+  - osmfile: api/osmfile.md
+  - yamlfile: api/yamlfile.md
+  - json2osm: api/json2osm.md
+  - convert: api/convert.md
+  - CSVDump: api/CSVDump.md
+    

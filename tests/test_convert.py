@@ -24,57 +24,72 @@ import argparse
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.convert import Convert
 
+# find the path to the test data files
+rootdir = os.path.basename(os.getcwd())
+if rootdir == 'tests':
+    rootdir = "."
+elif rootdir == 'main':
+    rootdir = os.getcwd() + "/tests"
+
 parser = argparse.ArgumentParser(
-    description="Read and convert a CSV file from ODK Central"
+    description="Read and convert a JSON file from ODK Central"
 )
-parser.add_argument("--infile", default="tests/test.csv", help="The CSV input file")
+parser.add_argument("--infile", default=f"{rootdir}testdata/testcamps.json", help="The JSON input file")
 args = parser.parse_args()
 
 path = xlsforms_path.replace("/xlsforms", "")
 csv = Convert(f"{path}/xforms.yaml")
 
-def test_get_keyword():
+def test_keywords():
     """Convert a feature"""
-    if "sac_scale" in csv.yaml.yaml["tags"]:
-        assert 0
-    else:
-        assert 1
-
-
-def test_no_keyword():
-    """Convert a feature that doesn't exist"""
-    if "sac_scale" in csv.yaml.yaml["convert"]:
-        csv.getKeyword("doesn't exist")
-        assert 0
-    else:
-        assert 1
-
-
-# def test_convert_list():
-#     """Convert a list of features"""
-#     features = list()
-#     features.append("firepit")
-#     features.append("parking")
-#     features.append("viewpoint")
-#     result = csv.convertList(features)
-#     assert result[0]['leisure'] == "firepit" and result[1]['amenity'] == "parking" and result[2]['tourism'] == "viewpoint"
-
-# def test_bool_keyword():
-#     """Convert a feature"""
-#     result = csv.getKeyword("bear box")
-#     assert result == "bear box"
-
+    hits = 0
+    if csv.convertData('fee'):
+        hits += 1 
+    if csv.convertData('sac_scale') is False:
+        hits += 1 
+    assert hits == 2
 
 def test_convert_tag():
-    tmp1 = csv.convertTag("altitude")
-    tmp2 = csv.convertTag("foobar")
-    assert tmp1 == "ele" and tmp2 == "foobar"
+    """Test tag conversion"""
+    hits = 0
+    # Test a tag that gets converted
+    if csv.convertTag("altitude") == 'ele':
+        hits += 1
+    # Test a tag that doesn't get converted
+    if csv.convertTag("foobar") == 'foobar':
+        hits += 1
+    assert hits == 2
 
+def test_single_value():
+    """Test tag value conversion"""
+    hits = 0
+    # Test a value that gets converted
+    if csv.convertValue("building:floor", 'wood'):
+        hits += 1
+    assert hits == 1
+
+def test_sub_value():
+    """Test tag value conversion"""
+    hits = 0
+    # Test a value that gets converted
+    val = csv.convertValue("cemetery_services", 'cemetery')
+    if len(val) == 1 and val[0]['amenity'] == 'grave_yard':
+        hits += 1
+    assert hits == 1
+
+def test_multiple_value():
+    """Test tag value conversion"""
+    hits = 0
+    # Test a value that gets converted
+    vals = csv.convertValue('amenity', 'coffee')
+    if len(vals) == 2 and vals[0]['amenity'] == 'cafe' and vals[1]['cuisine'] == 'coffee_shop':
+        hits += 1
+    assert hits == 1
 
 # Run standalone for easier debugging when not under pytest
 if __name__ == "__main__":
-    test_get_keyword()
-    test_no_keyword()
-    #    test_convert_list()
-    #    test_bool_keyword()
+    test_keywords()
     test_convert_tag()
+    test_single_value()
+    test_sub_value()
+    test_multiple_value()

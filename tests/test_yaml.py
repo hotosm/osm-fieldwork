@@ -33,17 +33,44 @@ args = parser.parse_args()
 path = xlsforms_path.replace("/xlsforms", "")
 infile = f"{path}/xforms.yaml"
 data = YamlFile(infile)
+# data.dump()
 
-def test_validate():
-    """Tests for things under validate"""
-    foo = data.yaml["validate"]
-    bar = foo[1]["leisure"]
-    assert "firepit" in bar
+def test_load():
+    """See if the file got loaded"""
+    hits = 0
+    if len(data.yaml.keys()) > 0:
+        hits = 1
+    if len(data.yaml['convert']) > 0:
+        hits += 1
+    if len(data.yaml['ignore']) > 0:
+        hits += 1
+    if len(data.yaml['private']) > 0:
+        hits += 1
+    assert hits == 4
 
+def test_good():
+    hits = 0
+    if data.convertData('amenity'):
+        hits += 1
+    if data.convertData('foobar') == False:
+        hits += 1
+    assert hits == 2
 
-# def test_bool_good():
-#     epdb.st()
-#     assert "bear box" in data.yaml['convert'] is True
+def test_private():
+    hits = 0
+    if data.privateData('income'):
+        hits += 1
+    if data.privateData('foobar') == False:
+        hits += 1
+    assert hits == 2
+
+def test_ignore():
+    hits = 0
+    if data.ignoreData('model'):
+        hits += 1
+    if data.ignoreData('foobar') == False:
+        hits += 1
+    assert hits == 2
 
 # def test_bool_bad():
 #     assert "bad keyword" data.yaml['convert'] is not True
@@ -54,7 +81,7 @@ def test_validate():
 
 
 if __name__ == "__main__":
-    test_validate()
-#    test_bool_good()
-#    test_bool_bad()
-#    test_value()
+    test_load()
+    test_good()
+    test_private()
+    test_ignore()

@@ -35,7 +35,7 @@ community of people involved with this project.
 ## Documentation
 
 Project documentation should be in [Markdown
-format](https://www.markdownguide.org/), and in a _docs_
+format](https://www.markdownguide.org/), and in a _wiki_
 subdirectory. While it is possible to use HTML in Markdown documents
 for tables and images, it is prefered to use the Markdown style as
 it's much easier to read.

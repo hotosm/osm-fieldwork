@@ -66,7 +66,7 @@ course for this to work. That file looks like this:
 
 # Utility Programs
 
-These programs are more fully documented [in this](docs/programs.md)
+These programs are more fully documented [in this](wiki/programs.md)
 file. This is just a short overview.
 
 ## CSVDump.py

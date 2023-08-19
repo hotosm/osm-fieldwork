@@ -43,15 +43,24 @@ class YamlFile(object):
 
     def privateData(self, keyword: str):
         """See if a keyword is in the private data category"""
-        return keyword in self.yaml["private"]
+        for value in self.yaml["private"]:
+            if keyword.lower() in value:
+                return True
+        return False
 
     def ignoreData(self, keyword: str):
         """See if a keyword is in the ignore data category"""
-        return keyword in self.yaml["ignore"]
+        for value in self.yaml["ignore"]:
+            if keyword.lower() in value:
+                return True
+        return False
 
-    def tagsData(self, keyword: str):
-        """See if a keyword is in the tags completness section"""
-        return keyword in self.yaml["tags"]
+    def convertData(self, keyword: str):
+        """See if a keyword is in the convert data category"""
+        for value in self.yaml["convert"]:
+            if keyword.lower() in value:
+                return True
+        return False
 
     def hasList(self, keyword: str):
         for tags in self.yaml["tags"]:
@@ -64,8 +73,10 @@ class YamlFile(object):
         """Dump the contents of the yaml file"""
         if self.filespec:
             print("YAML file: %s" % self.filespec)
-        for item in self.yaml:
-            print(f"{item}")
+        for key, values in self.yaml.items():
+            print(f"Key is:{key}")
+            for k in values:
+                print(f"\t{k}")
 
     def write(self, table: list, where: list):
         tab = "    "

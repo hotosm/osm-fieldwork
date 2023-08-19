@@ -1,4 +1,4 @@
-# :question: Frequently Asked Questions :question:
+# ❓ Frequently Asked Questions ❓
 
 
 **Q:** What is OSM Fieldwork?

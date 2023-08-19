@@ -20,7 +20,6 @@ import logging
 import sys
 import os
 from sys import argv
-from osgeo import ogr
 from osm_fieldwork.osmfile import OsmFile
 from geojson import Point, Feature, FeatureCollection, dump, Polygon
 import geojson
@@ -343,8 +342,10 @@ class OdkMerge(object):
         log.debug(f"OdkMerge::conflateData() called! {len(odkdata)} features")
 
         # A chunk is a group of threads
-        chunk =  round(len(odkdata)/cores)
-        cycle = range(0, len(odkdata), chunk)
+        chunk = round(len(odkdata) / cores)
+
+        # cycle = range(0, len(odkdata), chunk)
+
         # Chop the data into a subset for each thread
         newdata = list()
         future = None
@@ -461,16 +462,14 @@ be either the data extract used by the XLSForm, or a postgresql database.
 
     # if verbose, dump to the terminal.
     if args.verbose:
-        root = logging.getLogger()
         log.setLevel(logging.DEBUG)
-
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
             "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
     if args.outfile:
         outfile = args.outfile

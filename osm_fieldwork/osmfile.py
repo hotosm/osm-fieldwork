@@ -124,9 +124,9 @@ class OsmFile(object):
         attrs["timestamp"] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, The GDPR applies
         # and the identifying fields should not be included
-        if "uid" in way and attrs["uid"] is not None:
+        if "uid" in way["attrs"]:
             attrs["uid"] = way["attrs"]["uid"]
-        if "user" in way and attrs["user"] is not None:
+        if "user" in way["attrs"]:
             attrs["user"] = way["attrs"]["user"]
 
         # Make all the nodes first. The data in the track has 4 fields. The first two
@@ -231,10 +231,10 @@ class OsmFile(object):
         attrs["timestamp"] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, THE GDPR applies
         # and the identifying fields should not be included
-        if "uid" in node and attrs["uid"] is not None:
-            attrs["uid"] = node["uid"]
-        if "user" in node and attrs["ser"] is not None:
-            attrs["user"] = node["user"]
+        if "uid" in node['attrs']:
+            attrs["uid"] = node['attrs']["uid"]
+        if "user" in node['attrs']:
+            attrs["user"] = node['attrs']["user"]
 
         # Processs atrributes
         line = ""
@@ -292,6 +292,11 @@ class OsmFile(object):
                 logging.warning("No data in this instance")
                 return False
             field = doc["osm"]
+
+            if "node" not in field:
+                logging.warning("No nodes in this instance")
+                return False
+
         if type(field["node"]) == dict:
             attrs = dict()
             tags = dict()
@@ -299,8 +304,12 @@ class OsmFile(object):
                 if k[0] == '@':
                     attrs[k[1:]] = v
                 else:
-                    for pair in field["node"]['tag']:
-                        tags[pair['@k']] = pair['@v']
+                    if type(field["node"]['tag']) == dict:
+                        tags[field["node"]['tag']["@k"]] = field["node"]['tag']["@v"].strip()
+                    else:
+                        for pair in field['node']['tag']:
+                            tags[pair['@k']] = pair['@v']
+
             node = {"attrs": attrs, "tags": tags}
             self.data[node["attrs"]["id"]] = node
         else:
