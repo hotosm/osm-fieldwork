@@ -64,8 +64,23 @@ nav:
   - Code of Conduct: Code-of-Conduct.md
   - License: LICENSE.md
 - User Manual: about/user-manual.md
-- Usage:
+- Core Program Usage:
   - ODK Client: about/odk_client.md
+  - make_data_extract: about/make_data_extract.md
+  - odk_merge: about/odk_merge.md
+  - json2osm: about/json2osm.md
+- Utility Program Usage:
+  - odk2geojson: about/odk2geojson.md
+  - odk2osm: about/odk2osm.md
+  - odk2csv: about/odk2csv.md
 - API:
   - ODK Central: api/OdkCentral.md
   - ODK Form: api/ODKForm.md
+  - basemapper: api/basemapper.md
+  - sqlite: api/sqlite.md
+  - osmfile: api/osmfile.md
+  - yamlfile: api/yamlfile.md
+  - json2osm: api/json2osm.md
+  - convert: api/convert.md
+  - CSVDump: api/CSVDump.md
+    
