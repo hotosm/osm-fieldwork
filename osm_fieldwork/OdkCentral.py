@@ -232,7 +232,11 @@ class OdkCentral(object):
         exists = self.findProject(name=name)
         if exists:
             log.debug(f"Project named {name} already exists.")
-            returq            try:
+            return exists
+        else:
+            url = f"{self.base}projects"
+            log.debug(f"POSTing project {name} to {url} with verify={self.verify}")
+            try:
                 result = self.session.post(
                     url, auth=self.auth, json={"name": name}, verify=self.verify, timeout=4
                 )
