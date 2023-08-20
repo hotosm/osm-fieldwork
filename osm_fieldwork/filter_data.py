@@ -35,16 +35,33 @@ log = logging.getLogger(__name__)
 
 class FilterData(object):
     def __init__(self,
-                 filespec: str = None
+                 filespec: str
                  ):
+        """
+
+        Args:
+            filespec (str): The optional data file to read
+
+        Returns:
+            (FilterData): An instance of this object
+        """
         self.tags = dict()
         if filespec:
             self.parse(filespec)
 
     def parse(self,
-              filespec: str
+              filespec: str,
               ):
-        """Read in the XLSForm and extract the data we want"""
+        """
+        Read in the XLSForm and extract the data we want
+
+        Args:
+            filespec (str): The filespec to the XLSForm file
+
+        Returns:
+            title (str): The title from the XLSForm Setting sheet
+            extract (str): The data extract filename from the XLSForm Survey sheet
+        """
         entries = pd.read_excel(filespec, sheet_name=[0, 1, 2])
         title = entries[2]['form_title'].to_list()[0]
         extract = ""
@@ -104,7 +121,16 @@ class FilterData(object):
     def cleanData(self,
                   data
                   ):
-        """Filter out any data not in the data_model"""
+        """
+        Filter out any data not in the data_model
+
+        Args:
+            data (bytes): The input data or filespec to the input data file
+
+        Returns:
+            (FeatureCollection): The modifed data
+        
+        """
         tmpfile = data
         if type(data) == str:
             outfile = open(f"new-{data}", "x")
@@ -160,36 +186,32 @@ class FilterData(object):
             geojson.dump(FeatureCollection(collection), outfile)
         return FeatureCollection(collection)
 
-if __name__ == "__main__":
+def main():
+    """This main function lets this class be run standalone by a bash script"""
     parser = argparse.ArgumentParser(
         description="Convert ODK XML instance file to CSV format"
     )
     parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
-    parser.add_argument("-i", "--infile", help="The data extract for ODK Collect")
-    parser.add_argument("-x", "--xform", help="The XForm for ODK Collect")
+    parser.add_argument("-i", "--infile", required=True, help="The data extract for ODK Collect")
+    parser.add_argument("-x", "--xform",  required=True, help="The XForm for ODK Collect")
     parser.add_argument("-o", "--outfile", default="models.yaml", help="The Yaml file of all tags and values")
     args = parser.parse_args()
 
     # if verbose, dump to the termina
-    if not args.verbose:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-
+    if args.verbose is not None:
+        log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
     xls = FilterData()
     path = xlsforms_path.replace("xlsforms", "data_models")
     models = FilterData()
-    if not args.xform:
-        data = models.parse(f"{path}/Impact Areas - Data Models V1.1.xlsx")
-    else:
-        data = models.parse(args.xform)
+    data = models.parse(args.xform)
     if args.infile:
         cleaned = models.cleanData(args.infile)
     else:
@@ -208,3 +230,6 @@ if __name__ == "__main__":
                 for val in value:
                     outfile.write(f"{tab}- {val}\n")
 
+if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
+    main()
