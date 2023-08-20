@@ -23,8 +23,6 @@ import argparse
 import logging
 import sys
 
-"""This parses a yaml file into a dictionary for easy access."""
-
 # Instantiate logger
 log = logging.getLogger(__name__)
 
@@ -32,7 +30,18 @@ log = logging.getLogger(__name__)
 class YamlFile(object):
     """Config file in YAML format"""
 
-    def __init__(self, data):
+    def __init__(self,
+                 data: str,
+                 ):
+        """
+        This parses a yaml file into a dictionary for easy access.
+
+        Args:
+            data (str): The filespec of the YAML file to read
+
+        Returns:
+            (YamlFile): An instance of this object
+        """
         self.filespec = None
         #if data == str:
         self.filespec = data
@@ -41,36 +50,59 @@ class YamlFile(object):
         #else:
         #    self.yaml = yaml.load(str(data), Loader=yaml.Loader)
 
-    def privateData(self, keyword: str):
-        """See if a keyword is in the private data category"""
+    def privateData(self,
+                    keyword: str
+                    ):
+        """
+        See if a keyword is in the private data category
+
+        Args:
+            keyword (str): The keyword to search for
+
+        Returns:
+            (bool): Check to see if the keyword is in the private data section
+        """
         for value in self.yaml["private"]:
             if keyword.lower() in value:
                 return True
         return False
 
-    def ignoreData(self, keyword: str):
-        """See if a keyword is in the ignore data category"""
+    def ignoreData(self,
+                   keyword: str
+                   ):
+        """
+        See if a keyword is in the ignore data category
+
+        Args:
+            keyword (str): The keyword to search for
+
+        Returns:
+            (bool): Check to see if the keyword is in the ignore data section
+        """
         for value in self.yaml["ignore"]:
             if keyword.lower() in value:
                 return True
         return False
 
-    def convertData(self, keyword: str):
-        """See if a keyword is in the convert data category"""
+    def convertData(self,
+                    keyword: str
+                    ):
+        """
+        See if a keyword is in the convert data category
+
+        Args:
+            keyword (str): The keyword to search for
+
+        Returns:
+            (bool): Check to see if the keyword is in the convert data section
+        """
         for value in self.yaml["convert"]:
             if keyword.lower() in value:
                 return True
         return False
 
-    def hasList(self, keyword: str):
-        for tags in self.yaml["tags"]:
-            for tag in tags:
-                if tag == keyword:
-                    return tag
-            logging.debug(type(tags))
-
     def dump(self):
-        """Dump the contents of the yaml file"""
+        """Dump internal data structures, for debugging purposes only"""
         if self.filespec:
             print("YAML file: %s" % self.filespec)
         for key, values in self.yaml.items():
@@ -78,7 +110,20 @@ class YamlFile(object):
             for k in values:
                 print(f"\t{k}")
 
-    def write(self, table: list, where: list):
+    def write(self,
+              table: list,
+              where: list
+              ):
+        """
+        Add to the YAML file
+        
+        Args:
+              table (list): The name of the database table
+              where (list):
+
+        Returns:
+            (str): The modified YAML data
+        """
         tab = "    "
         yaml = ["select:", f"{tab}\"osm_id\": id", f"{tab}tags:"]
         for item in where:
@@ -101,24 +146,26 @@ class YamlFile(object):
 # this way than using pytest,
 #
 if __name__ == "__main__":
-    # Enable logging to the terminal by default
-    root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
-
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    ch.setFormatter(formatter)
-    root.addHandler(ch)
-
+    """This is just a hook so this file can be run standlone during development."""
     parser = argparse.ArgumentParser(description="Read and parse a YAML file")
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument(
-        "-i", "--infile", default="./xforms.yaml", help="The YAML input file"
+        "-i", "--infile", required=True, default="./xforms.yaml",
+        help="The YAML input file"
     )
     args = parser.parse_args()
 
+    # if verbose, dump to the terminal.
+    if args.verbose is not None:
+        log.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
+        )
+        ch.setFormatter(formatter)
+        log.addHandler(ch)
+    
     yaml1 = YamlFile(args.infile)
 
     table = ("nodes", "ways_poly")

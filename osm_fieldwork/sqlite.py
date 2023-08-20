@@ -262,32 +262,30 @@ if __name__ == "__main__":
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-
+        log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
-        outfile = DataFile(args.database, "jpg")
-        toplevel = "/var/www/html/topotiles/"
-        foo = "15/12744/6874.png"
-        tmp = foo.split("/")
-        z = tmp[0]
-        x = tmp[1]
-        y = tmp[2].replace(".jpg", "")
+    outfile = DataFile(args.database, "jpg")
+    toplevel = "/var/www/html/topotiles/"
+    foo = "15/12744/6874.png"
+    tmp = foo.split("/")
+    z = tmp[0]
+    x = tmp[1]
+    y = tmp[2].replace(".jpg", "")
 
-        # file = "10/388/212.jpg"
-        # tile1 = MapTile(x=x, y=y, z=z)
-        # tile2 = MapTile(filespec=file)
-        # tile2.readImage(f'{toplevel}/{foo}')
-        # outfile.writeTile(tile2)
+    # file = "10/388/212.jpg"
+    # tile1 = MapTile(x=x, y=y, z=z)
+    # tile2 = MapTile(filespec=file)
+    # tile2.readImage(f'{toplevel}/{foo}')
+    # outfile.writeTile(tile2)
 
-        tile3 = mercantile.Tile(388, 211, 10)
-        xyz = MapTile(tile=tile3)
-        xyz.readImage(toplevel)
-        xyz.dump()
+    tile3 = mercantile.Tile(388, 211, 10)
+    xyz = MapTile(tile=tile3)
+    xyz.readImage(toplevel)
+    xyz.dump()
