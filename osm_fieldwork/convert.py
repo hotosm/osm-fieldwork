@@ -296,7 +296,7 @@ class Convert(YamlFile):
             return low
 
     def dump(self):
-        """Dump the contents of the yaml file"""
+        """Dump internal data structures, for debugging purposes only"""    
         print("YAML file: %s" % self.filespec)
         print("Convert section")
         for key, val in self.convert.items():
