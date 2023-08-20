@@ -33,6 +33,10 @@ log = logging.getLogger(__name__)
 
 
 def main():
+    """
+    This is a program that reads in the ODK Instance file, which is in XML,
+    and converts it to an OSM XML file so it can be viewed in an editor.
+    """
     parser = argparse.ArgumentParser(
         description="Convert ODK XML instance file to OSM XML format"
     )
@@ -43,17 +47,15 @@ def main():
     args = parser.parse_args()
 
     # if verbose, dump to the termina
-    if not args.verbose:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-
+    if args.verbose is not None:
+        log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
     xmlfiles = list()
     if args.instance.find("*") >= 0:
@@ -142,4 +144,5 @@ def main():
     print("Wrote: %s" % outfile)
 
 if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
     main()
