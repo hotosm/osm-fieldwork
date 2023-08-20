@@ -28,16 +28,28 @@ import sys
 # Instantiate logger
 log = logging.getLogger(__name__)
 
-
 def escape(value: str):
-    """Escape characters like embedded quotes in text fields"""
+    """
+    Escape characters like embedded quotes in text fields
+
+    Args:
+        value (str):The string to modify
+
+    Returns:
+        (str): The escaped string
+    """
     # tmp = value.replace(" ", "_")
     tmp = value.replace("&", " and ")
     return tmp.replace("'", "&apos;")
 
 
 class Convert(YamlFile):
-    """A class to apply a YAML config file and convert ODK to OSM"""
+    """
+    A class to apply a YAML config file and convert ODK to OSM
+
+    Returns:
+        (Convert): An instance of this object
+    """
 
     def __init__(self,
                  xform: str = None
@@ -80,25 +92,56 @@ class Convert(YamlFile):
     def privateData(self,
                     keyword: str
                     ):
-        """See is a keyword is in the private data category"""
+        """
+        See is a keyword is in the private data category
+
+        Args:
+            keyword (str): The keyword to search for
+
+        Returns:
+            (bool): Check to see if the keyword is in the private data section
+        """
         return keyword.lower() in self.private
 
     def convertData(self,
                     keyword: str
                     ):
-        """See is a keyword is in the convert data category"""
+        """
+        See is a keyword is in the convert data category
+        
+        Args:
+            keyword (str): The keyword to search for
+
+        Returns:
+            (bool): Check to see if the keyword is in the convert data section
+        """
         return keyword.lower() in self.convert
 
     def ignoreData(self,
                    keyword: str
                    ):
-        """See is a keyword is in the convert data category"""
+        """
+        See is a keyword is in the convert data category
+        
+        Args:
+            keyword (str): The keyword to search for
+
+        Returns:
+            (bool): Check to see if the keyword is in the ignore data section
+        """
         return keyword.lower() in self.ignore
 
     def getKeyword(self,
                    value: str
                    ):
-        """Get the value for a keyword from the yaml file"""
+        """
+        Get the keyword for a value from the yaml file
+        
+        Args:
+            value (str): The value to find the keyword for
+        Returns:
+            (str): The keyword if found, or None
+        """
         key = self.yaml.yaml(value)
         if type(key) == bool:
             return value
@@ -107,12 +150,19 @@ class Convert(YamlFile):
         return key
 
     def getValues(self,
-                  tag: str = None
+                  keyword: str = None
                   ):
-        """Get the values for a primary key"""
-        if tag is not None:
-            if tag in self.convert:
-                return self.convert[tag]
+        """
+        Get the values for a primary key
+        
+        Args:
+            tag (str): The keyword to get the value of
+        Returns:
+            (str): The values or None
+        """
+        if keyword is not None:
+            if keyword in self.convert:
+                return self.convert[keyword]
         else:
             return None
 
@@ -120,7 +170,16 @@ class Convert(YamlFile):
                      tag: str,
                      value: str
                      ):
-        """Convert a tag and value from the ODK represention to an OSM one"""
+        """
+        Convert a tag and value from the ODK represention to an OSM one
+        
+        Args:
+            tag (str): The tag from the ODK XML file
+            value (str): The value from the ODK XML file
+
+        Returns:
+            (list): The converted values
+        """
         all = list()
 
         # If it's not in any conversion data, pass it through unchanged.
@@ -164,7 +223,16 @@ class Convert(YamlFile):
                      tag: str,
                      value: str
                      ):
-        """Convert a single tag value"""
+        """
+        Convert a single tag value
+        
+        Args:
+            tag (str): The tag from the ODK XML file
+            value (str): The value from the ODK XML file
+
+        Returns:
+            (list): The converted values
+        """
         all = list()
 
         vals = self.getValues(tag)
@@ -198,7 +266,15 @@ class Convert(YamlFile):
     def convertTag(self,
                    tag: str
                    ):
-        """Convert a single tag"""
+        """
+        Convert a single tag
+        
+        Args:
+            tag (str): The tag from the ODK XML file
+
+        Returns:
+            (str): The new tag
+        """
         low = tag.lower()
         if low in self.convert:
             newtag = self.convert[low]
@@ -238,28 +314,27 @@ class Convert(YamlFile):
 # This script can be run standalone for debugging purposes. It's easier to debug
 # this way than using pytest,
 #
-if __name__ == "__main__":
-    # Enable logging to the terminal by default
-    root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
-
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    ch.setFormatter(formatter)
-    root.addHandler(ch)
-
+def main():
+    """This main function lets this class be run standalone by a bash script"""
     parser = argparse.ArgumentParser(description="Read and parse a YAML file")
+
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-x", "--xform", default="xform.yaml", help="Default Yaml file")
-    parser.add_argument(
-        "-i",
-        "--infile",
-        help="The CSV input file",
+    parser.add_argument("-i", "--infile", required=True, help="The CSV input file",
     )
     args = parser.parse_args()
 
+    # if verbose, dump to the terminal.
+    if args.verbose is not None:
+        log.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
+        )
+        ch.setFormatter(formatter)
+        log.addHandler(ch)
+    
     # convert = Convert(args.xform)
     convert = Convert("xforms.yaml")
     print("-----")
@@ -299,3 +374,7 @@ if __name__ == "__main__":
     entry = convert.convertEntry("power", "solar")
     for i in entry:
         print("XX: %r" % i)
+
+if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
+    main()

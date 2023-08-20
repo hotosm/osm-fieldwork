@@ -42,10 +42,19 @@ log = logging.getLogger(__name__)
 
 class JsonDump(Convert):
     """A class to parse the JSON files from ODK Central or odk2geojson"""
-
     def __init__(self,
                  yaml: str = None
                  ):
+        """
+        A class to convert the JSON file from ODK Central, or the GeoJson
+        file created by the odk2geojson utility.
+
+        Args:
+            yaml (str): The filespec of the YAML config file
+
+        Returns:
+            (JsonDump): An instance of this object
+        """
         self.fields = dict()
         self.nodesets = dict()
         self.data = list()
@@ -54,6 +63,7 @@ class JsonDump(Convert):
         self.features = list()
         self.config = super().__init__(yaml)
 
+    # FIXME: a work in progress
     # def parseXLS(self, xlsfile: str):
     #     """Parse the source XLSFile if available to look for details we need"""
     #     if xlsfile is not None and len(xlsfile) > 0:
@@ -78,14 +88,28 @@ class JsonDump(Convert):
     def createOSM(self,
                   filespec: str = "tmp.osm"
                   ):
-        """Create an OSM XML output files"""
+        """
+        Create an OSM XML output files
+
+        Args:
+            filespec (str): The filespec for the output OSM XML file
+
+        Returns:
+            (OsmFile): An instance of the OSM XML output file
+        """
         log.debug("Creating OSM XML file: %s" % filespec)
         self.osm = OsmFile(filespec)
+        return self.osm
 
     def writeOSM(self,
                  feature: dict
                  ):
-        """Write a feature to an OSM XML output file"""
+        """
+        Write a feature to an OSM XML output file
+
+        Args:
+            feature (dict): The feature to write to the OSM XML output file
+        """
         out = ""
         if "id" in feature["tags"]:
             feature["id"] = feature["tags"]["id"]
@@ -104,25 +128,40 @@ class JsonDump(Convert):
         self.osm.write(out)
 
     def finishOSM(self):
-        """Write the OSM XML file footer and close it"""
+        """
+        Write the OSM XML file footer and close it. The destructor in the
+        OsmFile class should do this, but this is the manual way.
+        """
         self.osm.footer()
 
     def createGeoJson(self, file="tmp.geojson"):
-        """Create a GeoJson output file"""
+        """
+        Create a GeoJson output file
+
+        Args:
+                file (str): The filespec of the output GeoJson file
+        """
         log.debug("Creating GeoJson file: %s" % file)
         self.json = open(file, "w")
 
     def writeGeoJson(self,
                      feature: dict
                      ):
-        """Write a feature to a GeoJson output file"""
+        """
+        Write a feature to a GeoJson output file
+
+        Args:
+            feature (dict): The feature to write to the GeoJson output file
+        """
         # These get written later when finishing , since we have to create a FeatureCollection
         if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
             return None
         self.features.append(feature)
 
     def finishGeoJson(self):
-        """Write the GeoJson FeatureCollection to the output file and close it"""
+        """
+        Write the GeoJson FeatureCollection to the output file and close it.
+        """
         features = list()
         for item in self.features:
             #poi = Point()
@@ -139,7 +178,17 @@ class JsonDump(Convert):
               filespec: str = None,
               data: str = None
               ):
-        """Parse the JSON file from ODK Central and convert it to a data structure"""
+        """
+        Parse the JSON file from ODK Central and convert it to a data structure.
+        The input is either a filespec to open, or the data itself.
+
+        Args:
+            filespec (str): The JSON or GeoJson input file to convert
+            data (str): The data to convert
+
+        Returns:
+            (list): A list of all the features in the input file
+        """
         all_tags = list()
         if not data:
             file = open(filespec, "r")
@@ -213,7 +262,15 @@ class JsonDump(Convert):
     def createEntry(self,
                     entry: dict
                     ):
-        """Create the feature data structure"""
+        """
+        Create the feature data structure for this entry.
+
+        Args:
+            entry (dict): The feature to convert to the output format
+
+        Returns:
+            (dict): The new entry for the output file
+        """
         # print(line)
         feature = dict()
         attrs = dict()
@@ -308,29 +365,28 @@ class JsonDump(Convert):
         return feature
 
 def main():
-    parser = argparse.ArgumentParser(
+   """This main function lets this class be run standalone by a bash script"""    
+     parser = argparse.ArgumentParser(
         description="convert JSON from ODK Central to OSM XML"
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-y", "--yaml", help="Alternate YAML file")
     parser.add_argument("-x", "--xlsfile", help="Source XLSFile")
-    parser.add_argument(
-        "-i", "--infile", required=True, help="The input file downloaded from ODK Central"
+    parser.add_argument("-i", "--infile", required=True,
+        help="The input file downloaded from ODK Central"
     )
     args = parser.parse_args()
     
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-
+        log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)    
 
     if args.yaml:
         jsonin = JsonDump(args.yaml)
@@ -378,4 +434,5 @@ def main():
     log.info("Wrote GeoJson file: %r" % jsonoutfile)
 
 if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
     main()
