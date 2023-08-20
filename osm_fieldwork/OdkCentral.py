@@ -273,8 +273,8 @@ class OdkCentral(object):
                     ):
         """
         Get the project data from Central
+
         Args:
-            project_id (int): The project ID on ODK Central
             name (str): The name of the project
 
         Returns:
@@ -917,7 +917,7 @@ class OdkForm(OdkCentral):
             draft (bool): Whether to create the XForm in draft or published
 
         Returns:
-
+            (int): The status code from ODK Central
         """
         if draft is not None:
             self.draft = draft
@@ -1054,10 +1054,10 @@ class OdkAppUser(OdkCentral):
 
         Args:
             projectId (int): The ID of the project on ODK Central
-            userID (int): The ID of the user on ODK Central to delete
+            userId (int): The ID of the user on ODK Central to delete
 
         Returns:
-            bool): Whether the user got deleted or not
+            (bool): Whether the user got deleted or not
         """
         url = f"{self.base}projects/{projectId}/app-users/{userId}"
         result = self.session.delete(url, auth=self.auth, verify=self.verify)
