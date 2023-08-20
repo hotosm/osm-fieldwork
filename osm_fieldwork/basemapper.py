@@ -35,8 +35,18 @@ from osm_fieldwork.sqlite import DataFile
 log = logging.getLogger(__name__)
 
 
-def dlthread(dest, mirrors, tiles):
-    """Thread to handle downloads for Queue"""
+def dlthread(dest: str,
+             mirrors: list,
+             tiles: list,
+             ):
+    """
+    Thread to handle downloads for Queue
+
+    Args:
+        dest (str): The filespec of the tile cache
+        mirrors (list): The list of mirrors to get imagery
+        tiles (list): The list of tiles to download
+    """
     if len(tiles) == 0:
         # epdb.st()
         return
@@ -90,9 +100,23 @@ def dlthread(dest, mirrors, tiles):
 
 
 class BaseMapper(object):
-    def __init__(self, filespec=None, base=None, source=None):
-        """Create an mbtiles basemap for ODK Collect"""
-        geom = ogr.Open(filespec)
+    def __init__(self,
+                 boundary: str= None,
+                 base: str = None,
+                 source: str = None
+                 ):
+        """
+        Create an mbtiles basemap for ODK Collect
+
+        Args:
+            boundary (str): A Polygon in GeoJson format of the AOI
+            base (str): The base directory to cache map tile in
+            source (str): The upstream data source for map tiles
+
+        Returns:
+            (BaseMapper): An instance of this class
+        """
+        geom = ogr.Open(boundary)
         layer = geom.GetLayer()
         x_min, x_max, y_min, y_max = layer.GetExtent()
         layer.GetSpatialRef()
@@ -156,17 +180,30 @@ class BaseMapper(object):
         self.sources["oam"] = source
 
     def getFormat(self):
+        """
+        Returns:
+            (str): the upstream sourve for map tiles
+        """
         return self.sources[self.source]["suffix"]
 
-    def getTiles(self, zoom=None):
-        """Get a list of tiles for the specifed zoom level"""
+    def getTiles(self,
+                 zoom: int = None
+                 ):
+        """
+        Get a list of tiles for the specifed zoom level
+
+        Args:
+            zoom (int): The Zoom level of the desired map tiles
+
+        Returns:
+            (int): The total number of map tiles downloaded
+        """
         info = get_cpu_info()
         cores = info["count"]
 
         self.tiles = list(
             mercantile.tiles(
-                self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], zoom
-            )
+                self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], zoom)
         )
         total = len(self.tiles)
         logging.info("%d tiles for zoom level %d" % (len(self.tiles), zoom))
@@ -192,8 +229,18 @@ class BaseMapper(object):
 
         return len(self.tiles)
 
-    def tileExists(self, tile=list()):
-        """See if a map tile already exists"""
+    def tileExists(self,
+                   tile: MapTile,
+                   ):
+        """
+        See if a map tile already exists
+
+        Args:
+            tile (MapTile): The map tile to check for the existence of
+
+        Returns:
+            (bool): Whether the tile exists in the map tile cache
+        """
         filespec = f"{self.base}{tile[2]}/{tile[1]}/{tile[0]}.{self.sources[{self.source}]['suffix']}"
         if os.path.exists(filespec):
             logging.debug("%s exists" % filespec)
@@ -202,30 +249,38 @@ class BaseMapper(object):
             logging.debug("%s doesn't exists" % filespec)
             return False
 
-    def makeBbox(self, layer=None):
-        """Make a bounding box from a layer"""
+    def makeBbox(self,
+                 layer: ogr.Layer,
+                 ):
+        """
+        Make a bounding box from a layer
+
+        Args:
+            layer (ogr.Layer): The boundary data file
+
+        Returns:
+            (list): The bounding box coordinates
+        """
         # left, bottom, right, top
         # minX: %d, minY: %d, maxX: %d, maxY: %d" %(env[0],env[2],env[1],env[3])
         for feature in layer:
             bbox = list(feature.GetGeometryRef().GetEnvelope())
             bbox = (bbox[0], bbox[2], bbox[1], bbox[3])
-            print(bbox)
+            # print(bbox)
         return bbox
 
 
-if __name__ == "__main__":
+def main():
+    """This main function lets this class be run standalone by a bash script"""
     parser = argparse.ArgumentParser(
         description="Create an mbtiles basemap for ODK Collect"
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument("-b", "--boundary", help="The boundary for the area you want")
+    parser.add_argument("-b", "--boundary", required=True, help="The boundary for the area you want")
+    parser.add_argument("-o", "--outfile", required=True, help="Output file name")
     parser.add_argument("-z", "--zooms", default="12-17", help="The Zoom levels")
-    parser.add_argument("-o", "--outfile", help="Output file name")
     parser.add_argument("-d", "--outdir", help="Output directory name for tile cache")
-    parser.add_argument(
-        "-s",
-        "--source",
-        default="esri",
+    parser.add_argument("-s", "--source", default="esri",
         choices=["esri", "bing", "topo", "google", "oam"],
         help="Imagery source",
     )
@@ -233,17 +288,14 @@ if __name__ == "__main__":
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-
+        log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
-
+        log.addHandler(ch)
 
     # Get all the zoom levels we want
     zooms = list()
@@ -296,3 +348,7 @@ if __name__ == "__main__":
             outf.writeTiles(basemap.tiles, base)
         else:
             logging.info("Only downloading tiles to %s!" % base)
+
+if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
+    main()
