@@ -31,9 +31,29 @@ log = logging.getLogger(__name__)
 
 
 class MapTile(object):
-    def __init__(self, x=None, y=None, z=None, filespec=None, tile=None, suffix="jpg"):
-        """This is a simple wrapper around mercantile.tile to associate a
-        filespec with the grid coordinates."""
+    def __init__(self,
+                 x: int = None,
+                 y: int = None,
+                 z: int = None,
+                 filespec: str = None,
+                 tile: MapTile = None,
+                 suffix="jpg"
+                 ):
+        """
+        This is a simple wrapper around mercantile.tile to associate a
+        filespec with the grid coordinates.
+
+        Args:
+            x (int): The X index for this tile
+            y (int): The Y index for this tile 
+            z (int): The Z index for this tile if there is one
+            filespec (str): The location of this within the map tile cache
+            tile (MapTile): Make a copy of this object
+            suffix (str): The image suffix, jpg or png usually
+
+        Returns:
+            (MapTile): An instance of this object
+        """
         if tile:
             self.x = tile.x
             self.y = tile.y
@@ -53,7 +73,15 @@ class MapTile(object):
             self.x = tmp[2]
             self.y = tmp[1].replace("." + suffix, "")
 
-    def readImage(self, base="./"):
+    def readImage(self,
+                  base (str)= "./"
+                  ):
+        """
+        Read a map tile out of the disk based map tile cache
+
+        Args:
+            base (str): The top level directory for the map tile cache
+        """
         file = f"{base}/{self.filespec}"
         logging.debug("Adding tile image: %s" % file)
         if os.path.exists(file):
@@ -62,6 +90,7 @@ class MapTile(object):
             self.blob = file.read(size)
 
     def dump(self):
+        """Dump internal data structures, for debugging purposes only"""    
         if self.z:
             print("Z: %r" % self.z)
         if self.x:
@@ -74,8 +103,20 @@ class MapTile(object):
 
 
 class DataFile(object):
-    def __init__(self, dbname=None, suffix="jpg"):
-        """Handle the sqlite3 database file"""
+    def __init__(self,
+                dbname: str = None,
+                suffix: str = "jpg",
+                ):
+        """
+        Handle the sqlite3 database file
+
+        Args:
+            dbname (str): The name of the output sqlite file
+            suffix (str): The image suffix, jpg or png usually
+
+        Returns:
+            (DataFile): An instance of this class
+        """
         self.db = None
         self.cursor = None
         if dbname:
@@ -85,8 +126,15 @@ class DataFile(object):
         self.toplevel = None
         self.suffix = suffix
 
-    def addBounds(self, bounds=None):
-        """Mbtiles has a bounds field, Osmand doesn't"""
+    def addBounds(self,
+                  bounds: int,
+                  ):
+        """
+        Mbtiles has a bounds field, Osmand doesn't
+
+        Args:
+            bounds (int): The bounds value for ODK Collect mbtiles
+        """
         entry = str(bounds)
         entry = entry[1 : len(entry) - 1].replace(" ", "")
         self.cursor.execute(
@@ -95,8 +143,15 @@ class DataFile(object):
         # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('minzoom', '9')")
         # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('maxzoom', '15')")
 
-    def createDB(self, dbname=None):
-        """Create and sqlitedb in either mbtiles or Osman sqlitedb format"""
+    def createDB(self,
+                 dbname: str
+                 ):
+        """
+        Create and sqlitedb in either mbtiles or Osman sqlitedb format
+
+        Args:
+            dbname (str): The filespec of the sqlite output file
+        """
         suffix = os.path.splitext(dbname)[1]
 
         if os.path.exists(dbname):
@@ -146,14 +201,32 @@ class DataFile(object):
         self.db.commit()
         logging.info("Created database file %s" % dbname)
 
-    def writeTiles(self, tiles=list(), base="./"):
+    def writeTiles(self,
+                   tiles: list,
+                   base: str ="./",
+                   ):
+        """
+        Write map tiles into the to the map tile cache
+
+        Args:
+            tiles (list): The map tiles to write to the map tile cache
+            base (str): The default local to write tiles to disk
+        """
         for tile in tiles:
             xyz = MapTile(tile=tile)
             xyz.readImage(base)
             # xyz.dump()
             self.writeTile(xyz)
 
-    def writeTile(self, tile=None):
+    def writeTile(self,
+                  tile: MapTile
+                  ):
+        """
+        Write a map tile into the sqlite database file
+
+        Args:
+            tile (MapTile): The map tile to write to the file
+        """
         if tile.blob is None:
             logging.error("Map tile has no image data!")
             # tile.dump()
@@ -176,8 +249,8 @@ class DataFile(object):
 
         self.db.commit()
 
-
 if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
     parser = argparse.ArgumentParser(
         description="Create an mbtiles basemap for ODK Collect"
     )
