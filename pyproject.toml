@@ -81,6 +81,7 @@ docs = [
 
 [project.scripts]
 json2osm = "osm_fieldwork.json2osm:main"
+basemapper = "osm_fieldwork.basemapper:main"
 csv2osm = "osm_fieldwork.CSVDump:main"
 odk2csv = "osm_fieldwork.odk2csv:main"
 odk2osm = "osm_fieldwork.odk2osm:main"
