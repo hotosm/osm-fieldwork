@@ -156,7 +156,8 @@ class Convert(YamlFile):
         Get the values for a primary key
         
         Args:
-            tag (str): The keyword to get the value of
+            keyword (str): The keyword to get the value of
+
         Returns:
             (str): The values or None
         """

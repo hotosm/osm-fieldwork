@@ -365,8 +365,8 @@ class JsonDump(Convert):
         return feature
 
 def main():
-   """This main function lets this class be run standalone by a bash script"""    
-     parser = argparse.ArgumentParser(
+    """This main function lets this class be run standalone by a bash script"""
+    parser = argparse.ArgumentParser(
         description="convert JSON from ODK Central to OSM XML"
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
