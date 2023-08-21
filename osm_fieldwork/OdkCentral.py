@@ -406,7 +406,7 @@ class OdkProject(OdkCentral):
         Returns:
             (list): The list of XForms in this project
         """
-        url = f"{self.base}projects/{xform}/forms"
+        url = f"{self.base}projects/{project_id}/forms"
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.forms = result.json()
         return self.forms
