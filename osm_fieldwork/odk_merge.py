@@ -50,7 +50,7 @@ cores = info['count']
 class OdkMerge(object):
     def __init__(self,
                  source: str,
-                 boundary: str = None
+                 boundary: str = None,
                  ):
         """
         Initialize Input data source
@@ -134,7 +134,7 @@ class OdkMerge(object):
 
     def makeNewFeature(self,
                        attrs: dict = None,
-                       tags: dict = None
+                       tags: dict = None,
                        ):
         """
         Create a new feature with optional data
@@ -228,7 +228,7 @@ class OdkMerge(object):
 
     def conflateWay(self,
                     feature: dict,
-                    dbindex: int
+                    dbindex: int,
                     ):
         """
         Conflate a POI against all the ways in a postgres view
@@ -332,7 +332,7 @@ class OdkMerge(object):
 
     def conflateById(self,
                      feature: dict,
-                     dbindex: int
+                     dbindex: int,
                      ):
         """
         Conflate a feature with existing ways using the OSM ID
@@ -464,7 +464,7 @@ class OdkMerge(object):
 
 def conflateThread(features: dict,
                    source: str,
-                   dbindex: int
+                   dbindex: int,
                    ):
     """
     Conflate a subset of the data
@@ -524,7 +524,7 @@ def conflateThread(features: dict,
 
 
 def main():
-   """This main function lets this class be run standalone by a bash script"""    
+    """This main function lets this class be run standalone by a bash script"""
     parser = argparse.ArgumentParser(
         prog="odk_merge.py",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -538,8 +538,8 @@ be either the data extract used by the XLSForm, or a postgresql database.
         odk_merge.py [OPTIONS] [OSMFILE] [DATAFILE]
         Where OSMFILE is the output from json2osm.py
         And DATAFILE is either the data extract from make_data_extract.py,
-        OR prefix with "PG:[url]" to use a postgres database
-        """
+        OR refix with "PG:[url]" to use a postgres database
+        """,
     )
     parser.add_argument("-v", "--verbose",  action="store_true", help="verbose output")
     parser.add_argument("-o", "--outfile",  help="Output file from the conflation")

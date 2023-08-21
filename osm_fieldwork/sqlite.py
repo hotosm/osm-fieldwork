@@ -37,7 +37,7 @@ class MapTile(object):
                  z: int = None,
                  filespec: str = None,
                  tile: MapTile = None,
-                 suffix="jpg"
+                 suffix="jpg",
                  ):
         """
         This is a simple wrapper around mercantile.tile to associate a
@@ -74,7 +74,7 @@ class MapTile(object):
             self.y = tmp[1].replace("." + suffix, "")
 
     def readImage(self,
-                  base (str)= "./"
+                  base: str = "./",
                   ):
         """
         Read a map tile out of the disk based map tile cache
@@ -144,7 +144,7 @@ class DataFile(object):
         # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('maxzoom', '15')")
 
     def createDB(self,
-                 dbname: str
+                 dbname: str,
                  ):
         """
         Create and sqlitedb in either mbtiles or Osman sqlitedb format
@@ -219,7 +219,7 @@ class DataFile(object):
             self.writeTile(xyz)
 
     def writeTile(self,
-                  tile: MapTile
+                  tile: MapTile,
                   ):
         """
         Write a map tile into the sqlite database file

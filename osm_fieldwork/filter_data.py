@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 
 class FilterData(object):
     def __init__(self,
-                 filespec: str
+                 filespec: str,
                  ):
         """
 
@@ -119,7 +119,7 @@ class FilterData(object):
         return title, extract
 
     def cleanData(self,
-                  data
+                  data,
                   ):
         """
         Filter out any data not in the data_model

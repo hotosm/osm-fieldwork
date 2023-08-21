@@ -52,7 +52,7 @@ class Convert(YamlFile):
     """
 
     def __init__(self,
-                 xform: str = None
+                 xform: str = None,
                  ):
         path = xlsforms_path.replace("xlsforms", "")
         if xform is not None:
@@ -90,7 +90,7 @@ class Convert(YamlFile):
             self.multiple = list()
 
     def privateData(self,
-                    keyword: str
+                    keyword: str,
                     ):
         """
         See is a keyword is in the private data category
@@ -104,7 +104,7 @@ class Convert(YamlFile):
         return keyword.lower() in self.private
 
     def convertData(self,
-                    keyword: str
+                    keyword: str,
                     ):
         """
         See is a keyword is in the convert data category
@@ -118,7 +118,7 @@ class Convert(YamlFile):
         return keyword.lower() in self.convert
 
     def ignoreData(self,
-                   keyword: str
+                   keyword: str,
                    ):
         """
         See is a keyword is in the convert data category
@@ -132,7 +132,7 @@ class Convert(YamlFile):
         return keyword.lower() in self.ignore
 
     def getKeyword(self,
-                   value: str
+                   value: str,
                    ):
         """
         Get the keyword for a value from the yaml file
@@ -150,7 +150,7 @@ class Convert(YamlFile):
         return key
 
     def getValues(self,
-                  keyword: str = None
+                  keyword: str = None,
                   ):
         """
         Get the values for a primary key
@@ -169,7 +169,7 @@ class Convert(YamlFile):
 
     def convertEntry(self,
                      tag: str,
-                     value: str
+                     value: str,
                      ):
         """
         Convert a tag and value from the ODK represention to an OSM one
@@ -222,7 +222,7 @@ class Convert(YamlFile):
 
     def convertValue(self,
                      tag: str,
-                     value: str
+                     value: str,
                      ):
         """
         Convert a single tag value
@@ -265,7 +265,7 @@ class Convert(YamlFile):
         return all
 
     def convertTag(self,
-                   tag: str
+                   tag: str,
                    ):
         """
         Convert a single tag
