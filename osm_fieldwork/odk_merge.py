@@ -530,9 +530,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="This program conflates ODK data with existing features from OSM.",
         epilog="""
-This program conflates the output from Osm-Fieldwork after converting
-the JSON file from ODK Central to OSM XML. The data source for existing data can'
-be either the data extract used by the XLSForm, or a postgresql database.
+    This program conflates the output from Osm-Fieldwork after converting
+    the JSON file from ODK Central to OSM XML. The data source for existing data can'
+    be either the data extract used by the XLSForm, or a postgresql database.
 
     examples:
         odk_merge.py [OPTIONS] [OSMFILE] [DATAFILE]

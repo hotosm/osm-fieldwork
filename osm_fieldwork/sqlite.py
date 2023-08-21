@@ -36,7 +36,7 @@ class MapTile(object):
                  y: int = None,
                  z: int = None,
                  filespec: str = None,
-                 tile: MapTile = None,
+                 tile: 'MapTile' = None,
                  suffix="jpg"
                  ):
         """
@@ -74,7 +74,7 @@ class MapTile(object):
             self.y = tmp[1].replace("." + suffix, "")
 
     def readImage(self,
-                  base (str)= "./"
+                  base: str = "./"
                   ):
         """
         Read a map tile out of the disk based map tile cache
