@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
 class ODKInstance(object):
     def __init__(self,
                  filespec: str = None,
-                 data: str = None
+                 data: str = None,
                  ):
         """
         This class imports a ODK Instance file, which is in XML into a data
@@ -55,7 +55,7 @@ class ODKInstance(object):
 
     def parse(self,
               filespec: str,
-              data: str = None
+              data: str = None,
               ):
         """
         Import an ODK XML Instance file ito a data structure. The input is

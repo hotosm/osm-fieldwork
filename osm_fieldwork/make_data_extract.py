@@ -179,7 +179,7 @@ class DatabaseAccess(object):
     def createJson(self,
                    category: str,
                    boundary,
-                   poly: bool = False
+                   poly: bool = False,
                    ):
         """
         Create the JSON file used to query the Underpass database
@@ -227,7 +227,7 @@ class DatabaseAccess(object):
 
     def createSQL(self,
                   category: str,
-                  polygon: bool = False
+                  polygon: bool = False,
                   ):
         """
         Create the SQL used to query a postgres database
@@ -279,7 +279,7 @@ class DatabaseAccess(object):
 
     def queryLocal(self,
                    query: str = None,
-                   ewkt: str = None
+                   ewkt: str = None,
                    ):
         """
         Query a local or remote postgres database using the Underpass schema.
@@ -338,7 +338,7 @@ class DatabaseAccess(object):
         return features
 
     def queryRemote(self,
-                    query: str = None
+                    query: str = None,
                     ):
         """
         Query the remote the Underpass database
@@ -383,7 +383,6 @@ class PostgresClient(DatabaseAccess):
                  dbname: str = None,
                  dbuser: str = None,
                  dbpass: str = None,
-                 #output: str = None
     ):
         """
         Initialize the postgres handler
@@ -405,7 +404,7 @@ class PostgresClient(DatabaseAccess):
                     filespec: str,
                     polygon: bool,
                     category: str,
-                    xlsfile: str
+                    xlsfile: str,
                     ):
         """
         Extract features from Postgres
@@ -488,7 +487,7 @@ class OverpassClient(object):
     Class to handle Overpass queries
     """
     def __init__(self,
-                 output: str = None
+                 output: str = None,
                  ):
         """
         Initialize Overpass handler
@@ -506,7 +505,7 @@ class OverpassClient(object):
                     boundary: str,
                     filespec: str,
                     xlsfile: str,
-                    category: str
+                    category: str,
                     ):
         """
         Extract features from Overpass
@@ -573,7 +572,7 @@ class FileClient(object):
 
     def __init__(self,
                  infile: str,
-                 output: str
+                 output: str,
                  ):
         """
         Initialize Overpass handler
@@ -591,7 +590,7 @@ class FileClient(object):
     def getFeatures(self,
                     boundary: str,
                     infile: str,
-                    outfile: str
+                    outfile: str,
                     ):
         """
         Extract features from a disk file

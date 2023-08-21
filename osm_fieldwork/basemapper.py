@@ -103,7 +103,7 @@ class BaseMapper(object):
     def __init__(self,
                  boundary: str= None,
                  base: str = None,
-                 source: str = None
+                 source: str = None,
                  ):
         """
         Create an mbtiles basemap for ODK Collect
@@ -187,7 +187,7 @@ class BaseMapper(object):
         return self.sources[self.source]["suffix"]
 
     def getTiles(self,
-                 zoom: int = None
+                 zoom: int = None,
                  ):
         """
         Get a list of tiles for the specifed zoom level
