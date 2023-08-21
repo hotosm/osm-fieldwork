@@ -75,12 +75,16 @@ nav:
   - odk2csv: about/odk2csv.md
 - API:
   - ODK Central: api/OdkCentral.md
-  - ODK Form: api/ODKForm.md
   - basemapper: api/basemapper.md
+  - convert: api/convert.md
   - sqlite: api/sqlite.md
   - osmfile: api/osmfile.md
   - yamlfile: api/yamlfile.md
   - json2osm: api/json2osm.md
-  - convert: api/convert.md
-  - CSVDump: api/CSVDump.md
-    
+  - ODKInstance: api/ODKInstance.md
+  - ODKForm: api/ODKForm.md
+  - CSVDump: api/CSVDump.md    
+#  - odk2geojson: api/odk2geojson.md
+#  - odk2csv: api/odk2csv.md
+#  - odk2osm: api/odk2osm.md
+
