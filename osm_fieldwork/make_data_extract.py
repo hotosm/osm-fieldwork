@@ -589,7 +589,7 @@ class FileClient(object):
         self.infile = infile
 
     def getFeatures(self,
-                    boundary,
+                    boundary: str,
                     infile: str,
                     outfile: str
                     ):
@@ -599,7 +599,7 @@ class FileClient(object):
         Args:
             boundary (str): The filespec for the project AOI in GeoJson format
             infile (str): A GeoJson file of existing data
-            output (str): An optional GeoJson output file
+            outfile (str): An optional GeoJson output file
 
         Returns:
             (FeatureCollection): The features returned from the query
