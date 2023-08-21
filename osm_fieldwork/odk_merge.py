@@ -524,7 +524,7 @@ def conflateThread(features: dict,
 
 
 def main():
-   """This main function lets this class be run standalone by a bash script"""    
+    """This main function lets this class be run standalone by a bash script"""
     parser = argparse.ArgumentParser(
         prog="odk_merge.py",
         formatter_class=argparse.RawDescriptionHelpFormatter,
