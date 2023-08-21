@@ -4,7 +4,10 @@
 #
 # This file is part of OSM-Fieldwork.
 #
-#     This is free software: you can redistribute it and/or modify
+#     This is free software: you can redistribute it and/or modify<<<<<<< refactor/fix-types-lint-format
+78
+ 
+
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
@@ -36,7 +39,7 @@ class MapTile(object):
                  y: int = None,
                  z: int = None,
                  filespec: str = None,
-                 tile: MapTile = None,
+                 tile: 'MapTile' = None,
                  suffix="jpg",
                  ):
         """
@@ -74,7 +77,7 @@ class MapTile(object):
             self.y = tmp[1].replace("." + suffix, "")
 
     def readImage(self,
-                  base: str = "./",
+                  base: str = "./,
                   ):
         """
         Read a map tile out of the disk based map tile cache

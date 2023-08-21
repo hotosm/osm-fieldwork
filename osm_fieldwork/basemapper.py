@@ -29,7 +29,7 @@ from cpuinfo import get_cpu_info
 import queue
 import concurrent.futures
 import threading
-from osm_fieldwork.sqlite import DataFile
+from osm_fieldwork.sqlite import DataFile, MapTile
 
 # Instantiate logger
 log = logging.getLogger(__name__)
