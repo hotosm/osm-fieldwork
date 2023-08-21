@@ -91,7 +91,7 @@ class OdkCentral(object):
     def __init__(self,
                     url: str = None,
                     user: str = None,
-                    passwd: str = None
+                    passwd: str = None,
                      ):
         """
         A Class for accessing an ODK Central server via it's REST API
@@ -170,7 +170,7 @@ class OdkCentral(object):
     def authenticate(self,
                      url: str = None,
                      user: str = None,
-                     passwd: str = None
+                     passwd: str = None,
                      ):
         """
         Setup authenticate to an ODK Central server.
@@ -216,7 +216,7 @@ class OdkCentral(object):
         return projects
 
     def createProject(self,
-                      name: str
+                      name: str,
                       ):
         """
         Create a new project on an ODK Central server if it doesn't
@@ -251,7 +251,7 @@ class OdkCentral(object):
             return json_response
 
     def deleteProject(self,
-                      project_id: int
+                      project_id: int,
                       ):
         """
         Delete a project on an ODK Central server
@@ -269,7 +269,7 @@ class OdkCentral(object):
         return self.findProject(project_id=project_id)
 
     def findProject(self,
-                    name: str = None
+                    name: str = None,
                     ):
         """
         Get the project data from Central
@@ -300,7 +300,7 @@ class OdkCentral(object):
 
     def findAppUser(self,
                     user_id: int,
-                    name: str = None
+                    name: str = None,
                     ):
         """
         Get the data for an app user
@@ -365,7 +365,7 @@ class OdkProject(OdkCentral):
     def __init__(self,
                     url: str = None,
                     user: str = None,
-                    passwd: str = None
+                    passwd: str = None,
                  ):
         """
         Args:
@@ -384,7 +384,7 @@ class OdkProject(OdkCentral):
         self.id = None
 
     def getData(self,
-                keyword: str
+                keyword: str,
                 ):
         """
         Args:
@@ -395,7 +395,7 @@ class OdkProject(OdkCentral):
         """
         return self.data[keyword]
     def listForms(self,
-                  project_id: int
+                  project_id: int,
                   ):
         """
         Fetch a list of forms in a project on an ODK Central server.
@@ -413,7 +413,7 @@ class OdkProject(OdkCentral):
 
     def getAllSubmissions(self,
                               project_id: int,
-                              xforms: list = None
+                              xforms: list = None,
                               ):
         """
         Fetch a list of submissions in a project on an ODK Central server.
@@ -471,7 +471,7 @@ class OdkProject(OdkCentral):
 
 
     def listAppUsers(self,
-                     projectId: int
+                     projectId: int,
                      ):
         """
         Fetch a list of app users for a project from an ODK Central server.
@@ -488,7 +488,7 @@ class OdkProject(OdkCentral):
         return self.appusers
 
     def listAssignments(self,
-                        projectId: int
+                        projectId: int,
                         ):
         """
         List the Role & Actor assignments for users on a project
@@ -504,7 +504,7 @@ class OdkProject(OdkCentral):
         return result.json()
 
     def getDetails(self,
-                   projectId: int
+                   projectId: int,
                    ):
         """
         Get all the details for a project on an ODK Central server
@@ -521,8 +521,8 @@ class OdkProject(OdkCentral):
         return self.data
 
     def getFullDetails(self,
-                   projectId: int
-                   ):
+                       projectId: int,
+                    ):
         """
         Get extended details for a project on an ODK Central server
 
@@ -563,7 +563,7 @@ class OdkForm(OdkCentral):
     def __init__(self,
                  url:str = None,
                  user: str = None,
-                 passwd: str = None
+                 passwd: str = None,
                  ):
         """
         Args:
@@ -609,7 +609,7 @@ class OdkForm(OdkCentral):
 
     def getDetails(self,
                    projectId: int,
-                   xform: str
+                   xform: str,
                    ):
         """
         Get all the details for a form on an ODK Central server
@@ -628,7 +628,7 @@ class OdkForm(OdkCentral):
 
     def getFullDetails(self,
                        projectId: int,
-                       xform: str
+                       xform: str,
                        ):
         """
         Get the full details for a form on an ODK Central server
@@ -648,7 +648,7 @@ class OdkForm(OdkCentral):
 
     def listSubmissionBasicInfo(self,
                         projectId: int,
-                        xform: str
+                        xform: str,
                         ):
         """
         Fetch a list of submission instances basic information for a given form.
@@ -667,7 +667,7 @@ class OdkForm(OdkCentral):
 
     def listSubmissions(self,
                         projectId: int,
-                        xform: str
+                        xform: str,
                         ):
         """
         Fetch a list of submission instances for a given form.
@@ -689,7 +689,7 @@ class OdkForm(OdkCentral):
 
     def listAssignments(self,
                         projectId: int,
-                        xform: str
+                        xform: str,
                         ):
         """
         List the Role & Actor assignments for users on a project
@@ -712,7 +712,7 @@ class OdkForm(OdkCentral):
                        xform: str,
                        submission_id: int,
                        disk: bool = False,
-                       json: bool = True
+                       json: bool = True,
                        ):
         """
         Fetch a CSV or JSON file of the submissions without media to a survey form.
@@ -761,7 +761,7 @@ class OdkForm(OdkCentral):
 
     def getSubmissionMedia(self,
                            projectId: int,
-                           xform: str
+                           xform: str,
                            ):
         """
         Fetch a ZIP file of the submissions with media to a survey form.
@@ -779,7 +779,7 @@ class OdkForm(OdkCentral):
 
     def addMedia(self,
                  media: str,
-                 filespec: str
+                 filespec: str,
                  ):
         """
         Add a data file to this form
@@ -794,7 +794,7 @@ class OdkForm(OdkCentral):
     def addXMLForm(self,
                    projectId: int,
                    xmlFormId: int,
-                   xform: str
+                   xform: str,
                    ):
         """
         Add an XML file to this form
@@ -807,7 +807,7 @@ class OdkForm(OdkCentral):
 
     def listMedia(self,
                   projectId: int,
-                  xform: str
+                  xform: str,
                   ):
         """
         List all the attchements for this form
@@ -832,7 +832,7 @@ class OdkForm(OdkCentral):
                     projectId: int,
                     xform: str,
                     filespec: str,
-                    convert_to_draft: bool = True
+                    convert_to_draft: bool = True,
                     ):
         """
         Upload an attachement to the ODK Central server
@@ -875,7 +875,7 @@ class OdkForm(OdkCentral):
     def getMedia(self,
                  projectId: int,
                  xform: str,
-                 filename: str
+                 filename: str,
                  ):
         """
         Fetch a specific attachment by filename from a submission to a form.
@@ -905,7 +905,7 @@ class OdkForm(OdkCentral):
                    projectId: int,
                    xform: str,
                    filespec: str,
-                   draft: bool = False
+                   draft: bool = False,
                    ):
         """
         Create a new form on an ODK Central server
@@ -947,7 +947,7 @@ class OdkForm(OdkCentral):
 
     def deleteForm(self,
                    projectId: int,
-                   xform: str
+                   xform: str,
                    ):
         """
         Delete a form from an ODK Central server
@@ -969,7 +969,7 @@ class OdkForm(OdkCentral):
 
     def publishForm(self,
                     projectId: int,
-                    xform: str
+                    xform: str,
                     ):
         """
         Publish a draft form. When creating a form that isn't a draft, it can get publised then
@@ -1007,7 +1007,11 @@ class OdkForm(OdkCentral):
 
 
 class OdkAppUser(OdkCentral):
-    def __init__(self, url=None, user=None, passwd=None):
+    def __init__(self,
+                     url: (str)= None,
+                     user: str = None,
+                     passwd: (str)= None,
+                    ):
         """
         A Class for app user data
 
@@ -1026,7 +1030,7 @@ class OdkAppUser(OdkCentral):
 
     def create(self,
                projectId: int,
-               name: str
+               name: str,
                ):
         """
         Create a new app-user for a form
@@ -1047,7 +1051,7 @@ class OdkAppUser(OdkCentral):
 
     def delete(self,
                projectId: int,
-               userId: int
+               userId: int,
                ):
         """
         Create a new app-user for a form
@@ -1067,7 +1071,7 @@ class OdkAppUser(OdkCentral):
                    projectId: int,
                    xform: str,
                    roleId: int = 2,
-                   actorId: int = None
+                   actorId: int = None,
                    ):
         """
         Update the role of an app user for a form
@@ -1113,7 +1117,7 @@ class OdkAppUser(OdkCentral):
     def createQRCode(self,
                      project_id: int,
                      token: str,
-                     name: str
+                     name: str,
                      ):
         """
         Get the QR Code for an app-user

@@ -41,7 +41,7 @@ class OdkClient(object):
     def __init__(self,
                  url:str = None,
                  user: str = None,
-                 passwd: str = None
+                 passwd: str = None,
                  ):
         """
         A Class for higher-level client side access to ODK Central

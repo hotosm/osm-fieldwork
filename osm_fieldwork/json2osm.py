@@ -43,7 +43,7 @@ log = logging.getLogger(__name__)
 class JsonDump(Convert):
     """A class to parse the JSON files from ODK Central or odk2geojson"""
     def __init__(self,
-                 yaml: str = None
+                 yaml: str = None,
                  ):
         """
         A class to convert the JSON file from ODK Central, or the GeoJson
@@ -86,7 +86,7 @@ class JsonDump(Convert):
     #     return True
 
     def createOSM(self,
-                  filespec: str = "tmp.osm"
+                  filespec: str = "tmp.osm",
                   ):
         """
         Create an OSM XML output files
@@ -102,7 +102,7 @@ class JsonDump(Convert):
         return self.osm
 
     def writeOSM(self,
-                 feature: dict
+                 feature: dict,
                  ):
         """
         Write a feature to an OSM XML output file
@@ -134,7 +134,9 @@ class JsonDump(Convert):
         """
         self.osm.footer()
 
-    def createGeoJson(self, file="tmp.geojson"):
+    def createGeoJson(self,
+                      file="tmp.geojson",
+                      ):
         """
         Create a GeoJson output file
 
@@ -145,7 +147,7 @@ class JsonDump(Convert):
         self.json = open(file, "w")
 
     def writeGeoJson(self,
-                     feature: dict
+                     feature: dict,
                      ):
         """
         Write a feature to a GeoJson output file
@@ -176,7 +178,7 @@ class JsonDump(Convert):
 
     def parse(self,
               filespec: str = None,
-              data: str = None
+              data: str = None,
               ):
         """
         Parse the JSON file from ODK Central and convert it to a data structure.
@@ -260,7 +262,7 @@ class JsonDump(Convert):
         return total
 
     def createEntry(self,
-                    entry: dict
+                    entry: dict,
                     ):
         """
         Create the feature data structure for this entry.

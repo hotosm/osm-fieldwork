@@ -4,7 +4,10 @@
 #
 # This file is part of OSM-Fieldwork.
 #
-#     This is free software: you can redistribute it and/or modify
+#     This is free software: you can redistribute it and/or modify<<<<<<< refactor/fix-types-lint-format
+78
+ 
+
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
@@ -36,8 +39,8 @@ class MapTile(object):
                  y: int = None,
                  z: int = None,
                  filespec: str = None,
-                 tile: MapTile = None,
-                 suffix="jpg"
+                 tile: 'MapTile' = None,
+                 suffix="jpg",
                  ):
         """
         This is a simple wrapper around mercantile.tile to associate a
@@ -74,7 +77,7 @@ class MapTile(object):
             self.y = tmp[1].replace("." + suffix, "")
 
     def readImage(self,
-                  base (str)= "./"
+                  base: str = "./,
                   ):
         """
         Read a map tile out of the disk based map tile cache
@@ -144,7 +147,7 @@ class DataFile(object):
         # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('maxzoom', '15')")
 
     def createDB(self,
-                 dbname: str
+                 dbname: str,
                  ):
         """
         Create and sqlitedb in either mbtiles or Osman sqlitedb format
@@ -219,7 +222,7 @@ class DataFile(object):
             self.writeTile(xyz)
 
     def writeTile(self,
-                  tile: MapTile
+                  tile: MapTile,
                   ):
         """
         Write a map tile into the sqlite database file

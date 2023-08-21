@@ -39,7 +39,7 @@ class CSVDump(Convert):
     """A class to parse the CSV files from ODK Central"""
 
     def __init__(self,
-                 yaml: str = None
+                 yaml: str = None,
                  ):
         self.fields = dict()
         self.nodesets = dict()
@@ -56,16 +56,23 @@ class CSVDump(Convert):
         self.saved = dict()
         self.defaults = dict()
 
-    def lastSaved(self, keyword: str):
+    def lastSaved(self,
+                  keyword: str,
+                  ):
         if keyword is not None and len(keyword) > 0:
             return self.saved[keyword]
         return None
 
-    def updateSaved(self, keyword: str, value: str):
+    def updateSaved(self,
+                    keyword: str,
+                    value: str,
+                    ):
         if keyword is not None and value is not None and len(value) > 0:
             self.saved[keyword] = value
 
-    def parseXLS(self, xlsfile: str):
+    def parseXLS(self,
+                    xlsfile: str,
+                 ):
         """Parse the source XLSFile if available to look for details we need"""
         if xlsfile is not None and len(xlsfile) > 0:
             entries = pd.read_excel(xlsfile, sheet_name=[0])
@@ -87,7 +94,7 @@ class CSVDump(Convert):
         return True
 
     def createOSM(self,
-                  filespec: str
+                  filespec: str,
                   ):
         """Create an OSM XML output files"""
         log.debug("Creating OSM XML file: %s" % filespec)
@@ -95,7 +102,7 @@ class CSVDump(Convert):
         #self.osm.header()
 
     def writeOSM(self,
-                 feature: dict
+                 feature: dict,
                  ):
         """Write a feature to an OSM XML output file"""
         out = ""
@@ -114,14 +121,14 @@ class CSVDump(Convert):
         self.osm.footer()
 
     def createGeoJson(self,
-                      file: str = "tmp.geojson"
+                      file: str = "tmp.geojson",
                       ):
         """Create a GeoJson output file"""
         log.debug("Creating GeoJson file: %s" % file)
         self.json = open(file, "w")
 
     def writeGeoJson(self,
-                     feature: dict
+                     feature: dict,
                      ):
         """Write a feature to a GeoJson output file"""
         # These get written later when finishing , since we have to create a FeatureCollection
@@ -144,7 +151,7 @@ class CSVDump(Convert):
 
     def parse(self,
               filespec: str,
-              data: str = None
+              data: str = None,
               ):
         """Parse the CSV file from ODK Central and convert it to a data structure"""
         all_tags = list()
@@ -208,7 +215,7 @@ class CSVDump(Convert):
         return all_tags
 
     def basename(self,
-                 line: str
+                 line: str,
                  ):
         """Extract the basename of a path after the last -"""
         tmp = line.split("-")
@@ -218,7 +225,7 @@ class CSVDump(Convert):
         return base
 
     def createEntry(self,
-                    entry: dict
+                    entry: dict,
                     ):
         """Create the feature data structure"""
         # print(line)
@@ -294,6 +301,8 @@ class CSVDump(Convert):
 
 
 def main():
+    """
+    """
     parser = argparse.ArgumentParser(
         description="convert CSV from ODK Central to OSM XML"
     )
@@ -352,4 +361,5 @@ def main():
     log.info("Wrote GeoJson file: %r" % jsonoutfile)
 
 if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
     main()

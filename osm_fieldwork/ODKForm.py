@@ -40,7 +40,7 @@ class ODKForm(object):
         self.ignore = ("label", "@appearance", "hint", "upload")
 
     def parseSelect(self,
-                    select: dict
+                    select: dict,
                     ):
         """
         Parse a select statement in XML
@@ -64,7 +64,7 @@ class ODKForm(object):
         return newsel
 
     def parseItems(self,
-                   items: list
+                   items: list,
                    ):
         """
         Parse the items in a select list
@@ -108,7 +108,7 @@ class ODKForm(object):
         return newitems
 
     def parseGroup(self,
-                   group: dict()
+                   group: dict(),
                    ):
         """
         Convert the XML of a group into a data structure.

@@ -51,7 +51,7 @@ class YamlFile(object):
         #    self.yaml = yaml.load(str(data), Loader=yaml.Loader)
 
     def privateData(self,
-                    keyword: str
+                    keyword: str,
                     ):
         """
         See if a keyword is in the private data category
@@ -68,7 +68,7 @@ class YamlFile(object):
         return False
 
     def ignoreData(self,
-                   keyword: str
+                   keyword: str,
                    ):
         """
         See if a keyword is in the ignore data category
@@ -85,7 +85,7 @@ class YamlFile(object):
         return False
 
     def convertData(self,
-                    keyword: str
+                    keyword: str,
                     ):
         """
         See if a keyword is in the convert data category
@@ -112,7 +112,7 @@ class YamlFile(object):
 
     def write(self,
               table: list,
-              where: list
+              where: list,
               ):
         """
         Add to the YAML file
