@@ -83,7 +83,11 @@ nav:
   - json2osm: api/json2osm.md
   - ODKInstance: api/ODKInstance.md
   - ODKForm: api/ODKForm.md
-  - CSVDump: api/CSVDump.md    
+  - CSVDump: api/CSVDump.md
+- Deep Tech Dives:
+  - External Data: about/externaldata.md
+  - Data conflation: about/conflation.md
+  - The Config File: about/configuring.md
 #  - odk2geojson: api/odk2geojson.md
 #  - odk2csv: api/odk2csv.md
 #  - odk2osm: api/odk2osm.md
