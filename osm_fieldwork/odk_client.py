@@ -37,36 +37,50 @@ logging.getLogger("urllib3").setLevel(log_level)
 log = logging.getLogger(__name__)
 
 
-# FIXME: this classes isn;t used yet
 class OdkClient(object):
-    def __init__(self, url=None, user=None, passwd=None):
-        """A Class for higher-level client side access to ODK Central"""
+    def __init__(self,
+                 url:str = None,
+                 user: str = None,
+                 passwd: str = None
+                 ):
+        """
+        A Class for higher-level client side access to ODK Central
+
+        Args:
+            url (str): The URL of the ODK Central
+            user (str): The user's account name on ODK Central
+            passwd (str):  The user's account password on ODK Central
+
+        Returns:
+            (OdkClient: An instance of this object
+        """
         self.url = url
         self.user = user
         self.passwd = passwd
         self.cache = dict()
 
-    def readCache(self, cache=".odkcentral"):
-        """FIXME: unimplemented"""
-        file = open(cache, "rb")
-        data = file.readline()
-        print(json.load(data))
-        file.close()
+    # def readCache(self, cache=".odkcentral"):
+    #     """FIXME: unimplemented"""
+    #     file = open(cache, "rb")
+    #     data = file.readline()
+    #     print(json.load(data))
+    #     file.close()
 
-    def writeCache(self, cache=".odkcentral", data=None):
-        """FIXME: unimplemented"""
-        if args.cache:
-            try:
-                file = open(cache, "xb")
-            except FileExistsError:
-                file = open(cache, "wb")
-            file.write("projects\n")
-            file.write(json.dump(data))
-            file.close()
-        logging.info("Wrote config file %s" % filespec)
+    # def writeCache(self, cache=".odkcentral", data=None):
+    #     """FIXME: unimplemented"""
+    #     if args.cache:
+    #         try:
+    #             file = open(cache, "xb")
+    #         except FileExistsError:
+    #             file = open(cache, "wb")
+    #         file.write("projects\n")
+    #         file.write(json.dump(data))
+    #         file.close()
+    #     logging.info("Wrote config file %s" % filespec)
 
 
 def main():
+    """This main function lets this class be run standalone by a bash script"""
     parser = argparse.ArgumentParser(description="command line client for ODK Central")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     # This is for server requests
@@ -74,9 +88,7 @@ def main():
         "-s", "--server", choices=["projects", "users", "delete"], help="project operations"
     )
     # This is for project specific requests
-    parser.add_argument(
-        "-p",
-        "--project",
+    parser.add_argument("-p", "--project",
         choices=["forms", "app-users", "assignments", "delete", "submissions"],
         help="project operations",
     )
@@ -111,15 +123,15 @@ def main():
         "-b", "--bulk", choices=["qrcodes", "update"], help="Bulk operations"
     )
 
-    logging.basicConfig(
-        level=log_level,
-        format=(
-            "%(asctime)s.%(msecs)03d [%(levelname)s]"
-            "%(name)s | %(funcName)s:%(lineno)d | %(message)s"
-        ),
-        datefmt="%y-%m-%d %H:%M:%S",
-        stream=sys.stdout,
-    )
+    # logging.basicConfig(
+    #     level=log_level,
+    #     format=(
+    #         "%(asctime)s.%(msecs)03d [%(levelname)s]"
+    #         "%(name)s | %(funcName)s:%(lineno)d | %(message)s"
+    #     ),
+    #     datefmt="%y-%m-%d %H:%M:%S",
+    #     stream=sys.stdout,
+    # )
 
     # Caching isn't implemented yet. That's for fancier queries that require multiple
     # requests to the ODK server. Caching allows for data like names for IDs to
@@ -146,16 +158,14 @@ def main():
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-
+        log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
     timer = Timer(text="odk_client() took {seconds:.0f}s")
     timer.start()
@@ -432,4 +442,5 @@ def main():
     timer.stop()
 
 if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
     main()

@@ -52,7 +52,16 @@ class OdkMerge(object):
                  source: str,
                  boundary: str = None
                  ):
-        """Initialize Input data source"""
+        """
+        Initialize Input data source
+
+        Args:
+            source (str): 
+            boundary: str = None
+
+        Returns:
+            (OdkMerge): An instance of this object
+        """
         self.postgres = list()
         self.source = source
         self.tags = dict()
@@ -82,7 +91,16 @@ class OdkMerge(object):
              boundary: str,
              db: PostgresClient,
              ):
-        """Clip a data source by a boundary"""
+        """
+        Clip a data source by a boundary
+
+        Args:
+             boundary (str): The filespec of the project AOI
+             db (PostgresClient): A reference to the existing database connection
+
+        Returns:
+            (bool): If the region was clipped sucessfully
+        """
         remove = list()
         if not boundary:
             return False
@@ -118,7 +136,16 @@ class OdkMerge(object):
                        attrs: dict = None,
                        tags: dict = None
                        ):
-        """Create a new feature with optional data"""
+        """
+        Create a new feature with optional data
+
+        Args:
+            attrs (dict): All of the attributes and their values
+            tags (dict): All of the tags and their values
+
+        Returns:
+            (dict): A template feature with no data
+        """
         newf = dict()
         if attrs:
             newf['attrs'] = attrs
@@ -130,8 +157,18 @@ class OdkMerge(object):
             newf['tags'] = dict()
         return newf
 
-    def conflateFile(self, feature):
-        """Conflate a POI against all the features in a GeoJson file"""
+    def conflateFile(self,
+                     feature: dict,
+                     ):
+        """
+        Conflate a POI against all the features in a GeoJson file
+
+        Args:
+            feature (dict): The feature to conflate
+
+        Returns:
+            (dict):  The modified feature
+        """
         # Most smartphone GPS are 5-10m off most of the time, plus sometimes
         # we're standing in front of an amenity and recording that location
         # instead of in the building.
@@ -193,7 +230,16 @@ class OdkMerge(object):
                     feature: dict,
                     dbindex: int
                     ):
-        """Conflate a POI against all the ways in the view"""
+        """
+        Conflate a POI against all the ways in a postgres view
+
+        Args:
+            feature (dict): The feature to conflate
+            dbindex (int): An index into the array of postgres connections
+
+        Returns:
+            (dict):  The modified feature
+        """
         # log.debug(f"conflateWay({feature})")
         hits = False
         result = list()
@@ -233,8 +279,20 @@ class OdkMerge(object):
             return {'attrs': attrs, 'tags': tags, 'refs': refs}
         return dict()
 
-    def conflateNode(self, feature, dbindex):
-        """Conflate a POI against all the nodes in the view"""
+    def conflateNode(self,
+                     feature: dict,
+                     dbindex: int,
+                     ):
+        """
+        Conflate a POI against all the nodes in the view
+
+        Args:
+            feature (dict): The feature to conflate
+            dbindex (int): An index into the array of postgres connections
+
+        Returns:
+            (dict):  The modified feature
+        """
         # log.debug(f"conflateNode({feature})")
         hits = False
         geom = Point((float(feature["attrs"]["lon"]), float(feature["attrs"]["lat"])))
@@ -272,8 +330,20 @@ class OdkMerge(object):
             return {'attrs': attrs, 'tags': tags}
         return dict()
 
-    def conflateById(self, feature, dbindex):
-        """Conflate a feature with existing ways"""
+    def conflateById(self,
+                     feature: dict,
+                     dbindex: int
+                     ):
+        """
+        Conflate a feature with existing ways using the OSM ID
+
+        Args:
+            feature (dict): The feature to conflate
+            dbindex (int): An index into the array of postgres connections
+
+        Returns:
+            (dict):  The modified feature
+        """
         log.debug(f"conflateById({feature})")
         id = int(feature['attrs']['id'])
         if id > 0:
@@ -309,7 +379,17 @@ class OdkMerge(object):
                         return value
         return dict()
 
-    def cleanFeature(self, feature):
+    def cleanFeature(self,
+                     feature: dict,
+                     ):
+        """
+        Remove tags that are attributes instead
+        Args:
+            feature (dict): The feature to clean
+
+        Returns:
+            (dict):  The modified feature
+        """
             # We only use the version and ID in the attributes
         if 'id' in feature['tags']:
             del feature['tags']['id']
@@ -332,7 +412,15 @@ class OdkMerge(object):
     def conflateData(self,
                      odkdata: list,
                      ):
-        """Conflate all the data"""
+        """
+        Conflate all the data. This the primary interfacte for conflation.
+
+        Args:
+            odkdata (list): A list of all the entries in the OSM XML input file
+
+        Returns:
+            (dict):  The modified features
+        """
         timer = Timer(text="conflateData() took {seconds:.0f}s")
         timer.start()
         # Use fuzzy string matching to handle minor issues in the name column,
@@ -378,7 +466,16 @@ def conflateThread(features: dict,
                    source: str,
                    dbindex: int
                    ):
-    """Conflate a subset of the data"""
+    """
+    Conflate a subset of the data
+
+    Args:
+        feature (dict): The feature to conflate
+        source (str): The data source for conflation, file or database
+        dbindex (int): An index into the array of postgres connections
+
+    Returns:
+    """
     timer = Timer(text="conflateThread() took {seconds:.0f}s")
     timer.start()
     log.debug(f"conflateThread() called! {len(features)} features")
@@ -427,7 +524,7 @@ def conflateThread(features: dict,
 
 
 def main():
-    # Command Line options
+   """This main function lets this class be run standalone by a bash script"""    
     parser = argparse.ArgumentParser(
         prog="odk_merge.py",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -517,4 +614,5 @@ be either the data extract used by the XLSForm, or a postgresql database.
     log.info(f"Wrote {outfile}")
 
 if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
     main()

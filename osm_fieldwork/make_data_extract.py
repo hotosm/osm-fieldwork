@@ -46,7 +46,15 @@ log = logging.getLogger(__name__)
 
 
 def uriParser(source):
-    """Parse a URI into it's components"""
+    """
+    Parse a URI into it's components
+
+    Args:
+        source (str): The URI for the database connection
+
+    Returns:
+        (dict): The parse URI
+    """
     dbhost = None
     dbname = None
     dbuser = None
@@ -102,7 +110,12 @@ def uriParser(source):
     return db
 
 def getChoices():
-    """Get the categories and associated XLSFiles fgrom the config file"""
+    """
+    Get the categories and associated XLSFiles fgrom the config file
+
+    Returns:
+        (list): A list of the XLSForms included in osm-fieldwork
+    """
     data = dict()
     path = xlsforms_path.replace("xlsforms", "data_models")
     if os.path.exists(f"{path}/category.yaml"):
@@ -120,6 +133,17 @@ class DatabaseAccess(object):
                  dbuser: str = None,
                  dbpass: str = None,
                  ):
+        """
+
+        Args:
+            dbhost (str): The DNS hostname for the datbase server
+            dbname (str): The name of the database
+            dbuser (str): The user who can access this database
+            dbpass (str): The password of the user who can access this database
+        
+        Returns:
+            (DatabaseAccess): An instance of this object
+        """
         self.dbshell = None
         self.dbcursor = None
         self.category = None
@@ -157,6 +181,17 @@ class DatabaseAccess(object):
                    boundary,
                    poly: bool = False
                    ):
+        """
+        Create the JSON file used to query the Underpass database
+
+        Args:
+            category (str): The category form the XLSForms library
+            boundary (Feature): The project AOI
+            poly: Whether to have the full geometry or just centroids returns
+
+        Returns
+            (json): The JSON query for the Underpass database
+        """
         path = xlsforms_path.replace("xlsforms", "data_models")
         file = open(f"{path}/{category}.yaml", "r").read()
         data = yaml.load(file, Loader=yaml.Loader)
@@ -194,6 +229,16 @@ class DatabaseAccess(object):
                   category: str,
                   polygon: bool = False
                   ):
+        """
+        Create the SQL used to query a postgres database
+
+        Args:
+            category (str): The category form the XLSForms library
+            polygon: Whether to have the full geometry or just centroids returns
+
+        Returns
+            (list): The SQL queries for postgres using the Underpass database schema
+        """
         path = xlsforms_path.replace("xlsforms", "data_models")
         file = open(f"{path}/{category}.yaml", "r").read()
         data = yaml.load(file, Loader=yaml.Loader)
@@ -236,6 +281,16 @@ class DatabaseAccess(object):
                    query: str = None,
                    ewkt: str = None
                    ):
+        """
+        Query a local or remote postgres database using the Underpass schema.
+
+        Args:
+            query (str): The SQL query
+            ewkt (str): The boundary to create postgres views
+
+        Returns:
+            (list): A list of features returned from the query
+        """
         # sql = f"DROP VIEW IF EXISTS ways_view;CREATE TEMP VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         sql = f"DROP VIEW IF EXISTS ways_view;CREATE VIEW ways_view AS SELECT * FROM ways_poly WHERE ST_CONTAINS(ST_GeomFromEWKT('SRID=4326;{ewkt.wkt}'), geom)"
         self.dbcursor.execute(sql)
@@ -285,6 +340,15 @@ class DatabaseAccess(object):
     def queryRemote(self,
                     query: str = None
                     ):
+        """
+        Query the remote the Underpass database
+
+        Args:
+            query (str): The SQL query
+
+        Returns:
+            (FeatureCollection): The Features returned from the query
+        """
         url = f"{self.url}/snapshot/"
         result = self.session.post(url, data=query, headers=self.headers)
         if result.status_code != 200:
@@ -311,7 +375,9 @@ class DatabaseAccess(object):
     #   return zfp.read("Export.geojson")
 
 class PostgresClient(DatabaseAccess):
-    """Class to handle SQL queries for the categories"""
+    """
+    Class to handle SQL queries for the categories
+    """
     def __init__(self,
                  dbhost: str = None,
                  dbname: str = None,
@@ -319,18 +385,41 @@ class PostgresClient(DatabaseAccess):
                  dbpass: str = None,
                  #output: str = None
     ):
-        """Initialize the postgres handler"""
+        """
+        Initialize the postgres handler
+
+        Args:
+            dbhost (str): The DNS hostname for the datbase server
+            dbname (str): The name of the database
+            dbuser (str): The user who can access this database
+            dbpass (str): The password of the user who can access this database
+        
+        Returns:
+            (PostgresClient): An instance of this object
+        """
         # OutputFile.__init__( self, output)
         super().__init__(dbhost, dbname, dbuser, dbpass)
 
     def getFeatures(self,
-                    boundary,
+                    boundary: str,
                     filespec: str,
                     polygon: bool,
                     category: str,
                     xlsfile: str
                     ):
-        """Extract buildings from Postgres"""
+        """
+        Extract features from Postgres
+
+        Args:
+            boundary (str): The filespec for the project AOI in GeoJson format
+            filespec (str): The optional output file for the query
+            polygon (bool): Whether to have the full geometry or just centroids returns
+            category (str): The category form the XLSForms library
+            xlsfile (str): The XLForm used to define this field mapping project
+
+        Returns:
+            (FeatureCollection): The features returned from the query
+        """
         log.info("Extracting features from Postgres...")
 
         if type(boundary) != dict:
@@ -395,20 +484,41 @@ class PostgresClient(DatabaseAccess):
         return new
 
 class OverpassClient(object):
-    """Class to handle Overpass queries"""
+    """
+    Class to handle Overpass queries
+    """
     def __init__(self,
-                 output: str = None):
-        """Initialize Overpass handler"""
+                 output: str = None
+                 ):
+        """
+        Initialize Overpass handler
+
+        Args:
+            output (str): The optional output file name
+
+        Returns:
+            (OverpassClient): An instance of this object
+        """
         self.overpass = overpy.Overpass()
         #OutputFile.__init__(self, output)
 
     def getFeatures(self,
-                    boundary,
+                    boundary: str,
                     filespec: str,
                     xlsfile: str,
                     category: str
                     ):
-        """Extract buildings from Overpass"""
+        """
+        Extract features from Overpass
+
+        Args:
+            boundary (str): The filespec for the project AOI in GeoJson format
+            filespec (str): The optional output file for the query
+            category (str): The category form the XLSForms library
+            xlsfile (str): The XLForm used to define this field mapping project
+        Returns:
+            (FeatureCollection): The features returned from the query
+        """
         log.info("Extracting features...")
 
         poly = ""
@@ -457,22 +567,43 @@ class OverpassClient(object):
         return new
 
 class FileClient(object):
-    """Class to handle Overpass queries"""
+    """
+    Class to handle data file queries
+    """
 
     def __init__(self,
                  infile: str,
                  output: str
                  ):
-        """Initialize Overpass handler"""
+        """
+        Initialize Overpass handler
+
+        Args:
+            infile (str): A GeoJson file of existing data
+            output (str): An optional GeoJson output file
+
+        Returns:
+            (FileClient): An instance of this object
+        """
         OutputFile.__init__(self, output)
         self.infile = infile
 
     def getFeatures(self,
-                    boundary,
+                    boundary: str,
                     infile: str,
                     outfile: str
                     ):
-        """Extract buildings from a disk file"""
+        """
+        Extract features from a disk file
+
+        Args:
+            boundary (str): The filespec for the project AOI in GeoJson format
+            infile (str): A GeoJson file of existing data
+            outfile (str): An optional GeoJson output file
+
+        Returns:
+            (FeatureCollection): The features returned from the query
+        """
         log.info("Extracting buildings from %s..." % infile)
         if boundary:
             poly = ogr.Open(boundary)
@@ -488,6 +619,9 @@ class FileClient(object):
 
 
 def main():
+    """
+    This program makes data extracts from OSM data, which can be used with ODK Collect
+    """
     choices = getChoices()
     
     parser = argparse.ArgumentParser(
@@ -504,13 +638,13 @@ def main():
         "-po", "--polygon", action="store_true", default=False,  help="Output polygons instead of centroids"
     )
     parser.add_argument(
-        "-g", "--geojson", help="Name of the GeoJson output file"
+        "-g", "--geojson", required=True, help="Name of the GeoJson output file"
     )
     parser.add_argument("-i", "--infile", help="Input data file")
     parser.add_argument("-dn", "--dbname", help="Database name")
     parser.add_argument("-dh", "--dbhost", default="localhost", help="Database host")
     parser.add_argument(
-        "-b", "--boundary", help="Boundary polygon to limit the data size"
+        "-b", "--boundary", required=True, help="Boundary polygon to limit the data size"
     )
     parser.add_argument(
         "-c",
@@ -521,22 +655,16 @@ def main():
     )
     args = parser.parse_args()
 
-    if len(argv) <= 1:
-        parser.print_help()
-        quit()
-
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        root = logging.getLogger()
         log.setLevel(logging.DEBUG)
-
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
     if args.geojson == "tmp.geojson":
         # The data file name is in the XML file
@@ -584,4 +712,5 @@ def main():
     # logging.info("Wrote output data file to: %s" % outfile)
 
 if __name__ == "__main__":
+    """This is just a hook so this file can be run standalone during development."""
     main()

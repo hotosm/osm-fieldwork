@@ -35,6 +35,17 @@ class ODKInstance(object):
                  filespec: str = None,
                  data: str = None
                  ):
+        """
+        This class imports a ODK Instance file, which is in XML into a data
+        structure.
+        
+        Args:
+            filespec (str): The filespec to the ODK XML Instance file
+            data (str): The XML data
+
+        Returns:
+            (ODKInstance): An instance of this object
+        """
         self.data = data
         self.filespec = filespec
         if filespec:
@@ -46,6 +57,18 @@ class ODKInstance(object):
               filespec: str,
               data: str = None
               ):
+        """
+        Import an ODK XML Instance file ito a data structure. The input is
+        either a filespec to the Instance file copied off your phone, or
+        the XML that has been read in elsewhere.
+        
+        Args:
+            filespec (str): The filespec to the ODK XML Instance file
+            data (str): The XML data
+
+        Returns:
+            (list): All the entries in the IOPDK XML Instance file
+        """
         rows = list()
         if filespec:
             logging.info("Processing instance file: %s" % filespec)
@@ -97,7 +120,7 @@ class ODKInstance(object):
         return rows
 
 if __name__ == "__main__":
-
+    """This is just a hook so this file can be run standlone during development."""
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
     parser.add_argument("-i", "--infile", required=True, help="instance data in XML format"
@@ -117,7 +140,6 @@ if __name__ == "__main__":
         )
         ch.setFormatter(formatter)
         log.addHandler(ch)
-
 
     if not args.infile:
         parser.print_help()

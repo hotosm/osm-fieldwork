@@ -39,6 +39,9 @@ import shapely
 log = logging.getLogger(__name__)
 
 def createExtension(icon):
+    """
+    Create an extended feature with Osmand styling
+    """
     # camp_pitch.png, tourism_camp_site.png, topo_camp_pitch.png, topo_camp_site.png
     # trailhead.png, tourism_picnic_site.png, tourism_picnic_site.png,
     # tourism_attraction.png, tourism_information.png, information_board.png,
@@ -58,88 +61,87 @@ def createExtension(icon):
     else:
         return (png, back)
     
-if __name__ == "__main__":
+def main():
+    """This main function lets this class be run standalone by a bash script"""
     parser = argparse.ArgumentParser(
         description="convert GeoJson to a GPX favorites file for Osmand"
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument("-i", "--infile", help="The data extract")
+    parser.add_argument("-i", "--infile", required=True, help="The data extract")
     args = parser.parse_args()
 
-    if len(argv) <= 1:
-        parser.print_help()
-        quit()
-
-    # if verbose, dump to the terminal.
+    # if verbose, dump to the termina
     if args.verbose is not None:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-
+        log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
-        infile = open(args.infile, "r")
-        indata = geojson.load(infile)
+    infile = open(args.infile, "r")
+    indata = geojson.load(infile)
 
-        # gpxpy.gpxfield.GPXField()
-        gpx = gpxpy.gpx.GPX()
-        gpx.nsmap['osmand'] = "https://osmand.net"
-        gpx.creator = "osm2favorites 0.1"
-        for feature in indata['features']:
-            coords = feature['geometry']['coordinates']
-            if feature['geometry']['type'] == "Polygon":
-                wkt = shape(feature['geometry'])
-                center = shapely.centroid(wkt)
-                lat = center.y
-                lon = center.x
-            else:
-                lat = coords[1]
-                lon = coords[0]
-            name = ""
-            if 'name' in feature['properties']:
-                name = feature['properties']['name']
-                tourism = None
-                if 'tourism' in feature['properties']:
-                    tourism = feature['properties']['tourism']
-                highway = None
-                if 'highway' in feature['properties']:
-                    highway = feature['properties']['highway']
-                amenity = None
-                if 'amenity' in feature['properties'] and not highway:
-                    amenity = feature['properties']['amenity']
-            for key, value in feature['properties'].items():
-                if key == 'name':
-                    continue
-                description = "<p>"
-                description += f"{key} = {value}<br>"
-                description += "</p>"
-            way = gpxpy.gpx.GPXWaypoint(
-                latitude=lat,
-                longitude=lon,
-                description=description,
-                name=name,
-                # symbol="",
-                # comment="",
-            )
-            if tourism and tourism != 'picnic site':
-                extensions = createExtension("tourism_camp_site")
-            elif tourism and tourism != 'picnic site':
-                extensions = createExtension("tourism_picnic_site")
-            elif highway and highway == 'trailhead':
-                extensions = createExtension("special_trekking")
-            elif amenity and amenity == 'parking':
-                extensions = createExtension("amenity_parking")
+    # gpxpy.gpxfield.GPXField()
+    gpx = gpxpy.gpx.GPX()
+    gpx.nsmap['osmand'] = "https://osmand.net"
+    gpx.creator = "osm2favorites 0.1"
+    for feature in indata['features']:
+        coords = feature['geometry']['coordinates']
+        if feature['geometry']['type'] == "Polygon":
+            wkt = shape(feature['geometry'])
+            center = shapely.centroid(wkt)
+            lat = center.y
+            lon = center.x
+        else:
+            lat = coords[1]
+            lon = coords[0]
+        name = ""
+        if 'name' in feature['properties']:
+            name = feature['properties']['name']
+            tourism = None
+            if 'tourism' in feature['properties']:
+                tourism = feature['properties']['tourism']
+            highway = None
+            if 'highway' in feature['properties']:
+                highway = feature['properties']['highway']
+            amenity = None
+            if 'amenity' in feature['properties'] and not highway:
+                amenity = feature['properties']['amenity']
+        for key, value in feature['properties'].items():
+            if key == 'name':
+                continue
+            description = "<p>"
+            description += f"{key} = {value}<br>"
+            description += "</p>"
+        way = gpxpy.gpx.GPXWaypoint(
+            latitude=lat,
+            longitude=lon,
+            description=description,
+            name=name,
+            # symbol="",
+            # comment="",
+        )
+        if tourism and tourism != 'picnic site':
+            extensions = createExtension("tourism_camp_site")
+        elif tourism and tourism != 'picnic site':
+            extensions = createExtension("tourism_picnic_site")
+        elif highway and highway == 'trailhead':
+            extensions = createExtension("special_trekking")
+        elif amenity and amenity == 'parking':
+            extensions = createExtension("amenity_parking")
 
-            for ext in extensions:
-                way.extensions.append(ext)
-            gpx.waypoints.append(way)
-        outfile = "output.gpx"
-        with open(outfile, "w") as f:
-            f.write(gpx.to_xml())
+        for ext in extensions:
+            way.extensions.append(ext)
+        gpx.waypoints.append(way)
+    outfile = "output.gpx"
+    with open(outfile, "w") as f:
+        f.write(gpx.to_xml())
 
-        log.info(f"Wrote {outfile}")
+    log.info(f"Wrote {outfile}")
+
+if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
+    main()

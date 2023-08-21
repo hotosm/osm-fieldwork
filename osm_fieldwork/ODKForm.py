@@ -27,15 +27,30 @@ log = logging.getLogger(__name__)
 
 
 class ODKForm(object):
-    """Support for parsing an XLS Form"""
+    """Support for parsing an XLS Form, currently a work in progress..."""
 
     def __init__(self):
+        """
+        Returns:
+            (ODKForm): An instance of this object
+        """
         self.fields = dict()
         self.nodesets = dict()
         self.groups = dict()
         self.ignore = ("label", "@appearance", "hint", "upload")
 
-    def parseSelect(self, select=dict()):
+    def parseSelect(self,
+                    select: dict
+                    ):
+        """
+        Parse a select statement in XML
+
+        Args:
+            select (dict): The select in XML:
+
+        Returns:
+            (dict): The data from the select
+        """
         print("parseSelect %r" % type(select))
         newsel = dict()
         if "item" in select:
@@ -48,7 +63,18 @@ class ODKForm(object):
             print("\tQQQQQ %r" % (newsel))
         return newsel
 
-    def parseItems(self, items):
+    def parseItems(self,
+                   items: list
+                   ):
+        """
+        Parse the items in a select list
+
+        Args:
+            items (list): The select items list in XML:
+
+        Returns:
+            (dict): The data from the list of items
+        """
         print("\tparseItems: %r: %r" % (type(items), items))
         newitems = list()
         # if type(items) == OrderedDict:
@@ -81,7 +107,15 @@ class ODKForm(object):
         # return group, subgroup, newitems
         return newitems
 
-    def parseGroup(self, group=dict()):
+    def parseGroup(self,
+                   group: dict()
+                   ):
+        """
+        Convert the XML of a group into a data structure.
+
+        Args:
+            group (dict): The group data
+        """
         print("\tparseGroup %r" % (type(group)))
         if type(group) == list:
             for val in group:
@@ -102,6 +136,7 @@ class ODKForm(object):
 
 
 if __name__ == "__main__":
+    """This is just a hook so this file can be run standlone during development."""
     parser = argparse.ArgumentParser(
         description="convert CSV from ODK Central to OSM XML"
     )
@@ -111,10 +146,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # if verbose, dump to the terminal.
-    if args.verbose is not None:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
+    # if verbose, dump to the terminal as well as the logfile.
+    if not args.verbose:
+        log.setLevel(logging.DEBUG)
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
@@ -122,7 +156,7 @@ if __name__ == "__main__":
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
     odkform = ODKForm()
     odkform.parse(args.infile)

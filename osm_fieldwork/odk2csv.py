@@ -31,8 +31,13 @@ from datetime import datetime
 # Instantiate logger
 log = logging.getLogger(__name__)
 
-
 def main():
+    """
+    This is a program that reads in the ODK Instance file, which is in XML,
+    and converts it to a CSV file so it can be viewed in an spreadsheet
+    program. The CSV syntax is the same as what can be downloaded from ODK
+    Central.
+    """
     parser = argparse.ArgumentParser(
         description="Convert ODK XML instance file to CSV format"
     )
@@ -44,17 +49,15 @@ def main():
     args = parser.parse_args()
 
     # if verbose, dump to the termina
-    if not args.verbose:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-
+    if args.verbose is not None:
+        log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
         )
         ch.setFormatter(formatter)
-        root.addHandler(ch)
+        log.addHandler(ch)
 
     xmlfiles = list()
     if args.instance.find("*") >= 0:
