@@ -270,6 +270,7 @@ class OdkCentral(object):
 
     def findProject(self,
                     name: str = None,
+                    project_id: int = None,
                     ):
         """
         Get the project data from Central

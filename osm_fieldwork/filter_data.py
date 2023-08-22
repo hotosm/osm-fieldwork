@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 
 class FilterData(object):
     def __init__(self,
-                 filespec: str,
+                 filespec: str = None
                  ):
         """
 
