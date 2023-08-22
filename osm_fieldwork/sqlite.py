@@ -4,9 +4,7 @@
 #
 # This file is part of OSM-Fieldwork.
 #
-#     This is free software: you can redistribute it and/or modify<<<<<<< refactor/fix-types-lint-format
-78
- 
+#     This is free software: you can redistribute it and/or modify
 
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
@@ -77,7 +75,7 @@ class MapTile(object):
             self.y = tmp[1].replace("." + suffix, "")
 
     def readImage(self,
-                  base: str = "./,
+                    base: str = "./"
                   ):
         """
         Read a map tile out of the disk based map tile cache
