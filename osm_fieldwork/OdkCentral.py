@@ -407,7 +407,7 @@ class OdkProject(OdkCentral):
         Returns:
             (list): The list of XForms in this project
         """
-        url = f"{self.base}projects/{xform}/forms"
+        url = f"{self.base}projects/{project_id}/forms"
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.forms = result.json()
         return self.forms
@@ -536,8 +536,7 @@ class OdkProject(OdkCentral):
         url = f"{self.base}projects/{projectId}"
         self.session.headers.update({"X-Extended-Metadata": "true"})
         result = self.session.get(url, auth=self.auth, verify=self.verify)
-        self.data = result.json()
-        return self.data
+        return result.json()
 
     def dump(self):
         """Dump internal data structures, for debugging purposes only"""
@@ -644,8 +643,7 @@ class OdkForm(OdkCentral):
         url = f"{self.base}projects/{projectId}/forms/{xform}"
         self.session.headers.update({"X-Extended-Metadata": "true"})
         result = self.session.get(url, auth=self.auth, verify=self.verify)
-        self.data = result.json()
-        return result
+        return result.json()
 
     def listSubmissionBasicInfo(self,
                         projectId: int,
