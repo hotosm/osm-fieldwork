@@ -299,10 +299,12 @@ class JsonDump(Convert):
             lon = None
             if type(value) == float:
                 continue
+            # log.debug(f"FIXME: {key} = {value} {type(value)}")
+            if key == "xid" and value is not None:
+                attrs['id'] = int(value)
             if key == "geometry":
                 # The GeoJson file has the geometry field. Usually it's a dict
                 # but on occasion it's a string instead, so turn it into a list
-                # log.debug(f"FIXME: {value} {type(value)}")
                 if type(value) == str:
                     if value[0] ==  '[':
                         coords = eval(value)

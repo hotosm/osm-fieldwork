@@ -56,7 +56,9 @@ convert:
   - coordinates: geometry
   - healthcare_type: healthcare
   - building_material: building:material
-  - roof:material: roof:material
+  - floors: building:levels
+  - roof_material: roof:material
+  - building_condition: building:condition
   - building_floor: building:floor
   - building_prefab: building:prefabricated
   - building_levels: building:levels
@@ -73,6 +75,17 @@ convert:
 
 # All of the data that goes in a different non-OSM file
 private:
+  - building_material_other
+  - flood_prone
+  - under_construction
+  - toilets_number
+  - building_damage
+  - building_type
+  - addr_district
+  - addr_sector
+  - addr_cell
+  - addr_village
+  - evacuation_center
   - income
   - age
   - gender
@@ -103,6 +116,7 @@ private:
 
 # All of these tags are in the CSV file, and can be ignored
 ignore:
+  - object_type
   - __id
   - model
   - type
