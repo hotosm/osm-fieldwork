@@ -1,9 +1,10 @@
 [project]
 name = "osm-fieldwork"
 dynamic = ["version"]
-description = "Convert CSV files from ODK Central to OSM format."
+description = "Processing field data from OpenDataKit to OpenStreetMap format."
 authors = [
     {name = "Rob Savoye", email = "rob.savoye@hotosm.org"},
+    {name = "Sam Woodcock", email = "sam.woodcock@hotosm.org"},
 ]
 dependencies = [
     "codetiming>=1.4.0",
@@ -30,17 +31,19 @@ dependencies = [
 requires-python = ">=3.9"
 readme = "README.md"
 license = "GPL-3.0-only"
-keywords = ["fmtm", "odk", "hot", "openstreetmap", "opendatakit"]
+keywords = ["hot", "odk", "openstreetmap", "opendatakit", "fmtm"]
 classifiers = [
     "Topic :: Utilities",
     "Topic :: Scientific/Engineering :: GIS",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 
 [project.urls]
 homepage = "https://github.com/hotosm/osm-fieldwork/wiki"
-documentation = "https://github.com/hotosm/osm-fieldwork/wiki"
+documentation = "https://hotosm.github.io/osm-fieldwork"
 repository = "https://github.com/hotosm/osm-fieldwork"
 
 [build-system]
@@ -69,6 +72,11 @@ version = {from = "osm_fieldwork/__version__.py"}
 includes = ["osm_fieldwork"]
 source-includes = ["tests", "LICENSE.md", "README.md"]
 [tool.pdm.dev-dependencies]
+dev = [
+    "black>=23.7.0",
+    "commitizen>=3.6.0",
+    "pre-commit>=3.3.3",
+]
 test = [
     "pytest>=7.2.1",
 ]
