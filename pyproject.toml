@@ -47,7 +47,7 @@ documentation = "https://hotosm.github.io/osm-fieldwork"
 repository = "https://github.com/hotosm/osm-fieldwork"
 
 [build-system]
-requires = ["pdm-pep517>=1.0.0"]
+requires = ["pdm-pep517>=1.1.4"]
 build-backend = "pdm.pep517.api"
 
 [tool.pytest.ini_options]
