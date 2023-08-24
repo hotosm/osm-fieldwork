@@ -63,6 +63,7 @@ version_files = [
     "pyproject.toml:version",
     "osm_fieldwork/__version__.py",
     "Makefile:VERSION",
+    ".env:PKG_VERSION",
 ]
 
 [tool.pdm]
