@@ -1,11 +1,14 @@
 name: pytest
 
 on:
+  # Run tests on all pushed branches
   push:
     branches:
       - "*"
+  # Run tests on PR, prior to merge to main & development.
   pull_request:
-    branches: ["main"]
+    branches:
+      - main
   # Allow manual trigger (workflow_dispatch)
   workflow_dispatch:
 
@@ -15,27 +18,14 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name }}
+
+    container:
+      image: ghcr.io/hotosm/osm-fieldwork:ci
+      options: --user root
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.10"
-
-      - uses: actions/cache@v3
-        id: cache
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        run: |
-          python -m pip install pdm==2.8.2
-          pdm export -G test > requirements-all.txt
-          pip install -r requirements-all.txt
-
-      - name: Run pytest
-        run: pytest
+      - name: Run pytest as appuser
+        run: gosu appuser pytest
