@@ -76,15 +76,18 @@ dev = [
     "commitizen>=3.6.0",
     "pre-commit>=3.3.3",
 ]
+debug = [
+    "debugpy>=1.6.7.post1",
+    "ipdb>=0.13.13",
+]
 test = [
     "pytest>=7.4.0",
 ]
 docs = [
     "mkdocs>=1.5.2",
-    "mkdocs-material>=9.1.21",
-    "mkdocstrings-python>=1.4.0",
+    "mkdocs-material>=9.2.3",
+    "mkdocstrings-python>=1.5.1",
     "mkdocs-exclude>=1.0.2",
-    "black>=23.7.0",
 ]
 
 [tool.black]
