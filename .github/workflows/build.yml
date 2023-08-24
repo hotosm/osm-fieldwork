@@ -1,0 +1,54 @@
+name: Build and Deploy
+
+on:
+  # Push includes PR merge
+  push:
+    branches:
+      - main
+    paths:
+      # Workflow is triggered only if src changes
+      - "src/**"
+  # Allow manual trigger
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  GIT_BRANCH: ${{ github.ref_name }}
+
+jobs:
+  build-and-push-images:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version
+        id: extract_api_version
+        run: |
+          cd src/backend
+          echo "PKG_VERSION=$(python -c 'from app.__version__ import __version__; print(__version__)')" >> $GITHUB_ENV
+
+      - name: Build image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          target: prod
+          push: true
+          tags: |
+            "ghcr.io/hotosm/fmtm/osm-fieldwork:${{ env.PKG_VERSION }}"
+            "ghcr.io/hotosm/fmtm/osm-fieldwork:latest"
+          build-args: |
+            PKG_VERSION=${{ env.PKG_VERSION }}
