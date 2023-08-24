@@ -1,0 +1,10 @@
+# Ignore everything
+**
+
+# Allow files and directories
+!osm_fieldwork
+!tests
+!pyproject.toml
+!pdm.lock
+!README.md
+!LICENSE.md
