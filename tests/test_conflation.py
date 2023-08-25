@@ -24,12 +24,8 @@ import sys
 from osm_fieldwork.odk_merge import OdkMerge, conflateThread
 from osm_fieldwork.osmfile import OsmFile
 
-# find the path to the test data files
-rootdir = os.path.basename(os.getcwd())
-if rootdir == 'tests':
-    rootdir = "."
-else:
-    rootdir = rootdir + "/tests"
+# find the path of root tests dir
+rootdir = os.path.dirname(os.path.abspath(__file__))
 
 parser = argparse.ArgumentParser(description="Test odk_merge")
 parser.add_argument("--odk", default=f"{rootdir}/testdata/odk_pois.osm", help="The ODK file")

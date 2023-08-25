@@ -23,12 +23,8 @@ from osm_fieldwork.convert import escape
 import argparse
 from osm_fieldwork.osmfile import OsmFile
 
-# find the path to the test data files
-rootdir = os.path.basename(os.getcwd())
-if rootdir == 'tests':
-    rootdir = "."
-else:
-    rootdir = rootdir + "/tests"
+# find the path of root tests dir
+rootdir = os.path.dirname(os.path.abspath(__file__))
 
 parser = argparse.ArgumentParser(
     description="Read and parse a CSV file from ODK Central"
