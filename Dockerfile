@@ -58,12 +58,13 @@ COPY pyproject.toml pdm.lock /opt/python/
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir pdm==2.6.1
 RUN pdm export --prod > requirements.txt \
-    && pdm export -G debug -G test --no-default > requirements-test.txt
+    && pdm export -G debug -G test \
+        --no-default > requirements-test.txt
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r ./requirements.txt
 COPY . .
-RUN pdm build
-RUN pip install --user --no-warn-script-location \
+RUN pdm build \
+    && pip install --user --no-warn-script-location \
     --no-cache-dir "dist/osm_fieldwork-$PKG_VERSION-py3-none-any.whl"
 
 
