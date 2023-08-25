@@ -6,7 +6,7 @@ groups = ["default", "docs", "debug", "test", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:fd9d278441241974e7276215ab25ebcae69ef709e94a00bf3d2f8c25b7090a45"
+content_hash = "sha256:ccd00ff5809d4bbeeeccab424f4f1df32619c614c923194ff0f917f15aafc7e1"
 
 [[package]]
 name = "appnope"
@@ -1115,6 +1115,19 @@ dependencies = [
 files = [
     {file = "prompt_toolkit-3.0.39-py3-none-any.whl", hash = "sha256:9dffbe1d8acf91e3de75f3b544e4842382fc06c6babe903ac9acb74dc6e08d88"},
     {file = "prompt_toolkit-3.0.39.tar.gz", hash = "sha256:04505ade687dc26dc4284b1ad19a83be2f2afe83e7a828ace0c72f3a1df72aac"},
+]
+
+[[package]]
+name = "psycopg2"
+version = "2.9.7"
+requires_python = ">=3.6"
+summary = "psycopg2 - Python-PostgreSQL Database Adapter"
+files = [
+    {file = "psycopg2-2.9.7-cp310-cp310-win32.whl", hash = "sha256:1a6a2d609bce44f78af4556bea0c62a5e7f05c23e5ea9c599e07678995609084"},
+    {file = "psycopg2-2.9.7-cp310-cp310-win_amd64.whl", hash = "sha256:b22ed9c66da2589a664e0f1ca2465c29b75aaab36fa209d4fb916025fb9119e5"},
+    {file = "psycopg2-2.9.7-cp311-cp311-win32.whl", hash = "sha256:44d93a0109dfdf22fe399b419bcd7fa589d86895d3931b01fb321d74dadc68f1"},
+    {file = "psycopg2-2.9.7-cp311-cp311-win_amd64.whl", hash = "sha256:91e81a8333a0037babfc9fe6d11e997a9d4dac0f38c43074886b0d9dead94fe9"},
+    {file = "psycopg2-2.9.7.tar.gz", hash = "sha256:f00cc35bd7119f1fed17b85bd1007855194dde2cbd8de01ab8ebb17487440ad8"},
 ]
 
 [[package]]
