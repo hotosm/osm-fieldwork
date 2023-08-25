@@ -26,8 +26,8 @@ from  osm_fieldwork.CSVDump import CSVDump
 rootdir = os.path.basename(os.getcwd())
 if rootdir == 'tests':
     rootdir = "."
-elif rootdir == 'main':
-    rootdir = os.getcwd() + "/tests"
+else:
+    rootdir = rootdir + "/tests"
 
 parser = argparse.ArgumentParser(
     description="Read and parse a CSV file from ODK Central"

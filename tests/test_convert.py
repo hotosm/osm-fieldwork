@@ -28,13 +28,13 @@ from osm_fieldwork.convert import Convert
 rootdir = os.path.basename(os.getcwd())
 if rootdir == 'tests':
     rootdir = "."
-elif rootdir == 'main':
-    rootdir = os.getcwd() + "/tests"
+else:
+    rootdir = rootdir + "/tests"
 
 parser = argparse.ArgumentParser(
     description="Read and convert a JSON file from ODK Central"
 )
-parser.add_argument("--infile", default=f"{rootdir}testdata/testcamps.json", help="The JSON input file")
+parser.add_argument("--infile", default=f"{rootdir}/testdata/testcamps.json", help="The JSON input file")
 args = parser.parse_args()
 
 path = xlsforms_path.replace("/xlsforms", "")

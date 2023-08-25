@@ -28,8 +28,8 @@ from osm_fieldwork.osmfile import OsmFile
 rootdir = os.path.basename(os.getcwd())
 if rootdir == 'tests':
     rootdir = "."
-elif rootdir == 'main':
-    rootdir = os.getcwd() + "/tests"
+else:
+    rootdir = rootdir + "/tests"
 
 parser = argparse.ArgumentParser(description="Test odk_merge")
 parser.add_argument("--odk", default=f"{rootdir}/testdata/odk_pois.osm", help="The ODK file")
