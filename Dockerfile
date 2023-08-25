@@ -97,8 +97,8 @@ COPY --from=build \
     /root/.local \
     /home/appuser/.local
 WORKDIR /home/appuser
-# Add non-root user, permissions
-RUN useradd -r -u 900 -m -c "hotosm account" -d /home/appuser -s /bin/false appuser \
+# Add non-root user (match Github runner), permissions
+RUN useradd -r -u 1001 -m -c "hotosm account" -d /home/appuser -s /bin/false appuser \
     && chown -R appuser:appuser /home/appuser
 # Change to non-root user
 USER appuser
