@@ -111,7 +111,6 @@ COPY --from=build --chown=appuser \
     /opt/python/requirements-test.txt /opt/python/
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r /opt/python/requirements-test.txt
-COPY --chown=appuser tests/ /home/appuser/tests/
 # Pre-compile packages to .pyc (init speed gains)
 RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
 # Override entrypoint, as not possible in Github action
