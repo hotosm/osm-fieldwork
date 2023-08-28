@@ -22,8 +22,12 @@ import argparse
 import os
 import logging
 import sys
+import json
+from typing import Union
+
 import mercantile
-from osgeo import ogr
+from shapely.geometry import shape
+from shapely.ops import unary_union
 from pySmartDL import SmartDL
 from cpuinfo import get_cpu_info
 import queue
@@ -109,19 +113,15 @@ class BaseMapper(object):
         Create an mbtiles basemap for ODK Collect
 
         Args:
-            boundary (str): A Polygon in GeoJson format of the AOI
+            boundary (str): A BBOX string or GeoJSON file of the AOI.
+                The GeoJSON can contain multiple geometries.
             base (str): The base directory to cache map tile in
             source (str): The upstream data source for map tiles
 
         Returns:
             (BaseMapper): An instance of this class
         """
-        geom = ogr.Open(boundary)
-        layer = geom.GetLayer()
-        x_min, x_max, y_min, y_max = layer.GetExtent()
-        layer.GetSpatialRef()
-
-        self.bbox = self.makeBbox(layer)
+        self.bbox = self.makeBbox(boundary)
         self.tiles = list()
         self.base = base
         # sources for imagery
@@ -250,23 +250,51 @@ class BaseMapper(object):
             return False
 
     def makeBbox(self,
-                 layer: ogr.Layer,
+                 boundary: str,
                  ):
         """
-        Make a bounding box from a layer
+        Make a bounding box from a shapely geometry.
 
         Args:
-            layer (ogr.Layer): The boundary data file
+            boundary (str): A BBOX string or GeoJSON file of the AOI.
+                The GeoJSON can contain multiple geometries.
 
         Returns:
             (list): The bounding box coordinates
         """
+        if not boundary.lower().endswith((".json", ".geojson")):
+            # Is BBOX string
+            try:
+                bbox_parts = boundary.split(',')
+                bbox = tuple(float(x) for x in bbox_parts)
+                if len(bbox) == 4:
+                    # BBOX valid
+                    return bbox
+                else:
+                    log.error(f"BBOX string malformed: {bbox}")
+                    return
+            except Exception as e:
+                log.error(e)
+                log.error(f"Failed to parse BBOX string: {boundary}")
+                return
+
+        log.debug(f"Reading geojson file: {boundary}")
+        with open(boundary, "r") as f:
+            geojson = json.load(f)
+        geometry = shape(geojson)
+
+        if isinstance(geometry, list):
+            # Multiple geometries
+            log.debug("Creating union of multiple bbox geoms")
+            geometry = unary_union(geometry)
+
+        if geometry.is_empty:
+            log.warning(f"No bbox extracted from {geometry}")
+            return None
+
+        bbox = geometry.bounds
         # left, bottom, right, top
-        # minX: %d, minY: %d, maxX: %d, maxY: %d" %(env[0],env[2],env[1],env[3])
-        for feature in layer:
-            bbox = list(feature.GetGeometryRef().GetEnvelope())
-            bbox = (bbox[0], bbox[2], bbox[1], bbox[3])
-            # print(bbox)
+        # minX, minY, maxX, maxY
         return bbox
 
 
