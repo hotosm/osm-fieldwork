@@ -588,33 +588,35 @@ class FileClient(object):
         self.infile = infile
 
     def getFeatures(self,
-                    boundary: str,
                     infile: str,
                     outfile: str,
+                    boundary: str = None,
                     ):
         """
         Extract features from a disk file
 
         Args:
-            boundary (str): The filespec for the project AOI in GeoJson format
             infile (str): A GeoJson file of existing data
             outfile (str): An optional GeoJson output file
+            boundary (str): The filespec for the project AOI in GeoJson format
 
         Returns:
             (FeatureCollection): The features returned from the query
         """
-        log.info("Extracting buildings from %s..." % infile)
+        # TODO untested
+
+        log.info(f"Extracting buildings from {infile}")
+        with open(infile, "r") as f:
+            geojson = json.load(f)
+        geometry = shape(geojson)
+
         if boundary:
-            poly = ogr.Open(boundary)
-            layer = poly.GetLayer()
-            ogr.Layer.Clip(osm, layer, memlayer)
-        else:
-            layer = poly.GetLayer()
+            # TODO layer clipping
+            pass
 
-        tmp = ogr.Open(infile)
-        layer = tmp.GetLayer()
+        # layer.SetAttributeFilter("tags->>'building' IS NOT NULL")
 
-        layer.SetAttributeFilter("tags->>'building' IS NOT NULL")
+        # TODO output file
 
 
 def main():
