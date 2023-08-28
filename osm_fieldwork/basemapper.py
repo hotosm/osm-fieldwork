@@ -35,7 +35,6 @@ import concurrent.futures
 import threading
 from osm_fieldwork.sqlite import DataFile, MapTile
 
-# Instantiate logger
 log = logging.getLogger(__name__)
 
 
@@ -59,7 +58,7 @@ def dlthread(dest: str,
     # start = datetime.now()
 
     # totaltime = 0.0
-    logging.info(
+    log.info(
         "Downloading %d tiles in thread %d to %s"
         % (len(tiles), threading.get_ident(), dest)
     )
@@ -88,7 +87,7 @@ def dlthread(dest: str,
                         continue
                     else:
                         os.mkdir(tmp)
-                        logging.debug("Made %s" % tmp)
+                        log.debug("Made %s" % tmp)
 
         try:
             if site["source"] == "topo":
@@ -98,9 +97,10 @@ def dlthread(dest: str,
                 dl = SmartDL(remote, dest=outfile, connect_default_logger=False)
                 dl.start()
             else:
-                logging.debug("%s exists!" % (outfile))
-        except:
-            logging.error("Couldn't download from %r: %s" % (filespec, dl.get_errors()))
+                log.debug("%s exists!" % (outfile))
+        except Exception as e:
+            log.error(e)
+            log.error("Couldn't download from %r: %s" % (filespec, dl.get_errors()))
 
 
 class BaseMapper(object):
@@ -206,10 +206,10 @@ class BaseMapper(object):
                 self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], zoom)
         )
         total = len(self.tiles)
-        logging.info("%d tiles for zoom level %d" % (len(self.tiles), zoom))
+        log.info("%d tiles for zoom level %d" % (len(self.tiles), zoom))
         chunk = round(len(self.tiles) / cores)
         queue.Queue(maxsize=cores)
-        logging.info("%d threads, %d tiles" % (cores, total))
+        log.info("%d threads, %d tiles" % (cores, total))
 
         mirrors = [self.sources[self.source]]
         # epdb.st()
@@ -222,10 +222,10 @@ class BaseMapper(object):
                     executor.submit(
                         dlthread, self.base, mirrors, self.tiles[block : block + chunk]
                     )
-                    logging.debug("Dispatching Block %d:%d" % (block, block + chunk))
+                    log.debug("Dispatching Block %d:%d" % (block, block + chunk))
                     block += chunk
                 executor.shutdown()
-            # logging.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), os.path.basename(self.base)))
+            # log.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), os.path.basename(self.base)))
 
         return len(self.tiles)
 
@@ -243,10 +243,10 @@ class BaseMapper(object):
         """
         filespec = f"{self.base}{tile[2]}/{tile[1]}/{tile[0]}.{self.sources[{self.source}]['suffix']}"
         if os.path.exists(filespec):
-            logging.debug("%s exists" % filespec)
+            log.debug("%s exists" % filespec)
             return True
         else:
-            logging.debug("%s doesn't exists" % filespec)
+            log.debug("%s doesn't exists" % filespec)
             return False
 
     def makeBbox(self,
@@ -343,7 +343,7 @@ def main():
 
     # Make a bounding box from the boundary file
     if not args.boundary:
-        logging.error("You need to specify a boundary file!")
+        log.error("You need to specify a boundary file!")
         parser.print_help()
         quit()
 
@@ -356,12 +356,12 @@ def main():
     if args.source:
         basemap = BaseMapper(args.boundary, base, args.source)
     else:
-        logging.error("You need to specify a source!")
+        log.error("You need to specify a source!")
         parser.print_help()
         quit()
 
     if args.outfile is None:
-        logging.error("You need to specify an mbtiles or sqlitedb file!!")
+        log.error("You need to specify an mbtiles or sqlitedb file!!")
         parser.print_help()
         quit()
 
@@ -375,7 +375,7 @@ def main():
             # Create output database and specify image format, png, jpg, or tif
             outf.writeTiles(basemap.tiles, base)
         else:
-            logging.info("Only downloading tiles to %s!" % base)
+            log.info("Only downloading tiles to %s!" % base)
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
