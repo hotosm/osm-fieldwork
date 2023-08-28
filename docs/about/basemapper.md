@@ -87,15 +87,18 @@ The basic syntax is as follows:
 - -input_file, --This is a required positional argument that specifies the path to the input ODK form.
 - -h, --help show this help message and exit
 - -v, --verbose verbose output
-- -b BOUNDARY, --boundary BOUNDARY - The boundary for the area you want
+- -b BOUNDARY, --boundary BOUNDARY - The boundary for the area you want, as BBOX string or geojson file.
 - -z ZOOMS, --zooms ZOOMS - The Zoom levels
 - -o OUTFILE, --outfile - OUTFILE Output file name
 - -d OUTDIR, --outdir OUTDIR -Output directory name for tile cache
 - -s {ersi,bing,topo,google,oam}, --source {ersi,bing,topo,google,oam} - Imagery source
 
 The suffix of the output file is either **mbtiles** or **sqlitedb**, which is
-used to select the output format. The boundary file must be in
+used to select the output format. The boundary file, if specified, must be in
 [GeoJson](https://geojson.org/) format.
+If in BBOX string format, it must be comma separated:
+"minX,minY,maxX,maxY".
+
 
 ## Imagery Sources
 
