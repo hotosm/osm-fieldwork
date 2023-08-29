@@ -41,6 +41,7 @@ log = logging.getLogger(__name__)
 def dlthread(dest: str,
              mirrors: list,
              tiles: list,
+             xy: bool,
              ):
     """
     Thread to handle downloads for Queue
@@ -49,6 +50,7 @@ def dlthread(dest: str,
         dest (str): The filespec of the tile cache
         mirrors (list): The list of mirrors to get imagery
         tiles (list): The list of tiles to download
+        xy (bool): Whether to swap the X & Y fields in the TMS URL
     """
     if len(tiles) == 0:
         # epdb.st()
@@ -73,6 +75,12 @@ def dlthread(dest: str,
                 remote = url % bingkey
             elif  site["source"] == "google":
                 path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
+                remote = url % path
+            elif  site["source"] == "custom":
+                if not xy:
+                    path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
+                else:
+                    path = f"x={tile[0]}&s=&y={tile[2]}&z={tile[1]}"
                 remote = url % path
             else:
                 remote = url % filespec
@@ -105,9 +113,10 @@ def dlthread(dest: str,
 
 class BaseMapper(object):
     def __init__(self,
-                 boundary: str= None,
-                 base: str = None,
-                 source: str = None,
+                 boundary: str,
+                 base: str,
+                 source: str,
+                 xy: bool,
                  ):
         """
         Create an mbtiles basemap for ODK Collect
@@ -117,6 +126,7 @@ class BaseMapper(object):
                 The GeoJSON can contain multiple geometries.
             base (str): The base directory to cache map tile in
             source (str): The upstream data source for map tiles
+            xy (bool): Whether to swap the X & Y fields in the TMS URL
 
         Returns:
             (BaseMapper): An instance of this class
@@ -147,6 +157,7 @@ class BaseMapper(object):
             "source": "esri",
         }
         self.sources["esri"] = source
+        self.xy = xy
 
         # USGS Topographical map
         url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%s"
@@ -179,10 +190,28 @@ class BaseMapper(object):
         }
         self.sources["oam"] = source
 
+    def customTMS(self,
+                  url: str,
+                  name: str = 'custom',
+                  source: str = 'custom',
+                  suffix: str = 'jpg',
+                  ):
+        """
+        Add a custom TMS URL to the list of sources.
+
+        Args:
+            name (str): The name to display
+            url (str): The URL string
+            suffix (str): The suffix, png or jpg
+            source (str): The source value to use as an index
+        """
+        self.sources['custom'] = {'name': name, 'url': url, 'suffix': suffix, 'source': source}
+        self.source = 'custom'
+
     def getFormat(self):
         """
         Returns:
-            (str): the upstream sourve for map tiles
+            (str): the upstream source for map tiles
         """
         return self.sources[self.source]["suffix"]
 
@@ -214,7 +243,7 @@ class BaseMapper(object):
         mirrors = [self.sources[self.source]]
         # epdb.st()
         if len(self.tiles) < chunk or chunk == 0:
-            dlthread(self.base, mirrors, self.tiles)
+            dlthread(self.base, mirrors, self.tiles, self.xy)
         else:
             with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
                 block = 0
@@ -280,8 +309,11 @@ class BaseMapper(object):
 
         log.debug(f"Reading geojson file: {boundary}")
         with open(boundary, "r") as f:
-            geojson = json.load(f)
-        geometry = shape(geojson)
+            poly = json.load(f)
+        if 'features' in poly:
+            geometry = shape(poly['features'][0]['geometry'])
+        else:
+            geometry = shape(poly)
 
         if isinstance(geometry, list):
             # Multiple geometries
@@ -305,6 +337,8 @@ def main():
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-b", "--boundary", required=True, help="The boundary for the area you want")
+    parser.add_argument("-t", "--tms", help="Custom TMS URL")
+    parser.add_argument("--xy", default=False, help="Swap the X & Y coordinates when using a custom TMS")
     parser.add_argument("-o", "--outfile", required=True, help="Output file name")
     parser.add_argument("-z", "--zooms", default="12-17", help="The Zoom levels")
     parser.add_argument("-d", "--outdir", help="Output directory name for tile cache")
@@ -353,8 +387,11 @@ def main():
         base = args.outdir
     base = f"{base}/{args.source}tiles"
 
-    if args.source:
-        basemap = BaseMapper(args.boundary, base, args.source)
+    if args.source and not args.tms:
+        basemap = BaseMapper(args.boundary, base, args.source, args.xy)
+    elif args.tms:
+        basemap = BaseMapper(args.boundary, base, 'custom', args.xy)
+        basemap.customTMS(args.tms)
     else:
         log.error("You need to specify a source!")
         parser.print_help()
