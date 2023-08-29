@@ -172,3 +172,5 @@ apppropriate value is.
 I often notice when collecting data in the field on my smartphone,
 typos are common. Missing capitalization on names or sometimes the
 wrong character is common.
+
+Here's a simple chart of the conversion [Data Flow](conflation.svg).
