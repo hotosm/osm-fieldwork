@@ -122,4 +122,4 @@ conversion of ODK data into OSM tags and values. By carefully defining
 the `ignore`, `private`, and `convert` sections, you can control the
 output of the conversion process and ensure that it meets your needs.
 
-Here's a simple chart of the conversion [Data Flow](conflation.svg).
+Here's a simple chart of the conversion [Data Flow](conversion.svg).
