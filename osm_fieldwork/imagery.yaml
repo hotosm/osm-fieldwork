@@ -19,6 +19,12 @@ sources:
 
   - oam:
       - name: OpenArialMap
-      - url: https://tiles.openaerialmap.org/63962d0d9f665400075759be/0/63962d0d9f665400075759bf/{z}/{x}/{y}
+      - url: https://tiles.openaerialmap.org/63962d0d9f665400075759be/0/63962d0d9f665400075759bf/%s
       - suffix: png
       - xy: True
+
+  - topo:
+      - name: USGS Topo Map
+      - url: https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%s
+      - suffix: jpg
+      - xy: False
