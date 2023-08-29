@@ -34,6 +34,9 @@ import queue
 import concurrent.futures
 import threading
 from osm_fieldwork.sqlite import DataFile, MapTile
+from osm_fieldwork.xlsforms import xlsforms_path
+from osm_fieldwork.yamlfile import YamlFile
+
 
 log = logging.getLogger(__name__)
 
@@ -137,58 +140,20 @@ class BaseMapper(object):
         # sources for imagery
         self.source = source
         self.sources = dict()
-
-        # Bing hybrid imagery
-        url = "http://ecn.t0.tiles.virtualearth.net/tiles/h%s.jpg?g=129&mkt=en&stl=H"
-        source = {
-            "name": "Bing Maps Hybrid",
-            "url": url,
-            "suffix": "jpg",
-            "source": "bing",
-        }
-        self.sources["bing"] = source
-
-        # ERSI imagery
-        url = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/%s"
-        source = {
-            "name": "ESRI World Imagery",
-            "url": url,
-            "suffix": "jpg",
-            "source": "esri",
-        }
-        self.sources["esri"] = source
         self.xy = xy
 
-        # USGS Topographical map
-        url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%s"
-        source = {
-            "name": "USGS Topographic Map",
-            "url": url,
-            "suffix": "jpg",
-            "source": "topo",
-        }
-        self.sources["topo"] = source
+        path = xlsforms_path.replace("xlsforms", "imagery.yaml")
+        self.yaml = YamlFile(path)
 
-        # Google Hybrid
-        # url = "https://mt0.google.com/vt?lyrs=s&x={x}&s=&y={y}&z={z}"
-        url = "https://mt0.google.com/vt?lyrs=s&%s"
-        source = {
-            "name": "Google Imagery",
-            "url": url,
-            "suffix": "jpg",
-            "source": "google",
-        }
-        self.sources["google"] = source
-
-        # OpenArialMap
-        url = "https://tiles.openaerialmap.org/63962d0d9f665400075759be/0/63962d0d9f665400075759bf/{z}/{x}/{y}"
-        source = {
-            "name": "Open Aerial Map",
-            "url": url,
-            "suffix": "png",
-            "source": "oam",
-        }
-        self.sources["oam"] = source
+        for entry in self.yaml.yaml['sources']:
+            for k, v in entry.items():
+                src = dict()
+                for item in v:
+                    src['source'] = k
+                    for k1, v1 in item.items():
+                        # print(f"\tFIXME2: {k1} - {v1}")
+                        src[k1] = v1
+                self.sources[k] = src
 
     def customTMS(self,
                   url: str,
