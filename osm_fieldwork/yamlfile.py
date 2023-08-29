@@ -106,20 +106,28 @@ class YamlFile(object):
         if self.filespec:
             print("YAML file: %s" % self.filespec)
         for key, values in self.yaml.items():
-            print(f"Key is:{key}")
-            for k in values:
-                print(f"\t{k}")
+            print(f"Key is: {key}")
+            for v in values:
+                if type(v) == dict:
+                    for k1, v1 in v.items():
+                        if type(v1) == list:
+                            for item in v1:
+                                for i, j in item.items():
+                                    print(f"\t{i} = {j}")
+                        else:
+                            print(f"\t{k1} = {v1}")
+                    print('------------------')
+                else:
+                    print(f"\t{v}")
 
     def write(self,
               table: list,
-              where: list,
               ):
         """
         Add to the YAML file
         
         Args:
               table (list): The name of the database table
-              where (list):
 
         Returns:
             (str): The modified YAML data
@@ -167,9 +175,10 @@ if __name__ == "__main__":
         log.addHandler(ch)
     
     yaml1 = YamlFile(args.infile)
+    yaml1.dump()
 
     table = ("nodes", "ways_poly")
     where = ("building", "amenity", "shop", "tourism")
-    tmp = yaml1.write(table, where)
-    yaml2 = YamlFile(tmp)
-    yaml2.dump()
+    # tmp = yaml1.write(table)
+    # yaml2 = YamlFile(tmp)
+    # yaml2.dump()
