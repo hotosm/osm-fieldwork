@@ -54,11 +54,10 @@ install:
 	pip3 install -e .
 
 check:
-	pytest
+	@pytest
 
 clean:
-	@rm -fr docs/{apidocs,html,docbook,man} packages.png classes.png
-	@rm -fr /tmp/*.md /tmp*.pdf
+	@rm -fr docs/{apidocs,html,docbook,man} docs/packages.png docs/classes.png
 
 uml:
 	cd docs && pyreverse -o png ../osm_fieldwork
