@@ -20,9 +20,10 @@ PACKAGE := org.osm_fieldwork.py
 NAME := osm-fieldwork
 VERSION := 0.3.5
 
-# Make a python package for pip
-pip:
-	zip -r $(NAME).zip .
+FILES := $(wildcard ./osm_fieldwork/*.py)
+
+all:
+	echo $(FILES)
 
 uninstall:
 	pip3 uninstall $(NAME)
@@ -32,3 +33,16 @@ install:
 
 check:
 	pytest
+
+clean:
+	@rm -fr docs/{apidocs,html,docbook,man}
+
+uml:
+	pyreverse -o png .
+
+apidoc: force
+	cd docs && doxygen
+
+.PHONY: apidoc
+
+force:
