@@ -16,6 +16,7 @@
 #
 ARG PYTHON_IMG_TAG=3.10
 
+
 FROM docker.io/python:${PYTHON_IMG_TAG}-slim-bookworm as base
 ARG PYTHON_IMG_TAG
 ARG PKG_VERSION
@@ -23,7 +24,6 @@ ARG MAINTAINER=admin@hotosm.org
 LABEL org.hotosm.osm-fieldwork.python-img-tag="${PYTHON_IMG_TAG}" \
       org.hotosm.osm-fieldwork.maintainer="${MAINTAINER}" \
       org.hotosm.osm-fieldwork.version="${PKG_VERSION}"
-
 RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install \
@@ -36,6 +36,26 @@ RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
+
+
+
+FROM base as extract-deps
+WORKDIR /opt/python
+COPY pyproject.toml pdm.lock /opt/python/
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir pdm==2.6.1
+RUN pdm export --prod > requirements.txt \
+    && pdm export -G debug -G test \
+        --no-default > requirements-test.txt
+
+
+
+FROM base as build-wheel
+ARG PKG_VERSION
+WORKDIR /build
+COPY . .
+RUN pip install pdm==2.6.1 \
+    && pdm build
 
 
 
@@ -54,18 +74,14 @@ RUN set -ex \
         "libgeos-dev" \
         "libgdal-dev" \
     && rm -rf /var/lib/apt/lists/*
-COPY pyproject.toml pdm.lock /opt/python/
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir pdm==2.6.1
-RUN pdm export --prod > requirements.txt \
-    && pdm export -G debug -G test \
-        --no-default > requirements-test.txt
+COPY --from=extract-deps --chown=appuser \
+    /opt/python/requirements.txt /opt/python/
+COPY --from=build-wheel --chown=appuser \
+    "/build/dist/osm_fieldwork-$PKG_VERSION-py3-none-any.whl" .
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r ./requirements.txt
-COPY . .
-RUN pdm build \
-    && pip install --user --no-warn-script-location \
-    --no-cache-dir "dist/osm_fieldwork-$PKG_VERSION-py3-none-any.whl"
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir "/opt/python/osm_fieldwork-$PKG_VERSION-py3-none-any.whl"
 
 
 
@@ -107,7 +123,7 @@ CMD ["python", "$@"]
 
 
 FROM runtime as ci
-COPY --from=build --chown=appuser \
+COPY --from=extract-deps --chown=appuser \
     /opt/python/requirements-test.txt /opt/python/
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r /opt/python/requirements-test.txt
