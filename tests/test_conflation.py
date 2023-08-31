@@ -55,44 +55,45 @@ def test_file():
         passes += 1
     assert(passes == 3)
 
-def test_db():
-    """This test against a local database. If there is no postgres, then
-    none of the tests get run."""
-    passes = 0
-    # this database always exists on this developer's machine
-    odk = OdkMerge("PG:colorado", args.boundary)
-    if odk.postgres is not None:
-        passes += 1
-    else:
-        return
-    # We also want to trap a bad database name
-    # odk = OdkMerge("PG:foobar")
-    # if odk.dbcursor is None:
-    #     passes += 1
+# FIXME update test_db to use local db in CI
+# def test_db():
+#     """This test against a local database. If there is no postgres, then
+#     none of the tests get run."""
+#     passes = 0
+#     # this database always exists on this developer's machine
+#     odk = OdkMerge("PG:colorado", args.boundary)
+#     if odk.postgres is not None:
+#         passes += 1
+#     else:
+#         return
+#     # We also want to trap a bad database name
+#     # odk = OdkMerge("PG:foobar")
+#     # if odk.dbcursor is None:
+#     #     passes += 1
 
-    osm = OsmFile()
-    osmdata = osm.loadFile(args.odk)
-    if len(osmdata) == 8:
-        passes += 1
+#     osm = OsmFile()
+#     osmdata = osm.loadFile(args.odk)
+#     if len(osmdata) == 8:
+#         passes += 1
 
-    # The first feature is a match, so has the OSM ID, the second
-    # feature doesn't match, so negative ID. Here we're just making
-    # sure it got loaded as a sanity check
-    keys = list(osmdata.keys())
-    if osmdata[keys[6]]['attrs']['id'] > 0 and osmdata[keys[0]]['attrs']['id'] < 0:
-        passes += 1
+#     # The first feature is a match, so has the OSM ID, the second
+#     # feature doesn't match, so negative ID. Here we're just making
+#     # sure it got loaded as a sanity check
+#     keys = list(osmdata.keys())
+#     if osmdata[keys[6]]['attrs']['id'] > 0 and osmdata[keys[0]]['attrs']['id'] < 0:
+#         passes += 1
 
-    odk = OdkMerge(args.database, args.boundary)
-    # Although the code is multi-threaded, we can call the function that
-    # does all the work directly without threading. Easier to debug this way.
-    data = conflateThread(osmdata, odk, 0)
-    if len(data[6]['attrs']) > 0 and data[6]['attrs']['id'] > 0 and data[0]['attrs']['id'] < 0:
-        passes += 1
-    assert(passes == 4)
+#     odk = OdkMerge(args.database, args.boundary)
+#     # Although the code is multi-threaded, we can call the function that
+#     # does all the work directly without threading. Easier to debug this way.
+#     data = conflateThread(osmdata, odk, 0)
+#     if len(data[6]['attrs']) > 0 and data[6]['attrs']['id'] > 0 and data[0]['attrs']['id'] < 0:
+#         passes += 1
+#     assert(passes == 4)
 
 if __name__ == "__main__":
     print("--- test_file() ---")
     test_file()
-    print("--- test_db() ---")
-    test_db()
+    # print("--- test_db() ---")
+    # test_db()
     print("--- done ---")
