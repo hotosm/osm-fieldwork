@@ -31,7 +31,7 @@ To install osm-fieldwork, you can use pip. Here are two options:
   `pip install git+https://github.com/hotosm/osm-fieldwork.git`
 
 - Latest on PyPi:
-  `pip install Osm-Fieldwork`
+  `pip install osm-fieldwork`
 
 ### Configure
 
@@ -65,6 +65,25 @@ course for this to work. That file looks like this:
 
 **ODK_CENTRAL_SECURE**
 > If set to False, will allow insecure connections to the ODKCentral API. Else defaults to True.
+
+## Using the Container Image
+
+- osm-fieldwork scripts can be used via the pre-built container images.
+- These images come with all dependencies bundled, so are simple to run.
+
+Run a specific command:
+
+```bash
+docker run --rm -v $PWD:/data ghcr.io/hotosm/osm-fieldwork:0.3.5 json2osm
+```
+
+Run interactively (to use multiple commands):
+
+```bash
+docker run --rm -it -v $PWD:/data ghcr.io/hotosm/osm-fieldwork:0.3.5
+```
+
+> Note: the output directory should always be /data/... to persist data.
 
 # Utility Programs
 
