@@ -76,10 +76,10 @@ RUN set -ex \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=extract-deps --chown=appuser \
     /opt/python/requirements.txt /opt/python/
-COPY --from=build-wheel --chown=appuser \
-    "/build/dist/osm_fieldwork-$PKG_VERSION-py3-none-any.whl" .
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r ./requirements.txt
+COPY --from=build-wheel --chown=appuser \
+    "/build/dist/osm_fieldwork-$PKG_VERSION-py3-none-any.whl" .
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir "/opt/python/osm_fieldwork-$PKG_VERSION-py3-none-any.whl"
 
@@ -112,13 +112,15 @@ RUN set -ex \
 COPY --from=build \
     /root/.local \
     /home/appuser/.local
-WORKDIR /home/appuser
+WORKDIR /data
+COPY entrypoint.sh /container-entrypoint.sh
 # Add non-root user (match Github runner), permissions
 RUN useradd -r -u 1001 -m -c "hotosm account" -d /home/appuser -s /bin/false appuser \
-    && chown -R appuser:appuser /home/appuser
-# Change to non-root user
+    && chown -R appuser:appuser /home/appuser \
+    && chmod +x /container-entrypoint.sh \
+    && chmod -R 777 /data
+# Change to non-root user (for compile below)
 USER appuser
-CMD ["python", "$@"]
 
 
 
@@ -129,14 +131,15 @@ RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r /opt/python/requirements-test.txt
 # Pre-compile packages to .pyc (init speed gains)
 RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
-# Override entrypoint, as not possible in Github action
-ENTRYPOINT [""]
-CMD [""]
+# Change to root, use gosu at runtime
+USER root
 
 
 
 FROM runtime as prod
 # Pre-compile packages to .pyc (init speed gains)
 RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
-# Note: 4 uvicorn workers as running with docker, change to 1 worker for Kubernetes
-CMD ["python", "$@"]
+# Change to root, use gosu at runtime
+USER root
+ENTRYPOINT ["/container-entrypoint.sh"]
+CMD ["bash"]
