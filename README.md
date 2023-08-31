@@ -1,5 +1,7 @@
 # OSM Fieldwork Project
 
+🕮 [Documentation](https://hotosm.github.io/osm-fieldwork/)
+
 Osm-Fieldwork is a project for processing data collection using
 OpenDataKit into OpenStreetMap format. It includes several utility
 programs that automate part of the data flow like creating satellite
