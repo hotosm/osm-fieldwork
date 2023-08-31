@@ -25,8 +25,8 @@ jobs:
       image: ghcr.io/hotosm/osm-fieldwork:ci
       volumes:
         # Mount / test files in commit
-        - ./osm_fieldwork:/home/appuser/.local/lib/python3.10/site-packages/osm_fieldwork
-        - ./tests:/home/appuser/tests
+        - $GITHUB_WORKSPACE/osm_fieldwork:/home/appuser/.local/lib/python3.10/site-packages/osm_fieldwork
+        - $GITHUB_WORKSPACE/tests:/home/appuser/tests
       options: --user root
 
     steps:
