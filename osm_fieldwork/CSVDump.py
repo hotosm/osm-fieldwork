@@ -206,8 +206,11 @@ class CSVDump(Convert):
                             else:
                                 self.saved[base] = value
                                 log.debug(f"Updating last saved value for \"{base}\" with \"{value}\"")
+                        # Handle nested dict in list
+                        if isinstance(items, list):
+                            items = items[0]
                         for k, v in items.items():
-                            tags[k] = v
+                                tags[k] = v
                     else:
                         tags[base] = value
                 # log.debug(f"\tFIXME1: {tags}")

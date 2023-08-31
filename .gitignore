@@ -54,7 +54,6 @@ NEWS
 
 # PDM
 .pdm.toml
-pdm.lock
 .pdm-python
 
 # Python builds
