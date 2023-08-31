@@ -13,6 +13,21 @@ permissions:
   contents: write
 
 jobs:
+  build_doxygen:
+    name: Build Doxygen Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Doxygen
+        run: sudo apt-get update && sudo apt-get install -y doxygen
+
+      - name: Build Doxygen Docs
+        run: |
+          cd docs
+          doxygen
+
   publish_docs:
     name: Publish Docs
     runs-on: ubuntu-latest
