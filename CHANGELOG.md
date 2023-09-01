@@ -91,7 +91,7 @@
 - handle xlsfile better
 - osmfile.footer() is now called by a destructor
 - Don't escape spaces
-- Implement conflating a  POI against ways
+- Implement conflating a POI against ways
 - Add a destructor so the footer gets added when class is deleted
 - Make output file optional
 - Conversion from gdal is done, startin gto implement threads
