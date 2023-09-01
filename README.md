@@ -74,7 +74,7 @@ course for this to work. That file looks like this:
 Run a specific command:
 
 ```bash
-docker run --rm -v $PWD:/data ghcr.io/hotosm/osm-fieldwork:latest json2osm
+docker run --rm -v $PWD:/data ghcr.io/hotosm/osm-fieldwork:latest json2osm <flags>
 ```
 
 Run interactively (to use multiple commands):
