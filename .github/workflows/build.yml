@@ -1,16 +1,8 @@
 name: Build
 
 on:
-  # Push includes PR merge
-  push:
-    branches:
-      - main
-    paths:
-      # Workflow is triggered only if code changes
-      - "osm_fieldwork/**"
-      - "pyproject.toml"
-      - "Dockerfile"
-      - "entrypoint.sh"
+  release:
+    types: [published]
   # Allow manual trigger
   workflow_dispatch:
 
