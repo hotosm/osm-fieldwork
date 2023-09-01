@@ -41,7 +41,6 @@ jobs:
       - name: Extract version
         id: extract_api_version
         run: |
-          cd src/backend
           echo "PKG_VERSION=$(python -c 'from osm_fieldwork.__version__ import __version__; print(__version__)')" >> $GITHUB_ENV
 
       - name: Build image
