@@ -26,8 +26,10 @@ jobs:
       - name: Write cache
         uses: actions/cache@v3
         with:
-          path: docs/apidocs
-          key: doxygen-build-${{ env.cache_id }}
+          path: |
+            .cache
+            docs/apidocs
+          key: doc-build-${{ env.cache_id }}
 
       - name: Build Doxygen Docs
         run: |
@@ -51,11 +53,12 @@ jobs:
       - name: Read cache
         uses: actions/cache@v3
         with:
-          path: .cache
-          key: mkdocs-material-${{ env.cache_id }}
+          path: |
+            .cache
+            docs/apidocs
+          key: doc-build-${{ env.cache_id }}
           restore-keys: |
-            mkdocs-material-
-            doxygen-build-
+            doc-build-
 
       - name: Install PDM
         run: |
