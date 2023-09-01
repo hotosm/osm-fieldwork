@@ -50,7 +50,7 @@ jobs:
           target: prod
           push: true
           tags: |
-            "ghcr.io/hotosm/fmtm/osm-fieldwork:${{ env.PKG_VERSION }}"
-            "ghcr.io/hotosm/fmtm/osm-fieldwork:latest"
+            "ghcr.io/hotosm/osm-fieldwork:${{ env.PKG_VERSION }}"
+            "ghcr.io/hotosm/osm-fieldwork:latest"
           build-args: |
             PKG_VERSION=${{ env.PKG_VERSION }}
