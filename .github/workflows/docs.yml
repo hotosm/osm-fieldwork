@@ -37,6 +37,7 @@ jobs:
   publish_docs:
     name: Publish Docs
     runs-on: ubuntu-latest
+    needs: [build_doxygen]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
