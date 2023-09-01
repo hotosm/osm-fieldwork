@@ -24,17 +24,13 @@ import argparse
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.convert import Convert
 
-# find the path to the test data files
-rootdir = os.path.basename(os.getcwd())
-if rootdir == 'tests':
-    rootdir = "."
-elif rootdir == 'main':
-    rootdir = os.getcwd() + "/tests"
+# find the path of root tests dir
+rootdir = os.path.dirname(os.path.abspath(__file__))
 
 parser = argparse.ArgumentParser(
     description="Read and convert a JSON file from ODK Central"
 )
-parser.add_argument("--infile", default=f"{rootdir}testdata/testcamps.json", help="The JSON input file")
+parser.add_argument("--infile", default=f"{rootdir}/testdata/testcamps.json", help="The JSON input file")
 args = parser.parse_args()
 
 path = xlsforms_path.replace("/xlsforms", "")

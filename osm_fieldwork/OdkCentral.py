@@ -395,8 +395,10 @@ class OdkProject(OdkCentral):
             (json): The data for the keyword
         """
         return self.data[keyword]
+
     def listForms(self,
                   project_id: int,
+                  metadata: bool = False
                   ):
         """
         Fetch a list of forms in a project on an ODK Central server.
@@ -408,6 +410,8 @@ class OdkProject(OdkCentral):
             (list): The list of XForms in this project
         """
         url = f"{self.base}projects/{project_id}/forms"
+        if metadata:
+            self.session.headers.update({"X-Extended-Metadata": "true"})
         result = self.session.get(url, auth=self.auth, verify=self.verify)
         self.forms = result.json()
         return self.forms

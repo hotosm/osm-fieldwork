@@ -1,5 +1,5 @@
 site_name: osm-fieldwork
-site_description: Processing collected OpenDataKit data into OpenStreetMap format, and other utility programs for field data collection.
+site_description: Processing data from OpenDataKit to OpenStreetMap format, and other field data collection utils.
 # strict: true
 site_url: "https://www.hotosm.org"
 
@@ -25,25 +25,25 @@ extra_css:
   - css/extra.css
 
 markdown_extensions:
-- tables
-- toc:
-    permalink: true
-    title: Page contents
-- admonition
-- pymdownx.details
-- pymdownx.superfences
-- pymdownx.highlight
-- pymdownx.extra
-- pymdownx.emoji:
-- pymdownx.tabbed:
-    alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+      title: Page contents
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.extra
+  - pymdownx.emoji:
+  - pymdownx.tabbed:
+      alternate_style: true
 
 plugins:
   - search
   - exclude:
       glob:
-      - plugins/*
-      - __pycache__/*
+        - plugins/*
+        - __pycache__/*
   - mkdocstrings:
       handlers:
         python:
@@ -57,38 +57,38 @@ plugins:
             merge_init_into_class: true
 
 nav:
-- Get Started:
-  - About: about/About.md
-  - FAQ: about/FAQ.md
-  - Changelog: CHANGELOG.md
-  - Code of Conduct: Code-of-Conduct.md
-  - License: LICENSE.md
-- User Manual: about/user-manual.md
-- Core Program Usage:
-  - ODK Client: about/odk_client.md
-  - make_data_extract: about/make_data_extract.md
-  - odk_merge: about/odk_merge.md
-  - json2osm: about/json2osm.md
-- Utility Program Usage:
-  - odk2geojson: about/odk2geojson.md
-  - odk2osm: about/odk2osm.md
-  - odk2csv: about/odk2csv.md
-- API:
-  - ODK Central: api/OdkCentral.md
-  - basemapper: api/basemapper.md
-  - convert: api/convert.md
-  - sqlite: api/sqlite.md
-  - osmfile: api/osmfile.md
-  - yamlfile: api/yamlfile.md
-  - json2osm: api/json2osm.md
-  - ODKInstance: api/ODKInstance.md
-  - ODKForm: api/ODKForm.md
-  - CSVDump: api/CSVDump.md
-- Deep Tech Dives:
-  - External Data: about/externaldata.md
-  - Data conflation: about/conflation.md
-  - The Config File: about/configuring.md
-#  - odk2geojson: api/odk2geojson.md
-#  - odk2csv: api/odk2csv.md
-#  - odk2osm: api/odk2osm.md
-
+  - Get Started:
+      - About: about/About.md
+      - FAQ: about/FAQ.md
+      - Changelog: CHANGELOG.md
+      - Code of Conduct: Code-of-Conduct.md
+      - License: LICENSE.md
+  - User Manual: about/user-manual.md
+  - Core Program Usage:
+      - ODK Client: about/odk_client.md
+      - make_data_extract: about/make_data_extract.md
+      - odk_merge: about/odk_merge.md
+      - json2osm: about/json2osm.md
+  - Utility Program Usage:
+      - odk2geojson: about/odk2geojson.md
+      - odk2osm: about/odk2osm.md
+      - odk2csv: about/odk2csv.md
+  - API:
+      - ODK Central: api/OdkCentral.md
+      - basemapper: api/basemapper.md
+      - convert: api/convert.md
+      - sqlite: api/sqlite.md
+      - osmfile: api/osmfile.md
+      - yamlfile: api/yamlfile.md
+      - json2osm: api/json2osm.md
+      - ODKInstance: api/ODKInstance.md
+      - ODKForm: api/ODKForm.md
+      - CSVDump: api/CSVDump.md
+  - Deep Tech Dives:
+      - External Data: about/externaldata.md
+      - Data conflation: about/conflation.md
+      - The Config File: about/configuring.md
+  #  - odk2geojson: api/odk2geojson.md
+  #  - odk2csv: api/odk2csv.md
+  #  - odk2osm: api/odk2osm.md
+  - Class Hierarchy: apidocs/html/inherits.html

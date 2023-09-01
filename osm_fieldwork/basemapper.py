@@ -22,22 +22,29 @@ import argparse
 import os
 import logging
 import sys
+import json
+from typing import Union
+
 import mercantile
-from osgeo import ogr
+from shapely.geometry import shape
+from shapely.ops import unary_union
 from pySmartDL import SmartDL
 from cpuinfo import get_cpu_info
 import queue
 import concurrent.futures
 import threading
 from osm_fieldwork.sqlite import DataFile, MapTile
+from osm_fieldwork.xlsforms import xlsforms_path
+from osm_fieldwork.yamlfile import YamlFile
 
-# Instantiate logger
+
 log = logging.getLogger(__name__)
 
 
 def dlthread(dest: str,
              mirrors: list,
              tiles: list,
+             xy: bool,
              ):
     """
     Thread to handle downloads for Queue
@@ -46,6 +53,7 @@ def dlthread(dest: str,
         dest (str): The filespec of the tile cache
         mirrors (list): The list of mirrors to get imagery
         tiles (list): The list of tiles to download
+        xy (bool): Whether to swap the X & Y fields in the TMS URL
     """
     if len(tiles) == 0:
         # epdb.st()
@@ -55,7 +63,7 @@ def dlthread(dest: str,
     # start = datetime.now()
 
     # totaltime = 0.0
-    logging.info(
+    log.info(
         "Downloading %d tiles in thread %d to %s"
         % (len(tiles), threading.get_ident(), dest)
     )
@@ -71,6 +79,12 @@ def dlthread(dest: str,
             elif  site["source"] == "google":
                 path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
                 remote = url % path
+            elif  site["source"] == "custom":
+                if not xy:
+                    path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
+                else:
+                    path = f"x={tile[0]}&s=&y={tile[2]}&z={tile[1]}"
+                remote = url % path
             else:
                 remote = url % filespec
             print("Getting file from: %s" % remote)
@@ -84,7 +98,7 @@ def dlthread(dest: str,
                         continue
                     else:
                         os.mkdir(tmp)
-                        logging.debug("Made %s" % tmp)
+                        log.debug("Made %s" % tmp)
 
         try:
             if site["source"] == "topo":
@@ -94,95 +108,75 @@ def dlthread(dest: str,
                 dl = SmartDL(remote, dest=outfile, connect_default_logger=False)
                 dl.start()
             else:
-                logging.debug("%s exists!" % (outfile))
-        except:
-            logging.error("Couldn't download from %r: %s" % (filespec, dl.get_errors()))
+                log.debug("%s exists!" % (outfile))
+        except Exception as e:
+            log.error(e)
+            log.error("Couldn't download from %r: %s" % (filespec, dl.get_errors()))
 
 
 class BaseMapper(object):
     def __init__(self,
-                 boundary: str= None,
-                 base: str = None,
-                 source: str = None,
+                 boundary: str,
+                 base: str,
+                 source: str,
+                 xy: bool,
                  ):
         """
         Create an mbtiles basemap for ODK Collect
 
         Args:
-            boundary (str): A Polygon in GeoJson format of the AOI
+            boundary (str): A BBOX string or GeoJSON file of the AOI.
+                The GeoJSON can contain multiple geometries.
             base (str): The base directory to cache map tile in
             source (str): The upstream data source for map tiles
+            xy (bool): Whether to swap the X & Y fields in the TMS URL
 
         Returns:
             (BaseMapper): An instance of this class
         """
-        geom = ogr.Open(boundary)
-        layer = geom.GetLayer()
-        x_min, x_max, y_min, y_max = layer.GetExtent()
-        layer.GetSpatialRef()
-
-        self.bbox = self.makeBbox(layer)
+        self.bbox = self.makeBbox(boundary)
         self.tiles = list()
         self.base = base
         # sources for imagery
         self.source = source
         self.sources = dict()
+        self.xy = xy
 
-        # Bing hybrid imagery
-        url = "http://ecn.t0.tiles.virtualearth.net/tiles/h%s.jpg?g=129&mkt=en&stl=H"
-        source = {
-            "name": "Bing Maps Hybrid",
-            "url": url,
-            "suffix": "jpg",
-            "source": "bing",
-        }
-        self.sources["bing"] = source
+        path = xlsforms_path.replace("xlsforms", "imagery.yaml")
+        self.yaml = YamlFile(path)
 
-        # ERSI imagery
-        url = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/%s"
-        source = {
-            "name": "ESRI World Imagery",
-            "url": url,
-            "suffix": "jpg",
-            "source": "esri",
-        }
-        self.sources["esri"] = source
+        for entry in self.yaml.yaml['sources']:
+            for k, v in entry.items():
+                src = dict()
+                for item in v:
+                    src['source'] = k
+                    for k1, v1 in item.items():
+                        # print(f"\tFIXME2: {k1} - {v1}")
+                        src[k1] = v1
+                self.sources[k] = src
 
-        # USGS Topographical map
-        url = "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%s"
-        source = {
-            "name": "USGS Topographic Map",
-            "url": url,
-            "suffix": "jpg",
-            "source": "topo",
-        }
-        self.sources["topo"] = source
+    def customTMS(self,
+                  url: str,
+                  name: str = 'custom',
+                  source: str = 'custom',
+                  suffix: str = 'jpg',
+                  ):
+        """
+        Add a custom TMS URL to the list of sources.
 
-        # Google Hybrid
-        # url = "https://mt0.google.com/vt?lyrs=s&x={x}&s=&y={y}&z={z}"
-        url = "https://mt0.google.com/vt?lyrs=s&%s"
-        source = {
-            "name": "Google Imagery",
-            "url": url,
-            "suffix": "jpg",
-            "source": "google",
-        }
-        self.sources["google"] = source
-
-        # OpenArialMap
-        url = "https://tiles.openaerialmap.org/63962d0d9f665400075759be/0/63962d0d9f665400075759bf/{z}/{x}/{y}"
-        source = {
-            "name": "Open Aerial Map",
-            "url": url,
-            "suffix": "png",
-            "source": "oam",
-        }
-        self.sources["oam"] = source
+        Args:
+            name (str): The name to display
+            url (str): The URL string
+            suffix (str): The suffix, png or jpg
+            source (str): The source value to use as an index
+        """
+        self.sources['custom'] = {'name': name, 'url': url, 'suffix': suffix, 'source': source}
+        self.source = 'custom'
 
     def getFormat(self):
         """
         Returns:
-            (str): the upstream sourve for map tiles
+            (str): the upstream source for map tiles
         """
         return self.sources[self.source]["suffix"]
 
@@ -206,15 +200,15 @@ class BaseMapper(object):
                 self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], zoom)
         )
         total = len(self.tiles)
-        logging.info("%d tiles for zoom level %d" % (len(self.tiles), zoom))
+        log.info("%d tiles for zoom level %d" % (len(self.tiles), zoom))
         chunk = round(len(self.tiles) / cores)
         queue.Queue(maxsize=cores)
-        logging.info("%d threads, %d tiles" % (cores, total))
+        log.info("%d threads, %d tiles" % (cores, total))
 
         mirrors = [self.sources[self.source]]
         # epdb.st()
         if len(self.tiles) < chunk or chunk == 0:
-            dlthread(self.base, mirrors, self.tiles)
+            dlthread(self.base, mirrors, self.tiles, self.xy)
         else:
             with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
                 block = 0
@@ -222,10 +216,10 @@ class BaseMapper(object):
                     executor.submit(
                         dlthread, self.base, mirrors, self.tiles[block : block + chunk]
                     )
-                    logging.debug("Dispatching Block %d:%d" % (block, block + chunk))
+                    log.debug("Dispatching Block %d:%d" % (block, block + chunk))
                     block += chunk
                 executor.shutdown()
-            # logging.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), os.path.basename(self.base)))
+            # log.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), os.path.basename(self.base)))
 
         return len(self.tiles)
 
@@ -243,30 +237,61 @@ class BaseMapper(object):
         """
         filespec = f"{self.base}{tile[2]}/{tile[1]}/{tile[0]}.{self.sources[{self.source}]['suffix']}"
         if os.path.exists(filespec):
-            logging.debug("%s exists" % filespec)
+            log.debug("%s exists" % filespec)
             return True
         else:
-            logging.debug("%s doesn't exists" % filespec)
+            log.debug("%s doesn't exists" % filespec)
             return False
 
     def makeBbox(self,
-                 layer: ogr.Layer,
+                 boundary: str,
                  ):
         """
-        Make a bounding box from a layer
+        Make a bounding box from a shapely geometry.
 
         Args:
-            layer (ogr.Layer): The boundary data file
+            boundary (str): A BBOX string or GeoJSON file of the AOI.
+                The GeoJSON can contain multiple geometries.
 
         Returns:
             (list): The bounding box coordinates
         """
+        if not boundary.lower().endswith((".json", ".geojson")):
+            # Is BBOX string
+            try:
+                bbox_parts = boundary.split(',')
+                bbox = tuple(float(x) for x in bbox_parts)
+                if len(bbox) == 4:
+                    # BBOX valid
+                    return bbox
+                else:
+                    log.error(f"BBOX string malformed: {bbox}")
+                    return
+            except Exception as e:
+                log.error(e)
+                log.error(f"Failed to parse BBOX string: {boundary}")
+                return
+
+        log.debug(f"Reading geojson file: {boundary}")
+        with open(boundary, "r") as f:
+            poly = json.load(f)
+        if 'features' in poly:
+            geometry = shape(poly['features'][0]['geometry'])
+        else:
+            geometry = shape(poly)
+
+        if isinstance(geometry, list):
+            # Multiple geometries
+            log.debug("Creating union of multiple bbox geoms")
+            geometry = unary_union(geometry)
+
+        if geometry.is_empty:
+            log.warning(f"No bbox extracted from {geometry}")
+            return None
+
+        bbox = geometry.bounds
         # left, bottom, right, top
-        # minX: %d, minY: %d, maxX: %d, maxY: %d" %(env[0],env[2],env[1],env[3])
-        for feature in layer:
-            bbox = list(feature.GetGeometryRef().GetEnvelope())
-            bbox = (bbox[0], bbox[2], bbox[1], bbox[3])
-            # print(bbox)
+        # minX, minY, maxX, maxY
         return bbox
 
 
@@ -277,6 +302,8 @@ def main():
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-b", "--boundary", required=True, help="The boundary for the area you want")
+    parser.add_argument("-t", "--tms", help="Custom TMS URL")
+    parser.add_argument("--xy", default=False, help="Swap the X & Y coordinates when using a custom TMS")
     parser.add_argument("-o", "--outfile", required=True, help="Output file name")
     parser.add_argument("-z", "--zooms", default="12-17", help="The Zoom levels")
     parser.add_argument("-d", "--outdir", help="Output directory name for tile cache")
@@ -315,7 +342,7 @@ def main():
 
     # Make a bounding box from the boundary file
     if not args.boundary:
-        logging.error("You need to specify a boundary file!")
+        log.error("You need to specify a boundary file!")
         parser.print_help()
         quit()
 
@@ -325,15 +352,18 @@ def main():
         base = args.outdir
     base = f"{base}/{args.source}tiles"
 
-    if args.source:
-        basemap = BaseMapper(args.boundary, base, args.source)
+    if args.source and not args.tms:
+        basemap = BaseMapper(args.boundary, base, args.source, args.xy)
+    elif args.tms:
+        basemap = BaseMapper(args.boundary, base, 'custom', args.xy)
+        basemap.customTMS(args.tms)
     else:
-        logging.error("You need to specify a source!")
+        log.error("You need to specify a source!")
         parser.print_help()
         quit()
 
     if args.outfile is None:
-        logging.error("You need to specify an mbtiles or sqlitedb file!!")
+        log.error("You need to specify an mbtiles or sqlitedb file!!")
         parser.print_help()
         quit()
 
@@ -347,7 +377,7 @@ def main():
             # Create output database and specify image format, png, jpg, or tif
             outf.writeTiles(basemap.tiles, base)
         else:
-            logging.info("Only downloading tiles to %s!" % base)
+            log.info("Only downloading tiles to %s!" % base)
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

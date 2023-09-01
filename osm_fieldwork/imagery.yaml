@@ -1,0 +1,30 @@
+sources:
+  - bing:
+      - name: Bing
+      - url: http://ecn.t0.tiles.virtualearth.net/tiles/h%s.jpg?g=129&mkt=en&stl=H
+      - suffix: jpg
+      - xy: False
+
+  - esri:
+      - name: ESRI
+      - url: http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/%s
+      - suffix: jpg
+      - xy: False
+
+  - google:
+      - name: Google Hybrid
+      - url: https://mt0.google.com/vt?lyrs=s&%s
+      - suffix: jpg
+      - xy: False
+
+  - oam:
+      - name: OpenArialMap
+      - url: https://tiles.openaerialmap.org/63962d0d9f665400075759be/0/63962d0d9f665400075759bf/%s
+      - suffix: png
+      - xy: True
+
+  - topo:
+      - name: USGS Topo Map
+      - url: https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/%s
+      - suffix: jpg
+      - xy: False

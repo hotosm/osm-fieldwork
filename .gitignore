@@ -53,9 +53,9 @@ NEWS
 *.app
 
 # PDM
-.pdm.toml
-pdm.lock
+pdm.toml
 .pdm-python
+__pypackages__
 
 # Python builds
 build
@@ -63,3 +63,4 @@ dist
 
 # Docs
 site
+.cache
