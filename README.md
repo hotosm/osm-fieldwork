@@ -74,13 +74,13 @@ course for this to work. That file looks like this:
 Run a specific command:
 
 ```bash
-docker run --rm -v $PWD:/data ghcr.io/hotosm/osm-fieldwork:0.3.5 json2osm
+docker run --rm -v $PWD:/data ghcr.io/hotosm/osm-fieldwork:latest json2osm
 ```
 
 Run interactively (to use multiple commands):
 
 ```bash
-docker run --rm -it -v $PWD:/data ghcr.io/hotosm/osm-fieldwork:0.3.5
+docker run --rm -it -v $PWD:/data ghcr.io/hotosm/osm-fieldwork:latest
 ```
 
 > Note: the output directory should always be /data/... to persist data.
