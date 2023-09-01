@@ -6,8 +6,11 @@ on:
     branches:
       - main
     paths:
-      # Workflow is triggered only if src changes
-      - "src/**"
+      # Workflow is triggered only if code changes
+      - "osm_fieldwork/**"
+      - "pyproject.toml"
+      - "Dockerfile"
+      - "entrypoint.sh"
   # Allow manual trigger
   workflow_dispatch:
 
