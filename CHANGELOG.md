@@ -1,3 +1,60 @@
+## 0.3.6rc0 (2023-09-01)
+
+### Feat
+
+- complete overhaul of docs, mkdocstrings
+
+### Fix
+
+- csv parsing for test
+- Delete the UML images for clean
+- Generate PDFs from the primary markdown files in docs/about
+- Drop unused main.py file
+- Add support for doxygen API docs
+- fix typo in url for data flow diagram
+- Add new data flow charts
+- Use new imagery.yaml file for sources instead of hardcoding them all
+- Add USGS topo map as a source
+- Improve parsing to cover more than one format
+- Add support for a custom TMS URL
+- Add missing test data file
+- Improve processing of Rwanda submissions, capture OSM ID and improve the conversion config file
+- list forms api
+- filespec made optional in the filterdata class
+- text 78 was present, it is now removed
+- indentation on odk_merge
+- typing issues and imports
+- Fix listForms(), the parameter name changed
+- Add trailing comma to all function parameter blocks
+- Add the deep tech docs
+- fix typo in parameter name
+- Add the more obscure utilities to the API docs
+- Add more API wrappers
+- Add mkdocs code comments
+- Add mkdocs code comments
+- Fix broken indent in debugging code, it was only being executed with -v
+- Add standalone script for osm2favorites
+- Add mkdocs code comments
+- Add mkdocs code comments
+- Add mkdocs code comments
+- Add mkdocs code comments
+- Add mkdocs comments
+- Add mkdocs code comments
+- Add bash wrapper for basemapper.py
+- Update a few mkdocs comments so mkdocs serve is happy
+- Minor updates to mkdoc comment, fix indentation
+- Add mkdocs code comments
+- Add more docs, organize top level links
+- Replace lines of code that got deleted by accident
+- Add mkdoc strings
+- creating a project that already exists
+- Add pySmartDL
+
+### Refactor
+
+- update refs logging --> log
+- remove mkgendocs config
+
 ## 0.3.5 (2023-08-11)
 
 ### Fix
