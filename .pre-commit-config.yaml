@@ -32,4 +32,4 @@ repos:
     rev: v0.35.0
     hooks:
       - id: markdownlint
-        args: [--fix]
+        args: [--fix, --ignore, CHANGELOG.md]
