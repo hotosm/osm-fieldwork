@@ -53,8 +53,9 @@ NEWS
 *.app
 
 # PDM
-.pdm.toml
+pdm.toml
 .pdm-python
+__pypackages__
 
 # Python builds
 build
