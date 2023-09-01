@@ -91,4 +91,4 @@ nav:
   #  - odk2geojson: api/odk2geojson.md
   #  - odk2csv: api/odk2csv.md
   #  - odk2osm: api/odk2osm.md
-  - Class Hierarchy: apidocs/inherits.html
+  - Class Hierarchy: apidocs/html/inherits.html
