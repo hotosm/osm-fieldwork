@@ -5,6 +5,7 @@ on:
     paths:
       - docs/**
       - osm_fieldwork/**
+      - mkdocs.yml
     branches: [main]
   # Allow manual trigger (workflow_dispatch)
   workflow_dispatch:
