@@ -52,7 +52,8 @@ log = logging.getLogger(__name__)
 def downloadThread(
         project_id: int,
         xforms: list,
-        odk_credentials: dict
+        odk_credentials: dict,
+        filters: dict = None
 ):
     """
     Download a list of submissions from ODK Central
@@ -75,8 +76,8 @@ def downloadThread(
             odk_credentials["user"],
             odk_credentials["passwd"]
         )
-        submissions = form.getSubmissions(project_id, task, 0, False, True)
-        subs = form.listSubmissions(project_id, task)
+        # submissions = form.getSubmissions(project_id, task, 0, False, True)
+        subs = form.listSubmissions(project_id, task, filters)
         if type(subs) == dict:
             log.error(f"{subs['message']}, {subs['code']} ")
             continue
@@ -419,6 +420,7 @@ class OdkProject(OdkCentral):
     def getAllSubmissions(self,
                               project_id: int,
                               xforms: list = None,
+                              filters: dict = None
                               ):
         """
         Fetch a list of submissions in a project on an ODK Central server.
@@ -463,7 +465,7 @@ class OdkProject(OdkCentral):
             for current in cycle:
                 if previous == current:
                     continue
-                result = executor.submit(downloadThread, project_id, xforms[previous:current], odk_credentials)
+                result = executor.submit(downloadThread, project_id, xforms[previous:current], odk_credentials, filters)
                 previous = current
                 futures.append(result)
             for future in concurrent.futures.as_completed(futures):
@@ -671,6 +673,7 @@ class OdkForm(OdkCentral):
     def listSubmissions(self,
                         projectId: int,
                         xform: str,
+                        filters: dict = None
                         ):
         """
         Fetch a list of submission instances for a given form.
@@ -683,7 +686,7 @@ class OdkForm(OdkCentral):
             (list): The list of Submissions
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}.svc/Submissions"
-        result = self.session.get(url, auth=self.auth, verify=self.verify)
+        result = self.session.get(url, auth=self.auth, params=filters, verify=self.verify)
         if result.ok:
             self.submissions = result.json()
             return self.submissions['value']
