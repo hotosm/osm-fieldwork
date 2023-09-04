@@ -368,54 +368,43 @@ class JsonDump(Convert):
 
         return feature
 
-def main():
-    """This main function lets this class be run standalone by a bash script"""
-    parser = argparse.ArgumentParser(
-        description="convert JSON from ODK Central to OSM XML"
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument("-y", "--yaml", help="Alternate YAML file")
-    parser.add_argument("-x", "--xlsfile", help="Source XLSFile")
-    parser.add_argument("-i", "--infile", required=True,
-        help="The input file downloaded from ODK Central"
-    )
-    args = parser.parse_args()
-    
-    # if verbose, dump to the terminal.
-    if args.verbose is not None:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
-        )
-        ch.setFormatter(formatter)
-        log.addHandler(ch)    
+def json2osm(input_file, yaml_file=None):
+    """
+    Process the JSON file from ODK Central or the GeoJSON file to OSM XML format.
 
-    if args.yaml:
-        jsonin = JsonDump(args.yaml)
+    Args:
+        input_file (str): The path to the input JSON or GeoJSON file.
+        yaml_file (str): The path to the YAML config file (optional).
+
+    Returns:
+        osmoutfile (str): Path to the converted OSM XML file.
+    """
+    if yaml_file:
+        jsonin = JsonDump(yaml_file)
     else:
         jsonin = JsonDump()
+
     # jsonin.parseXLS(args.xlsfile)
 
     # Modify the input file name for the 2 output files, which will get written
     # to the current directory.
-    infile = Path(args.infile)
-    base = os.path.splitext(infile.name)[0]
+
+    base = Path(input_file).stem
     osmoutfile = f"{base}-out.osm"
+    log.debug(f"Creating OSM XML file: {osmoutfile}")
     jsonin.createOSM(osmoutfile)
 
-    jsonoutfile = f"{base}-out.geojson"
-    jsonin.createGeoJson(jsonoutfile)
-
-    log.debug("Parsing JSON file %r" % args.infile)
-    data = jsonin.parse(infile.as_posix())
+    log.debug(f"Parsing JSON file {args.infile}")
+    data = jsonin.parse(input_file.as_posix())
     # This OSM XML file only has OSM appropriate tags and values
+
     for entry in data:
         feature = jsonin.createEntry(entry)
+
         # Sometimes bad entries, usually from debugging XForm design, sneak in
         if len(feature) == 0:
             continue
+
         if len(feature) > 0:
             if "lat" not in feature["attrs"]:
                 if 'geometry' in feature['tags']:
@@ -426,16 +415,43 @@ def main():
                     coords = feature['tags']['coordinates']
                     feature['attrs'] = {'lat': coords[1], 'lon': coords[0]}
                 else:
-                    log.warning("Bad record! %r" % feature)
-                    continue
-            jsonin.writeOSM(feature)
-            # This GeoJson file has all the data values
-            jsonin.writeGeoJson(feature)
+                    log.warning(f"Bad record! {feature}")
+                    continue  # Skip bad records
 
-    # jsonin.finishOSM()
-    jsonin.finishGeoJson()
-    log.info("Wrote OSM XML file: %r" % osmoutfile)
-    log.info("Wrote GeoJson file: %r" % jsonoutfile)
+            log.debug("Writing final OSM XML file...")
+            jsonin.writeOSM(feature)
+
+    jsonin.finishOSM()
+    log.info(f"Wrote OSM XML file: {osmoutfile}")
+
+    return osmoutfile
+
+
+def main():
+    """Run conversion directly from the terminal."""
+    parser = argparse.ArgumentParser(
+        description="convert JSON from ODK Central to OSM XML"
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
+    parser.add_argument("-y", "--yaml", help="Alternate YAML file")
+    parser.add_argument("-x", "--xlsfile", help="Source XLSFile")
+    parser.add_argument("-i", "--infile", required=True,
+        help="The input file downloaded from ODK Central"
+    )
+    args = parser.parse_args()
+
+    # if verbose, dump to the terminal.
+    if args.verbose is not None:
+        log.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
+        )
+        ch.setFormatter(formatter)
+        log.addHandler(ch) 
+
+    json2osm(args.infile, args.yaml)
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
