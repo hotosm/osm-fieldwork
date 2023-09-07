@@ -97,7 +97,7 @@ class JsonDump(Convert):
         Returns:
             (OsmFile): An instance of the OSM XML output file
         """
-        log.debug("Creating OSM XML file: %s" % filespec)
+        log.debug(f"Creating OSM XML file: {filespec}")
         self.osm = OsmFile(filespec)
         return self.osm
 
@@ -191,6 +191,7 @@ class JsonDump(Convert):
         Returns:
             (list): A list of all the features in the input file
         """
+        log.debug(f"Parsing JSON file {filespec}")
         all_tags = list()
         if not data:
             file = open(filespec, "r")
@@ -379,6 +380,7 @@ def json2osm(input_file, yaml_file=None):
     Returns:
         osmoutfile (str): Path to the converted OSM XML file.
     """
+    log.info(f"Converting JSON file to OSM: {input_file}")
     if yaml_file:
         jsonin = JsonDump(yaml_file)
     else:
@@ -391,11 +393,9 @@ def json2osm(input_file, yaml_file=None):
 
     base = Path(input_file).stem
     osmoutfile = f"{base}-out.osm"
-    log.debug(f"Creating OSM XML file: {osmoutfile}")
     jsonin.createOSM(osmoutfile)
 
-    log.debug(f"Parsing JSON file {args.infile}")
-    data = jsonin.parse(input_file.as_posix())
+    data = jsonin.parse(input_file)
     # This OSM XML file only has OSM appropriate tags and values
 
     for entry in data:
