@@ -1,3 +1,9 @@
+## 0.3.6rc1 (2023-09-07)
+
+### Fix
+
+- json2osm via cmdline + programatically
+
 ## 0.3.6rc0 (2023-09-01)
 
 ### Feat
