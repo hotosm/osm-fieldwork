@@ -69,6 +69,7 @@ RUN set -ex \
         "build-essential" \
         "gcc" \
         "libpcre3-dev" \
+        "libpq-dev" \
         "libspatialindex-dev" \
         "libproj-dev" \
         "libgeos-dev" \
@@ -102,6 +103,7 @@ RUN set -ex \
         "curl" \
         "gosu" \
         "libpcre3" \
+        "postgresql-client" \
         "libglib2.0-0" \
         "libspatialindex-c6" \
         "libproj25" \
