@@ -153,7 +153,7 @@ class DatabaseAccess(object):
 
             # Use a persistant connect, better for multiple requests
             self.session = requests.Session()
-            self.url = "https://raw-data-api0.hotosm.org/v1"
+            self.url = "https://raw-data-demo.hotosm.org/v1"
             self.headers = {"accept": "application/json", "Content-Type": "application/json"}
         else:
             log.info("Opening database connection to: %s" % dbhost)
