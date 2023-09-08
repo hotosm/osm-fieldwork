@@ -124,6 +124,7 @@ def main():
             # symbol="",
             # comment="",
         )
+        extensions = ''
         if tourism and tourism != 'picnic site':
             extensions = createExtension("tourism_camp_site")
         elif tourism and tourism != 'picnic site':
