@@ -5,4 +5,5 @@ from:
     - ways_poly
 where:
     tags:
-        - { emergency: not null, fire_hydrant:type: not null }
+        - join_or:
+            - { emergency: not null, fire_hydrant:type: not null }

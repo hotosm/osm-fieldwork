@@ -5,7 +5,8 @@ from:
     - ways_line
 where:
   tags:
-    - { waterway: not null }
+    - join_or:
+        - { waterway: not null }
 keep:
     - name
     - intermittent

@@ -5,4 +5,5 @@ from:
     - ways_poly
 where:
     tags:
-        - { natural: not null }
+        - join_or:
+            - { natural: not null }

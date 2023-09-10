@@ -5,7 +5,8 @@ from:
     - ways_poly
 where:
   tags:
-    - { tourism: [camp_site, camp_pitch] }
+    - join_or:
+        - { tourism: [camp_site, camp_pitch] }
 
 keep:
   - leisure

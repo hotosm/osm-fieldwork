@@ -5,7 +5,8 @@ from:
     - ways_poly
 where:
     tags:
-        - { healthcare: not null, social_facility: not null, healthcare:speciality: not null }
+        - join_or:
+            - { healthcare: not null, social_facility: not null, healthcare:speciality: not null }
 keep:
   - healthcare:type
   - healthcare

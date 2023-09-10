@@ -4,4 +4,5 @@ from:
     - ways_poly
 where:
     tags:
-        - { landuse: not null }
+        - join_or:
+            - { landuse: not null }

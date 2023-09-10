@@ -5,7 +5,8 @@ from:
     - ways_line
 where:
   tags:
-    - { highway: not null }
+     - join_or:
+        - { highway: not null }
 keep:
     - name
     - smoothness

@@ -4,4 +4,5 @@ from:
     - ways_poly
 where:
     tags:
-        - { amenity: [grave_yard], landuse: [cemetery] }
+        - join_or:
+            - { amenity: [grave_yard], landuse: [cemetery] }
