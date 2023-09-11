@@ -30,7 +30,7 @@ from geojson import Feature, FeatureCollection, dump, Polygon
 import geojson
 from osm_fieldwork.filter_data import FilterData
 from osm_fieldwork.xlsforms import xlsforms_path
-from osm_rawdata.postgres import PostgresClient
+from osm_rawdata.postgres import PostgresClient, uriParser
 import requests
 from io import BytesIO
 import zipfile
