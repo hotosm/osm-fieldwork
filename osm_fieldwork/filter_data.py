@@ -28,6 +28,9 @@ import geojson
 from osm_fieldwork.xlsforms import xlsforms_path
 import yaml
 
+# Find the other files for this project
+import osm_fieldwork as of
+rootdir = of.__path__[0]
 
 # Instantiate logger
 log = logging.getLogger(__name__)
@@ -62,6 +65,9 @@ class FilterData(object):
             title (str): The title from the XLSForm Setting sheet
             extract (str): The data extract filename from the XLSForm Survey sheet
         """
+        excel_object = pd.ExcelFile(filespec)
+        entries = excel_object.parse(sheet_name=[0, 1, 2], index_col=0,
+                                     usercols=[0, 1, 2])
         entries = pd.read_excel(filespec, sheet_name=[0, 1, 2])
         title = entries[2]['form_title'].to_list()[0]
         extract = ""
@@ -80,10 +86,7 @@ class FilterData(object):
             if key == 'model' or str(key) == "nan":
                 index += 1
                 continue
-            if 'name' in entries:
-                value = entries[1]['name'][index]
-            else:
-                value = None
+            value = entries[1]['name'][index]
             if value == "<text>" or str(value) == "null":
                 index += 1
                 continue
@@ -92,29 +95,29 @@ class FilterData(object):
             self.tags[key].append(value)
             index += 1
 
-        # The yaml config file for the query has a list of columns
-        # to keep in addition to this default set.
-        path = xlsforms_path.replace("xlsforms", "data_models")
-        category = os.path.basename(filespec).replace(".xls", "")
-        file = open(f"{path}/{category}.yaml", "r").read()
-        self.yaml = yaml.load(file, Loader=yaml.Loader)
-        keep = ("name",
-                "name:en",
-                "id",
-                "operator",
-                "addr:street",
-                "addr:housenumber",
-                "osm_id",
-                "title",
-                "tags",
-                "label",
-                "landuse",
-                "opening_hours",
-                "tourism",
-                )
-        self.keep = list(keep)
-        if 'keep' in self.yaml:
-            self.keep.extend(self.yaml['keep'])
+        # # The yaml config file for the query has a list of columns
+        # # to keep in addition to this default set.
+        # path = xlsforms_path.replace("xlsforms", "data_models")
+        # category = os.path.basename(filespec).replace(".xls", "")
+        # file = open(f"{path}/{category}.yaml", "r").read()
+        # self.yaml = yaml.load(file, Loader=yaml.Loader)
+        # keep = ("name",
+        #         "name:en",
+        #         "id",
+        #         "operator",
+        #         "addr:street",
+        #         "addr:housenumber",
+        #         "osm_id",
+        #         "title",
+        #         "tags",
+        #         "label",
+        #         "landuse",
+        #         "opening_hours",
+        #         "tourism",
+        #         )
+        # self.keep = list(keep)
+        # if 'keep' in self.yaml:
+        #     self.keep.extend(self.yaml['keep'])
 
         return title, extract
 
@@ -131,7 +134,6 @@ class FilterData(object):
             (FeatureCollection): The modifed data
         
         """
-        tmpfile = data
         if type(data) == str:
             outfile = open(f"new-{data}", "x")
             infile = open(tmpfile, "r")
@@ -146,12 +148,14 @@ class FilterData(object):
             "version",
             "changeset",
             )
+        keep = ('osm_id', 'id', 'version')
         collection = list()
         for feature in indata['features']:
             properties = dict()
             for key, value in feature['properties'].items():
-                # log.debug(f"{key} = {value}")
-                if key in self.keep:
+                log.debug(f"{key} = {value}")
+                # if key in self.keep:
+                if False:
                     if key == 'tags':
                         for k, v in value.items():
                             if k[:4] == "name":
@@ -165,8 +169,11 @@ class FilterData(object):
                         else:
                             properties[key] = value
                 else:
-                    if key in self.tags.keys():
-                        if key == "name":
+                    if key in keep:
+                        properties[key] = value
+                        continue
+                    if key in self.tags:
+                        if key == "name" or key == 'name:en':
                             properties['title'] = self.tags[key]
                             properties['label'] = self.tags[key]
                         if value in self.tags[key]:
