@@ -25,6 +25,7 @@ import logging
 import sys
 import json
 import geojson
+import shapely
 from sys import argv
 from osm_fieldwork.convert import Convert, escape
 from osm_fieldwork.osmfile import OsmFile
@@ -203,9 +204,9 @@ class JsonDump(Convert):
             else:
                 log.error("Need to specify a JSON or GeoJson file!")
                 return all_tags
-        elif type(data) == str:
+        elif isinstance(data, str):
             reader = geojson.loads(data)
-        elif type(data) == list:
+        elif isinstance(data, list):
             reader = data
         
         total = list()
@@ -221,6 +222,12 @@ class JsonDump(Convert):
             # log.info(f"ROW: {row}")
             tags = dict()
             if 'geometry' in row:
+                # If geom not point, convert to centroid
+                if row['geometry']['type'] != 'Point':
+                    log.debug(f"Converting {row['geometry']['type']} geometry to centroid point")
+                    geom = shapely.from_geojson(str(row))
+                    centroid = shapely.to_geojson(geom.centroid)
+                    row['geometry'] = centroid
                 tags['geometry'] = row['geometry']
             else:
                 pat = re.compile("[-0-9.]*, [0-9.-]*, [0-9.]*")
@@ -253,13 +260,15 @@ class JsonDump(Convert):
                 # a JSON file from ODK Central always uses coordinates as
                 # the keyword
                 if key == 'coordinates':
-                    if type(v) == list:
+                    if isinstance(v, list):
                         lat = v[1]
                         lon = v[0]
                         tags['geometry'] = f"{lat} {lon}"
                     continue
                 tags[key] = v
             total.append(tags)
+
+        log.debug(f"Finsished parsing JSON file {filespec}")
         return total
 
     def createEntry(self,
@@ -298,31 +307,30 @@ class JsonDump(Convert):
             # Otherwise use the GPS coordinates where you are.
             lat = None
             lon = None
-            if type(value) == float:
+            if isinstance(value, float):
                 continue
             # log.debug(f"FIXME: {key} = {value} {type(value)}")
             if key == "xid" and value is not None:
                 attrs['id'] = int(value)
             if key == "geometry":
-                # The GeoJson file has the geometry field. Usually it's a dict
+                # The GeoJson file has the geometry field. Usually it's a list
                 # but on occasion it's a string instead, so turn it into a list
-                if type(value) == str:
-                    if value[0] ==  '[':
-                        coords = eval(value)
-                        lat = coords[1]
-                        lon = coords[0]
-                    else:
-                        coords = value.split(' ')
-                        lat = coords[0]
-                        lon = coords[1]
-                    # log.debug(f"VALUE STRING: {coords}")
-                elif type(value) == geojson.geometry.Point:
-                    lat = value['coordinates'][1]
-                    lon = value['coordinates'][0]
-                    # log.debug(f"VALUE POINT: {lat}/{lon}")
-                elif type(value) == list:
-                    lat = float(value[1])
-                    lon = float(value[0])
+                if isinstance(value, str) and len(coords:=value.split(' ')) >= 2:
+                    lat = coords[0]
+                    lon = coords[1]
+
+                # Parse as geojson
+                else:
+                    geom = shapely.from_geojson(str(value))
+
+                    if geom.geom_type != 'Point':
+                        # Use centroid if polygon
+                        geom = geom.centroid
+
+                    # Get coords from point
+                    lat = geom.y
+                    lon = geom.x
+
                 attrs["lat"] = lat
                 attrs["lon"] = lon
                 # log.debug(f"ATTRS: {attrs}")
@@ -342,7 +350,9 @@ class JsonDump(Convert):
             #                     tags[entry] = "yes"
             #     continue
 
-            if value is not None and value != "no" and value != "unknown":
+            if isinstance(value, str) and (value == "no" or value == "unknown"):
+                pass
+            elif value is not None:
                 if key == "track" or key == "geoline":
                     refs.append(tag)
                     log.debug("Adding reference %s" % tag)
@@ -351,9 +361,9 @@ class JsonDump(Convert):
                         priv[key] = value
                     else:
                         item = self.convertEntry(key, value)
-                        if item is not None and type(item) == dict:
+                        if item is not None and isinstance(item, dict):
                             tags.update(item)
-                        elif type(item) == list:
+                        elif isinstance(item, list):
                             for entry in item:
                                 tags.update(entry)
 
@@ -408,7 +418,7 @@ def json2osm(input_file, yaml_file=None):
         if len(feature) > 0:
             if "lat" not in feature["attrs"]:
                 if 'geometry' in feature['tags']:
-                    if type(feature['tags']['geometry']) == str:
+                    if isinstance(feature["tags"]["geometry"], str):
                         coords = list(feature['tags']['geometry'])
                         # del feature['tags']['geometry']
                 elif 'coordinates' in feature['tags']:

@@ -15,8 +15,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment:
-      name: ${{ github.ref_name }}
 
     steps:
       - uses: actions/checkout@v3
