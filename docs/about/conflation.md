@@ -3,7 +3,7 @@
 Now that the data collected using [ODK
 Collect](https://docs.getodk.org/collect-intro) has been converted to
 OSM XML, it needs to be conflated against the existing
-OpenStreetMap(OSM) data before  validation by a human being. Due to
+OpenStreetMap(OSM) data before validation by a human being. Due to
 the wonderful flexibility of the OpenStreetMap(OSM) data schema, this
 can be difficult to fully automate. At best it can assist the human
 mapper by identifying probable duplicates, and other conflation
@@ -16,28 +16,28 @@ manually.
 
 This project's conflation software can use either a local postgres
 database, or a GeoJson file produced by the
-[make_data_extracts](make_data_extracts) program. This program is also
-used by [FMTM](https://fmtm.hotosm.org), so you can use those as
+[make_data_extracts](https://hotosm.github.io/osm-fieldwork/about/make_data_extract/) program.
+This program is also used by
+[FMTM](https://fmtm.hotosm.org), so you can use those as
 well. Obviously using postgres locally is much faster, especially for
 large areas.
 
 ## Setting Up Postgres
 
-For raw OSM data, the existing country data is downloaded from [GeoFabrik](
-https://download.geofabrik.de/index.html), and imported using a
+For raw OSM data, the existing country data is downloaded from [GeoFabrik](https://download.geofabrik.de/index.html), and imported using a
 modified schema for osm2pgsql.
 
-	osm2pgsql --create -d nepal --extra-attributes --output=flex --style raw.lua nepal-latest-internal.osm.pbf
+    osm2pgsql --create -d nepal --extra-attributes --output=flex --style raw.lua nepal-latest-internal.osm.pbf
 
-The *raw.lua* script is [available
+The _raw.lua_ script is [available
 here](https://github.com/hotosm/underpass/blob/master/raw/raw.lua). It's
 part of the [Underpass
 project](https://hotosm.github.io/underpass/index.html). It uses a
 more compressed and efficient data schema designed for data analysis.
 Once the data is imported, do this to improve query performance.
 
-	cluster ways_poly using ways_poly_geom_idx;
-	create index on ways_poly using gin(tags);
+    cluster ways_poly using ways_poly_geom_idx;
+    create index on ways_poly using gin(tags);
 
 The existing OSM database schema stores some tags in columns, and
 other tags in a hstore column. Much of this is historical. But this
@@ -47,17 +47,18 @@ schema is much more compact, as everything is in a single column.
 
 ## Using Postgres
 
-If you use the [odk_merge](odk_merge) program, you don't have to deal
+If you use the [odk_merge](https://hotosm.github.io/osm-fieldwork/about/odk_merge/)
+program, you don't have to deal
 with accessing the database directly, but here's how if you want to.
 
 This would find all of the tags for a hotel:
 
-	SELECT osm_id, tags FROM nodes WHERE tags->>'amenity'='hotel'
+    SELECT osm_id, tags FROM nodes WHERE tags->>'amenity'='hotel'
 
 If you want to get more fancy, you can also use the geometry in the
 query. From python we setup a few values for the query, and note the
-*::geometry* suffix, which uses meters instead of units. Meters are
-easier to work with than units of the planet's circumferance. 
+_::geometry_ suffix, which uses meters instead of units. Meters are
+easier to work with than units of the planet's circumferance.
 
 self.tolerance = 2
 wkt.wkt = "Point", "coordinates": [-107.911957, 40.037573]
@@ -89,7 +90,7 @@ Manager](https://tasks.hotosm.org), and were traced from satellite
 imagery.
 
 Buildings traced from imagery have only a single tag, which is
-*building=yes*. When field mapping, we now know that building is a
+_building=yes_. When field mapping, we now know that building is a
 resturant, a medical clinic, or a residence. Since OSM guidelines
 prefer the tags fo on the building polygon, and not be a separate POI
 within the building. If there are multiple businesses in the same
@@ -121,7 +122,7 @@ then each remains a POI within the building polygon.
 If a possible duplicate is found, the tags from the collected data and
 the tags from OSM are merged together. In the case of the name tag,
 the existing name is converted to an **old_name** tags, and the
-collected name value is used for the **name* tag.
+collected name value is used for the \*_name_ tag.
 
 ### Conflating with a GeoJson File
 
@@ -143,8 +144,8 @@ typos or do auto-correction. And of course those mistakes may also
 already be in OSM, and the feature you collected may be the correct
 one.
 
-For a potential match, the old value is placed in a *old_name* tag, in
-addition to the the *fixme* tag used to flag a possible
+For a potential match, the old value is placed in a _old_name_ tag, in
+addition to the the _fixme_ tag used to flag a possible
 duplicate. This enables the validator to decide and fix any minor
 differences in the value. This mostly only applies to the **name**
 tag, as most other tags have a more formalized value.
@@ -164,8 +165,8 @@ validate the tag merging.
 
 The primary tag added is a **fixme** tag for possible duplicates. If
 there is more than a difference in the string values used for the
-*name* tag, the existing tag is renamed to be *old_name*. While
-this is not an actual OSM tag, the *alt_name* tag is currrently used
+_name_ tag, the existing tag is renamed to be _old_name_. While
+this is not an actual OSM tag, the _alt_name_ tag is currrently used
 to avoid conflicts. It's up to the validator to decide what the
 apppropriate value is.
 

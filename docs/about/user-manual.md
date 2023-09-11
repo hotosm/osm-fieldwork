@@ -32,7 +32,9 @@ efficiently.
 
 All of the XLSForms included in this project have all been carefully
 edited to enable a good clean conversion to OSM XML. More information
-on how to modify the conversion [is here](convert). If you base any
+on how to modify the conversion
+[is here](https://hotosm.github.io/osm-fieldwork/api/convert).
+If you base any
 custom XLSForms from this library, you can also update the conversion
 criteria. These XLSForms can also be downloaded from FMTM.
 
@@ -56,7 +58,7 @@ QGIS. The FMTM backend is a FastAPI wrapped around this project.
 This project is available from PyPi.org, and can be installed like
 this:
 
-	pip install osm-fieldwork
+    pip install osm-fieldwork
 
 It contains multiple programs, each one that handles a specific part
 of the conversion process. Each program is a single class so it can be
@@ -65,22 +67,22 @@ debugging, and working offline. These are all terminal based, as the
 website frontend is the actual GUI.
 
 - json2osm
-	- Convert JSON from Central to OSM XML
+  - Convert JSON from Central to OSM XML
 - csv2osm
-	- Convert CSV from Central to OSM XML
+  - Convert CSV from Central to OSM XML
 - odk2csv
-	- Convert the ODK Instance to CSV
+  - Convert the ODK Instance to CSV
 - odk2geojson
-	- Convert the ODK Instance to GeoJson
+  - Convert the ODK Instance to GeoJson
 - odk_merge
-	- Conflate POIs from Collect with existing OSM data
+  - Conflate POIs from Collect with existing OSM data
 - odk_client
-	- Remotely control an ODK Central server
+  - Remotely control an ODK Central server
 
 You can also to run the terminal based programs from the source
 tree, which can be gotten from here:
 
-	git clone git@github.com:hotosm/osm-fieldwork.git
+    git clone git@github.com:hotosm/osm-fieldwork.git
 
 ## Processing Submissions
 
@@ -103,7 +105,8 @@ file, so nothing is lost. Since the GeoJson format does not have to
 follow OSM syntax, not all the tags and values may be similar to what
 OSM expects, but that's not a problem for our use case.
 
-The [config file](convert) for conversion has 3 sections, one for all the
+The [config file](https://hotosm.github.io/osm-fieldwork/about/configuring/)
+for conversion has 3 sections, one for all the
 conversion data, one for data to ignore completely, and a private
 section for the GeoJson file. The stuff to ignore is extraneous fields
 added by ODK Collect, like deviceID. Modifying the conversion is
@@ -120,13 +123,13 @@ the config file.
 To convert the JSON format file downloaded for ODK Central, run this
 program:
 
- 	json2osm.py -i Submissions.json
- 	json2osm.py -i Submissions.json -y custom.yaml
+json2osm.py -i Submissions.json
+json2osm.py -i Submissions.json -y custom.yaml
 
 or for the CSVfile:
 
-	CSVDump.py -i Submissions.csv
-	CSVDump.py -i Submissions.csv -u custom.yaml
+    CSVDump.py -i Submissions.csv
+    CSVDump.py -i Submissions.csv -u custom.yaml
 
 which produces a Submissions.osm and Submissions.geojson files from
 that data. The OSM XML file may have tags that got missed by the
@@ -134,7 +137,7 @@ conversion process, but the advantage is now all the data can be
 viewed and edited by JOSM. If you want a clean conversion, edit the
 config file and use that as an alternate for converting the data.
 
-	json2osm -i Submissions.json -x custom.yaml
+    json2osm -i Submissions.json -x custom.yaml
 
 ## Data Conflation
 
@@ -144,26 +147,27 @@ be done manually in JOSM, which is ok for small datasets, but it's
 easier to apply a little automated help. It's possible to find similar
 features in OSM that are near the data we just collected for a
 building, but has the same business name. How to conflate the
-collected data with existing OSM data is [another
-document](conflation).
+collected data with existing OSM data is
+[another document](https://hotosm.github.io/osm-fieldwork/about/conflation/).
 
-To just use the [conflation software](odk_merge) requires setting
-up a postgres database containing the OSM data for the county, region,
+To just use the [conflation software](https://hotosm.github.io/osm-fieldwork/about/odk_merge/)
+requires setting up a postgres database
+containing the OSM data for the county, region,
 state, country, ect... You can also use the data extract from FMTM, as it
 covers the same area the data was collected in. FMTM allow you to
 download the data extract used for this task. Postgres works
 much faster, but the GeoJson data extract works too as the files per
 task are relativly small.
 
-	odk_merge.py Submissions.osm PG:"nepal" -b kathmanu.geojson
-	or
-	odk_merge.py Submissions.osm kathmandu.geojson
+    odk_merge.py Submissions.osm PG:"nepal" -b kathmanu.geojson
+    or
+    odk_merge.py Submissions.osm kathmandu.geojson
 
 In this example, the OSM XML file from the conversion process uses a local
 postgres data with the country of Nepal loaded into it. You can also
 specify an alternate boundary so the conflation will use a subset of
 the entire database to limit the amount of data that has to be
-queried. 
+queried.
 
 Each feature in the submission is queried to find any other features
 with 2 meters where any tags match. Both POIs and buildings are
@@ -172,7 +176,7 @@ from remote mapping, so we'd also want to merge the tags from the
 collected data into the building way. Multiple shops within the same
 building remain as a POI in that building.
 
-There is much more detail on this program [here](odk_merge).
+There is much more detail on this program [here](https://hotosm.github.io/osm-fieldwork/about/odk_merge/).
 
 # Utility Programs
 
@@ -187,7 +191,7 @@ the field when offline, smaller basemaps can be made from the tile
 store. Since downloading map tiles is very time consuming, I usually
 download larger areas and let it download for a few days.
 
-	basemapper -s esri -b Pokara.geojson -z 8-15 -o pokara.mbtiles
+    basemapper -s esri -b Pokara.geojson -z 8-15 -o pokara.mbtiles
 
 This command will download all the map tiles from
 [ESRI](https://www.esri.com) into an XYZ tile store for zoom levels 8
@@ -205,7 +209,7 @@ example downloads Bing imagery for Pokara, Nepal.
 
 basemapper -s bing -b Pokara.geojson -z 8-19 -o pokara.sqlitedb
 
-There is much more detail on this program [here](basemapper).
+There is much more detail on this program [here](https://hotosm.github.io/osm-fieldwork/api/basemapper/).
 
 ## Converting for an Instance File
 
@@ -218,7 +222,7 @@ used when working offline, so it's possible to edit the recently
 collected data and update the map data. Very useful when working
 offline during big disasters.
 
-	odk2osm -i Highways Paths_2023-07-17\* 
+    odk2osm -i Highways Paths_2023-07-17\*
 
 On your phone, you can find the instance files here:
 
@@ -231,7 +235,7 @@ And manually update the XForm by copying them to
 
 ### Managing ODK Central
 
-[ODK Central](https://docs.getodk.org/central-intro/ is the server
+[ODK Central](<https://docs.getodk.org/central-intro/> is the server
 side of ODK Collect. It's where XForms are downloaded from, and where
 submissions go after being sent by Collect. As there are a lot of
 options, this program is not very user friendly as it's primarily used
@@ -241,11 +245,11 @@ just use the Central website.
 However, this can be useful for scripting the server. For example to
 list all the projects on a remote Central server:
 
-	odk_client -s projects
+    odk_client -s projects
 
 And this lets you download all the submissions to project number 19
 and using the XLSForm for buildings.
 
 odk_client -v -i 19 -f buildings -x json
 
-There is much more detail on this program [here](odk_client).
+There is much more detail on this program [here](https://hotosm.github.io/osm-fieldwork/about/odk_client/).
