@@ -26,7 +26,7 @@ import pandas as pd
 from geojson import Feature, FeatureCollection
 import geojson
 from osm_fieldwork.xlsforms import xlsforms_path
-import yaml
+from osm_rawdata.config import QueryConfig
 
 # Find the other files for this project
 import osm_fieldwork as of
@@ -38,7 +38,8 @@ log = logging.getLogger(__name__)
 
 class FilterData(object):
     def __init__(self,
-                 filespec: str = None
+                 filespec: str = None,
+                 config: QueryConfig = None,
                  ):
         """
 
@@ -49,11 +50,13 @@ class FilterData(object):
             (FilterData): An instance of this object
         """
         self.tags = dict()
-        if filespec:
-            self.parse(filespec)
+        self.qc = config
+        if filespec and config:
+            self.parse(filespec, config)
 
     def parse(self,
               filespec: str,
+              config: QueryConfig,
               ):
         """
         Read in the XLSForm and extract the data we want
@@ -65,6 +68,8 @@ class FilterData(object):
             title (str): The title from the XLSForm Setting sheet
             extract (str): The data extract filename from the XLSForm Survey sheet
         """
+        if config:
+            self.qc = config
         excel_object = pd.ExcelFile(filespec)
         entries = excel_object.parse(sheet_name=[0, 1, 2], index_col=0,
                                      usercols=[0, 1, 2])
@@ -95,29 +100,26 @@ class FilterData(object):
             self.tags[key].append(value)
             index += 1
 
-        # # The yaml config file for the query has a list of columns
-        # # to keep in addition to this default set.
-        # path = xlsforms_path.replace("xlsforms", "data_models")
-        # category = os.path.basename(filespec).replace(".xls", "")
-        # file = open(f"{path}/{category}.yaml", "r").read()
-        # self.yaml = yaml.load(file, Loader=yaml.Loader)
-        # keep = ("name",
-        #         "name:en",
-        #         "id",
-        #         "operator",
-        #         "addr:street",
-        #         "addr:housenumber",
-        #         "osm_id",
-        #         "title",
-        #         "tags",
-        #         "label",
-        #         "landuse",
-        #         "opening_hours",
-        #         "tourism",
-        #         )
-        # self.keep = list(keep)
-        # if 'keep' in self.yaml:
-        #     self.keep.extend(self.yaml['keep'])
+        # The yaml config file for the query has a list of columns
+        # to keep in addition to this default set. These wind up
+        # in the SELECT
+        keep = ("name",
+                "name:en",
+                "id",
+                "operator",
+                "addr:street",
+                "addr:housenumber",
+                "osm_id",
+                "title",
+                "tags",
+                "label",
+                "landuse",
+                "opening_hours",
+                "tourism",
+                )
+        self.keep = list(keep)
+        if 'keep' in config['keep']:
+           self.keep.extend(config['keep'])
 
         return title, extract
 
@@ -134,6 +136,7 @@ class FilterData(object):
             (FeatureCollection): The modifed data
         
         """
+        log.debug("Cleaning data...")
         if type(data) == str:
             outfile = open(f"new-{data}", "x")
             infile = open(tmpfile, "r")
@@ -151,11 +154,11 @@ class FilterData(object):
         keep = ('osm_id', 'id', 'version')
         collection = list()
         for feature in indata['features']:
+            log.debug(f'FIXME0: {feature}')
             properties = dict()
             for key, value in feature['properties'].items():
-                log.debug(f"{key} = {value}")
-                # if key in self.keep:
-                if False:
+                log.debug(f"FIXME1: {key} = {value}")
+                if key in self.qc['keep']:
                     if key == 'tags':
                         for k, v in value.items():
                             if k[:4] == "name":
@@ -169,6 +172,7 @@ class FilterData(object):
                         else:
                             properties[key] = value
                 else:
+                    log.debug(f"FIXME2: {key} = {value}")
                     if key in keep:
                         properties[key] = value
                         continue
