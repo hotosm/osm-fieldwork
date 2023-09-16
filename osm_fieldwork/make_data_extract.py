@@ -104,7 +104,7 @@ class MakeExtract(object):
         self.xls = BytesIO(file.read())
 
     def getFeatures(self,
-                    boundary: str,
+                    boundary: FeatureCollection,
                     polygon: bool,
                     ):
         """
@@ -120,18 +120,13 @@ class MakeExtract(object):
         """
         log.info("Extracting features from Postgres...")
 
-        if type(boundary) != dict:
-            clip = open(boundary, "r")
-            geom = geojson.load(clip)
-            if 'features' in geom:
-                poly = geom['features'][0]['geometry']
-            else:
-                poly = geom["geometry"]
+        if 'features' in boundary:
+            poly = boundary['features'][0]['geometry']
         else:
-            poly = boundary
+            poly = boundary["geometry"]
         wkt = shape(poly)
 
-        collection = self.db.execQuery(geom)
+        collection = self.db.execQuery(boundary)
         if not collection:
             return None
 
@@ -150,8 +145,9 @@ class MakeExtract(object):
             (FeatureCollection): The modifed data
         
         """
+        log.debug("Cleaning features")
         cleaned = FilterData()
-        cleaned.parse(self.xls)
+        cleaned.parse(self.xls, self.db.qc.config)
         new = cleaned.cleanData(collection)
         #jsonfile = open(filespec, "w")
         #dump(new, jsonfile)
@@ -214,7 +210,7 @@ def main():
         quit()
         
     # if verbose, dump to the terminal.
-    if args.verbose is not None:
+    if args.verbose:
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
@@ -225,7 +221,9 @@ def main():
         log.addHandler(ch)
 
     extract = MakeExtract(args.uri, args.config, args.xlsfile)
-    data = extract.getFeatures(args.boundary, args.polygon)
+    file = open(args.boundary, 'r')
+    poly = geojson.load(file)
+    data = extract.getFeatures(poly, args.polygon)
     log.debug(f"Query returned {len(data['features'])} features")
     # FIXME: just for debugging before filtering!
     # if len(data['features']) > 0:
@@ -234,6 +232,7 @@ def main():
     #     jsonfile.close()
 
     cleaned = extract.cleanFeatures(data)
+
     jsonfile = open(args.geojson, "w")
     dump(cleaned, jsonfile)
     jsonfile.close()
