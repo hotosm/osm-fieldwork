@@ -93,31 +93,9 @@ course for this to work. That file looks like this:
     user=foo@bar.org
     passwd=arfood
 
-### Environment Variables
-
-**LOG_LEVEL**
-
-> If present, will change the log level. Defaults to DEBUG.
-
-**ODK_CENTRAL_URL**
-
-> The URL for an ODKCentral server to connect to.
-
-**ODK_CENTRAL_USER**
-
-> The user for ODKCentral.
-
-**ODK_CENTRAL_PASSWD**
-
-> The password for ODKCentral.
-
-**ODK_CENTRAL_SECURE**
-
-> If set to False, will allow insecure connections to the ODKCentral API. Else defaults to True.
-
 ## Utility Programs
 
-These programs are more fully documented [in the docs](https://hotosm.github.io/osm-fieldwork/about/odk2geojson/).
+These programs are more fully documented [in the docs](https://hotosm.github.io/osm-fieldwork/about/programs/).
 This is just a short overview.
 
 - ### CSVDump.py
@@ -152,16 +130,25 @@ This is just a short overview.
 
   This program makes data extracts from
   [OpenStreetMap](https://www.openstreetmap.org) data. Multiple input
-  sources are supported, a local postgresql database, the HOT maintained
-  [Underpass](https://galaxy.hotosm.org/) database, or
-  [Overpass](https://overpass-turbo.eu).
+  sources are supported, a local postgresql database, or the HOT
+  maintained [Underpass](https://galaxy.hotosm.org/) database.
 
-- ### odk2csv.py
+- ### json2osm
 
-  This program is used when working offline for extended periods. This
+
+- ### odk2csv.py, odk2geojson.py, odk2osm.py
+
+  These programs ER used when working offline for extended periods. This
   converts the ODK XML format on your mobile device into the same CSV
   format used for submissions downloaded from [ODK
-  Central](https://docs.getodk.org/central-intro/)
+  Central](https://docs.getodk.org/central-intro/), or the JSON format
+  also from Central.
+
+- ### odk_merge.py
+
+  This program conflates the data collected by ODK Collect with the
+  existing OSM data. The output of this file can be loaded into JOSM
+  for validation and uploading to OpenStreetMap.
 
 - ### odk_client.py
 
@@ -182,6 +169,13 @@ This is just a short overview.
   to not flood OSM with obscure tags that aren't supported by the
   community. It also filters data extracts so they work with ODK
   Collect.
+
+- ### osm2favorites.py
+
+  This is a silly program, but it takes a GeoJson file, usually an OSM
+  data extract and generates a GPX file with styling for OsmAnd. This
+  is useful when ground-truthing map data, as it can be used for
+  navigating to those areas.
 
 ## Best Practices and troubleshooting
 
