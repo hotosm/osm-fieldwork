@@ -135,7 +135,6 @@ This is just a short overview.
 
 - ### json2osm
 
-
 - ### odk2csv.py, odk2geojson.py, odk2osm.py
 
   These programs ER used when working offline for extended periods. This

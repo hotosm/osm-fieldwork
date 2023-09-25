@@ -1,9 +1,16 @@
 select:
-    osm_id: id
+  osm_id: id
 from:
-    - nodes
-    - ways_poly
+  - nodes
+  - ways_poly
 where:
-    tags:
-        - join_or:
-            - { amenity: not null,  toilets:access: not null, toilets:disposal: not null, toilets:position: not null, toilets:unisex: not null, toilets:wheelchair: not null }
+  tags:
+    - join_or:
+        - {
+            amenity: not null,
+            toilets:access: not null,
+            toilets:disposal: not null,
+            toilets:position: not null,
+            toilets:unisex: not null,
+            toilets:wheelchair: not null,
+          }

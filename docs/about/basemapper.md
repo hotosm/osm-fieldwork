@@ -10,7 +10,7 @@ primary formats:
 - sqlitedb, supported only by Osmand
 
 Both of these use formats use underlying
-[sqlite3](https://www.sqlite.org/index.html), with similar database 
+[sqlite3](https://www.sqlite.org/index.html), with similar database
 schemas. The schema are a simple XYZ that stores a png or jpeg
 image. When the entire planet is chopped into squares, there is a
 relation between which map tile contains the GPS coordinates you
@@ -21,7 +21,7 @@ Basemapper does not store anything in memory, all processing
 is done as a stream so large areas can be downloaded. Time to go buy a
 really large hard drive. You can also use this map tile cache for
 any program that supports a TMS data source like
-[JOSM](https://josm.openstreetmap.de/). Luckily once downloaded, 
+[JOSM](https://josm.openstreetmap.de/). Luckily once downloaded,
 you don't have to update the map tile cache very often, but it's also
 easy to do so when you need to. When I expect to be working offline, I
 commonly download a larger area, and then in the field produce the
@@ -50,17 +50,17 @@ detail took me a while to figure out, it isn't documented anywhere.
 
 ### mbtiles
 
-	CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob);
-	CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row);
-	CREATE TABLE metadata (name text, value text);
-	CREATE UNIQUE INDEX metadata_idx  ON metadata (name);
+    CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob);
+    CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row);
+    CREATE TABLE metadata (name text, value text);
+    CREATE UNIQUE INDEX metadata_idx  ON metadata (name);
 
 ### sqlitedb
 
-	CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));
-	CREATE INDEX IND on tiles (x,y,z,s);
-	CREATE TABLE info (maxzoom Int, minzoom Int);
-	CREATE TABLE android_metadata (en_US);
+    CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));
+    CREATE INDEX IND on tiles (x,y,z,s);
+    CREATE TABLE info (maxzoom Int, minzoom Int);
+    CREATE TABLE android_metadata (en_US);
 
 # Usage
 
@@ -68,7 +68,7 @@ The **basemapper.py** script is run from the command line when
 running standalone, or the class can be imported into python
 programs. The [Field Mapping Tasking
 Manager](https://github.com/hotosm/fmtm/wiki) uses this as part of a
-(FastAPI])https://fastapi.tiangolo.com/) backend for the website.
+(FastAPI])<https://fastapi.tiangolo.com/>) backend for the website.
 
 The first time you run basemapper.py, it'll start downloading map
 tiles, which may take a long time. Often the upstream source is
@@ -99,11 +99,10 @@ used to select the output format. The boundary file, if specified, must be in
 If in BBOX string format, it must be comma separated:
 "minX,minY,maxX,maxY".
 
-
 ## Imagery Sources
 
 - ESRI - Environmental Systems Research Institute
-- Bing - Microsoft Bing imagery 
+- Bing - Microsoft Bing imagery
 - Topo - USGS topographical maps (US only)
 - OAM - OpenAerialMap
 
@@ -117,7 +116,7 @@ lets JOSM or QGIS use them when working offline.
 ### **Example 1:**
 
 Generate a basemap for Osmand using
-[ERSI](https://www.esri.com/en-us/home) imagery, for an area 
+[ERSI](https://www.esri.com/en-us/home) imagery, for an area
 specified by a geojson bounding box, and supporting zoom levels 12
 through 19.
 

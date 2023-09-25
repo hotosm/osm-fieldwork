@@ -16,30 +16,30 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-import logging
-from datetime import datetime
-from osm_fieldwork.convert import Convert, escape
-from osm_fieldwork.xlsforms import xlsforms_path
-import xmltodict
 import argparse
-from sys import argv
+import logging
 import os
-import pathlib
+from datetime import datetime
+from sys import argv
+
+import xmltodict
+
+from osm_fieldwork.convert import Convert, escape
 
 # Intantiate logger
 log = logging.getLogger(__name__)
 
 
 class OsmFile(object):
-    """OSM File output"""
+    """OSM File output."""
 
-    def __init__(self,
-                 filespec: str = None,
-                 options: dict = dict(),
-                 outdir: str = "/tmp/",
-                 ):
-        """
-        This class reads and writes the OSM XML formated files
+    def __init__(
+        self,
+        filespec: str = None,
+        options: dict = None,
+        outdir: str = "/tmp/",
+    ):
+        """This class reads and writes the OSM XML formated files.
 
         Args:
             filespec (str): The input or output file
@@ -49,7 +49,8 @@ class OsmFile(object):
         Returns:
             (OsmFile): An instance of this object
         """
-        
+        if options is None:
+            options = dict()
         self.options = options
         # Read the config file to get our OSM credentials, if we have any
         # self.config = config.config(self.options)
@@ -78,15 +79,12 @@ class OsmFile(object):
         self.data = dict()
 
     def __del__(self):
-        """
-        Close the OSM XML file automatically
-        """
+        """Close the OSM XML file automatically."""
         log.debug("Closing output file")
         self.footer()
 
     def isclosed(self):
-        """
-        Is the OSM XML file open or closed ?
+        """Is the OSM XML file open or closed ?
 
         Returns:
             (bool): The OSM XML file status
@@ -94,9 +92,7 @@ class OsmFile(object):
         return self.file.closed
 
     def header(self):
-        """
-        Write the header of the OSM XML file
-        """
+        """Write the header of the OSM XML file."""
         if self.file is not None:
             self.file.write("<?xml version='1.0' encoding='UTF-8'?>\n")
             # self.file.write('<osm version="0.6" generator="osm-fieldowrk 0.3" timestamp="2017-03-13T21:43:02Z">\n')
@@ -104,9 +100,7 @@ class OsmFile(object):
             self.file.flush()
 
     def footer(self):
-        """
-        Write the footer of the OSM XML file
-        """
+        """Write the footer of the OSM XML file."""
         # logging.debug("FIXME: %r" % self.file)
         if self.file is not None:
             self.file.write("</osm>\n")
@@ -114,12 +108,11 @@ class OsmFile(object):
             if self.file is False:
                 self.file.close()
 
-    def write(self,
-              data = None,
-              ):
-        """
-        Write the data to the OSM XML file
-        """
+    def write(
+        self,
+        data=None,
+    ):
+        """Write the data to the OSM XML file."""
         if type(data) == list:
             if data is not None:
                 for line in data:
@@ -127,12 +120,12 @@ class OsmFile(object):
         else:
             self.file.write("%s\n" % data)
 
-    def createWay(self,
-                  way: dict,
-                  modified: bool = False,
-                  ):
-        """
-        This creates a string that is the OSM representation of a node
+    def createWay(
+        self,
+        way: dict,
+        modified: bool = False,
+    ):
+        """This creates a string that is the OSM representation of a node.
 
         Args:
             way (dict): The input way data structure
@@ -217,20 +210,18 @@ class OsmFile(object):
                     newkey = escape(key)
                     osm += "\n    <tag k='%s' v=%r/>" % (newkey, str(value))
             if modified:
-                osm += (
-                    '\n    <tag k="note" v="Do not upload this without validation!"/>'
-                )
+                osm += '\n    <tag k="note" v="Do not upload this without validation!"/>'
             osm += "\n"
 
         osm += "  </way>\n"
 
         return osm
 
-    def featureToNode(self,
-                      feature: dict,
-                     ):
-        """
-        Convert a GeoJson feature into the data structures used here
+    def featureToNode(
+        self,
+        feature: dict,
+    ):
+        """Convert a GeoJson feature into the data structures used here.
 
         Args:
             feature (dict): The GeoJson feature to convert
@@ -242,24 +233,24 @@ class OsmFile(object):
         ignore = ("label", "title")
         tags = dict()
         attrs = dict()
-        for tag, value in feature['properties'].items():
-            if tag == 'id':
-                attrs['osm_id'] = value
+        for tag, value in feature["properties"].items():
+            if tag == "id":
+                attrs["osm_id"] = value
             elif tag not in ignore:
                 tags[tag] = value
-        coords = feature['geometry']['coordinates']
-        attrs['lat'] = coords[1]
-        attrs['lon'] = coords[0]
-        osm['attrs'] = attrs
-        osm['tags'] = tags
+        coords = feature["geometry"]["coordinates"]
+        attrs["lat"] = coords[1]
+        attrs["lon"] = coords[0]
+        osm["attrs"] = attrs
+        osm["tags"] = tags
         return osm
 
-    def createNode(self,
-                   node: dict,
-                   modified: bool = False,
-                   ):
-        """
-        This creates a string that is the OSM representation of a node
+    def createNode(
+        self,
+        node: dict,
+        modified: bool = False,
+    ):
+        """This creates a string that is the OSM representation of a node.
 
         Args:
             node (dict): The input node data structure
@@ -281,16 +272,16 @@ class OsmFile(object):
         if "version" not in node["attrs"]:
             attrs["version"] = "1"
         else:
-            attrs["version"] = int(node['attrs']["version"]) + 1
+            attrs["version"] = int(node["attrs"]["version"]) + 1
         attrs["lat"] = node["attrs"]["lat"]
         attrs["lon"] = node["attrs"]["lon"]
         attrs["timestamp"] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, THE GDPR applies
         # and the identifying fields should not be included
-        if "uid" in node['attrs']:
-            attrs["uid"] = node['attrs']["uid"]
-        if "user" in node['attrs']:
-            attrs["user"] = node['attrs']["user"]
+        if "uid" in node["attrs"]:
+            attrs["uid"] = node["attrs"]["uid"]
+        if "user" in node["attrs"]:
+            attrs["user"] = node["attrs"]["user"]
 
         # Processs atrributes
         line = ""
@@ -307,21 +298,19 @@ class OsmFile(object):
                 if key not in attrs:
                     osm += "\n    <tag k='%s' v=%r/>" % (key, str(value))
             if modified:
-                osm += (
-                    '\n    <tag k="note" v="Do not upload this without validation!"/>'
-                )
+                osm += '\n    <tag k="note" v="Do not upload this without validation!"/>'
             osm += "\n  </node>\n"
         else:
             osm += "/>"
 
         return osm
 
-    def createTag(self,
-                  field: str,
-                  value: str,
-                  ):
-        """
-        Create a data structure for an OSM feature tag
+    def createTag(
+        self,
+        field: str,
+        value: str,
+    ):
+        """Create a data structure for an OSM feature tag.
 
         Args:
             field (str): The tag name
@@ -345,11 +334,11 @@ class OsmFile(object):
         tag[newtag] = newval
         return tag
 
-    def loadFile(self,
-                 osmfile: str,
-                 ):
-        """
-        Read a OSM XML file generated by osm_fieldwork
+    def loadFile(
+        self,
+        osmfile: str,
+    ):
+        """Read a OSM XML file generated by osm_fieldwork.
 
         Args:
             osmfile (str): The OSM XML file to load
@@ -374,14 +363,14 @@ class OsmFile(object):
             attrs = dict()
             tags = dict()
             for k, v in field["node"].items():
-                if k[0] == '@':
+                if k[0] == "@":
                     attrs[k[1:]] = v
                 else:
-                    if type(field["node"]['tag']) == dict:
-                        tags[field["node"]['tag']["@k"]] = field["node"]['tag']["@v"].strip()
+                    if type(field["node"]["tag"]) == dict:
+                        tags[field["node"]["tag"]["@k"]] = field["node"]["tag"]["@v"].strip()
                     else:
-                        for pair in field['node']['tag']:
-                            tags[pair['@k']] = pair['@v']
+                        for pair in field["node"]["tag"]:
+                            tags[pair["@k"]] = pair["@v"]
 
             node = {"attrs": attrs, "tags": tags}
             self.data[node["attrs"]["id"]] = node
@@ -392,7 +381,7 @@ class OsmFile(object):
                     "lat": node["@lat"][:10],
                     "lon": node["@lon"][:10],
                 }
-                if '@timestamp' in node:
+                if "@timestamp" in node:
                     attrs["timestamp"] = node["@timestamp"]
 
                 tags = dict()
@@ -402,25 +391,25 @@ class OsmFile(object):
                             tags[tag["@k"]] = tag["@v"].strip()
                             # continue
                         else:
-                            tags[node['tag']["@k"]] = node['tag']["@v"].strip()
+                            tags[node["tag"]["@k"]] = node["tag"]["@v"].strip()
                             # continue
                     node = {"attrs": attrs, "tags": tags}
                     self.data[node["attrs"]["id"]] = node
         return self.data
 
     def dump(self):
-        """Dump internal data structures, for debugging purposes only"""    
-        for id, item in self.data.items():
+        """Dump internal data structures, for debugging purposes only."""
+        for _id, item in self.data.items():
             for k, v in item["attrs"].items():
                 print(f"{k} = {v}")
             for k, v in item["tags"].items():
                 print(f"\t{k} = {v}")
 
-    def getFeature(self,
-                   id: int,
-                   ):
-        """
-        Get the data for a feature from the loaded OSM data file
+    def getFeature(
+        self,
+        id: int,
+    ):
+        """Get the data for a feature from the loaded OSM data file.
 
         Args:
             id (int): The ID to retrieve the feasture of
@@ -431,11 +420,9 @@ class OsmFile(object):
         return self.data[id]
 
     def getFields(self):
-        """
-        Extract all the tags used in this file
-        """
+        """Extract all the tags used in this file."""
         fields = list()
-        for id, item in self.data.items():
+        for _id, item in self.data.items():
             keys = list(item["tags"].keys())
             for key in keys:
                 if key not in fields:
@@ -446,9 +433,7 @@ class OsmFile(object):
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
     # Command Line options
-    parser = argparse.ArgumentParser(
-        description="This program conflates ODK data with existing features from OSM."
-    )
+    parser = argparse.ArgumentParser(description="This program conflates ODK data with existing features from OSM.")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-o", "--osmfile", required=True, help="OSM XML file created by Osm-Fieldwork")
     args = parser.parse_args()
@@ -463,9 +448,7 @@ if __name__ == "__main__":
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         log.addHandler(ch)
 

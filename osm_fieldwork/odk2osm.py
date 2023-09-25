@@ -17,32 +17,28 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-import logging
 import argparse
-import xmltodict
+import logging
 import os
-import sys
 import re
+import sys
 from collections import OrderedDict
-import csv
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import xmltodict
 
 # Instantiate logger
 log = logging.getLogger(__name__)
 
 
 def main():
-    """
-    This is a program that reads in the ODK Instance file, which is in XML,
+    """This is a program that reads in the ODK Instance file, which is in XML,
     and converts it to an OSM XML file so it can be viewed in an editor.
     """
-    parser = argparse.ArgumentParser(
-        description="Convert ODK XML instance file to OSM XML format"
-    )
+    parser = argparse.ArgumentParser(description="Convert ODK XML instance file to OSM XML format")
     parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
-    parser.add_argument("-i", "--instance", required=True, help="The instance file(s) from ODK Collect"
-    )
+    parser.add_argument("-i", "--instance", required=True, help="The instance file(s) from ODK Collect")
     # parser.add_argument("-o","--outfile", default='tmp.csv', help='The output file for JOSM')
     args = parser.parse_args()
 
@@ -51,9 +47,7 @@ def main():
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         log.addHandler(ch)
 
@@ -87,12 +81,12 @@ def main():
             tags = dict()
             data = doc["data"]
             for i, j in data.items():
-                if j is None or i == 'meta':
+                if j is None or i == "meta":
                     continue
-                #print(f"tag: {i} == {j}")
+                # print(f"tag: {i} == {j}")
                 pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
                 if pat.match(str(j)):
-                    if i == 'warmup':
+                    if i == "warmup":
                         continue
                     gps = j.split(" ")
                     tags["lat"] = gps[0]
@@ -124,12 +118,11 @@ def main():
         rows.append(tags)
 
     xml = os.path.basename(xmlfiles[0])
-    tmp = xml.replace(' ', '').split("_")
+    tmp = xml.replace(" ", "").split("_")
     now = datetime.now()
     timestamp = f"_{now.year}_{now.hour}_{now.minute}"
     outfile = tmp[0] + timestamp + ".csv"
 
-    
     # with open(outfile, "w", newline="") as csvfile:
     #     fields = list()
     #     for row in rows:
@@ -142,6 +135,7 @@ def main():
     #         csv.writerow(row)
 
     print("Wrote: %s" % outfile)
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

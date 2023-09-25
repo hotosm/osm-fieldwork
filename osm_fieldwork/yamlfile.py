@@ -18,23 +18,24 @@
 #     along with Osm-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-import yaml
 import argparse
 import logging
 import sys
+
+import yaml
 
 # Instantiate logger
 log = logging.getLogger(__name__)
 
 
 class YamlFile(object):
-    """Config file in YAML format"""
+    """Config file in YAML format."""
 
-    def __init__(self,
-                 data: str,
-                 ):
-        """
-        This parses a yaml file into a dictionary for easy access.
+    def __init__(
+        self,
+        data: str,
+    ):
+        """This parses a yaml file into a dictionary for easy access.
 
         Args:
             data (str): The filespec of the YAML file to read
@@ -43,18 +44,18 @@ class YamlFile(object):
             (YamlFile): An instance of this object
         """
         self.filespec = None
-        #if data == str:
+        # if data == str:
         self.filespec = data
         self.file = open(data, "rb").read()
         self.yaml = yaml.load(self.file, Loader=yaml.Loader)
-        #else:
+        # else:
         #    self.yaml = yaml.load(str(data), Loader=yaml.Loader)
 
-    def privateData(self,
-                    keyword: str,
-                    ):
-        """
-        See if a keyword is in the private data category
+    def privateData(
+        self,
+        keyword: str,
+    ):
+        """See if a keyword is in the private data category.
 
         Args:
             keyword (str): The keyword to search for
@@ -67,11 +68,11 @@ class YamlFile(object):
                 return True
         return False
 
-    def ignoreData(self,
-                   keyword: str,
-                   ):
-        """
-        See if a keyword is in the ignore data category
+    def ignoreData(
+        self,
+        keyword: str,
+    ):
+        """See if a keyword is in the ignore data category.
 
         Args:
             keyword (str): The keyword to search for
@@ -84,11 +85,11 @@ class YamlFile(object):
                 return True
         return False
 
-    def convertData(self,
-                    keyword: str,
-                    ):
-        """
-        See if a keyword is in the convert data category
+    def convertData(
+        self,
+        keyword: str,
+    ):
+        """See if a keyword is in the convert data category.
 
         Args:
             keyword (str): The keyword to search for
@@ -102,7 +103,7 @@ class YamlFile(object):
         return False
 
     def dump(self):
-        """Dump internal data structures, for debugging purposes only"""
+        """Dump internal data structures, for debugging purposes only."""
         if self.filespec:
             print("YAML file: %s" % self.filespec)
         for key, values in self.yaml.items():
@@ -116,16 +117,16 @@ class YamlFile(object):
                                     print(f"\t{i} = {j}")
                         else:
                             print(f"\t{k1} = {v1}")
-                    print('------------------')
+                    print("------------------")
                 else:
                     print(f"\t{v}")
 
-    def write(self,
-              table: list,
-              ):
-        """
-        Add to the YAML file
-        
+    def write(
+        self,
+        table: list,
+    ):
+        """Add to the YAML file.
+
         Args:
               table (list): The name of the database table
 
@@ -133,7 +134,7 @@ class YamlFile(object):
             (str): The modified YAML data
         """
         tab = "    "
-        yaml = ["select:", f"{tab}\"osm_id\": id", f"{tab}tags:"]
+        yaml = ["select:", f'{tab}"osm_id": id', f"{tab}tags:"]
         for item in where:
             yaml.append(f"{tab}{tab}- {item}")
         yaml.append("from:")
@@ -149,6 +150,7 @@ class YamlFile(object):
         yaml.append(f"{notnull}")
         return yaml
 
+
 #
 # This script can be run standalone for debugging purposes. It's easier to debug
 # this way than using pytest,
@@ -157,10 +159,7 @@ if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
     parser = argparse.ArgumentParser(description="Read and parse a YAML file")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument(
-        "-i", "--infile", required=True, default="./xforms.yaml",
-        help="The YAML input file"
-    )
+    parser.add_argument("-i", "--infile", required=True, default="./xforms.yaml", help="The YAML input file")
     args = parser.parse_args()
 
     # if verbose, dump to the terminal.
@@ -168,12 +167,10 @@ if __name__ == "__main__":
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         log.addHandler(ch)
-    
+
     yaml1 = YamlFile(args.infile)
     yaml1.dump()
 

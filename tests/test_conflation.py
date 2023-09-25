@@ -20,7 +20,7 @@
 
 import argparse
 import os
-import sys
+
 from osm_fieldwork.odk_merge import OdkMerge, conflateThread
 from osm_fieldwork.osmfile import OsmFile
 
@@ -30,12 +30,13 @@ rootdir = os.path.dirname(os.path.abspath(__file__))
 parser = argparse.ArgumentParser(description="Test odk_merge")
 parser.add_argument("--odk", default=f"{rootdir}/testdata/odk_pois.osm", help="The ODK file")
 parser.add_argument("--osm", default=f"{rootdir}/testdata/osm_buildings.geojson", help="The OSM data")
-parser.add_argument("-d", "--database", default=f"PG:colorado", help="The database name")
+parser.add_argument("-d", "--database", default="PG:colorado", help="The database name")
 parser.add_argument("-b", "--boundary", default=f"{rootdir}/testdata/Salida.geojson", help="The project AOI")
 args = parser.parse_args()
 
+
 def test_file():
-    """This tests conflating against the GeoJson data extract file"""
+    """This tests conflating against the GeoJson data extract file."""
     passes = 0
     osm = OsmFile()
     osmdata = osm.loadFile(args.odk)
@@ -48,12 +49,13 @@ def test_file():
         passes += 1
     # The first feature is a match, so has the OSM ID, the second
     # feature doesn't match, so negative ID
-    if data[0]['attrs']['id'] > 0 and data[1]['attrs']['id'] < 0:
+    if data[0]["attrs"]["id"] > 0 and data[1]["attrs"]["id"] < 0:
         passes += 1
     # duplicates have a fixme tag added
-    if 'fixme' in data[0]['tags'] and 'fixme' not in data[1]['tags']:
+    if "fixme" in data[0]["tags"] and "fixme" not in data[1]["tags"]:
         passes += 1
-    assert(passes == 3)
+    assert passes == 3
+
 
 # FIXME update test_db to use local db in CI
 # def test_db():

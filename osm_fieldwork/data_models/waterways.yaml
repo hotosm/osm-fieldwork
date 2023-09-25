@@ -1,13 +1,12 @@
 select:
-    - osm_id: id
-    - version
+  - osm_id: id
+  - version
 from:
-    - ways_line
+  - ways_line
 where:
   tags:
     - join_or:
         - { waterway: not null }
 keep:
-    - name
-    - intermittent
-
+  - name
+  - intermittent

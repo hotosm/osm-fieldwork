@@ -17,16 +17,16 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-import sys
-from osm_fieldwork.ODKForm import ODKForm
-from osm_fieldwork.ODKInstance import ODKInstance
 import argparse
-from datetime import datetime
-from osm_fieldwork.osmfile import OsmFile
-from osm_fieldwork.convert import Convert
 import logging
 import re
+import sys
+from datetime import datetime
 
+from osm_fieldwork.convert import Convert
+from osm_fieldwork.ODKForm import ODKForm
+from osm_fieldwork.ODKInstance import ODKInstance
+from osm_fieldwork.osmfile import OsmFile
 
 if __name__ != "__main__":
     print("This is not a loadable python module!")
@@ -34,9 +34,7 @@ if __name__ != "__main__":
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-parser.add_argument(
-    "-x", "--xform", required=True, help="input xform file in XML format"
-)
+parser.add_argument("-x", "--xform", required=True, help="input xform file in XML format")
 parser.add_argument("-i", "--infile", required=True, help="input data in XML format")
 parser.add_argument("-o", "--outdir", help="Output Directory (defaults to $PWD)")
 args = parser.parse_args()
@@ -48,9 +46,7 @@ if not args.verbose:
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     ch.setFormatter(formatter)
     root.addHandler(ch)
 
@@ -93,7 +89,7 @@ for x in data:
         continue
     elif reg.match(x):
         groups[x] = data[x]
-        for key, value in data[x].items():
+        for key, _value in data[x].items():
             if odkform.getNodeType(x, key) == "geotrace":
                 ln = "LINESTRING("
                 ln += groups[x][key] + ")"

@@ -18,69 +18,73 @@
 #     along with Osm-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-import os
-import sys
 import argparse
-from osm_fieldwork.xlsforms import xlsforms_path
+import os
+
 from osm_fieldwork.convert import Convert
+from osm_fieldwork.xlsforms import xlsforms_path
 
 # find the path of root tests dir
 rootdir = os.path.dirname(os.path.abspath(__file__))
 
-parser = argparse.ArgumentParser(
-    description="Read and convert a JSON file from ODK Central"
-)
+parser = argparse.ArgumentParser(description="Read and convert a JSON file from ODK Central")
 parser.add_argument("--infile", default=f"{rootdir}/testdata/testcamps.json", help="The JSON input file")
 args = parser.parse_args()
 
 path = xlsforms_path.replace("/xlsforms", "")
 csv = Convert(f"{path}/xforms.yaml")
 
+
 def test_keywords():
-    """Convert a feature"""
+    """Convert a feature."""
     hits = 0
-    if csv.convertData('fee'):
-        hits += 1 
-    if csv.convertData('sac_scale') is False:
-        hits += 1 
+    if csv.convertData("fee"):
+        hits += 1
+    if csv.convertData("sac_scale") is False:
+        hits += 1
     assert hits == 2
+
 
 def test_convert_tag():
-    """Test tag conversion"""
+    """Test tag conversion."""
     hits = 0
     # Test a tag that gets converted
-    if csv.convertTag("altitude") == 'ele':
+    if csv.convertTag("altitude") == "ele":
         hits += 1
     # Test a tag that doesn't get converted
-    if csv.convertTag("foobar") == 'foobar':
+    if csv.convertTag("foobar") == "foobar":
         hits += 1
     assert hits == 2
 
+
 def test_single_value():
-    """Test tag value conversion"""
+    """Test tag value conversion."""
     hits = 0
     # Test a value that gets converted
-    if csv.convertValue("building:floor", 'wood'):
+    if csv.convertValue("building:floor", "wood"):
         hits += 1
     assert hits == 1
+
 
 def test_sub_value():
-    """Test tag value conversion"""
+    """Test tag value conversion."""
     hits = 0
     # Test a value that gets converted
-    val = csv.convertValue("cemetery_services", 'cemetery')
-    if len(val) == 1 and val[0]['amenity'] == 'grave_yard':
+    val = csv.convertValue("cemetery_services", "cemetery")
+    if len(val) == 1 and val[0]["amenity"] == "grave_yard":
         hits += 1
     assert hits == 1
 
+
 def test_multiple_value():
-    """Test tag value conversion"""
+    """Test tag value conversion."""
     hits = 0
     # Test a value that gets converted
-    vals = csv.convertValue('amenity', 'coffee')
-    if len(vals) == 2 and vals[0]['amenity'] == 'cafe' and vals[1]['cuisine'] == 'coffee_shop':
+    vals = csv.convertValue("amenity", "coffee")
+    if len(vals) == 2 and vals[0]["amenity"] == "cafe" and vals[1]["cuisine"] == "coffee_shop":
         hits += 1
     assert hits == 1
+
 
 # Run standalone for easier debugging when not under pytest
 if __name__ == "__main__":

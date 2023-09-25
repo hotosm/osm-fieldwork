@@ -19,35 +19,34 @@
 #
 
 import argparse
-import os
-import logging
-import sys
+import concurrent.futures
 import json
-from typing import Union
+import logging
+import os
+import queue
+import sys
+import threading
 
 import mercantile
+from cpuinfo import get_cpu_info
+from pySmartDL import SmartDL
 from shapely.geometry import shape
 from shapely.ops import unary_union
-from pySmartDL import SmartDL
-from cpuinfo import get_cpu_info
-import queue
-import concurrent.futures
-import threading
+
 from osm_fieldwork.sqlite import DataFile, MapTile
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
 
-
 log = logging.getLogger(__name__)
 
 
-def dlthread(dest: str,
-             mirrors: list,
-             tiles: list,
-             xy: bool,
-             ):
-    """
-    Thread to handle downloads for Queue
+def dlthread(
+    dest: str,
+    mirrors: list,
+    tiles: list,
+    xy: bool,
+):
+    """Thread to handle downloads for Queue.
 
     Args:
         dest (str): The filespec of the tile cache
@@ -63,10 +62,7 @@ def dlthread(dest: str,
     # start = datetime.now()
 
     # totaltime = 0.0
-    log.info(
-        "Downloading %d tiles in thread %d to %s"
-        % (len(tiles), threading.get_ident(), dest)
-    )
+    log.info("Downloading %d tiles in thread %d to %s" % (len(tiles), threading.get_ident(), dest))
     for tile in tiles:
         bingkey = mercantile.quadkey(tile)
         filespec = f"{tile[2]}/{tile[1]}/{tile[0]}"
@@ -74,12 +70,12 @@ def dlthread(dest: str,
             if site["source"] != "topo":
                 filespec += "." + site["suffix"]
             url = site["url"]
-            if  site["source"] == "bing":
+            if site["source"] == "bing":
                 remote = url % bingkey
-            elif  site["source"] == "google":
+            elif site["source"] == "google":
                 path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
                 remote = url % path
-            elif  site["source"] == "custom":
+            elif site["source"] == "custom":
                 if not xy:
                     path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
                 else:
@@ -115,14 +111,14 @@ def dlthread(dest: str,
 
 
 class BaseMapper(object):
-    def __init__(self,
-                 boundary: str,
-                 base: str,
-                 source: str,
-                 xy: bool,
-                 ):
-        """
-        Create an mbtiles basemap for ODK Collect
+    def __init__(
+        self,
+        boundary: str,
+        base: str,
+        source: str,
+        xy: bool,
+    ):
+        """Create an mbtiles basemap for ODK Collect.
 
         Args:
             boundary (str): A BBOX string or GeoJSON file of the AOI.
@@ -145,24 +141,24 @@ class BaseMapper(object):
         path = xlsforms_path.replace("xlsforms", "imagery.yaml")
         self.yaml = YamlFile(path)
 
-        for entry in self.yaml.yaml['sources']:
+        for entry in self.yaml.yaml["sources"]:
             for k, v in entry.items():
                 src = dict()
                 for item in v:
-                    src['source'] = k
+                    src["source"] = k
                     for k1, v1 in item.items():
                         # print(f"\tFIXME2: {k1} - {v1}")
                         src[k1] = v1
                 self.sources[k] = src
 
-    def customTMS(self,
-                  url: str,
-                  name: str = 'custom',
-                  source: str = 'custom',
-                  suffix: str = 'jpg',
-                  ):
-        """
-        Add a custom TMS URL to the list of sources.
+    def customTMS(
+        self,
+        url: str,
+        name: str = "custom",
+        source: str = "custom",
+        suffix: str = "jpg",
+    ):
+        """Add a custom TMS URL to the list of sources.
 
         Args:
             name (str): The name to display
@@ -170,21 +166,20 @@ class BaseMapper(object):
             suffix (str): The suffix, png or jpg
             source (str): The source value to use as an index
         """
-        self.sources['custom'] = {'name': name, 'url': url, 'suffix': suffix, 'source': source}
-        self.source = 'custom'
+        self.sources["custom"] = {"name": name, "url": url, "suffix": suffix, "source": source}
+        self.source = "custom"
 
     def getFormat(self):
-        """
-        Returns:
-            (str): the upstream source for map tiles
+        """Returns:
+        (str): the upstream source for map tiles.
         """
         return self.sources[self.source]["suffix"]
 
-    def getTiles(self,
-                 zoom: int = None,
-                 ):
-        """
-        Get a list of tiles for the specifed zoom level
+    def getTiles(
+        self,
+        zoom: int = None,
+    ):
+        """Get a list of tiles for the specifed zoom level.
 
         Args:
             zoom (int): The Zoom level of the desired map tiles
@@ -195,10 +190,7 @@ class BaseMapper(object):
         info = get_cpu_info()
         cores = info["count"]
 
-        self.tiles = list(
-            mercantile.tiles(
-                self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], zoom)
-        )
+        self.tiles = list(mercantile.tiles(self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], zoom))
         total = len(self.tiles)
         log.info("%d tiles for zoom level %d" % (len(self.tiles), zoom))
         chunk = round(len(self.tiles) / cores)
@@ -213,9 +205,7 @@ class BaseMapper(object):
             with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
                 block = 0
                 while block <= len(self.tiles):
-                    executor.submit(
-                        dlthread, self.base, mirrors, self.tiles[block : block + chunk]
-                    )
+                    executor.submit(dlthread, self.base, mirrors, self.tiles[block : block + chunk])
                     log.debug("Dispatching Block %d:%d" % (block, block + chunk))
                     block += chunk
                 executor.shutdown()
@@ -223,11 +213,11 @@ class BaseMapper(object):
 
         return len(self.tiles)
 
-    def tileExists(self,
-                   tile: MapTile,
-                   ):
-        """
-        See if a map tile already exists
+    def tileExists(
+        self,
+        tile: MapTile,
+    ):
+        """See if a map tile already exists.
 
         Args:
             tile (MapTile): The map tile to check for the existence of
@@ -243,11 +233,11 @@ class BaseMapper(object):
             log.debug("%s doesn't exists" % filespec)
             return False
 
-    def makeBbox(self,
-                 boundary: str,
-                 ):
-        """
-        Make a bounding box from a shapely geometry.
+    def makeBbox(
+        self,
+        boundary: str,
+    ):
+        """Make a bounding box from a shapely geometry.
 
         Args:
             boundary (str): A BBOX string or GeoJSON file of the AOI.
@@ -259,7 +249,7 @@ class BaseMapper(object):
         if not boundary.lower().endswith((".json", ".geojson")):
             # Is BBOX string
             try:
-                bbox_parts = boundary.split(',')
+                bbox_parts = boundary.split(",")
                 bbox = tuple(float(x) for x in bbox_parts)
                 if len(bbox) == 4:
                     # BBOX valid
@@ -275,8 +265,8 @@ class BaseMapper(object):
         log.debug(f"Reading geojson file: {boundary}")
         with open(boundary, "r") as f:
             poly = json.load(f)
-        if 'features' in poly:
-            geometry = shape(poly['features'][0]['geometry'])
+        if "features" in poly:
+            geometry = shape(poly["features"][0]["geometry"])
         else:
             geometry = shape(poly)
 
@@ -296,10 +286,8 @@ class BaseMapper(object):
 
 
 def main():
-    """This main function lets this class be run standalone by a bash script"""
-    parser = argparse.ArgumentParser(
-        description="Create an mbtiles basemap for ODK Collect"
-    )
+    """This main function lets this class be run standalone by a bash script."""
+    parser = argparse.ArgumentParser(description="Create an mbtiles basemap for ODK Collect")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-b", "--boundary", required=True, help="The boundary for the area you want")
     parser.add_argument("-t", "--tms", help="Custom TMS URL")
@@ -307,7 +295,10 @@ def main():
     parser.add_argument("-o", "--outfile", required=True, help="Output file name")
     parser.add_argument("-z", "--zooms", default="12-17", help="The Zoom levels")
     parser.add_argument("-d", "--outdir", help="Output directory name for tile cache")
-    parser.add_argument("-s", "--source", default="esri",
+    parser.add_argument(
+        "-s",
+        "--source",
+        default="esri",
         choices=["esri", "bing", "topo", "google", "oam"],
         help="Imagery source",
     )
@@ -318,9 +309,7 @@ def main():
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         log.addHandler(ch)
 
@@ -355,7 +344,7 @@ def main():
     if args.source and not args.tms:
         basemap = BaseMapper(args.boundary, base, args.source, args.xy)
     elif args.tms:
-        basemap = BaseMapper(args.boundary, base, 'custom', args.xy)
+        basemap = BaseMapper(args.boundary, base, "custom", args.xy)
         basemap.customTMS(args.tms)
     else:
         log.error("You need to specify a source!")
@@ -378,6 +367,7 @@ def main():
             outf.writeTiles(basemap.tiles, base)
         else:
             log.info("Only downloading tiles to %s!" % base)
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

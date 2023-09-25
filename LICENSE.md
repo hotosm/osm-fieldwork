@@ -385,7 +385,7 @@ notice like this when it starts in an interactive mode:
 This program comes with ABSOLUTELY NO WARRANTY; for details
 type `show w'.
 This is free software, and you are welcome to redistribute it
-under certain conditions; type `show c' for details.
+under certain conditions; type`show c' for details.
 </pre>
 
 The hypothetical commands `show w` and `show c` should show the appropriate parts of the General Public License. Of course, your program's commands might be different; for a GUI interface, you would use an "about box".

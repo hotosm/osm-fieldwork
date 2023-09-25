@@ -1,12 +1,16 @@
 select:
-    osm_id: id
+  osm_id: id
 from:
-    - nodes
-    - ways_poly
+  - nodes
+  - ways_poly
 where:
-    tags:
-        - join_or:
-            - { healthcare: not null, social_facility: not null, healthcare:speciality: not null }
+  tags:
+    - join_or:
+        - {
+            healthcare: not null,
+            social_facility: not null,
+            healthcare:speciality: not null,
+          }
 keep:
   - healthcare:type
   - healthcare
