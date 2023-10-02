@@ -265,6 +265,9 @@ class JsonDump(Convert):
                         lon = v[0]
                         tags['geometry'] = f"{lat} {lon}"
                     continue
+                if key == "xlocation":
+                    tags["geometry"] = v
+                    continue
                 tags[key] = v
             total.append(tags)
 
