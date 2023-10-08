@@ -19,61 +19,65 @@
 #
 
 import argparse
-import os
-import sys
+
 from osm_fieldwork.make_data_extract import uriParser
 
-parser = argparse.ArgumentParser(
-    description="Test odk_merge"
-)
+parser = argparse.ArgumentParser(description="Test odk_merge")
 parser.add_argument("--infile", help="The input file")
 args = parser.parse_args()
 
 out = None
+
+
 def test_dbname_only():
     dbname = "testdb"
     db = uriParser(dbname)
     # print(db['dbname'] == dbname)
-    assert(db['dbname'] == dbname)
+    assert db["dbname"] == dbname
+
 
 def test_dbname():
     passes = 0
     db = uriParser("fmtm:XxXx@localhost/underpass")
-    if db['dbname'] == 'underpass':
+    if db["dbname"] == "underpass":
         passes += 1
     # print(db)
     db = uriParser("fmtm:XxXx/underpass")
-    if db['dbname'] == 'underpass':
+    if db["dbname"] == "underpass":
         passes += 1
     # print(db)
     db = uriParser("fmtm:XxXx@localhost:5433/underpass")
-    if db['dbname'] == 'underpass':
+    if db["dbname"] == "underpass":
         passes += 1
-    #print(db)
+    # print(db)
     # print(passes == 3)
-    assert(passes == 3)
-    
+    assert passes == 3
+
+
 def test_host():
     db = uriParser("fmtm@localhost")
-    dbhost = db['dbhost']
+    dbhost = db["dbhost"]
     db2 = uriParser("fmtm@hostlocal")
-    db2host = db2['dbhost']
+    db2host = db2["dbhost"]
     # print(dbhost == 'localhost' and db2host == 'hostlocal')
-    assert(dbhost == 'localhost' and db2host == 'hostlocal')
+    assert dbhost == "localhost" and db2host == "hostlocal"
+
 
 def test_user():
     db = uriParser("fmtm@localhost")
-    dbuser = db['dbuser']
-    dbpass = db['dbpass']
+    dbuser = db["dbuser"]
+    dbpass = db["dbpass"]
     # print(dbuser == 'fmtm', dbpass is None)
-    assert(dbuser == 'fmtm' and dbpass is None)
+    assert dbuser == "fmtm" and dbpass is None
+
 
 def test_password():
     db = uriParser("fmtm:XxXx@localhost")
-    dbuser = db['dbuser']
-    dbpass = db['dbpass']
+    dbuser = db["dbuser"]
+    dbpass = db["dbpass"]
     # print(dbuser == 'fmtm', dbpass == 'XxXx')
-    assert(dbuser == 'fmtm' and dbpass == 'XxXx')
+    assert dbuser == "fmtm" and dbpass == "XxXx"
+
 
 def test_port():
     db2 = uriParser("fmtm:XxXx@localhost:5433")
@@ -81,7 +85,8 @@ def test_port():
     db3 = uriParser("fmtm:XxXx@hostlocal:5433/fmtmdb")
     # print(db3)
     # print(db2['dbport'] == '5433' and db3['dbport'] == '5433')
-    assert(db2['dbport'] == '5433' and db3['dbport'] == '5433')
+    assert db2["dbport"] == "5433" and db3["dbport"] == "5433"
+
 
 if __name__ == "__main__":
     # print("--- test_dbname_only() ---")

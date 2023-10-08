@@ -28,6 +28,7 @@ dependencies = [
     "psycopg2>=2.9.7",
     "py-cpuinfo>=9.0.0",
     "requests>=2.31.0",
+    "osm-rawdata==0.1.2rc0",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
@@ -59,7 +60,7 @@ pythonpath = "osm_fieldwork"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.3.6rc0"
+version = "0.3.6rc2"
 version_files = [
     "pyproject.toml:version",
     "osm_fieldwork/__version__.py",

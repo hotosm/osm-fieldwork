@@ -18,17 +18,15 @@
 #     along with osm_fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-import os
-from osm_fieldwork.convert import escape
 import argparse
+import os
+
 from osm_fieldwork.osmfile import OsmFile
 
 # find the path of root tests dir
 rootdir = os.path.dirname(os.path.abspath(__file__))
 
-parser = argparse.ArgumentParser(
-    description="Read and parse a CSV file from ODK Central"
-)
+parser = argparse.ArgumentParser(description="Read and parse a CSV file from ODK Central")
 parser.add_argument("--infile", default=f"{rootdir}/testdata/odk_pois.osm", help="The CSV input file")
 parser.add_argument("--outfile", default=f"{rootdir}/testdata/test-out.osm", help="The output OSM XML file")
 args = parser.parse_args()
@@ -41,7 +39,7 @@ osm = OsmFile(args.outfile)
 
 
 def test_init():
-    """Make sure the OSM file is initialized"""
+    """Make sure the OSM file is initialized."""
     assert os.path.exists(args.infile)
 
 

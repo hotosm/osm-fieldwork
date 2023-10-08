@@ -2,13 +2,12 @@
 
 OSM Fieldwork contains a few standalone utility programs for converting
 data from ODK Collect and the ODK Central server, and a few support
-modules. You can install from the  source tree using:
-	
-	pip install .
+modules. You can install from the source tree using:
+pip install .
 
 or you can install the package from PyPi.org:
 
-	pip install osm-fieldwork
+    pip install osm-fieldwork
 
 ## make_data_extract.py
 

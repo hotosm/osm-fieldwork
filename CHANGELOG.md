@@ -1,3 +1,25 @@
+## 0.3.6rc2 (2023-09-11)
+
+### Fix
+
+- json2osm handle polygons and points (#192)
+- Update raw-osmdata to 0.1.1
+- add osm-rawdata dependency
+- Major refactoring to use the new osm-rawdata module
+- Add join_or tag which is now required in the enhanced YAML format
+- Use optional env variable for the raw data API
+- initialize variable
+- Arg, change the raw data URI again
+- json2osm calling via api
+- The URL for raw data has changed
+- Add config file for waterways
+
+## 0.3.6rc1 (2023-09-07)
+
+### Fix
+
+- json2osm via cmdline + programatically
+
 ## 0.3.6rc0 (2023-09-01)
 
 ### Feat

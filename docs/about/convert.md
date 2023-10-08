@@ -25,28 +25,19 @@ appropriate tag and value for OSM. The final one is where a singe
 survey question creates multiple tahg and value pairs, deliminated by
 a comma. Each of the pairs is handled as a separate tag and value in
 OSM.
-	
-	convert:
-		- latitude: lat
-		- longitude: lon
-		- altitude: ele
-		- cemetery_services:
-			- cemetery: amenity=grave_yard
-			- cremation: amenity=crematorium
-		- amenity:
-			- coffee: amenity=cafe,cuisine=coffee_shop
-	...
+convert: - latitude: lat - longitude: lon - altitude: ele - cemetery_services: - cemetery: amenity=grave_yard - cremation: amenity=crematorium - amenity: - coffee: amenity=cafe,cuisine=coffee_shop
+...
 
 ### private
 
 Not all collected data is suitable for OSM. This may include data that
-has no equivalant tag in OSM, or personal data. 
+has no equivalant tag in OSM, or personal data.
 
-	private:
-		- income
-		- age
-		- gender
-		- education
+    private:
+     - income
+     - age
+     - gender
+     - education
 
 ### ignore
 
@@ -54,16 +45,15 @@ ODK supports many tags useful only internally. These go into the
 ignore section of the config file. Any tag in this section gets
 removed from from all output files. An example would be this:
 
-	ignore:
-		- attachmentsexpected
-		- attachmentspresent
-		- reviewstate
-		- edits
-		- gps_type
-		- accuracy
-		- deviceid
-	...
-
+    ignore:
+     - attachmentsexpected
+     - attachmentspresent
+     - reviewstate
+     - edits
+     - gps_type
+     - accuracy
+     - deviceid
+    ...
 
 ### multiple
 
@@ -73,7 +63,7 @@ assumes one answer per question, this specifies the questions with
 multiple answers since they have to be processed seperately. The
 normal conversion process is applied to these too.
 
-	multiple:
-		- healthcare
-		- amenity_type
-		- specialty
+    multiple:
+     - healthcare
+     - amenity_type
+     - specialty

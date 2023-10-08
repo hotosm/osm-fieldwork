@@ -76,6 +76,7 @@ nav:
   - API:
       - ODK Central: api/OdkCentral.md
       - basemapper: api/basemapper.md
+      - make_data_extract: api/make_data_extract.md
       - convert: api/convert.md
       - sqlite: api/sqlite.md
       - osmfile: api/osmfile.md

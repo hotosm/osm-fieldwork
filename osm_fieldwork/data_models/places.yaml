@@ -1,8 +1,9 @@
 select:
-    osm_id: id
+  osm_id: id
 from:
-    - nodes
-    - ways_poly
+  - nodes
+  - ways_poly
 where:
-    tags:
+  tags:
+    - join_or:
         - { place: not null }
