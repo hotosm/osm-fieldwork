@@ -86,7 +86,7 @@ The following are the project-specific commands supported by ODK Client:
 
       python odk_client.py --id 1 --project app-users
 
-  Note: Replace "1" with the actual ID of the project you want to access.
+Note: Replace "1" with the actual ID of the project you want to access.
 
 ## XForm Requests
 
