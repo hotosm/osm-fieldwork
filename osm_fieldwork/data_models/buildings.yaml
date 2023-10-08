@@ -1,6 +1,5 @@
 select:
-    - osm_id: id
-    - version
+  - tags
 from:
     - nodes
     - ways_poly
@@ -20,3 +19,5 @@ keep:
     - convenience
     - diesel
     - version
+    - name
+    - name:en
