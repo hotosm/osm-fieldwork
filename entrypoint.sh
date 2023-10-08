@@ -2,4 +2,4 @@
 
 set -eo pipefail
 
-exec gosu appuser "$@"
+exec "$@"
