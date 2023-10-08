@@ -43,6 +43,7 @@ git push
 ```
 
 This will:
+
 - Update the SemVer version number in locations specific in `pyproject.toml`, throughout the codebase.
   - If a `feat` commit is included, the version is bumped by a minor increment (0.x.0), if only `fix` is included a patch will be used (0.0.x).
 - Automatically update CHANGELOG.md with all changes since the last version.

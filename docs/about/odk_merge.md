@@ -42,21 +42,26 @@ existing data has the new tags added.
 
 ## Examples
 
-### Example 1: Merge ODK data into an existing OSM file:
+### Example 1: Merge ODK data into an existing OSM file
 
     odk_merge.py -f /path/to/existing.osm -c /path/to/odk_data.csv -o /path/to/output.osm
 
 This command will merge the data collected through ODK into the existing.osm file, adding new tags or updating existing ones based on the data in the odk_data.csv file. The resulting merged data will be written to the output.osm file.
 
-### Example 2: Merge ODK data into an existing OSM file within a specific boundary:
+### Example 2: Merge ODK data into an existing OSM file within a specific boundary
+
     odk_merge.py -f /path/to/existing.osm -c /path/to/odk_data.csv -o /path/to/output.osm -b /path/to/boundary.geojson
+
 This command is similar to the previous one, but it limits the merged data to the area defined by the boundary.geojson file.
 
-### Example 3: Merge ODK data into an existing OSM database:
+### Example 3: Merge ODK data into an existing OSM database
+
     odk_merge.py -f pg:osm -c /path/to/odk_data.csv -o /path/to/output.osm
+
 This command merges the ODK data into an existing OSM database instead of a file. The pg:osm argument specifies the name of the OSM database.
 
-### Example 4: Merge ODK data into an existing OSM database within a specific boundary:
+### Example 4: Merge ODK data into an existing OSM database within a specific boundary
 
     odk_merge.py -f pg:osm -c /path/to/odk_data.csv -o /path/to/output.osm -b /path/to/boundary.geojson
+
 This command is similar to the previous one, but it limits the merged data to the area defined by the boundary.geojson file.

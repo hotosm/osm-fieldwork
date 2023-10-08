@@ -41,7 +41,6 @@ argument:
     writer.write(relation_xml)
     writer.close()
 
-
 This would create XML code for the node, way, and relation using
 createNode(), createWay(), and createRelation() respectively. These
 methods return a string of XML code which is then written to the
@@ -102,7 +101,6 @@ the object, and the role of the object in the relation. For example:
     }
 
     writer.write_relation(relation)
-
 
 This would write the following XML code to the output file:
 

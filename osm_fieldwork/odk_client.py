@@ -16,19 +16,18 @@
 #     along with OSM-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-import logging
 import argparse
-import sys
+import logging
 import os
-import json
-from osm_fieldwork.OdkCentral import OdkCentral, OdkProject, OdkForm, OdkAppUser
-from osm_fieldwork.json2osm import JsonDump
+import sys
+from datetime import datetime
 from pathlib import Path
 from sys import argv
-from geojson import Feature, FeatureCollection, dump
-from datetime import datetime
+
 from codetiming import Timer
 
+from osm_fieldwork.json2osm import JsonDump
+from osm_fieldwork.OdkCentral import OdkAppUser, OdkCentral, OdkForm, OdkProject
 
 # Set log level
 log_level = os.getenv("LOG_LEVEL", default="INFO")
@@ -38,13 +37,13 @@ log = logging.getLogger(__name__)
 
 
 class OdkClient(object):
-    def __init__(self,
-                 url:str = None,
-                 user: str = None,
-                 passwd: str = None,
-                 ):
-        """
-        A Class for higher-level client side access to ODK Central
+    def __init__(
+        self,
+        url: str = None,
+        user: str = None,
+        passwd: str = None,
+    ):
+        """A Class for higher-level client side access to ODK Central.
 
         Args:
             url (str): The URL of the ODK Central
@@ -80,15 +79,15 @@ class OdkClient(object):
 
 
 def main():
-    """This main function lets this class be run standalone by a bash script"""
+    """This main function lets this class be run standalone by a bash script."""
     parser = argparse.ArgumentParser(description="command line client for ODK Central")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     # This is for server requests
-    parser.add_argument(
-        "-s", "--server", choices=["projects", "users", "delete"], help="project operations"
-    )
+    parser.add_argument("-s", "--server", choices=["projects", "users", "delete"], help="project operations")
     # This is for project specific requests
-    parser.add_argument("-p", "--project",
+    parser.add_argument(
+        "-p",
+        "--project",
         choices=["forms", "app-users", "assignments", "delete", "submissions"],
         help="project operations",
     )
@@ -96,21 +95,23 @@ def main():
     parser.add_argument("-f", "--form", help="XForm name")
     parser.add_argument("-u", "--uuid", help="Submission UUID, needed to download the data")
     # This is for form specific requests
-    parser.add_argument("-x", "--xform",
-                        choices=[
-                            "attachments",
-                            "csv",
-                            "json",
-                            "submissions",
-                            "upload",
-                            "download",
-                            "create",
-                            "assignments",
-                            "delete",
-                            "publish",
-                        ],
-                        help="XForm ID for operations with data files",
-                        )
+    parser.add_argument(
+        "-x",
+        "--xform",
+        choices=[
+            "attachments",
+            "csv",
+            "json",
+            "submissions",
+            "upload",
+            "download",
+            "create",
+            "assignments",
+            "delete",
+            "publish",
+        ],
+        help="XForm ID for operations with data files",
+    )
     parser.add_argument(
         "-a",
         "--appuser",
@@ -119,9 +120,7 @@ def main():
     )
     parser.add_argument("-d", "--data", help="Data files for upload or download")
     parser.add_argument("-t", "--timestamp", help="Timestamp for submissions")
-    parser.add_argument(
-        "-b", "--bulk", choices=["qrcodes", "update"], help="Bulk operations"
-    )
+    parser.add_argument("-b", "--bulk", choices=["qrcodes", "update"], help="Bulk operations")
 
     # logging.basicConfig(
     #     level=log_level,
@@ -161,9 +160,7 @@ def main():
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         log.addHandler(ch)
 
@@ -178,7 +175,7 @@ def main():
             projects = central.listProjects()
             if not projects:
                 projects = list()
-            elif 'message' in projects:
+            elif "message" in projects:
                 log.error(f"{projects['message']}, {projects['code']} ")
                 quit()
 
@@ -201,9 +198,7 @@ def main():
         # project.authenticate()
         if not args.id:
             print('Need to specify a project ID using "--id"!')
-            print(
-                'You can use "odk_client.-py --server projects" to list all the projects!'
-            )
+            print('You can use "odk_client.-py --server projects" to list all the projects!')
             # parser.print_help()
             quit()
         if args.project == "forms":
@@ -212,7 +207,7 @@ def main():
                 log.error(f"{forms['message']}, {forms['code']} ")
                 quit()
             if type(forms) != list:
-                log.error(forms['message'])
+                log.error(forms["message"])
                 quit()
             ordered = sorted(forms, key=lambda item: item.get("xmlFormId"))
             for form in ordered:
@@ -233,13 +228,13 @@ def main():
                 if len(feature) == 0:
                     continue
                 if "lat" not in feature["attrs"]:
-                    if 'geometry' in feature['tags']:
-                        if type(feature['tags']['geometry']) == str:
-                            coords = list(feature['tags']['geometry'])
+                    if "geometry" in feature["tags"]:
+                        if type(feature["tags"]["geometry"]) == str:
+                            coords = list(feature["tags"]["geometry"])
                             # del feature['tags']['geometry']
-                    elif 'coordinates' in feature['tags']:
-                        coords = feature['tags']['coordinates']
-                        feature['attrs'] = {'lat': coords[1], 'lon': coords[0]}
+                    elif "coordinates" in feature["tags"]:
+                        coords = feature["tags"]["coordinates"]
+                        feature["attrs"] = {"lat": coords[1], "lon": coords[0]}
                     else:
                         log.warning("Bad record! %r" % feature)
                         continue
@@ -247,7 +242,7 @@ def main():
                 log.info(f"Wrote {outfile}.osm")
                 # This GeoJson file has all the data values
                 # jsonin.writeGeoJson(feature)
-                #log.info(f"Wrote {outfile}.geojson")
+                # log.info(f"Wrote {outfile}.geojson")
 
         elif args.project == "app-users":
             users = project.listAppUsers(args.id)
@@ -266,9 +261,7 @@ def main():
             # logging.info("There are %d app users on this ODK Central server" %)
             if args.project == "assignments":
                 assign = project.listAssignments(args.id)
-                logging.info(
-                    "There are %d assignments  on this ODK Central server" % len(assign)
-                )
+                logging.info("There are %d assignments  on this ODK Central server" % len(assign))
             ordered = sorted(assign, key=lambda item: item.get("id"))
             for role in ordered:
                 print("\t%r" % role)
@@ -307,9 +300,7 @@ def main():
             if type(assign) == dict:
                 log.error(f"{assign['message']}, {assign['code']} ")
                 quit()
-            logging.info(
-                "There are %d assignments  on this ODK Central server" % len(assign)
-            )
+            logging.info("There are %d assignments  on this ODK Central server" % len(assign))
             # ordered = sorted(assign, key=lambda item: item.get('id'))
             for role in assign:
                 print("\t%r" % role)
@@ -318,27 +309,23 @@ def main():
             submissions = form.listSubmissions(args.id, args.form)
             if not submissions:
                 submissions = list()
-            elif 'message' in submissions:
+            elif "message" in submissions:
                 log.error(f"{submissions['message']}, {submissions['code']} ")
                 quit()
 
-            logging.info(
-                "There are %d submissions for XForm %s" % (len(submissions), args.form)
-                )
+            logging.info("There are %d submissions for XForm %s" % (len(submissions), args.form))
             for file in submissions:
                 # form.submissions.append(file)
-                print("%s: %s" % (file['meta']['instanceID'], file["end"]))
+                print("%s: %s" % (file["meta"]["instanceID"], file["end"]))
 
         elif args.xform == "csv":
             submissions = form.getSubmissions(args.id, args.form, True, False)
             if type(submissions) == dict:
                 log.error(f"{submissions['message']}, {submissions['code']} ")
-            logging.info(
-                "There are %d submissions for XForm %s" % (len(submissions), args.form)
-            )
+            logging.info("There are %d submissions for XForm %s" % (len(submissions), args.form))
             for file in submissions:
                 form.submissions.append(file)
-                print("%s: %s" % (file['meta']['instanceID'], file["end"]))
+                print("%s: %s" % (file["meta"]["instanceID"], file["end"]))
 
         elif args.xform == "json":
             submissions = form.getSubmissions(args.id, args.form, False, True, True)
@@ -348,21 +335,17 @@ def main():
             else:
                 if submissions is None:
                     submissions = list()
-            logging.info(
-                "There are %d submissions for XForm %s" % (len(submissions), args.form)
-            )
+            logging.info("There are %d submissions for XForm %s" % (len(submissions), args.form))
             for file in submissions:
                 form.submissions.append(file)
-                #print("%s: %s" % (file["instanceId"], file["createdAt"]))
+                # print("%s: %s" % (file["instanceId"], file["createdAt"]))
 
         elif args.xform == "attachments":
             attachments = form.listMedia(args.id, args.form)
             if type(attachments) == dict:
                 log.error(f"{attachments['message']}, {attachments['code']} ")
                 quit()
-            logging.info(
-                "There are %d attachments for XForm %s" % (len(attachments), args.form)
-            )
+            logging.info("There are %d attachments for XForm %s" % (len(attachments), args.form))
             for file in attachments:
                 print("\t%s exists ? %s" % (file["name"], file["exists"]))
 
@@ -440,6 +423,7 @@ def main():
                 for user in users:
                     result = appuser.updateRole(args.id, args.form, role, user["id"])
     timer.stop()
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

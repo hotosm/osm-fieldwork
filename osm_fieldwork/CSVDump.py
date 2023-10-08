@@ -20,91 +20,98 @@
 
 import argparse
 import csv
-import os
 import logging
+import os
+import re
 import sys
-from sys import argv
+
+import pandas as pd
+from geojson import Feature, FeatureCollection, Point, dump
+
 from osm_fieldwork.convert import Convert
 from osm_fieldwork.osmfile import OsmFile
 from osm_fieldwork.xlsforms import xlsforms_path
-from geojson import Point, Feature, FeatureCollection, dump
-import pandas as pd
-import re
-
 
 # set log level for urlib
 log = logging.getLogger(__name__)
 
-class CSVDump(Convert):
-    """A class to parse the CSV files from ODK Central"""
 
-    def __init__(self,
-                 yaml: str = None,
-                 ):
+class CSVDump(Convert):
+    """A class to parse the CSV files from ODK Central."""
+
+    def __init__(
+        self,
+        yaml: str = None,
+    ):
         self.fields = dict()
         self.nodesets = dict()
         self.data = list()
         self.osm = None
         self.json = None
         self.features = list()
-        path = xlsforms_path.replace("xlsforms", "")
+        xlsforms_path.replace("xlsforms", "")
         if yaml:
-            file = f"{path}{yaml}"
+            pass
         else:
-            file = f"{path}/xforms.yaml"
+            pass
         self.config = super().__init__(yaml)
         self.saved = dict()
         self.defaults = dict()
 
-    def lastSaved(self,
-                  keyword: str,
-                  ):
+    def lastSaved(
+        self,
+        keyword: str,
+    ):
         if keyword is not None and len(keyword) > 0:
             return self.saved[keyword]
         return None
 
-    def updateSaved(self,
-                    keyword: str,
-                    value: str,
-                    ):
+    def updateSaved(
+        self,
+        keyword: str,
+        value: str,
+    ):
         if keyword is not None and value is not None and len(value) > 0:
             self.saved[keyword] = value
 
-    def parseXLS(self,
-                    xlsfile: str,
-                 ):
-        """Parse the source XLSFile if available to look for details we need"""
+    def parseXLS(
+        self,
+        xlsfile: str,
+    ):
+        """Parse the source XLSFile if available to look for details we need."""
         if xlsfile is not None and len(xlsfile) > 0:
             entries = pd.read_excel(xlsfile, sheet_name=[0])
             # There will only be a single sheet
-            names = entries[0]['name']
-            defaults = entries[0]['default']
+            names = entries[0]["name"]
+            defaults = entries[0]["default"]
             total = len(names)
             i = 0
             while i < total:
                 entry = defaults[i]
-                if str(entry) != 'nan':
+                if str(entry) != "nan":
                     pat = re.compile("..last-saved.*")
                     if pat.match(entry):
-                        name = entry.split('#')[1][:-1]
+                        name = entry.split("#")[1][:-1]
                         self.saved[name] = None
                     else:
                         self.defaults[names[i]] = entry
                 i += 1
         return True
 
-    def createOSM(self,
-                  filespec: str,
-                  ):
-        """Create an OSM XML output files"""
+    def createOSM(
+        self,
+        filespec: str,
+    ):
+        """Create an OSM XML output files."""
         log.debug("Creating OSM XML file: %s" % filespec)
         self.osm = OsmFile(filespec)
-        #self.osm.header()
+        # self.osm.header()
 
-    def writeOSM(self,
-                 feature: dict,
-                 ):
-        """Write a feature to an OSM XML output file"""
+    def writeOSM(
+        self,
+        feature: dict,
+    ):
+        """Write a feature to an OSM XML output file."""
         out = ""
         if "id" in feature["tags"]:
             feature["id"] = feature["tags"]["id"]
@@ -117,27 +124,29 @@ class CSVDump(Convert):
         self.osm.write(out)
 
     def finishOSM(self):
-        """Write the OSM XML file footer and close it"""
+        """Write the OSM XML file footer and close it."""
         self.osm.footer()
 
-    def createGeoJson(self,
-                      file: str = "tmp.geojson",
-                      ):
-        """Create a GeoJson output file"""
+    def createGeoJson(
+        self,
+        file: str = "tmp.geojson",
+    ):
+        """Create a GeoJson output file."""
         log.debug("Creating GeoJson file: %s" % file)
         self.json = open(file, "w")
 
-    def writeGeoJson(self,
-                     feature: dict,
-                     ):
-        """Write a feature to a GeoJson output file"""
+    def writeGeoJson(
+        self,
+        feature: dict,
+    ):
+        """Write a feature to a GeoJson output file."""
         # These get written later when finishing , since we have to create a FeatureCollection
         if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
             return None
         self.features.append(feature)
 
     def finishGeoJson(self):
-        """Write the GeoJson FeatureCollection to the output file and close it"""
+        """Write the GeoJson FeatureCollection to the output file and close it."""
         features = list()
         for item in self.features:
             poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
@@ -149,18 +158,18 @@ class CSVDump(Convert):
         collection = FeatureCollection(features)
         dump(collection, self.json)
 
-    def parse(self,
-              filespec: str,
-              data: str = None,
-              ):
-        """Parse the CSV file from ODK Central and convert it to a data structure"""
+    def parse(
+        self,
+        filespec: str,
+        data: str = None,
+    ):
+        """Parse the CSV file from ODK Central and convert it to a data structure."""
         all_tags = list()
         if not data:
             f = open(filespec, newline="")
             reader = csv.DictReader(f, delimiter=",")
         else:
             reader = csv.DictReader(data, delimiter=",")
-        last_saved = dict()
         for row in reader:
             tags = dict()
             # log.info(f"ROW: {row}")
@@ -170,10 +179,7 @@ class CSVDump(Convert):
 
                 base = self.basename(keyword).lower()
                 # There's many extraneous fields in the input file which we don't need.
-                if (base is None
-                    or base in self.ignore
-                    or value is None
-                ):
+                if base is None or base in self.ignore or value is None:
                     continue
                 # if base in self.multiple:
                 #     epdb.st()
@@ -188,49 +194,51 @@ class CSVDump(Convert):
                     # location, there is not always a value if the accuracy is way
                     # off. In this case use the warmup value, which is where we are
                     # standing anyway.
-                    if base == 'latitude' and len(value) == 0:
-                        if 'warmup-Latitude' in row:
-                            value = row['warmup-Latitude']
-                            if base == 'longitude' and len(value) == 0:
-                                value = row['warmup-Longitude']
+                    if base == "latitude" and len(value) == 0:
+                        if "warmup-Latitude" in row:
+                            value = row["warmup-Latitude"]
+                            if base == "longitude" and len(value) == 0:
+                                value = row["warmup-Longitude"]
                     items = self.convertEntry(base, value)
                     # log.info(f"ROW: {base} {value}")
                     if len(items) > 0:
                         if base in self.saved:
-                            if str(value) == 'nan' or len(value) == 0:
+                            if str(value) == "nan" or len(value) == 0:
                                 # log.debug(f"FIXME: {base} {value}")
                                 val = self.saved[base]
                                 if val and len(value) == 0:
-                                    log.warning(f"Using last saved value for \"{base}\"! Now \"{val}\"" )
+                                    log.warning(f'Using last saved value for "{base}"! Now "{val}"')
                                     value = val
                             else:
                                 self.saved[base] = value
-                                log.debug(f"Updating last saved value for \"{base}\" with \"{value}\"")
+                                log.debug(f'Updating last saved value for "{base}" with "{value}"')
                         # Handle nested dict in list
                         if isinstance(items, list):
                             items = items[0]
                         for k, v in items.items():
-                                tags[k] = v
+                            tags[k] = v
                     else:
                         tags[base] = value
                 # log.debug(f"\tFIXME1: {tags}")
             all_tags.append(tags)
         return all_tags
 
-    def basename(self,
-                 line: str,
-                 ):
-        """Extract the basename of a path after the last -"""
+    def basename(
+        self,
+        line: str,
+    ):
+        """Extract the basename of a path after the last -."""
         tmp = line.split("-")
         if len(tmp) == 0:
             return line
         base = tmp[len(tmp) - 1]
         return base
 
-    def createEntry(self,
-                    entry: dict,
-                    ):
-        """Create the feature data structure"""
+    def createEntry(
+        self,
+        entry: dict,
+    ):
+        """Create the feature data structure."""
         # print(line)
         feature = dict()
         attrs = dict()
@@ -240,9 +248,9 @@ class CSVDump(Convert):
 
         # log.debug("Creating entry")
         # First convert the tag to the approved OSM equivalent
-        if 'lat' in entry and 'lon' in entry:
-            attrs["lat"] = entry['lat']
-            attrs["lon"] = entry['lon']
+        if "lat" in entry and "lon" in entry:
+            attrs["lat"] = entry["lat"]
+            attrs["lon"] = entry["lon"]
         for key, value in entry.items():
             attributes = (
                 "id",
@@ -264,7 +272,7 @@ class CSVDump(Convert):
                     attrs["lon"] = geometry[1]
                 continue
 
-            if len(attrs['lat']) == 0:
+            if len(attrs["lat"]) == 0:
                 continue
             if key is not None and len(key) > 0 and key in attributes:
                 attrs[key] = value
@@ -304,19 +312,14 @@ class CSVDump(Convert):
 
 
 def main():
-    """
-    """
-    parser = argparse.ArgumentParser(
-        description="convert CSV from ODK Central to OSM XML"
-    )
+    """ """
+    parser = argparse.ArgumentParser(description="convert CSV from ODK Central to OSM XML")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-y", "--yaml", help="Alternate YAML file")
     parser.add_argument("-x", "--xlsfile", help="Source XLSFile")
-    parser.add_argument(
-        "-i", "--infile", required=True, help="The input file downloaded from ODK Central"
-    )
+    parser.add_argument("-i", "--infile", required=True, help="The input file downloaded from ODK Central")
     args = parser.parse_args()
-    
+
     # if verbose, dump to the terminal.
     if args.verbose is not None:
         root = logging.getLogger()
@@ -324,9 +327,7 @@ def main():
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
@@ -362,6 +363,7 @@ def main():
     csvin.finishGeoJson()
     log.info("Wrote OSM XML file: %r" % osmoutfile)
     log.info("Wrote GeoJson file: %r" % jsonoutfile)
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

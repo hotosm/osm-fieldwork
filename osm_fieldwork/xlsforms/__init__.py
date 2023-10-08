@@ -2,7 +2,6 @@
 
 import os
 
-
 xlsforms_path = os.path.dirname(os.path.abspath(__file__))
 
 buildings = f"{xlsforms_path}/buildings.xls"

@@ -20,14 +20,13 @@
 
 import argparse
 import os
-from  osm_fieldwork.CSVDump import CSVDump
+
+from osm_fieldwork.CSVDump import CSVDump
 
 # find the path of root tests dir
 rootdir = os.path.dirname(os.path.abspath(__file__))
 
-parser = argparse.ArgumentParser(
-    description="Read and parse a CSV file from ODK Central"
-)
+parser = argparse.ArgumentParser(description="Read and parse a CSV file from ODK Central")
 parser.add_argument("--infile", default=f"{rootdir}/testdata/test.csv", help="The CSV input file")
 args = parser.parse_args()
 csv = CSVDump()
@@ -37,12 +36,12 @@ print(data)
 
 
 def test_csv():
-    """Make sure the CSV file got loaded and parsed"""
+    """Make sure the CSV file got loaded and parsed."""
     assert len(data) > 0
 
 
 def test_init():
-    """Make sure the YAML file got loaded"""
+    """Make sure the YAML file got loaded."""
     assert len(csv.yaml.yaml) > 0
 
 

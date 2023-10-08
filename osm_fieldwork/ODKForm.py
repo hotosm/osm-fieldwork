@@ -17,8 +17,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-import logging
 import argparse
+import logging
 import os
 import sys
 
@@ -30,20 +30,19 @@ class ODKForm(object):
     """Support for parsing an XLS Form, currently a work in progress..."""
 
     def __init__(self):
-        """
-        Returns:
-            (ODKForm): An instance of this object
+        """Returns:
+        (ODKForm): An instance of this object.
         """
         self.fields = dict()
         self.nodesets = dict()
         self.groups = dict()
         self.ignore = ("label", "@appearance", "hint", "upload")
 
-    def parseSelect(self,
-                    select: dict,
-                    ):
-        """
-        Parse a select statement in XML
+    def parseSelect(
+        self,
+        select: dict,
+    ):
+        """Parse a select statement in XML.
 
         Args:
             select (dict): The select in XML:
@@ -63,11 +62,11 @@ class ODKForm(object):
             print("\tQQQQQ %r" % (newsel))
         return newsel
 
-    def parseItems(self,
-                   items: list,
-                   ):
-        """
-        Parse the items in a select list
+    def parseItems(
+        self,
+        items: list,
+    ):
+        """Parse the items in a select list.
 
         Args:
             items (list): The select items list in XML:
@@ -107,18 +106,18 @@ class ODKForm(object):
         # return group, subgroup, newitems
         return newitems
 
-    def parseGroup(self,
-                   group: dict(),
-                   ):
-        """
-        Convert the XML of a group into a data structure.
+    def parseGroup(
+        self,
+        group: dict(),
+    ):
+        """Convert the XML of a group into a data structure.
 
         Args:
             group (dict): The group data
         """
         print("\tparseGroup %r" % (type(group)))
         if type(group) == list:
-            for val in group:
+            for _val in group:
                 for k in group:
                     print("\nZZZZ1 %r" % (k))
         else:  # it's a list
@@ -137,13 +136,9 @@ class ODKForm(object):
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
-    parser = argparse.ArgumentParser(
-        description="convert CSV from ODK Central to OSM XML"
-    )
+    parser = argparse.ArgumentParser(description="convert CSV from ODK Central to OSM XML")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument(
-        "-i", "--infile", help="The input file downloaded from ODK Central"
-    )
+    parser.add_argument("-i", "--infile", help="The input file downloaded from ODK Central")
     args = parser.parse_args()
 
     # if verbose, dump to the terminal as well as the logfile.
@@ -152,9 +147,7 @@ if __name__ == "__main__":
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         log.addHandler(ch)
 

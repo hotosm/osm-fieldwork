@@ -20,11 +20,12 @@
 
 import argparse
 import logging
-import sys
-import os
-import pandas as pd
 import sqlite3
+import sys
+
+import pandas as pd
 import requests
+
 # from requests.auth import HTTPBasicAuth
 
 #
@@ -35,7 +36,8 @@ import requests
 #
 
 # Instantiate logger
-logging.basicConfig(stream = sys.stdout,level=logging.INFO)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
 
 class ValidateModel(object):
     def __init__(self, taginfo=None):
@@ -49,19 +51,19 @@ class ValidateModel(object):
         self.threshold = dict()
         self.url = "https://taginfo.openstreetmap.org/taginfo/apidoc#api_4_key_values?"
         self.session = requests.Session()
-        self.headers = {'Content-Type': 'application/json;charset=UTF-8'}
+        self.headers = {"Content-Type": "application/json;charset=UTF-8"}
         self.threshold = 100
 
     def parse(self):
-        models = 'Impact Areas - Data Models V1.1.xlsx'
+        models = "Impact Areas - Data Models V1.1.xlsx"
         data = pd.read_excel(models, sheet_name="Overview - all Tags", usecols=["key", "value"])
-        
+
         entries = data.to_dict()
-        total = len(entries['key'])
+        total = len(entries["key"])
         index = 1
         while index < total:
-            key = entries['key'][index]
-            value = entries['value'][index]
+            key = entries["key"][index]
+            value = entries["value"][index]
             if value == "<text>":
                 index += 1
                 continue
@@ -77,7 +79,7 @@ class ValidateModel(object):
         threshold = self.threshold
         for key in self.tags.keys():
             for value in self.tags[key]:
-                if value[:3] == 'yes' or value[:2] == 'no' or value[0] == '<':
+                if value[:3] == "yes" or value[:2] == "no" or value[0] == "<":
                     continue
                 threshold = self.threshold
                 sql = f"SELECT value,count_all FROM tags where key='{key}'"
@@ -85,25 +87,22 @@ class ValidateModel(object):
                 result = self.cursor.execute(sql)
                 data = result.fetchall()
                 if len(data) == 0:
-                    logging.warning(f"\'{key}\' does not exist in taginfo!")
+                    logging.warning(f"'{key}' does not exist in taginfo!")
                 else:
                     for val in data:
                         if val[0] == value:
-                            if value[:3] == 'yes' or value[:2] == 'no' or value[0] == '<':
+                            if value[:3] == "yes" or value[:2] == "no" or value[0] == "<":
                                 continue
                             # logging.info(f"\"{value}\" exists in the taginfo for \"{key}\"!")
                         if val[1] < threshold:
-                            logging.warning(f"\"{value}\" doesn't pass the threshold for \"{key}\"! Only {val[1]} occurances")
+                            logging.warning(f'"{value}" doesn\'t pass the threshold for "{key}"! Only {val[1]} occurances')
                             if csv:
                                 csvfile.write(f"{key},{value},{val[1]}\n")
                             break
 
 
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Validate data_models using taginfo database"
-    )
+    parser = argparse.ArgumentParser(description="Validate data_models using taginfo database")
     parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
     parser.add_argument("-t", "--taginfo", help="Taginfo database")
     parser.add_argument("-c", "--csv", help="Output CSV")
@@ -116,9 +115,7 @@ if __name__ == "__main__":
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         root.addHandler(ch)
 
@@ -126,4 +123,3 @@ if __name__ == "__main__":
     tags = model.parse()
     # import epdb; epdb.st()
     model.validateTaginfo(args.csv)
-
