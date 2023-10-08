@@ -3,24 +3,11 @@ name: Publish to PyPi.org
 on:
   release:
     types: [published]
-
-env:
-  PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+  # Allow manual trigger (workflow_dispatch)
+  workflow_dispatch:
 
 jobs:
   publish_to_pypi:
-    name: Publish to PyPi
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install PDM
-        run: |
-          python3 -m pip install pdm
-
-      - name: Publish
-        run: |
-          pdm config repository.pypi.username "__token__"
-          pdm config repository.pypi.password "${PYPI_TOKEN}"
-          pdm publish
+    uses: hotosm/gh-workflows/.github/workflows/pypi_publish.yml@main
+    secrets:
+      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}

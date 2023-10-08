@@ -24,7 +24,7 @@ collection.
    -OR-
 
 2. Latest on PyPi:
-`pip install Osm-Fieldwork`
+   `pip install Osm-Fieldwork`
 
 <hr></hr>
 

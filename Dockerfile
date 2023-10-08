@@ -46,7 +46,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir pdm==2.6.1
 RUN pdm export --prod > requirements.txt \
     && pdm export -G debug -G test \
-        --no-default > requirements-test.txt
+        --no-default > requirements-ci.txt
 
 
 
@@ -74,11 +74,11 @@ RUN set -ex \
         "libproj-dev" \
         "libgeos-dev" \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=extract-deps --chown=appuser \
+COPY --from=extract-deps \
     /opt/python/requirements.txt /opt/python/
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r ./requirements.txt
-COPY --from=build-wheel --chown=appuser \
+COPY --from=build-wheel \
     "/build/dist/osm_fieldwork-$PKG_VERSION-py3-none-any.whl" .
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir "/opt/python/osm_fieldwork-$PKG_VERSION-py3-none-any.whl"
@@ -90,8 +90,8 @@ ARG PYTHON_IMG_TAG
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
-    PATH="/home/appuser/.local/bin:$PATH" \
-    PYTHON_LIB="/home/appuser/.local/lib/python$PYTHON_IMG_TAG/site-packages" \
+    PATH="/root/.local/bin:$PATH" \
+    PYTHON_LIB="/root/.local/lib/python$PYTHON_IMG_TAG/site-packages" \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
     REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
     CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
@@ -101,7 +101,6 @@ RUN set -ex \
     -y --no-install-recommends \
         "nano" \
         "curl" \
-        "gosu" \
         "libpcre3" \
         "postgresql-client" \
         "libglib2.0-0" \
@@ -111,38 +110,39 @@ RUN set -ex \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build \
     /root/.local \
-    /home/appuser/.local
+    /root/.local
 WORKDIR /data
 COPY entrypoint.sh /container-entrypoint.sh
-# Add non-root user (match Github runner), permissions
-RUN useradd -r -u 1001 -m -c "hotosm account" -d /home/appuser -s /bin/false appuser \
-    && chown -R appuser:appuser /home/appuser \
-    && chmod +x /container-entrypoint.sh \
-    && chmod -R 777 /data
-# Change to non-root user (for compile below)
-USER appuser
 
 
 
 FROM runtime as ci
-COPY --from=extract-deps --chown=appuser \
-    /opt/python/requirements-test.txt /opt/python/
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir -r /opt/python/requirements-test.txt
-# Pre-compile packages to .pyc (init speed gains)
-RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
-# Set entrypoint and cmd from default for CI
+ARG PYTHON_IMG_TAG
+COPY --from=extract-deps \
+    /opt/python/requirements-ci.txt /opt/python/
+RUN mv /root/.local/bin/* /usr/local/bin/ \
+    && mv /root/.local/lib/python${PYTHON_IMG_TAG}/site-packages/* \
+    /usr/local/lib/python${PYTHON_IMG_TAG}/site-packages/ \
+    && set -ex \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install \
+    -y --no-install-recommends \
+        "git" \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --upgrade --no-warn-script-location \
+    --no-cache-dir -r \
+    /opt/python/requirements-ci.txt \
+    && rm -r /opt/python \
+    # Pre-compile packages to .pyc (init speed gains)
+    && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
+# Override entrypoint, as not possible in Github action
 ENTRYPOINT [""]
 CMD [""]
-# Change to root, use gosu at runtime
-USER root
 
 
 
 FROM runtime as prod
 # Pre-compile packages to .pyc (init speed gains)
 RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
-# Change to root, use gosu at runtime
-USER root
 ENTRYPOINT ["/container-entrypoint.sh"]
 CMD ["bash"]
