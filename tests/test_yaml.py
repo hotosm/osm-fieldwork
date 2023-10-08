@@ -23,6 +23,9 @@ import sys
 import os
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
+import logging
+
+log = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(description="Read and parse a YAML file")
 parser.add_argument(
