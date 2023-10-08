@@ -46,7 +46,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir pdm==2.6.1
 RUN pdm export --prod > requirements.txt \
     && pdm export -G debug -G test \
-        --no-default > requirements-test.txt
+        --no-default > requirements-ci.txt
 
 
 
@@ -125,17 +125,29 @@ USER appuser
 
 
 FROM runtime as ci
-COPY --from=extract-deps --chown=appuser \
-    /opt/python/requirements-test.txt /opt/python/
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir -r /opt/python/requirements-test.txt
-# Pre-compile packages to .pyc (init speed gains)
-RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
-# Set entrypoint and cmd from default for CI
+# Run all ci as root
+USER root
+ARG PYTHON_IMG_TAG
+COPY --from=extract-deps \
+    /opt/python/requirements-ci.txt /opt/python/
+RUN mv /home/appuser/.local/bin/* /usr/local/bin/ \
+    && mv /home/appuser/.local/lib/python${PYTHON_IMG_TAG}/site-packages/* \
+    /usr/local/lib/python${PYTHON_IMG_TAG}/site-packages/ \
+    && set -ex \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install \
+    -y --no-install-recommends \
+        "git" \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --upgrade --no-warn-script-location \
+    --no-cache-dir -r \
+    /opt/python/requirements-ci.txt \
+    && rm -r /opt/python \
+    # Pre-compile packages to .pyc (init speed gains)
+    && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
+# Override entrypoint, as not possible in Github action
 ENTRYPOINT [""]
 CMD [""]
-# Change to root, use gosu at runtime
-USER root
 
 
 
