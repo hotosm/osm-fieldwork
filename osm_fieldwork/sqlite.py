@@ -229,7 +229,7 @@ class DataFile(object):
             tile (MapTile): The map tile to write to the file
         """
         if tile.blob is None:
-            logging.error("Map tile has no image data!")
+            logging.error(f"Map tile {tile.filespec} has no image data!")
             # tile.dump()
             return False
         suffix = os.path.splitext(self.dbname)[1]
