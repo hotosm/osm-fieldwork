@@ -62,7 +62,7 @@ class MakeExtract(object):
 
     def __init__(
         self,
-        uri: str,
+        dburi: str,
         config: str,
         xlsfile: str,
     ):
@@ -76,7 +76,7 @@ class MakeExtract(object):
         Returns:
             (MakeExtract): An instance of this object
         """
-        self.db = PostgresClient(uri, f"{rootdir}/data_models/{config}")
+        self.db = PostgresClient(dburi, f"{rootdir}/data_models/{config}")
 
         # Read in the XLSFile
         if "/" in xlsfile:

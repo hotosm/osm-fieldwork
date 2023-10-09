@@ -27,15 +27,20 @@ from codetiming import Timer
 from cpuinfo import get_cpu_info
 from geojson import Point
 from haversine import Unit, haversine
+from osm_rawdata.postgres import PostgresClient
 from shapely.geometry import mapping, shape
 from thefuzz import fuzz
 
 from osm_fieldwork.convert import escape
-from osm_fieldwork.make_data_extract import PostgresClient, uriParser
 from osm_fieldwork.osmfile import OsmFile
 
 # Instantiate logger
 log = logging.getLogger(__name__)
+
+# Find the other files for this project
+import osm_fieldwork as of
+
+rootdir = of.__path__[0]
 
 # The number of threads is based on the CPU cores
 info = get_cpu_info()
@@ -67,11 +72,11 @@ class OdkMerge(object):
         # PG: is the same prefix as ogr2ogr
         # "[user[:password]@][netloc][:port][/dbname]"
         if source[0:3] == "PG:":
-            uri = uriParser(source[3:])
+            uri = source[3:]
             # self.source = "underpass" is not support yet
             # Each thread needs it's own connection to postgres to avoid problems.
             for _thread in range(0, cores + 1):
-                db = PostgresClient(dbhost=uri["dbhost"], dbname=uri["dbname"], dbuser=uri["dbuser"], dbpass=uri["dbpass"])
+                db = PostgresClient(uri, f"{rootdir}/data_models/{config}")
                 self.postgres.append(db)
                 if boundary:
                     self.clip(boundary, db)

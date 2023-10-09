@@ -22,7 +22,6 @@ jobs:
     uses: hotosm/gh-workflows/.github/workflows/image_build.yml@main
     needs: [extract-vars]
     with:
-      context: .
       build_target: ci
       image_tags: |
         "ghcr.io/hotosm/osm-fieldwork:${{ needs.extract-vars.outputs.app_version }}-ci"
