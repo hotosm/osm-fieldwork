@@ -1,3 +1,15 @@
+## 0.3.6 (2023-10-09)
+
+### Fix
+
+- update all data-models to latest osm-rawdata syntax
+- update indexes for xlsforms and data_models
+- update xlsforms index
+
+### Refactor
+
+- update rootdir refs to variables
+
 ## 0.3.6rc3 (2023-10-09)
 
 ### Fix
