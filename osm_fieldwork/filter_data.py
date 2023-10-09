@@ -153,9 +153,9 @@ class FilterData(object):
         for feature in indata['features']:
             properties = dict()
             for key, value in feature['properties'].items():
-                log.debug(f"{key} = {value}")
-                # if key in self.keep:
-                if False:
+                # log.debug(f"{key} = {value}")
+                # FIXME: this is a hack!
+                if True:
                     if key == 'tags':
                         for k, v in value.items():
                             if k[:4] == "name":
@@ -166,8 +166,13 @@ class FilterData(object):
                     else:
                         if key == 'osm_id':
                             properties['id'] = value
+                            properties['title'] = value
+                            properties['label'] = value
                         else:
                             properties[key] = value
+                            if key[:4] == "name":
+                                properties['title'] = value
+                                properties['label'] = value
                 else:
                     if key in keep:
                         properties[key] = value
