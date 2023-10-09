@@ -77,17 +77,12 @@ class MakeExtract(object):
             (MakeExtract): An instance of this object
         """
         self.db = PostgresClient(uri, f"{rootdir}/data_models/{config}")
-        # path = Path(config)
-        # if path.suffix == '.yaml':
-        #     self.qc.parseYaml(f"{rootdir}/data_models/{config}")
-        # else:
-        #     self.qc.parseJson(f"{rootdir}/data_models/{config}")
 
         # Read in the XLSFile
         if "/" in xlsfile:
             file = open(xlsfile, "rb")
         else:
-            file = open(f"{rootdir}/{xlsfile}", "rb")
+            file = open(f"{rootdir}/xlsforms/{xlsfile}", 'rb')
         self.xls = BytesIO(file.read())
 
     def getFeatures(
@@ -134,7 +129,7 @@ class MakeExtract(object):
         """
         log.debug("Cleaning features")
         cleaned = FilterData()
-        cleaned.parse(self.xls, self.db.qc.config)
+        cleaned.parse(self.xls)
         new = cleaned.cleanData(collection)
         # jsonfile = open(filespec, "w")
         # dump(new, jsonfile)

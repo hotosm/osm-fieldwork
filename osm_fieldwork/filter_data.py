@@ -157,10 +157,11 @@ class FilterData(object):
         for feature in indata["features"]:
             log.debug(f"FIXME0: {feature}")
             properties = dict()
-            for key, value in feature["properties"].items():
-                log.debug(f"FIXME1: {key} = {value}")
-                if key in self.qc["keep"]:
-                    if key == "tags":
+            for key, value in feature['properties'].items():
+                # log.debug(f"{key} = {value}")
+                # FIXME: this is a hack!
+                if True:
+                    if key == 'tags':
                         for k, v in value.items():
                             if k[:4] == "name":
                                 properties["title"] = value[k]
@@ -168,10 +169,15 @@ class FilterData(object):
                             else:
                                 properties[k] = v
                     else:
-                        if key == "osm_id":
-                            properties["id"] = value
+                        if key == 'osm_id':
+                            properties['id'] = value
+                            properties['title'] = value
+                            properties['label'] = value
                         else:
                             properties[key] = value
+                            if key[:4] == "name":
+                                properties['title'] = value
+                                properties['label'] = value
                 else:
                     log.debug(f"FIXME2: {key} = {value}")
                     if key in keep:
