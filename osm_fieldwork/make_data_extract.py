@@ -30,15 +30,12 @@ from geojson import FeatureCollection, dump
 from osm_rawdata.postgres import PostgresClient
 from shapely.geometry import shape
 
+from osm_fieldwork.data_models import data_models_path
 from osm_fieldwork.filter_data import FilterData
+from osm_fieldwork.xlsforms import xlsforms_path
 
 # Instantiate logger
 log = logging.getLogger(__name__)
-
-# Find the other files for this project
-import osm_fieldwork as of
-
-rootdir = of.__path__[0]
 
 
 def getChoices():
@@ -48,8 +45,8 @@ def getChoices():
         (list): A list of the XLSForms included in osm-fieldwork
     """
     data = dict()
-    if os.path.exists(f"{rootdir}/data_models/category.yaml"):
-        file = open(f"{rootdir}/data_models/category.yaml", "r").read()
+    if os.path.exists(f"{data_models_path}/category.yaml"):
+        file = open(f"{data_models_path}/category.yaml", "r").read()
         contents = yaml.load(file, Loader=yaml.Loader)
         for entry in contents:
             [[k, v]] = entry.items()
@@ -76,13 +73,13 @@ class MakeExtract(object):
         Returns:
             (MakeExtract): An instance of this object
         """
-        self.db = PostgresClient(dburi, f"{rootdir}/data_models/{config}")
+        self.db = PostgresClient(dburi, f"{data_models_path}/{config}")
 
         # Read in the XLSFile
         if "/" in xlsfile:
             file = open(xlsfile, "rb")
         else:
-            file = open(f"{rootdir}/xlsforms/{xlsfile}", 'rb')
+            file = open(f"{xlsforms_path}/{xlsfile}", "rb")
         self.xls = BytesIO(file.read())
 
     def getFeatures(

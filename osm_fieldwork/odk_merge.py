@@ -32,15 +32,11 @@ from shapely.geometry import mapping, shape
 from thefuzz import fuzz
 
 from osm_fieldwork.convert import escape
+from osm_fieldwork.data_models import data_models_path
 from osm_fieldwork.osmfile import OsmFile
 
 # Instantiate logger
 log = logging.getLogger(__name__)
-
-# Find the other files for this project
-import osm_fieldwork as of
-
-rootdir = of.__path__[0]
 
 # The number of threads is based on the CPU cores
 info = get_cpu_info()
@@ -76,7 +72,7 @@ class OdkMerge(object):
             # self.source = "underpass" is not support yet
             # Each thread needs it's own connection to postgres to avoid problems.
             for _thread in range(0, cores + 1):
-                db = PostgresClient(uri, f"{rootdir}/data_models/{config}")
+                db = PostgresClient(uri, f"{data_models_path}/{config}")
                 self.postgres.append(db)
                 if boundary:
                     self.clip(boundary, db)

@@ -28,11 +28,9 @@ import pandas as pd
 from geojson import Feature, FeatureCollection
 from osm_rawdata.config import QueryConfig
 
-# Find the other files for this project
-import osm_fieldwork as of
+# from osm_fieldwork import package_root
+# from osm_fieldwork.data_models import data_models_path
 from osm_fieldwork.xlsforms import xlsforms_path
-
-rootdir = of.__path__[0]
 
 # Instantiate logger
 log = logging.getLogger(__name__)
@@ -157,11 +155,11 @@ class FilterData(object):
         for feature in indata["features"]:
             log.debug(f"FIXME0: {feature}")
             properties = dict()
-            for key, value in feature['properties'].items():
+            for key, value in feature["properties"].items():
                 # log.debug(f"{key} = {value}")
                 # FIXME: this is a hack!
                 if True:
-                    if key == 'tags':
+                    if key == "tags":
                         for k, v in value.items():
                             if k[:4] == "name":
                                 properties["title"] = value[k]
@@ -169,15 +167,15 @@ class FilterData(object):
                             else:
                                 properties[k] = v
                     else:
-                        if key == 'osm_id':
-                            properties['id'] = value
-                            properties['title'] = value
-                            properties['label'] = value
+                        if key == "osm_id":
+                            properties["id"] = value
+                            properties["title"] = value
+                            properties["label"] = value
                         else:
                             properties[key] = value
                             if key[:4] == "name":
-                                properties['title'] = value
-                                properties['label'] = value
+                                properties["title"] = value
+                                properties["label"] = value
                 else:
                     log.debug(f"FIXME2: {key} = {value}")
                     if key in keep:
