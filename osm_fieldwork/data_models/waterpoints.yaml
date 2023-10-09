@@ -5,9 +5,8 @@ from:
   - ways_poly
 where:
   tags:
-    - join_or:
-        - {
-            drinking_water: not null,
-            amenity: [drinking_water, water_point],
-            man_made: [water_tap],
-          }
+    - drinking_water: not null
+      amenity:
+        - drinking_water
+        - water_point
+      man_made: water_tap

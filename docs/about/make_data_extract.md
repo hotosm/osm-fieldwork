@@ -24,15 +24,15 @@ ways, but needed to be automated to be used for FMTM.
 
 ## Examples
 
-Make\*data_extract uses a Postgres database to extract OSM data. By
+Make\*data*extract uses a Postgres database to extract OSM data. By
 default, the program uses **localhost** as the database host. If you
 use \**underpass*as the data base name, this will remotely access the
 [Humanitarian OpenStreetMap Team(HOT)](https://www.hotosm.org)
 maintained OSM database that covers the entire planet, and is updated
 every minute. The name of the database can be specified using the
-_--uri\*\* option. The program extracts the buildings category of OSM
+*--uri\*\* option. The program extracts the buildings category of OSM
 data by default. The size of the extracted data can be limited using
-the _--boundary\* option. The program outputs the data in GeoJSON
+the \_--boundary\* option. The program outputs the data in GeoJSON
 format.
 
 For raw OSM data, the existing country data is downloaded from [GeoFabrik](https://download.geofabrik.de/index.html), and imported using a

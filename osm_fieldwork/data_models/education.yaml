@@ -5,18 +5,14 @@ from:
   - ways_poly
 where:
   tags:
-    - join_or:
-        - {
-            amenity:
-              [
-                college,
-                indergarten,
-                school,
-                music_school,
-                language_school,
-                university,
-              ],
-          }
+    - amenity:
+        - college
+        - indergarten
+        - school
+        - music_school
+        - language_school
+        - university
+
 keep:
   - wheelchar
   - religion
