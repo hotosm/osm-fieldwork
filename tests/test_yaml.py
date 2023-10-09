@@ -19,10 +19,10 @@
 #
 
 import argparse
+import logging
 
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
-import logging
 
 log = logging.getLogger(__name__)
 

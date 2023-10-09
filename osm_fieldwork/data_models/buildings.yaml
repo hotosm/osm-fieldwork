@@ -9,16 +9,16 @@ where:
     - join_or:
         - { building: not null, amenity: not null, tourism: not null }
 keep:
-    - building
-    - building:levels
-    - building:material
-    - roof:material
-    - roof:shape
-    - roof:levels
-    - cusine
-    - amenity
-    - convenience
-    - diesel
-    - version
-    - name
-    - name:en
+  - building
+  - building:levels
+  - building:material
+  - roof:material
+  - roof:shape
+  - roof:levels
+  - cusine
+  - amenity
+  - convenience
+  - diesel
+  - version
+  - name
+  - name:en
