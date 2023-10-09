@@ -1,3 +1,21 @@
+## 0.3.6rc3 (2023-10-09)
+
+### Fix
+
+- Merge in rawdata branch
+- Drop extraneous parameter
+- Set title and label always
+- Use the right path to the xforms library
+- Add name and name:em to keep
+- xlocation accepted in the conflation if present
+- Update for current reality, andd a few more programs
+- Update doc to match code changes
+- Add make_data_extract API doc
+- Improve how the boundary gets parese dand passed as a parameter
+- Use the new config class instead of parsing the YAML file
+- ikport uriParser
+- Enale logging
+
 ## 0.3.6rc2 (2023-09-11)
 
 ### Fix
