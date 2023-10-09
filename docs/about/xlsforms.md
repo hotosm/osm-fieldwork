@@ -127,11 +127,11 @@ are required to exist in each sheet, the rest are optional.
 
 ### [Survey Sheet](https://xlsform.org/en/#the-survey-worksheet)
 
-  - This sheet contains all the questions used for collecting data,
-    and refers to the actual values for each question which are on the
-    _choices_ sheet.
+- This sheet contains all the questions used for collecting data,
+  and refers to the actual values for each question which are on the
+  _choices_ sheet.
 
-  These are the mandatory column headers in the survey sheet:
+These are the mandatory column headers in the survey sheet:
 
 - **Type** - The type of question, the most common ones are **text**,
   **select_one**, **select_multiple.**, and **select_from_file** The
@@ -175,6 +175,7 @@ the mapper to enter an interger, text, or select one or multiple items
 from a menu.
 
 ### [Choices Sheet](https://xlsform.org/en/#the-choices-worksheet)
+
 The choices sheet is used to define the values used for the
 **select_one** and **select_multiple** questions on the **survey**
 sheet.
@@ -197,7 +198,6 @@ contains the version of the sheet, and the title of the input
 form. The version is used by the server and the mobile apps to track
 changes in the data format, so it should always be updated after
 changes are made.
-
 
 - **form_title** - This is what is displayed in ODK Central
 - **form_id** - This is a unique ID to identify this XForm.
@@ -241,12 +241,12 @@ ones.
   multiple questions are on the same screen.
 - The screen can be scrolled if there are more input fields than fit.
 
-| type               | name    | label           | appearance  |
-| ------------------ | ------- | --------------- | ------------|
-| begin_group        | agroup  | Amenity Details | field-list  |
-| select_one text    | name    | Amenity Name    | minimal     |
-| select_one amenity | amenity | Type of Amenity | minimal     |
-| end_group          |         |                 |             |
+| type               | name    | label           | appearance |
+| ------------------ | ------- | --------------- | ---------- |
+| begin_group        | agroup  | Amenity Details | field-list |
+| select_one text    | name    | Amenity Name    | minimal    |
+| select_one amenity | amenity | Type of Amenity | minimal    |
+| end_group          |         |                 |            |
 
 # Conditionals
 
@@ -486,5 +486,5 @@ the OMK app anymore.
 
 Since mobile data collection often involves gathering many of the same types of data,
 setting defaults helps reduce the number of user actions needed to collect data.
-When collecting multiples of the same type of data,good defaults can record data 
+When collecting multiples of the same type of data,good defaults can record data
 even when only the location has changed.

@@ -65,7 +65,7 @@ same name as the filename. It is prefered to have the name using the
 actual OSM tag instead of the file. If you get this error, you need to
 rename the GeoJson file.
 
-	Duplicate type: 'choice', Duplicate URI: 'None', Duplicate context: 'survey'.
+    Duplicate type: 'choice', Duplicate URI: 'None', Duplicate context: 'survey'.
 
 ## Naming Conflicts
 
@@ -78,7 +78,7 @@ the survey sheet. The name column in the survey sheet can then be just
 _healthcare_, which will translate directly into its OSM tag
 equivalent. For this example note that the GeoJson file must not be
 named healthcare.geojson, because it'll conflict with
-__healthcare_. You can also avoid this by having the calculation in
+\__healthcare_. You can also avoid this by having the calculation in
 the same row as the survey question and avoiding the variable. If you
 do that, add a trigger for the geojson file, and it'll populate the
 default value for the question.
@@ -90,7 +90,7 @@ is defined, and anything outside of that will cause an
 error. Therefore, it's important to adhere to validated data models to
 avoid introducing errors or inconsistencies into the dataset. If the
 SQL query returns columns that aren't compatible with the XLSForm,
-XPATH errors will occur in ODK Collect. 
+XPATH errors will occur in ODK Collect.
 
 Something else to consider is the frequency of the tags and
 values. Since almost anything can be added to OSM, there are a lot of
@@ -133,21 +133,21 @@ OSM data to set the survey question default value.
 When working with external data, the _map value_ in the _appearance_
 column of the survey sheet is often used. However, this can slow down
 the debugging process. To make it more efficient, you can turn off the
-map values and use the select menu instead. That works especially well 
+map values and use the select menu instead. That works especially well
 if you have a small data file for testing, because then it's easy to
 cycle between them.
 
 To use the placement map, here's an example.
 
-| type                                    | name     | label              | appearance |
-| --------------------------------------- | -------- | ------------------ | ---------- |
+| type                                        | name     | label              | appearance |
+| ------------------------------------------- | -------- | ------------------ | ---------- |
 | select_one_from_file **camp_sites.geojson** | existing | Existing Campsites | map        |
 
 And an example where the values in the data file are an inline select
 menu instead.
 
-| type                                    | name     | label              | appearance |
-| --------------------------------------- | -------- | ------------------ | ---------- |
+| type                                        | name     | label              | appearance |
+| ------------------------------------------- | -------- | ------------------ | ---------- |
 | select_one_from_file **camp_sites.geojson** | existing | Existing Campsites | minimal    |
 
 ### Display calculated values
@@ -177,9 +177,9 @@ Collect, you can also reference it in the same row. This saves
 potential naming conflicts, although is why I use an **x** prefix for
 gobal values.
 
-| type      | name      | label            | calculation                                               | trigger     |
-| --------- | --------- | ---------------- | --------------------------------------------------------- | ----------- |
-| text      | name      | Business Name    | instance(“camp_sites”)/root/item[id=${existing}]/name     | ${existing} |
+| type | name | label         | calculation                                           | trigger     |
+| ---- | ---- | ------------- | ----------------------------------------------------- | ----------- |
+| text | name | Business Name | instance(“camp_sites”)/root/item[id=${existing}]/name | ${existing} |
 
 ### Error Dialog
 

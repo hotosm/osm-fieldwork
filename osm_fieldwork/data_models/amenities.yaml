@@ -1,15 +1,31 @@
 select:
-    osm_id: id
+  osm_id: id
 from:
-    - nodes
-    - ways_poly
+  - nodes
+  - ways_poly
 where:
   tags:
-    - join_or:
-        - { amenity: [brewery, cafe, bar, pub, fuel, fire_station, library,
-    townhall, courthouse, hospital, restaurant, clinic], shop:
-    [alcohol, bakery, car_parts, hardware, convienience, general],
-    cusine: not null}
+    - amenity:
+        - brewery
+        - cafe
+        - bar
+        - pub
+        - fuel
+        - fire_station
+        - library
+        - townhall
+        - courthouse
+        - hospital
+        - restaurant
+        - clinic
+      shop:
+        - alcohol
+        - bakery
+        - car_parts
+        - hardware
+        - convienience
+        - general
+      cuisine: not null
 
 keep:
   - leisure
@@ -23,7 +39,7 @@ keep:
   - parking
   - amenity
   - shop
-  - cusine
+  - cuisine
   - amenity
   - convenience
   - diesel

@@ -17,28 +17,30 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-import sys
-import logging
-import xmltodict
 import argparse
+import logging
 import os
 import re
+import sys
 
 # from shapely.geometry import Point, LineString, Polygon
 from collections import OrderedDict
 
+import xmltodict
+
 # Logging
 log = logging.getLogger(__name__)
 
+
 class ODKInstance(object):
-    def __init__(self,
-                 filespec: str = None,
-                 data: str = None,
-                 ):
-        """
-        This class imports a ODK Instance file, which is in XML into a data
+    def __init__(
+        self,
+        filespec: str = None,
+        data: str = None,
+    ):
+        """This class imports a ODK Instance file, which is in XML into a data
         structure.
-        
+
         Args:
             filespec (str): The filespec to the ODK XML Instance file
             data (str): The XML data
@@ -53,15 +55,15 @@ class ODKInstance(object):
         elif data:
             self.data = self.parse(data)
 
-    def parse(self,
-              filespec: str,
-              data: str = None,
-              ):
-        """
-        Import an ODK XML Instance file ito a data structure. The input is
+    def parse(
+        self,
+        filespec: str,
+        data: str = None,
+    ):
+        """Import an ODK XML Instance file ito a data structure. The input is
         either a filespec to the Instance file copied off your phone, or
         the XML that has been read in elsewhere.
-        
+
         Args:
             filespec (str): The filespec to the ODK XML Instance file
             data (str): The XML data
@@ -79,16 +81,17 @@ class ODKInstance(object):
             xml = data
         doc = xmltodict.parse(xml)
         import json
+
         json.dumps(doc)
         tags = dict()
         data = doc["data"]
         for i, j in data.items():
-            if j is None or i == 'meta':
+            if j is None or i == "meta":
                 continue
             print(f"tag: {i} == {j}")
             pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
             if pat.match(str(j)):
-                if i == 'warmup':
+                if i == "warmup":
                     continue
                 gps = j.split(" ")
                 tags["lat"] = gps[0]
@@ -119,12 +122,12 @@ class ODKInstance(object):
             rows.append(tags)
         return rows
 
+
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
-    parser.add_argument("-i", "--infile", required=True, help="instance data in XML format"
-    )
+    parser.add_argument("-i", "--infile", required=True, help="instance data in XML format")
     args = parser.parse_args()
 
     os.path.basename(args.infile)
@@ -135,9 +138,7 @@ if __name__ == "__main__":
 
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         log.addHandler(ch)
 

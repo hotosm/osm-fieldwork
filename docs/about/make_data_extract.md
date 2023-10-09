@@ -18,31 +18,30 @@ ways, but needed to be automated to be used for FMTM.
      --geojson (-g) GEOJSON    Name of the GeoJson output file
      --boundary (-b) BOUNDARY  Boundary polygon to limit the data size
      --category (-c) CATEGORY  Which category to extract
-	 --uri (-u) URI            Database URI
-	 --xlsfile (-x) XLSFILE    An XLSForm in the library
-	 --list (-l) List          List all XLSForms in the library
+     --uri (-u) URI            Database URI
+     --xlsfile (-x) XLSFILE    An XLSForm in the library
+     --list (-l) List          List all XLSForms in the library
 
 ## Examples
 
-Make_data_extract uses a Postgres database to extract OSM data. By
+Make\*data*extract uses a Postgres database to extract OSM data. By
 default, the program uses **localhost** as the database host. If you
-use **underpass* as the data base name, this will remotely access the
+use \**underpass*as the data base name, this will remotely access the
 [Humanitarian OpenStreetMap Team(HOT)](https://www.hotosm.org)
 maintained OSM database that covers the entire planet, and is updated
 every minute. The name of the database can be specified using the
-*--uri*_ option. The program extracts the buildings category of OSM
+*--uri\*\* option. The program extracts the buildings category of OSM
 data by default. The size of the extracted data can be limited using
-the _--boundary_ option. The program outputs the data in GeoJSON
+the \_--boundary\* option. The program outputs the data in GeoJSON
 format.
 
-For raw OSM data, the existing country data is downloaded from [GeoFabrik](
-https://download.geofabrik.de/index.html), and imported using a
+For raw OSM data, the existing country data is downloaded from [GeoFabrik](https://download.geofabrik.de/index.html), and imported using a
 modified schema for osm2pgsql. First create the database and install
 two postgres extensions:
 
-	# createdb nigeria
-	psql -d nigeria -c "CREATE EXTENSION postgis"
-	psql -d nigeria -c "CREATE EXTENSION hstore"
+    # createdb nigeria
+    psql -d nigeria -c "CREATE EXTENSION postgis"
+    psql -d nigeria -c "CREATE EXTENSION hstore"
 
 And then import the OSM data.
 
@@ -54,8 +53,7 @@ part of the [Underpass
 project](https://hotosm.github.io/underpass/index.html). It uses a
 more compressed and efficient data schema.
 
-
-### Example:
+### Example
 
     ./make_data_extract.py -u colorado --boundary mycounty.geojson -g mycounty_buildings.geojson
 
@@ -65,7 +63,7 @@ extracted data to the boundary specified in the `mycounty.geojson`
 file. The program outputs the data in GeoJSON format to a file named
 `mycounty_buildings.geojson`.
 
-### Boundary:
+### Boundary
 
 The `--boundary` option can be used to specify a polygon boundary to
 limit the size of the extracted data. The boundary has to be in
@@ -81,13 +79,13 @@ limits the size of the extracted data to the boundary specified in the
 `mycounty.geojson` file. The program outputs the data in GeoJSON
 format to a file named `mycounty_healtcare.geojson`.
 
-### Category:
+### Category
 
 The `--category` option can be used to specify which category of OSM
 data to extract. The program supports any category in the [xlsform
 library](https://github.com/hotosm/osm-fieldwork/tree/main/osm_fieldwork/xlsforms)
 
-### Example:
+### Example
 
     ./make_data_extract.py -u underpass --boundary mycounty.geojson --category amenities -g mycounty_amenities.geojson
 
@@ -96,7 +94,7 @@ of OSM data within the boundary specified in the `mycounty.geojson`
 file. The program outputs the data in GeoJSON format to a file named
 `mycounty_amenities.geojson`.
 
-### Output File Format:
+### Output File Format
 
 The program outputs the extracted OSM data in GeoJSON format. The name
 of the output file can be specified using the `--geojson option`. If

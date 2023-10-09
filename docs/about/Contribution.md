@@ -18,10 +18,10 @@ The [issue queue](https://github.com/hotosm/osm_fieldwork/issues) is the best wa
 
 Create pull requests (PRs) for changes that you think are needed. We would really appreciate your help!
 
-## Useful Resources for Contribution 
+## Useful Resources for Contribution
+
 - [Troubleshooting](https://github.com/hotosm/osm-fieldwork/wiki/troubleshooting)
 - [FAQs](https://github.com/hotosm/osm-fieldwork/wiki/FAQ)
-
 
 ## :handshake: Thank you
 

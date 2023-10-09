@@ -8,8 +8,9 @@ makes them all readily available for navigation. For some features
 this program also adds Osmand styling to change the displayed icons
 and colors.
 
-## options:
-	-h, --help            show this help message and exit
-	-v, --verbose         verbose output
-	-i INFILE, --infile INFILE
+## options
+
+    -h, --help            show this help message and exit
+    -v, --verbose         verbose output
+    -i INFILE, --infile INFILE
                         The data extract

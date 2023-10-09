@@ -15,17 +15,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment:
+      name: "test"
+    container:
+      image: ghcr.io/hotosm/osm-fieldwork:ci
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Start CI Container
-        run: >
-          docker run -d --name fmtm_pytest
-          -v "$GITHUB_WORKSPACE/osm_fieldwork:/home/appuser/.local/lib/python3.10/site-packages/osm_fieldwork"
-          -v "$GITHUB_WORKSPACE/tests:/data/tests"
-          ghcr.io/hotosm/osm-fieldwork:ci
-          sleep infinity
-
-      - name: Run PyTest as appuser
-        run: docker exec fmtm_pytest gosu appuser pytest
+      - uses: actions/checkout@v4
+      - name: Run pytest
+        run: |
+          pytest

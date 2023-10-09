@@ -20,11 +20,12 @@
 #
 
 import argparse
-import os
-import logging
-import sys
-import sqlite3
 import locale
+import logging
+import os
+import sqlite3
+import sys
+
 import mercantile
 
 # Instantiate logger
@@ -32,21 +33,21 @@ log = logging.getLogger(__name__)
 
 
 class MapTile(object):
-    def __init__(self,
-                 x: int = None,
-                 y: int = None,
-                 z: int = None,
-                 filespec: str = None,
-                 tile: 'MapTile' = None,
-                 suffix="jpg",
-                 ):
-        """
-        This is a simple wrapper around mercantile.tile to associate a
+    def __init__(
+        self,
+        x: int = None,
+        y: int = None,
+        z: int = None,
+        filespec: str = None,
+        tile: "MapTile" = None,
+        suffix="jpg",
+    ):
+        """This is a simple wrapper around mercantile.tile to associate a
         filespec with the grid coordinates.
 
         Args:
             x (int): The X index for this tile
-            y (int): The Y index for this tile 
+            y (int): The Y index for this tile
             z (int): The Z index for this tile if there is one
             filespec (str): The location of this within the map tile cache
             tile (MapTile): Make a copy of this object
@@ -74,11 +75,8 @@ class MapTile(object):
             self.x = tmp[2]
             self.y = tmp[1].replace("." + suffix, "")
 
-    def readImage(self,
-                    base: str = "./"
-                  ):
-        """
-        Read a map tile out of the disk based map tile cache
+    def readImage(self, base: str = "./"):
+        """Read a map tile out of the disk based map tile cache.
 
         Args:
             base (str): The top level directory for the map tile cache
@@ -91,7 +89,7 @@ class MapTile(object):
             self.blob = file.read(size)
 
     def dump(self):
-        """Dump internal data structures, for debugging purposes only"""    
+        """Dump internal data structures, for debugging purposes only."""
         if self.z:
             print("Z: %r" % self.z)
         if self.x:
@@ -104,12 +102,12 @@ class MapTile(object):
 
 
 class DataFile(object):
-    def __init__(self,
-                dbname: str = None,
-                suffix: str = "jpg",
-                ):
-        """
-        Handle the sqlite3 database file
+    def __init__(
+        self,
+        dbname: str = None,
+        suffix: str = "jpg",
+    ):
+        """Handle the sqlite3 database file.
 
         Args:
             dbname (str): The name of the output sqlite file
@@ -127,28 +125,26 @@ class DataFile(object):
         self.toplevel = None
         self.suffix = suffix
 
-    def addBounds(self,
-                  bounds: int,
-                  ):
-        """
-        Mbtiles has a bounds field, Osmand doesn't
+    def addBounds(
+        self,
+        bounds: int,
+    ):
+        """Mbtiles has a bounds field, Osmand doesn't.
 
         Args:
             bounds (int): The bounds value for ODK Collect mbtiles
         """
         entry = str(bounds)
         entry = entry[1 : len(entry) - 1].replace(" ", "")
-        self.cursor.execute(
-            f"INSERT INTO metadata (name, value) VALUES('bounds', '{entry}')"
-        )
+        self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{entry}')")
         # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('minzoom', '9')")
         # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('maxzoom', '15')")
 
-    def createDB(self,
-                 dbname: str,
-                 ):
-        """
-        Create and sqlitedb in either mbtiles or Osman sqlitedb format
+    def createDB(
+        self,
+        dbname: str,
+    ):
+        """Create and sqlitedb in either mbtiles or Osman sqlitedb format.
 
         Args:
             dbname (str): The filespec of the sqlite output file
@@ -161,38 +157,22 @@ class DataFile(object):
         self.db = sqlite3.connect(dbname)
         self.cursor = self.db.cursor()
         if suffix == ".mbtiles":
-            self.cursor.execute(
-                "CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob)"
-            )
-            self.cursor.execute(
-                "CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row)"
-            )
+            self.cursor.execute("CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob)")
+            self.cursor.execute("CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row)")
             self.cursor.execute("CREATE TABLE metadata (name text, value text)")
             # These get populated later
             name = dbname
             description = "Created by osm_fieldwork/basemapper.py"
             self.cursor.execute("CREATE UNIQUE INDEX metadata_idx  ON metadata (name)")
-            self.cursor.execute(
-                "INSERT INTO metadata (name, value) VALUES('version', '1.1')"
-            )
-            self.cursor.execute(
-                "INSERT INTO metadata (name, value) VALUES('type', 'baselayer')"
-            )
-            self.cursor.execute(
-                f"INSERT INTO metadata (name, value) VALUES('name', '{name}')"
-            )
-            self.cursor.execute(
-                f"INSERT INTO metadata (name, value) VALUES('description', '{description}')"
-            )
+            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('version', '1.1')")
+            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('type', 'baselayer')")
+            self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('name', '{name}')")
+            self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('description', '{description}')")
             # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{bounds}')")
-            self.cursor.execute(
-                "INSERT INTO metadata (name, value) VALUES('format', 'jpg')"
-            )
+            self.cursor.execute("INSERT INTO metadata (name, value) VALUES('format', 'jpg')")
         elif suffix == ".sqlitedb":
             # s is always 0
-            self.cursor.execute(
-                "CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));"
-            )
+            self.cursor.execute("CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));")
             self.cursor.execute("CREATE INDEX IND on tiles (x,y,z,s)")
             # Info is simple "2|4" for example, it gets populated later
             self.cursor.execute("CREATE TABLE info (maxzoom Int, minzoom Int);")
@@ -202,12 +182,12 @@ class DataFile(object):
         self.db.commit()
         logging.info("Created database file %s" % dbname)
 
-    def writeTiles(self,
-                   tiles: list,
-                   base: str ="./",
-                   ):
-        """
-        Write map tiles into the to the map tile cache
+    def writeTiles(
+        self,
+        tiles: list,
+        base: str = "./",
+    ):
+        """Write map tiles into the to the map tile cache.
 
         Args:
             tiles (list): The map tiles to write to the map tile cache
@@ -219,11 +199,11 @@ class DataFile(object):
             # xyz.dump()
             self.writeTile(xyz)
 
-    def writeTile(self,
-                  tile: MapTile,
-                  ):
-        """
-        Write a map tile into the sqlite database file
+    def writeTile(
+        self,
+        tile: MapTile,
+    ):
+        """Write a map tile into the sqlite database file.
 
         Args:
             tile (MapTile): The map tile to write to the file
@@ -250,15 +230,12 @@ class DataFile(object):
 
         self.db.commit()
 
+
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
-    parser = argparse.ArgumentParser(
-        description="Create an mbtiles basemap for ODK Collect"
-    )
+    parser = argparse.ArgumentParser(description="Create an mbtiles basemap for ODK Collect")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument(
-        "-d", "--database", default="test.mbtiles", help="Database file name"
-    )
+    parser.add_argument("-d", "--database", default="test.mbtiles", help="Database file name")
     args = parser.parse_args()
 
     # if verbose, dump to the terminal.
@@ -266,9 +243,7 @@ if __name__ == "__main__":
         log.setLevel(logging.DEBUG)
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(threadName)10s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         log.addHandler(ch)
 

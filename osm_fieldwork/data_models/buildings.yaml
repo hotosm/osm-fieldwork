@@ -1,22 +1,26 @@
 select:
-    - osm_id: id
-    - version
+  - osm_id: id
+  - version
 from:
-    - nodes
-    - ways_poly
+  - nodes
+  - ways_poly
 where:
   tags:
-    - join_or:
-        - { building: not null, amenity: not null, tourism: not null }
+    - building: not null
+      amenity: not null
+      tourism: not null
+
 keep:
-    - building
-    - building:levels
-    - building:material
-    - roof:material
-    - roof:shape
-    - roof:levels
-    - cusine
-    - amenity
-    - convenience
-    - diesel
-    - version
+  - building
+  - building:levels
+  - building:material
+  - roof:material
+  - roof:shape
+  - roof:levels
+  - cuisine
+  - amenity
+  - convenience
+  - diesel
+  - version
+  - name
+  - name:en

@@ -1,12 +1,18 @@
 select:
-    osm_id: id
+  osm_id: id
 from:
-    - nodes
-    - ways_poly
+  - nodes
+  - ways_poly
 where:
-    tags:
-        - join_or:
-            - { amenity: [college, indergarten, school, music_school, language_school, university]}
+  tags:
+    - amenity:
+        - college
+        - indergarten
+        - school
+        - music_school
+        - language_school
+        - university
+
 keep:
   - wheelchar
   - religion
@@ -18,5 +24,3 @@ keep:
   - building:lateral:system
   - building:lateral:material
   - building:levels:underground
-
-  

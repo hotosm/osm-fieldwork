@@ -19,8 +19,7 @@ talk from SOTM-US 2022 titled [OSM For
 Firefighting](https://www.youtube.com/watch?v=qgk9al1rluE). Much of
 the tech and usage is explained in these [tech
 briefs](https://www.senecass.com/projects/Mapping/tech/). Currently
-these are now part of the backend for the [Field Mapping Tasking Manager](
-https://github.com/hotosm/fmtm/wiki) project at
+these are now part of the backend for the [Field Mapping Tasking Manager](https://github.com/hotosm/fmtm/wiki) project at
 [HOT](https://www.hotosm.org).
 
 ## Installation
@@ -45,25 +44,30 @@ The config file is uswd to store the credentials to access an ODK
 Central server. You must have an account on the Central server of
 course for this to work. That file looks like this:
 
-	url=https://foo.org
-	user=foo@bar.org
-	passwd=arfood
+    url=https://foo.org
+    user=foo@bar.org
+    passwd=arfood
 
 #### Environment Variables
 
 **LOG_LEVEL**
+
 > If present, will change the log level. Defaults to DEBUG.
 
 **ODK_CENTRAL_URL**
+
 > The URL for an ODKCentral server to connect to.
 
 **ODK_CENTRAL_USER**
+
 > The user for ODKCentral.
 
 **ODK_CENTRAL_PASSWD**
+
 > The password for ODKCentral.
 
 **ODK_CENTRAL_SECURE**
+
 > If set to False, will allow insecure connections to the ODKCentral API. Else defaults to True.
 
 ## Using the Container Image
@@ -101,7 +105,7 @@ one is suitable for OSM,and is in OSM XML format. The other
 No converted data should ever be uploaded to OSM without validating
 the conversion in JOSM. To do efficient conversion from ODK to OSM,
 it's best to use the XLSForm library as templates, as everything is
-designed to work together. 
+designed to work together.
 
 ## basemapper.py
 
@@ -124,7 +128,7 @@ This program makes data extracts from
 [OpenStreetMap](https://www.openstreetmap.org) data. Multiple input
 sources are supported, a local postgresql database, the HOT maintained
 [Underpass](https://galaxy.hotosm.org/) database, or
-[Overpass](https://overpass-turbo.eu). 
+[Overpass](https://overpass-turbo.eu).
 
 ## odk2csv.py
 
@@ -156,16 +160,16 @@ Collect.
 # Best Practices
 
 To ensure the quality of your converted data, here are some best
-practices to follow: 
+practices to follow:
 
 - Always validate your conversion in JOSM before uploading to OpenStreetMap.
 
 - Use the XLSForm library as templates to ensure that your ODK Collect
-data is compatible with the conversion process. 
+  data is compatible with the conversion process.
 
 - If you're having trouble with the conversion process, try using the
-utility programs included with Osm-Fieldwork to troubleshoot common
-issues. 
+  utility programs included with Osm-Fieldwork to troubleshoot common
+  issues.
 
 By following these best practices and using the utility programs
 included with Osm-Fieldwork, you can effectively process data collection
@@ -195,25 +199,26 @@ user interface. With XLSForms, you can easily design and test forms on
 your computer, then deploy them to mobile devices for data collection
 using ODK Collect or other data collection tools. XLSForms use a
 simple and structured format, making it easy for you to share and
-collaborate on form designs with your team or other organizations. 
+collaborate on form designs with your team or other organizations.
 
 ### Using the XLSForm Library with Osm-Fieldwork
+
 The XLSForms in the XForms directory of the XLSForm Library have been
 designed to support the HOT data models and have an efficient mapper
 data flow. These forms also allow for editing of existing OSM data and
 support the data models, specifying the preferred tag values for each
 data item with the goal of both tag completeness and tag correctness.
 
-### Here are some examples of how to use the XLSForm Library with Osm-Fieldwork:
+### Here are some examples of how to use the XLSForm Library with Osm-Fieldwork
 
 - Download an XLSForm from the XForms directory:
 
-	wget https://github.com/hotosm/xlsform/raw/master/XForms/buildings.xls
+  wget <https://github.com/hotosm/xlsform/raw/master/XForms/buildings.xls>
 
 - Convert the XForm to OSM XML using CSVDump:
 
 - Use the resulting OSM XML file with JOSM or other OSM editors to
-validate and edit the data before uploading it to OpenStreetMap. 
+  validate and edit the data before uploading it to OpenStreetMap.
 
 ### Conclusion
 
@@ -222,7 +227,7 @@ in humanitarian data collection, as it provides a collection of
 pre-designed forms that are optimized for efficient mapper data flow
 and tag completeness/correctness. By using the XLSForm Library with
 Osm-Fieldwork, you can streamline your data collection process and ensure
-the quality of your data. 
+the quality of your data.
 
 Osm-Fieldwork is a powerful tool for processing data collection from
 OpenDataKit into OpenStreetMap format. By following the best practices

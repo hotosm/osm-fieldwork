@@ -19,15 +19,15 @@
 #
 
 import argparse
-import sys
-import os
+import logging
+
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
 
+log = logging.getLogger(__name__)
+
 parser = argparse.ArgumentParser(description="Read and parse a YAML file")
-parser.add_argument(
-    "--infile", help="The YAML input file"
-)
+parser.add_argument("--infile", help="The YAML input file")
 args = parser.parse_args()
 
 path = xlsforms_path.replace("/xlsforms", "")
@@ -35,42 +35,47 @@ infile = f"{path}/xforms.yaml"
 data = YamlFile(infile)
 # data.dump()
 
+
 def test_load():
-    """See if the file got loaded"""
+    """See if the file got loaded."""
     hits = 0
     if len(data.yaml.keys()) > 0:
         hits = 1
-    if len(data.yaml['convert']) > 0:
+    if len(data.yaml["convert"]) > 0:
         hits += 1
-    if len(data.yaml['ignore']) > 0:
+    if len(data.yaml["ignore"]) > 0:
         hits += 1
-    if len(data.yaml['private']) > 0:
+    if len(data.yaml["private"]) > 0:
         hits += 1
     assert hits == 4
 
+
 def test_good():
     hits = 0
-    if data.convertData('amenity'):
+    if data.convertData("amenity"):
         hits += 1
-    if data.convertData('foobar') == False:
+    if data.convertData("foobar") is False:
         hits += 1
     assert hits == 2
+
 
 def test_private():
     hits = 0
-    if data.privateData('income'):
+    if data.privateData("income"):
         hits += 1
-    if data.privateData('foobar') == False:
+    if data.privateData("foobar") is False:
         hits += 1
     assert hits == 2
 
+
 def test_ignore():
     hits = 0
-    if data.ignoreData('model'):
+    if data.ignoreData("model"):
         hits += 1
-    if data.ignoreData('foobar') == False:
+    if data.ignoreData("foobar") is False:
         hits += 1
     assert hits == 2
+
 
 # def test_bool_bad():
 #     assert "bad keyword" data.yaml['convert'] is not True
