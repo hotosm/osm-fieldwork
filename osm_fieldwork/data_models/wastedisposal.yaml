@@ -5,21 +5,16 @@ from:
   - ways_poly
 where:
   tags:
-    - join_or:
-        - {
-            amenity:
-              [
-                waste_disposal,
-                waste_dump_site,
-                waste_transfer_station,
-                waste_basket,
-                recycling,
-                landfill,
-              ],
-            waste: not null,
-            recycling_type: not null,
-            recycling: not null,
-            recycling:aluminum: not null,
-            recycling:glass: not null,
-            recycling:hazardous_waste: not null,
-          }
+    - amenity:
+        - waste_disposal
+        - waste_dump_site
+        - waste_transfer_station
+        - waste_basket
+        - recycling
+        - landfill
+      waste: not null
+      recycling_type: not null
+      recycling: not null
+      recycling:aluminum: not null
+      recycling:glass: not null
+      recycling:hazardous_waste: not null

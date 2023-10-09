@@ -5,5 +5,4 @@ from:
   - ways_poly
 where:
   tags:
-    - join_or:
-        - { religion: not null }
+    - religion: not null
