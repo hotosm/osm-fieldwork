@@ -29,6 +29,8 @@ from pathlib import Path
 
 import mercantile
 from cpuinfo import get_cpu_info
+from pmtiles.tile import Compression, TileType
+from pmtiles.writer import Writer as PMTileWriter
 from pySmartDL import SmartDL
 from shapely.geometry import shape
 from shapely.ops import unary_union
@@ -276,14 +278,167 @@ class BaseMapper(object):
         return bbox
 
 
+def write_pmtiles(outfile: str, tile_dir: str, zoom_levels: list):
+    """Write PMTiles archive from tiles in the specified directory.
+
+    Args:
+        outfile (str): The output PMTiles archive file path.
+        tile_dir (str): The directory containing the tile images.
+        zoom_levels (list): List of zoom levels included.
+
+    Returns:
+        None
+    """
+    # Get tile image format from the first file encountered
+    first_file = next((file for file in Path(tile_dir).rglob("*.*") if file.is_file()), None)
+
+    if not first_file:
+        err = "No tile files found in the specified directory. " "Aborting PMTile creation."
+        log.error(err)
+        raise ValueError(err)
+    first_file.suffix.upper()
+
+    with open(outfile, "wb") as pmtile_file:
+        writer = PMTileWriter(pmtile_file)
+
+        for tile_path in Path(tile_dir).rglob("*"):
+            if tile_path.is_file():
+                with open(tile_path, "rb") as tile:
+                    writer.write_tile(int(tile_path.stem), tile.read())
+
+        writer.finalize(
+            {
+                # "tile_type": TileType[tile_format.lstrip(".")],
+                "tile_type": TileType.PNG,
+                "tile_compression": Compression.NONE,
+                "min_zoom": zoom_levels[0],
+                "max_zoom": zoom_levels[-1],
+                "min_lon_e7": int(-180.0 * 10000000),
+                "min_lat_e7": int(-85.0 * 10000000),
+                "max_lon_e7": int(180.0 * 10000000),
+                "max_lat_e7": int(85.0 * 10000000),
+                "center_zoom": 0,
+                "center_lon_e7": 0,
+                "center_lat_e7": 0,
+            },
+            {
+                "attribution": 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
+            },
+        )
+
+
+def create_basemap(
+    verbose=False,
+    boundary=None,
+    tms=None,
+    xy=False,
+    outfile=None,
+    zooms="12-17",
+    outdir=None,
+    source="esri",
+):
+    """Create a basemap with given parameters.
+
+    Args:
+        verbose (bool, optional): Enable verbose output if True.
+        boundary (str, optional): The boundary for the area you want.
+        tms (str, optional): Custom TMS URL.
+        xy (bool, optional): Swap the X & Y coordinates when using a
+            custom TMS if True.
+        outfile (str, optional): Output file name for the basemap.
+        zooms (str, optional): The Zoom levels, specified as a range
+            (e.g., "12-17") or comma-separated levels (e.g., "12,13,14").
+        outdir (str, optional): Output directory name for tile cache.
+        source (str, optional): Imagery source, one of
+            ["esri", "bing", "topo", "google", "oam"] (default is "esri").
+
+    Returns:
+        None
+    """
+    # if verbose, dump to the terminal.
+    if verbose is not None:
+        log.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
+        ch.setFormatter(formatter)
+        log.addHandler(ch)
+
+    # Get all the zoom levels we want
+    zoom_levels = list()
+    if zooms:
+        if zooms.find("-") > 0:
+            start = int(zooms.split("-")[0])
+            end = int(zooms.split("-")[1]) + 1
+            x = range(start, end)
+            for i in x:
+                zoom_levels.append(i)
+        elif zooms.find(",") > 0:
+            levels = zooms.split(",")
+            for level in levels:
+                zoom_levels.append(int(level))
+        else:
+            zoom_levels.append(int(zooms))
+
+    # Make a bounding box from the boundary file
+    if not boundary:
+        err = "You need to specify a boundary! (file or bbox)"
+        log.error(err)
+        raise ValueError(err)
+
+    if not outdir:
+        base = "/var/www/html"
+    else:
+        base = outdir
+    base = f"{base}/{source}tiles"
+
+    if source and not tms:
+        basemap = BaseMapper(boundary, base, source, xy)
+    elif tms:
+        basemap = BaseMapper(boundary, base, "custom", xy)
+        basemap.customTMS(tms)
+    else:
+        err = "You need to specify a source!"
+        log.error(err)
+        raise ValueError(err)
+
+    # Args parsed, main code:
+    for level in zoom_levels:
+        # Download the tile directory
+        basemap.getTiles(level)
+
+    if not outfile:
+        log.info(f"No outfile specified, tile download finished: {base}")
+        return
+
+    suffix = Path(outfile).suffix.lower()
+
+    if any(substring in suffix for substring in ["sqlite", "mbtiles"]):
+        outf = DataFile(outfile, basemap.getFormat())
+        if suffix == ".mbtiles":
+            outf.addBounds(basemap.bbox)
+        # Create output database and specify image format, png, jpg, or tif
+        outf.writeTiles(basemap.tiles, base)
+
+    elif suffix == ".pmtiles":
+        write_pmtiles(outfile, base, zoom_levels)
+
+    else:
+        msg = f"Format {suffix} not supported"
+        log.error(msg)
+        raise ValueError(msg)
+
+
 def main():
     """This main function lets this class be run standalone by a bash script."""
-    parser = argparse.ArgumentParser(description="Create an mbtiles basemap for ODK Collect")
+    parser = argparse.ArgumentParser(description="Create an tile basemap for ODK Collect")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-b", "--boundary", required=True, help="The boundary for the area you want")
     parser.add_argument("-t", "--tms", help="Custom TMS URL")
     parser.add_argument("--xy", default=False, help="Swap the X & Y coordinates when using a custom TMS")
-    parser.add_argument("-o", "--outfile", required=True, help="Output file name")
+    parser.add_argument(
+        "-o", "--outfile", required=False, help="Output file name, allowed extensions [.mbtiles/.sqlitedb/.pmtiles]"
+    )
     parser.add_argument("-z", "--zooms", default="12-17", help="The Zoom levels")
     parser.add_argument("-d", "--outdir", help="Output directory name for tile cache")
     parser.add_argument(
@@ -295,69 +450,26 @@ def main():
     )
     args = parser.parse_args()
 
-    # if verbose, dump to the terminal.
-    if args.verbose is not None:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
-
-    # Get all the zoom levels we want
-    zooms = list()
-    if args.zooms:
-        if args.zooms.find("-") > 0:
-            start = int(args.zooms.split("-")[0])
-            end = int(args.zooms.split("-")[1]) + 1
-            x = range(start, end)
-            for i in x:
-                zooms.append(i)
-        elif args.zooms.find(",") > 0:
-            levels = args.zooms.split(",")
-            for level in levels:
-                zooms.append(int(level))
-        else:
-            zooms.append(int(args.zooms))
-
-    # Make a bounding box from the boundary file
     if not args.boundary:
-        log.error("You need to specify a boundary file!")
+        log.error("You need to specify a boundary! (file or bbox)")
         parser.print_help()
         quit()
 
-    if not args.outdir:
-        base = "/var/www/html"
-    else:
-        base = args.outdir
-    base = f"{base}/{args.source}tiles"
-
-    if args.source and not args.tms:
-        basemap = BaseMapper(args.boundary, base, args.source, args.xy)
-    elif args.tms:
-        basemap = BaseMapper(args.boundary, base, "custom", args.xy)
-        basemap.customTMS(args.tms)
-    else:
+    if not args.source:
         log.error("You need to specify a source!")
         parser.print_help()
         quit()
 
-    if args.outfile is None:
-        log.error("You need to specify an mbtiles or sqlitedb file!!")
-        parser.print_help()
-        quit()
-
-    outf = DataFile(args.outfile, basemap.getFormat())
-    suffix = os.path.splitext(args.outfile)[1]
-    if suffix == ".mbtiles":
-        outf.addBounds(basemap.bbox)
-    for level in zooms:
-        basemap.getTiles(level)
-        if args.outfile:
-            # Create output database and specify image format, png, jpg, or tif
-            outf.writeTiles(basemap.tiles, base)
-        else:
-            log.info("Only downloading tiles to %s!" % base)
+    create_basemap(
+        verbose=args.verbose,
+        boundary=args.boundary,
+        tms=args.tms,
+        xy=args.xy,
+        outfile=args.outfile,
+        zooms=args.zooms,
+        outdir=args.outdir,
+        source=args.source,
+    )
 
 
 if __name__ == "__main__":
