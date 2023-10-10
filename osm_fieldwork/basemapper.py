@@ -26,10 +26,19 @@ import queue
 import sys
 import threading
 from pathlib import Path
+from typing import Union
 
 import mercantile
 from cpuinfo import get_cpu_info
-from pmtiles.tile import Compression, TileType
+from pmtiles.tile import (
+    Compression as PMTileCompression,
+)
+from pmtiles.tile import (
+    TileType as PMTileType,
+)
+from pmtiles.tile import (
+    zxy_to_tileid,
+)
 from pmtiles.writer import Writer as PMTileWriter
 from pySmartDL import SmartDL
 from shapely.geometry import shape
@@ -66,13 +75,13 @@ def dlthread(
     # totaltime = 0.0
     log.info("Downloading %d tiles in thread %d to %s" % (len(tiles), threading.get_ident(), dest))
     for tile in tiles:
-        bingkey = mercantile.quadkey(tile)
         filespec = f"{tile[2]}/{tile[1]}/{tile[0]}"
         for site in mirrors:
             if site["source"] != "topo":
                 filespec += "." + site["suffix"]
             url = site["url"]
             if site["source"] == "bing":
+                bingkey = mercantile.quadkey(tile)
                 remote = url % bingkey
             elif site["source"] == "google":
                 path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
@@ -282,56 +291,82 @@ class BaseMapper(object):
         return bbox
 
 
-def write_pmtiles(outfile: str, tile_dir: str, zoom_levels: list):
+def tileid_from_y_tile(filepath: Union[Path | str]):
+    """Helper function to get the tile id from a tile in z/x/y directory structure.
+
+    Args:
+        filepath (Union[Path, str]): The path to the y tile in /z/x/y.jpg structure.
+    """
+    # Get final two dirs + tile filename
+    parts = list(Path(filepath).parts[-3:])
+    # strip extension from y tile filename
+    parts[-1] = str(Path(parts[-1]).stem)
+    z, x, y = map(int, parts)
+    return zxy_to_tileid(z, x, y)
+
+
+def tile_dir_to_pmtiles(outfile: str, tile_dir: str, bbox: tuple, attribution: str):
     """Write PMTiles archive from tiles in the specified directory.
 
     Args:
         outfile (str): The output PMTiles archive file path.
         tile_dir (str): The directory containing the tile images.
-        zoom_levels (list): List of zoom levels included.
+        bbox (tuple): Bounding box in format (min_lon, min_lat, max_lon, max_lat).
+        attribution (str): Attribution string to include in PMTile archive.
 
     Returns:
         None
     """
+    tile_dir = Path(tile_dir)
+
     # Get tile image format from the first file encountered
-    first_file = next((file for file in Path(tile_dir).rglob("*.*") if file.is_file()), None)
+    first_file = next((file for file in tile_dir.rglob("*.*") if file.is_file()), None)
 
     if not first_file:
-        err = "No tile files found in the specified directory. " "Aborting PMTile creation."
+        err = "No tile files found in the specified directory. Aborting PMTile creation."
         log.error(err)
         raise ValueError(err)
+
     first_file.suffix.upper()
 
+    # Get zoom levels from dirs
+    zoom_levels = sorted([int(zoom.stem) for zoom in tile_dir.glob("*")])
+
+    # Process tiles
     with open(outfile, "wb") as pmtile_file:
         writer = PMTileWriter(pmtile_file)
 
-        for tile_path in Path(tile_dir).rglob("*"):
+        for tile_path in tile_dir.rglob("*"):
             if tile_path.is_file():
-                with open(tile_path, "rb") as tile:
-                    writer.write_tile(int(tile_path.stem), tile.read())
+                tile_id = tileid_from_y_tile(tile_path)
 
+                with open(tile_path, "rb") as tile:
+                    writer.write_tile(tile_id, tile.read())
+
+        # Extract bbox values
+        min_lon, min_lat, max_lon, max_lat = bbox
+
+        # Write metadata
         writer.finalize(
             {
                 # "tile_type": TileType[tile_format.lstrip(".")],
-                "tile_type": TileType.PNG,
-                "tile_compression": Compression.NONE,
+                "tile_type": PMTileType.PNG,
+                "tile_compression": PMTileCompression.NONE,
                 "min_zoom": zoom_levels[0],
                 "max_zoom": zoom_levels[-1],
-                "min_lon_e7": int(-180.0 * 10000000),
-                "min_lat_e7": int(-85.0 * 10000000),
-                "max_lon_e7": int(180.0 * 10000000),
-                "max_lat_e7": int(85.0 * 10000000),
-                "center_zoom": 0,
-                "center_lon_e7": 0,
-                "center_lat_e7": 0,
+                "min_lon_e7": int(min_lon * 10000000),
+                "min_lat_e7": int(min_lat * 10000000),
+                "max_lon_e7": int(max_lon * 10000000),
+                "max_lat_e7": int(max_lat * 10000000),
+                "center_zoom": zoom_levels[0],
+                "center_lon_e7": int(min_lon + ((max_lon - min_lon) / 2)),
+                "center_lat_e7": int(min_lat + ((max_lat - min_lat) / 2)),
             },
-            {
-                "attribution": 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
-            },
+            {"attribution": f"© {attribution}"},
         )
 
 
-def create_basemap(
+def create_basemap_file(
     verbose=False,
     boundary=None,
     tms=None,
@@ -425,7 +460,7 @@ def create_basemap(
         outf.writeTiles(basemap.tiles, base)
 
     elif suffix == ".pmtiles":
-        write_pmtiles(outfile, base, zoom_levels)
+        tile_dir_to_pmtiles(outfile, base, basemap.bbox, source)
 
     else:
         msg = f"Format {suffix} not supported"
@@ -464,7 +499,7 @@ def main():
         parser.print_help()
         quit()
 
-    create_basemap(
+    create_basemap_file(
         verbose=args.verbose,
         boundary=args.boundary,
         tms=args.tms,
