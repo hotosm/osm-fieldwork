@@ -18,6 +18,8 @@ NEWS
 *.html
 *.mbtiles
 *.sqlitedb
+*.pmtiles
+*tiles/
 
 # Prerequisites
 *.d
