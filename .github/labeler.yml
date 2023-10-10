@@ -1,10 +1,11 @@
 "devops":
   - ".github/**/*"
   - "Dockerfile"
-  - "pyproject.toml"
-  - "pdm.lock"
   - "*entrypoint.sh"
   - "Makefile"
+"dependency":
+  - "pyproject.toml"
+  - "pdm.lock"
 "documentation":
   - "docs/**/*"
   - "mkdocs.yml"
