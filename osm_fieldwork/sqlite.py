@@ -170,7 +170,7 @@ class DataFile(object):
             self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('description', '{description}')")
             # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{bounds}')")
             self.cursor.execute("INSERT INTO metadata (name, value) VALUES('format', 'jpg')")
-        elif suffix == ".sqlitedb":
+        if "sqlite" in suffix:
             # s is always 0
             self.cursor.execute("CREATE TABLE tiles (x int, y int, z int, s int, image blob, PRIMARY KEY (x,y,z,s));")
             self.cursor.execute("CREATE INDEX IND on tiles (x,y,z,s)")
@@ -212,8 +212,10 @@ class DataFile(object):
             logging.error("Map tile has no image data!")
             # tile.dump()
             return False
+
         suffix = os.path.splitext(self.dbname)[1]
-        if suffix == ".sqlitedb":
+
+        if "sqlite" in suffix:
             # Osmand tops out at zoom level 16, so the real zoom level is inverse,
             # and can go negative for really high zoom levels.
             z = 17 - tile.z
@@ -221,7 +223,8 @@ class DataFile(object):
                 "INSERT INTO tiles (x, y, z, s, image) VALUES (?, ?, ?, ?, ?)",
                 [tile.x, tile.y, z, 0, sqlite3.Binary(tile.blob)],
             )
-        elif suffix == ".mbtiles":
+
+        if suffix == ".mbtiles":
             y = (1 << tile.z) - tile.y - 1
             self.db.execute(
                 "INSERT INTO tiles (tile_row, tile_column, zoom_level, tile_data) VALUES (?, ?, ?, ?)",
