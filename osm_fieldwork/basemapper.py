@@ -22,10 +22,10 @@ import argparse
 import concurrent.futures
 import json
 import logging
-import os
 import queue
 import sys
 import threading
+from pathlib import Path
 
 import mercantile
 from cpuinfo import get_cpu_info
@@ -85,22 +85,13 @@ def dlthread(
                 remote = url % filespec
             print("Getting file from: %s" % remote)
             # Create the subdirectories as pySmartDL doesn't do it for us
-            if os.path.isdir(dest) is False:
-                tmp = ""
-                paths = dest.split("/")
-                for i in paths[1:]:
-                    tmp += "/" + i
-                    if os.path.isdir(tmp):
-                        continue
-                    else:
-                        os.mkdir(tmp)
-                        log.debug("Made %s" % tmp)
+            Path(dest).mkdir(parents=True, exist_ok=True)
 
         try:
             if site["source"] == "topo":
                 filespec += "." + site["suffix"]
             outfile = dest + "/" + filespec
-            if not os.path.exists(outfile):
+            if not Path(outfile).exists():
                 dl = SmartDL(remote, dest=outfile, connect_default_logger=False)
                 dl.start()
             else:
@@ -118,7 +109,7 @@ class BaseMapper(object):
         source: str,
         xy: bool,
     ):
-        """Create an mbtiles basemap for ODK Collect.
+        """Create an tile basemap for ODK Collect.
 
         Args:
             boundary (str): A BBOX string or GeoJSON file of the AOI.
@@ -209,7 +200,7 @@ class BaseMapper(object):
                     log.debug("Dispatching Block %d:%d" % (block, block + chunk))
                     block += chunk
                 executor.shutdown()
-            # log.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), os.path.basename(self.base)))
+            # log.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), Path(self.base).name))
 
         return len(self.tiles)
 
@@ -226,7 +217,7 @@ class BaseMapper(object):
             (bool): Whether the tile exists in the map tile cache
         """
         filespec = f"{self.base}{tile[2]}/{tile[1]}/{tile[0]}.{self.sources[{self.source}]['suffix']}"
-        if os.path.exists(filespec):
+        if Path(filespec).exists():
             log.debug("%s exists" % filespec)
             return True
         else:
