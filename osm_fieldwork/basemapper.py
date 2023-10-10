@@ -196,14 +196,18 @@ class BaseMapper(object):
             dlthread(self.base, mirrors, self.tiles, self.xy)
         else:
             with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
+                # results = []
                 block = 0
                 while block <= len(self.tiles):
-                    executor.submit(dlthread, self.base, mirrors, self.tiles[block : block + chunk])
+                    executor.submit(dlthread, self.base, mirrors, self.tiles[block : block + chunk], self.xy)
+                    # result = executor.submit(dlthread, self.base, mirrors, self.tiles[block : block + chunk], self.xy)
+                    # results.append(result)
                     log.debug("Dispatching Block %d:%d" % (block, block + chunk))
                     block += chunk
                 executor.shutdown()
             # log.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), Path(self.base).name))
-
+            # for result in results:
+            #     print(result.result())
         return len(self.tiles)
 
     def tileExists(
