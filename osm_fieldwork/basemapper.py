@@ -23,6 +23,7 @@ import concurrent.futures
 import json
 import logging
 import queue
+import re
 import sys
 import threading
 from pathlib import Path
@@ -88,9 +89,11 @@ def dlthread(
                 remote = url % path
             elif site["source"] == "custom":
                 if not xy:
-                    path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
+                    # z/y/x format
+                    path = f"{tile[2]}/{tile[1]}/{tile[0]}"
                 else:
-                    path = f"x={tile[0]}&s=&y={tile[2]}&z={tile[1]}"
+                    # z/x/y format
+                    path = f"{tile[2]}/{tile[0]}/{tile[1]}"
                 remote = url % path
             else:
                 remote = url % filespec
@@ -153,14 +156,17 @@ class BaseMapper(object):
                         src[k1] = v1
                 self.sources[k] = src
 
-    def customTMS(
-        self,
-        url: str,
-        name: str = "custom",
-        source: str = "custom",
-        suffix: str = "jpg",
-    ):
+    def customTMS(self, url: str, name: str = "custom", source: str = "custom", suffix: str = "jpg"):
         """Add a custom TMS URL to the list of sources.
+
+        The url must end in %s to be replaced with the tile xyz values.
+
+        Format examples:
+        https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}
+        https://maps.nyc.gov/xyz/1.0.0/carto/basemap/%s
+        https://maps.nyc.gov/xyz/1.0.0/carto/basemap/{z}/{x}/{y}.jpg
+
+        The method will replace {z}/{x}/{y}.jpg with %s
 
         Args:
             name (str): The name to display
@@ -168,7 +174,23 @@ class BaseMapper(object):
             suffix (str): The suffix, png or jpg
             source (str): The source value to use as an index
         """
-        self.sources["custom"] = {"name": name, "url": url, "suffix": suffix, "source": source}
+        # Remove any file extensions if present and update the 'suffix' parameter
+        if url.endswith(".jpg"):
+            source = "jpg"
+            suffix = "jpg"
+            url = url[:-4]  # Remove the last 4 characters (".jpg")
+        elif url.endswith(".png"):
+            source = "png"
+            suffix = "png"
+            url = url[:-4]  # Remove the last 4 characters (".png")
+
+        # Replace "{z}/{x}/{y}" with "%s"
+        url = re.sub(r"/{[xyz]+\}", "", url)
+        url = url + r"/%s"
+
+        tms_params = {"name": name, "url": url, "suffix": suffix, "source": source}
+        log.debug(f"Setting custom TMS with params: {tms_params}")
+        self.sources["custom"] = tms_params
         self.source = "custom"
 
     def getFormat(self):
@@ -430,18 +452,22 @@ def create_basemap_file(
         base = "/var/www/html"
     else:
         base = outdir
-    base = f"{base}/{source}tiles"
+
+    source = "custom" if tms else source
+    base = str(Path(base) / f"{source}tiles")
+    # Make tile download directory
     Path(base).mkdir(parents=True, exist_ok=True)
 
-    if source and not tms:
-        basemap = BaseMapper(boundary, base, source, xy)
-    elif tms:
-        basemap = BaseMapper(boundary, base, "custom", xy)
-        basemap.customTMS(tms)
-    else:
+    if not source and not tms:
         err = "You need to specify a source!"
         log.error(err)
         raise ValueError(err)
+
+    basemap = BaseMapper(boundary, base, source, xy)
+
+    if tms:
+        # Add TMS URL to sources for download
+        basemap.customTMS(tms)
 
     # Args parsed, main code:
     for level in zoom_levels:
