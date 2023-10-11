@@ -327,10 +327,11 @@ def tile_dir_to_pmtiles(outfile: str, tile_dir: str, bbox: tuple, attribution: s
         log.error(err)
         raise ValueError(err)
 
-    first_file.suffix.upper()
+    # FIXME passing as PMTileType[tile_format] does not work
+    # tile_format = first_file.suffix.upper()
 
     # Get zoom levels from dirs
-    zoom_levels = sorted([int(zoom.stem) for zoom in tile_dir.glob("*")])
+    zoom_levels = sorted([int(x.stem) for x in tile_dir.glob("*") if x.is_dir()])
 
     # Process tiles
     with open(outfile, "wb") as pmtile_file:
@@ -452,6 +453,7 @@ def create_basemap_file(
         return
 
     suffix = Path(outfile).suffix.lower()
+    log.debug(f"Basemap output format: {suffix}")
 
     if any(substring in suffix for substring in ["sqlite", "mbtiles"]):
         outf = DataFile(outfile, basemap.getFormat())
