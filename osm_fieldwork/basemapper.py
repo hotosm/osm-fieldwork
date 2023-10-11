@@ -430,6 +430,7 @@ def create_basemap_file(
     else:
         base = outdir
     base = f"{base}/{source}tiles"
+    Path(base).mkdir(parents=True, exist_ok=True)
 
     if source and not tms:
         basemap = BaseMapper(boundary, base, source, xy)
