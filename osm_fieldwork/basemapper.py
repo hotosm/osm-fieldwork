@@ -295,6 +295,8 @@ class BaseMapper(object):
             poly = json.load(f)
         if "features" in poly:
             geometry = shape(poly["features"][0]["geometry"])
+        if "geometry" in poly:
+            geometry = shape(poly["geometry"])
         else:
             geometry = shape(poly)
 
