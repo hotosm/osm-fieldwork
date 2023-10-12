@@ -33,6 +33,7 @@ from shapely.geometry import shape
 from osm_fieldwork.data_models import data_models_path
 from osm_fieldwork.filter_data import FilterData
 from osm_fieldwork.xlsforms import xlsforms_path
+from osm_rawdata.config import QueryConfig
 
 # Instantiate logger
 log = logging.getLogger(__name__)
@@ -81,6 +82,7 @@ class MakeExtract(object):
         else:
             file = open(f"{xlsforms_path}/{xlsfile}", "rb")
         self.xls = BytesIO(file.read())
+        self.config = QueryConfig(config)
 
     def getFeatures(
         self,
@@ -126,7 +128,7 @@ class MakeExtract(object):
         """
         log.debug("Cleaning features")
         cleaned = FilterData()
-        cleaned.parse(self.xls)
+        cleaned.parse(self.xls, self.config)
         new = cleaned.cleanData(collection)
         # jsonfile = open(filespec, "w")
         # dump(new, jsonfile)
