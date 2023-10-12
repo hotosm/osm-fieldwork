@@ -472,9 +472,11 @@ def create_basemap_file(
         basemap.customTMS(tms)
 
     # Args parsed, main code:
+    tiles = list()
     for level in zoom_levels:
         # Download the tile directory
         basemap.getTiles(level)
+        tiles += basemap.tiles
 
     if not outfile:
         log.info(f"No outfile specified, tile download finished: {base}")
@@ -488,7 +490,7 @@ def create_basemap_file(
         if suffix == ".mbtiles":
             outf.addBounds(basemap.bbox)
         # Create output database and specify image format, png, jpg, or tif
-        outf.writeTiles(basemap.tiles, base)
+        outf.writeTiles(tiles, base)
 
     elif suffix == ".pmtiles":
         tile_dir_to_pmtiles(outfile, base, basemap.bbox, source)
@@ -497,7 +499,7 @@ def create_basemap_file(
         msg = f"Format {suffix} not supported"
         log.error(msg)
         raise ValueError(msg)
-
+    log.info(f"Wrote {outfile}")
 
 def main():
     """This main function lets this class be run standalone by a bash script."""
