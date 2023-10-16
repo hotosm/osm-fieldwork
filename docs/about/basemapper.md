@@ -84,7 +84,6 @@ many large areas of Nepal, Turkey, Kenya, Uganda, and Tanzania.
 
 The basic syntax is as follows:
 
-- -input_file, --This is a required positional argument that specifies the path to the input ODK form.
 - -h, --help show this help message and exit
 - -v, --verbose verbose output
 - -b BOUNDARY, --boundary BOUNDARY - The boundary for the area you want, as BBOX string or geojson file.
@@ -107,7 +106,7 @@ If in BBOX string format, it must be comma separated:
 - OAM - OpenAerialMap
 
 The default output directory is **/var/www/html**. The actual
-subdirectory is the soiurce name with **tiles** appended, so for
+subdirectory is the source name with **tiles** appended, so for
 example **/var/www/html/oamtiles**. Putting the map tiles into webroot
 lets JOSM or QGIS use them when working offline.
 

@@ -117,8 +117,8 @@ class FilterData(object):
             "tourism",
         )
         self.keep = list(keep)
-        if "keep" in config["keep"]:
-            self.keep.extend(config["keep"])
+        if "keep" in config.config["keep"]:
+            self.keep.extend(config.config["keep"])
 
         return title, extract
 

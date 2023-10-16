@@ -8,7 +8,10 @@ where:
     - highway: not null
 keep:
   - name
+  - highway
   - smoothness
   - surface
   - tracktype
   - width
+  - ref
+  - ref:usgs
