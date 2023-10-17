@@ -17,6 +17,7 @@
 #     You should have received a copy of the GNU General Public License
 #     along with osm_fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
+"""Test functionalty of basemapper.py."""
 
 import logging
 import os
@@ -27,8 +28,9 @@ from osm_fieldwork.sqlite import DataFile
 
 log = logging.getLogger(__name__)
 
-infile = "testdata/Rollinsville.geojson"
-outfile = "rollinsville.mbtiles"
+rootdir = os.path.dirname(os.path.abspath(__file__))
+infile = f"{rootdir}/testdata/Rollinsville.geojson"
+outfile = f"{rootdir}/testdata/rollinsville.mbtiles"
 base = "./tiles"
 # boundary = open(infile, "r")
 # poly = geojson.load(boundary)
