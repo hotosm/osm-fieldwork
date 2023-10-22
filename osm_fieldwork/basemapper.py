@@ -501,6 +501,7 @@ def create_basemap_file(
         raise ValueError(msg)
     log.info(f"Wrote {outfile}")
 
+
 def main():
     """This main function lets this class be run standalone by a bash script."""
     parser = argparse.ArgumentParser(description="Create an tile basemap for ODK Collect")

@@ -27,13 +27,13 @@ from io import BytesIO
 import geojson
 import yaml
 from geojson import FeatureCollection, dump
+from osm_rawdata.config import QueryConfig
 from osm_rawdata.postgres import PostgresClient
 from shapely.geometry import shape
 
 from osm_fieldwork.data_models import data_models_path
 from osm_fieldwork.filter_data import FilterData
 from osm_fieldwork.xlsforms import xlsforms_path
-from osm_rawdata.config import QueryConfig
 
 # Instantiate logger
 log = logging.getLogger(__name__)

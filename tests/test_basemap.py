@@ -17,42 +17,40 @@
 #     You should have received a copy of the GNU General Public License
 #     along with osm_fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
+"""Test functionalty of basemapper.py."""
 
-import argparse
 import logging
 import os
 import shutil
 
-from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.basemapper import BaseMapper
-import geojson
-from shapely.geometry import shape
-from geojson import Feature, FeatureCollection
-from osm_fieldwork.sqlite import DataFile, MapTile
+from osm_fieldwork.sqlite import DataFile
 
 log = logging.getLogger(__name__)
 
-infile = f"testdata/Rollinsville.geojson"
-outfile = "rollinsville.mbtiles"
+rootdir = os.path.dirname(os.path.abspath(__file__))
+infile = f"{rootdir}/testdata/Rollinsville.geojson"
+outfile = f"{rootdir}/testdata/rollinsville.mbtiles"
 base = "./tiles"
-#boundary = open(infile, "r")
-#poly = geojson.load(boundary)
-#if "features" in poly:
+# boundary = open(infile, "r")
+# poly = geojson.load(boundary)
+# if "features" in poly:
 #    geometry = shape(poly["features"][0]["geometry"])
-#elif "geometry" in poly:
+# elif "geometry" in poly:
 #    geometry = shape(poly["geometry"])
-#else:
+# else:
 #    geometry = shape(poly)
-            
+
+
 def test_create():
     """See if the file got loaded."""
     hits = 0
-    basemap = BaseMapper(infile, base, 'topo', False)
+    basemap = BaseMapper(infile, base, "topo", False)
     tiles = list()
     for level in [8, 9, 10, 11, 12]:
         basemap.getTiles(level)
         tiles += basemap.tiles
-    
+
     if len(tiles) == 5:
         hits += 1
 
@@ -64,8 +62,9 @@ def test_create():
 
     os.remove(outfile)
     shutil.rmtree(base)
-    
+
     assert hits == 2
+
 
 if __name__ == "__main__":
     test_create()
