@@ -62,6 +62,7 @@ plugins:
             merge_init_into_class: true
 
 nav:
+  - Home: index.md
   - Get Started:
       - About: about/About.md
       - FAQ: about/FAQ.md
