@@ -15,11 +15,16 @@ extra:
       link: "https://twitter.com/hotosm"
     - icon: "fontawesome/solid/globe"
       link: "https://www.hotosm.org"
+  copyright: Copyright &copy; 2010 HOTOSM
+  generator: false
 
 theme:
   name: material
   palette:
     primary: custom
+  favicon: images/favicon.png
+  logo: images/hot_logo.png
+  # custom_dir: docs/overrides
 
 extra_css:
   - css/extra.css
