@@ -2,8 +2,7 @@ name: Build
 
 on:
   push:
-    tags:
-      - "*"
+    tags: ["*"]
   # Allow manual trigger
   workflow_dispatch:
 
