@@ -18,12 +18,12 @@ ARG PYTHON_IMG_TAG=3.10
 
 
 FROM docker.io/python:${PYTHON_IMG_TAG}-slim-bookworm as base
+ARG COMMIT_REF
 ARG PYTHON_IMG_TAG
-ARG PKG_VERSION
 ARG MAINTAINER=admin@hotosm.org
 LABEL org.hotosm.osm-fieldwork.python-img-tag="${PYTHON_IMG_TAG}" \
-      org.hotosm.osm-fieldwork.maintainer="${MAINTAINER}" \
-      org.hotosm.osm-fieldwork.version="${PKG_VERSION}"
+      org.hotosm.osm-fieldwork.commit-ref="${COMMIT_REF}" \
+      org.hotosm.osm-fieldwork.maintainer="${MAINTAINER}"
 RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install \
@@ -51,7 +51,6 @@ RUN pdm export --prod > requirements.txt \
 
 
 FROM base as build-wheel
-ARG PKG_VERSION
 WORKDIR /build
 COPY . .
 RUN pip install pdm==2.6.1 \
@@ -60,7 +59,6 @@ RUN pip install pdm==2.6.1 \
 
 
 FROM base as build
-ARG PKG_VERSION
 WORKDIR /opt/python
 RUN set -ex \
     && apt-get update \
@@ -79,9 +77,10 @@ COPY --from=extract-deps \
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r ./requirements.txt
 COPY --from=build-wheel \
-    "/build/dist/osm_fieldwork-$PKG_VERSION-py3-none-any.whl" .
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir "/opt/python/osm_fieldwork-$PKG_VERSION-py3-none-any.whl"
+    "/build/dist/*-py3-none-any.whl" .
+RUN whl_file=$(find . -name '*-py3-none-any.whl' -type f) \
+    && pip install --user --no-warn-script-location \
+    --no-cache-dir "${whl_file}"
 
 
 
