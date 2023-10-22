@@ -17,3 +17,4 @@ jobs:
       image_name: ghcr.io/${{ github.repository }}
       build_args: |
         COMMIT_REF=${{ github.sha }}
+      tag_override: ${{ github.event_name == 'push' && 'ci' || '' }}
