@@ -18,5 +18,3 @@ jobs:
       build_target: ci
       image_tags: |
         "ghcr.io/hotosm/osm-rawdata:ci"
-      build_args: |
-        COMMIT_REF=${{ github.sha }}

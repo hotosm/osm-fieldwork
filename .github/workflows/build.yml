@@ -12,5 +12,3 @@ jobs:
     with:
       build_target: prod
       image_name: "ghcr.io/${{ github.repository }}"
-      build_args: |
-        COMMIT_REF=${{ github.sha }}
