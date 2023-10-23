@@ -1,5 +1,6 @@
 # OSM Fieldwork
 
+<!-- markdownlint-disable -->
 <p align="center">
   <img src="https://github.com/hotosm/fmtm/blob/main/images/hot_logo.png?raw=true" style="width: 200px;" alt="HOT"></a>
 </p>
@@ -20,7 +21,7 @@
       <img src="https://github.com/hotosm/osm-fieldwork/workflows/Publish to PyPi.org/badge.svg" alt="Publish">
   </a>
   <a href="https://github.com/hotosm/osm-fieldwork/actions/workflows/pytest.yml" target="_blank">
-      <img src="https://github.com/hotosm/osm-fieldwork/workflows/pytest/badge.svg" alt="Test">
+      <img src="https://github.com/hotosm/osm-fieldwork/workflows/PyTest/badge.svg" alt="Test">
   </a>
   <a href="https://pypi.org/project/osm-fieldwork" target="_blank">
       <img src="https://img.shields.io/pypi/v/osm-fieldwork?color=%2334D058&label=pypi%20package" alt="Package version">
@@ -37,12 +38,11 @@
 
 🕮 **Documentation**: <a href="https://hotosm.github.io/osm-fieldwork/" target="_blank">https://hotosm.github.io/osm-fieldwork/</a>
 
-**Source Code**: <a href="https://github.com/hotosm/osm-fieldwork" target="_blank">https://github.com/hotosm/osm-fieldwork</a>
+🖥️ **Source Code**: <a href="https://github.com/hotosm/osm-fieldwork" target="_blank">https://github.com/hotosm/osm-fieldwork</a>
 
 ---
 
-![PyPi](https://img.shields.io/pypi/v/osm-fieldwork?label=pypi%20package)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/osm-fieldwork)
+<!-- markdownlint-enable -->
 
 Osm-Fieldwork is a project for processing data collection using
 OpenDataKit into OpenStreetMap format. It includes several utility

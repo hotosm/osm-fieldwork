@@ -1,4 +1,4 @@
-name: pytest
+name: PyTest
 
 on:
   # Run tests on all pushed branches
