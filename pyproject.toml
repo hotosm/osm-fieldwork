@@ -72,7 +72,7 @@ version_files = [
 version = {from = "osm_fieldwork/__version__.py"}
 [tool.pdm.build]
 includes = ["osm_fieldwork"]
-source-includes = ["tests", "LICENSE.md", "README.md"]
+source-includes = ["tests", "LICENSE", "README.md"]
 excludes = ["osm_fieldwork/*.db", "osm_fieldwork/*.sql"]
 [tool.pdm.dev-dependencies]
 dev = [

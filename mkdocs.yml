@@ -68,7 +68,7 @@ nav:
       - FAQ: about/FAQ.md
       - Changelog: CHANGELOG.md
       - Code of Conduct: Code-of-Conduct.md
-      - License: LICENSE.md
+      - License: LICENSE
   - User Manual: about/user-manual.md
   - Core Program Usage:
       - ODK Client: about/odk_client.md
