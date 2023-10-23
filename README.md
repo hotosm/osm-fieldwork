@@ -61,7 +61,8 @@ talk from SOTM-US 2022 titled [OSM For
 Firefighting](https://www.youtube.com/watch?v=qgk9al1rluE). Much of
 the tech and usage is explained in these [tech
 briefs](https://www.senecass.com/projects/Mapping/tech/). Currently
-these are now part of the backend for the [Field Mapping Tasking Manager](https://github.com/hotosm/fmtm/wiki) project at
+these are now part of the backend for the
+[Field Mapping Tasking Manager](https://github.com/hotosm/fmtm/wiki) project at
 [HOT](https://www.hotosm.org).
 
 ## Installation
@@ -74,43 +75,46 @@ To install osm-fieldwork, you can use pip. Here are two options:
 - Latest on PyPi:
   `pip install osm-fieldwork`
 
-### Configure
+## Configure
 
 Osm-Fieldwork can be configured using a simple config
-($HOME/.osm-fieldwork)file in your home directory, or using environment
-variables.
+($HOME/.osm-fieldwork)file in your home directory,
+or using environment variables.
 
-#### Config file
+### Config file
 
-The config file is uswd to store the credentials to access an ODK
+The config file is used to store the credentials to access an ODK
 Central server. You must have an account on the Central server of
 course for this to work. That file looks like this:
 
-    url=https://foo.org
-    user=foo@bar.org
-    passwd=arfood
+```dotenv
+url=https://foo.org
+user=foo@bar.org
+passwd=arfood
+```
 
-#### Environment Variables
+### Environment Variables
 
-**LOG_LEVEL**
+- **LOG_LEVEL**
 
 > If present, will change the log level. Defaults to DEBUG.
 
-**ODK_CENTRAL_URL**
+- **ODK_CENTRAL_URL**
 
 > The URL for an ODKCentral server to connect to.
 
-**ODK_CENTRAL_USER**
+- **ODK_CENTRAL_USER**
 
 > The user for ODKCentral.
 
-**ODK_CENTRAL_PASSWD**
+- **ODK_CENTRAL_PASSWD**
 
 > The password for ODKCentral.
 
-**ODK_CENTRAL_SECURE**
+- **ODK_CENTRAL_SECURE**
 
-> If set to False, will allow insecure connections to the ODKCentral API. Else defaults to True.
+> If set to False, will allow insecure connections to the ODKCentral API.
+> Else defaults to True.
 
 ## Using the Container Image
 
@@ -131,12 +135,12 @@ docker run --rm -it -v $PWD:/data ghcr.io/hotosm/osm-fieldwork:latest
 
 > Note: the output directory should always be /data/... to persist data.
 
-# Utility Programs
+## Utility Programs
 
 These programs are more fully documented [in this](wiki/programs.md)
 file. This is just a short overview.
 
-## CSVDump.py
+### CSVDump.py
 
 This program converts the data collected from ODK Collect into
 the proper OpenStreetMap tagging schema. The conversion is controled
@@ -149,7 +153,7 @@ the conversion in JOSM. To do efficient conversion from ODK to OSM,
 it's best to use the XLSForm library as templates, as everything is
 designed to work together.
 
-## basemapper.py
+### basemapper.py
 
 This program creates basemaps of satellite imagery, and produces files
 in mbtiles format for [ODK
@@ -164,7 +168,7 @@ vanbe downloaded from
 [USGS Topo maps](https://apps.nationalmap.gov/datasets/), or [Open
 Aerial Map](https://openaerialmap.org/)
 
-## make_data_extract.py
+### make_data_extract.py
 
 This program makes data extracts from
 [OpenStreetMap](https://www.openstreetmap.org) data. Multiple input
@@ -172,14 +176,14 @@ sources are supported, a local postgresql database, the HOT maintained
 [Underpass](https://galaxy.hotosm.org/) database, or
 [Overpass](https://overpass-turbo.eu).
 
-## odk2csv.py
+### odk2csv.py
 
 This program is used when working offline for extended periods. This
 converts the ODK XML format on your mobile device into the same CSV
 format used for submissions downloaded from [ODK
 Central](https://docs.getodk.org/central-intro/)
 
-## odk_client.py
+### odk_client.py
 
 This program is a simple command line client to an ODK Central
 server. This allows you to list projects, appusers, tasks, and
@@ -188,7 +192,7 @@ this should only be [used by
 developers](https://en.wikipedia.org/wiki/With_great_power_comes_great_responsibility)
 as it does direct database access, and you could loose all your data.
 
-## filter_data.py
+### filter_data.py
 
 This program is used to support humanitariam data models. It extracts
 the tags and values from the [data models
@@ -199,7 +203,7 @@ to not flood OSM with obscure tags that aren't supported by the
 community. It also filters data extracts so they work with ODK
 Collect.
 
-# Best Practices
+## Best Practices
 
 To ensure the quality of your converted data, here are some best
 practices to follow:
@@ -262,7 +266,7 @@ data item with the goal of both tag completeness and tag correctness.
 - Use the resulting OSM XML file with JOSM or other OSM editors to
   validate and edit the data before uploading it to OpenStreetMap.
 
-### Conclusion
+## Conclusion
 
 The XLSForm Library is a valuable resource for organizations involved
 in humanitarian data collection, as it provides a collection of
