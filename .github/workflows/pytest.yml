@@ -1,27 +1,18 @@
-name: pytest
+name: 🧪 PyTest
 
 on:
   # Run tests on all pushed branches
   push:
-    branches:
-      - "*"
-  # Run tests on PR, prior to merge to main & development.
+    branches: [main]
+  # Run tests on PR, prior to merge to main & development
   pull_request:
-    branches:
-      - main
+    branches: [main]
   # Allow manual trigger (workflow_dispatch)
   workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    environment:
-      name: "test"
-    container:
-      image: ghcr.io/hotosm/osm-fieldwork:ci
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run pytest
-        run: |
-          pytest
+  pytest:
+    uses: hotosm/gh-workflows/.github/workflows/test_pytest.yml@1.0.1
+    with:
+      image_name: ghcr.io/${{ github.repository }}
+      tag_override: ${{ github.event_name == 'push' && 'ci' || '' }}

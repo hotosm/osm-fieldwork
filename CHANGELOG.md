@@ -1,3 +1,16 @@
+## 0.3.7 (2023-10-23)
+
+### Fix
+
+- Add simple test case for creating imagery basemaps
+- Accumulate all tiles for all zoom levels
+- Use boundary file that is a single Feature in addition to a FeatureCollection
+- Pass the config file to the YAML parser
+- Add USGS reference numbers for highways
+- custom tms download logic (tile ordering)
+- bug pmtile generation if file exists in first dir
+- create basemap directory automatically
+
 ## 0.3.6 (2023-10-09)
 
 ### Fix

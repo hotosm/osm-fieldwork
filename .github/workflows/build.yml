@@ -1,24 +1,14 @@
-name: Build
+name: 🔧 Build
 
 on:
-  release:
-    types: [published]
+  push:
+    tags: ["*"]
   # Allow manual trigger
   workflow_dispatch:
 
 jobs:
-  extract-vars:
-    uses: hotosm/gh-workflows/.github/workflows/py_app_version.yml@main
-    with:
-      package_name: osm_fieldwork
-
-  backend-ci-build:
-    uses: hotosm/gh-workflows/.github/workflows/image_build.yml@main
-    needs: [extract-vars]
+  ci-build:
+    uses: hotosm/gh-workflows/.github/workflows/image_build.yml@1.0.1
     with:
       build_target: prod
-      image_tags: |
-        "ghcr.io/hotosm/osm-fieldwork:${{ needs.extract-vars.outputs.app_version }}"
-        "ghcr.io/hotosm/osm-fieldwork:latest"
-      build_args: |
-        PKG_VERSION=${{ needs.extract-vars.outputs.app_version }}
+      image_name: "ghcr.io/${{ github.repository }}"
