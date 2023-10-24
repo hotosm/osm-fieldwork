@@ -1,13 +1,43 @@
 # [Home](https://github.com/hotosm/osm-fieldwork/wiki)
 
-[About](https://github.com/hotosm/osm-fieldwork/wiki/about/About)
+[About](https://github.com/hotosm/osm-fieldwork/wiki/About)
 
-[User Manual](https://github.com/hotosm/osm-fieldwork/wiki/user-manual)
+[Code of Conduct](https://github.com/hotosm/osm-fieldwork/wiki/Code-of-Conduct)
 
-[Troubleshooting](https://github.com/hotosm/osm-fieldwork/wiki/Troubleshooting)
+[Contribution](https://github.com/hotosm/osm-fieldwork/wiki/Contribution)
+
+[User Manual](https://github.com/hotosm/osm-fieldwork/wiki/User-Manual)
 
 [FAQ](https://github.com/hotosm/osm-fieldwork/wiki/FAQ)
 
-[API](https://github.com/hotosm/osm-fieldwork/wiki/api)
+[Verion Control](https://github.com/hotosm/osm-fieldwork/wiki/Version-Control)
 
-[All other info](https://github.com/hotosm/osm-fieldwork/wiki/about)
+[Troubleshooting](https://github.com/hotosm/osm-fieldwork/wiki/troubleshooting)
+
+## Programs
+
+[Configuration](https://github.com/hotosm/osm-fieldwork/wiki/configuring)
+
+[Base Mapper](https://github.com/hotosm/osm-fieldwork/wiki/basemapper)
+
+[CSVDump](https://github.com/hotosm/osm-fieldwork/wiki/CSVDump)
+
+[ODK Client](https://github.com/hotosm/osm-fieldwork/wiki/odk_client)
+
+[ODK Merge](https://github.com/hotosm/osm-fieldwork/wiki/odk_merge)
+
+## Modules & Utilities
+
+[Program Summaries](https://github.com/hotosm/osm-fieldwork/wiki/programs)
+
+[OSM XML Output](https://github.com/hotosm/osm-fieldwork/wiki/osmfile)
+
+[YAML Config File](https://github.com/hotosm/osm-fieldwork/wiki/yamlfile)
+
+## Technical Deep Dives
+
+[Conflation](https://github.com/hotosm/osm-fieldwork/wiki/conflation)
+
+[External Data](https://github.com/hotosm/osm-fieldwork/wiki/externaldata)
+
+[XLS Forms](https://github.com/hotosm/osm-fieldwork/wiki/xlsforms)
