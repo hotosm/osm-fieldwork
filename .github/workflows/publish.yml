@@ -1,4 +1,4 @@
-name: Publish to PyPi.org
+name: 🚩 Publish to PyPi.org
 
 on:
   release:

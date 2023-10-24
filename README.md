@@ -36,7 +36,7 @@
 
 ---
 
-🕮 **Documentation**: <a href="https://hotosm.github.io/osm-fieldwork/" target="_blank">https://hotosm.github.io/osm-fieldwork/</a>
+📖 **Documentation**: <a href="https://hotosm.github.io/osm-fieldwork/" target="_blank">https://hotosm.github.io/osm-fieldwork/</a>
 
 🖥️ **Source Code**: <a href="https://github.com/hotosm/osm-fieldwork" target="_blank">https://github.com/hotosm/osm-fieldwork</a>
 
