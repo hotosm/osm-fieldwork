@@ -1,4 +1,4 @@
-name: PR Label
+name: 🏷️ PR Label
 
 on:
   pull_request_target:
@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/labeler@v3
+      - uses: actions/labeler@v4
         # Uses .github/labeler.yml definitions
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-name: pytest
+name: 🧪 PyTest
 
 on:
   # Run tests on all pushed branches
@@ -12,9 +12,7 @@ on:
 
 jobs:
   pytest:
-    uses: hotosm/gh-workflows/.github/workflows/test_pytest.yml@main
+    uses: hotosm/gh-workflows/.github/workflows/test_pytest.yml@1.0.1
     with:
       image_name: ghcr.io/${{ github.repository }}
-      build_args: |
-        COMMIT_REF=${{ github.sha }}
       tag_override: ${{ github.event_name == 'push' && 'ci' || '' }}
