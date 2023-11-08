@@ -101,6 +101,7 @@ def dlthread(
             # Create the subdirectories as pySmartDL doesn't do it for us
             Path(dest).mkdir(parents=True, exist_ok=True)
 
+        dl = None
         try:
             if site["source"] == "topo":
                 filespec += "." + site["suffix"]
@@ -112,7 +113,10 @@ def dlthread(
                 log.debug("%s exists!" % (outfile))
         except Exception as e:
             log.error(e)
-            log.error("Couldn't download from %r: %s" % (filespec, dl.get_errors()))
+            if dl:
+                log.error(f"Couldn't download {filespec}: {dl.get_errors()}")
+            else:
+                log.error(f"Couldn't download {filespec}")
 
 
 class BaseMapper(object):
