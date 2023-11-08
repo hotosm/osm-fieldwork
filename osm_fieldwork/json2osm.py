@@ -420,7 +420,7 @@ def json2osm(input_file, yaml_file=None):
             log.debug("Writing final OSM XML file...")
             jsonin.writeOSM(feature)
 
-    jsonin.finishOSM()
+    # jsonin.finishOSM()
     log.info(f"Wrote OSM XML file: {osmoutfile}")
 
     return osmoutfile
