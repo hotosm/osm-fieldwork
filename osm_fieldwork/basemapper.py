@@ -20,7 +20,7 @@
 
 import argparse
 import concurrent.futures
-import json
+import geojson
 import logging
 import queue
 import re
@@ -292,10 +292,10 @@ class BaseMapper(object):
 
         log.debug(f"Reading geojson file: {boundary}")
         with open(boundary, "r") as f:
-            poly = json.load(f)
+            poly = geojson.load(f)
         if "features" in poly:
             geometry = shape(poly["features"][0]["geometry"])
-        if "geometry" in poly:
+        elif "geometry" in poly:
             geometry = shape(poly["geometry"])
         else:
             geometry = shape(poly)
