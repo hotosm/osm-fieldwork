@@ -29,7 +29,7 @@ from osm_fieldwork.sqlite import DataFile
 log = logging.getLogger(__name__)
 
 rootdir = os.path.dirname(os.path.abspath(__file__))
-infile = f"{rootdir}/testdata/Rollinsville.geojson"
+boundary = f"{rootdir}/testdata/Rollinsville.geojson"
 outfile = f"{rootdir}/testdata/rollinsville.mbtiles"
 base = "./tiles"
 # boundary = open(infile, "r")
@@ -45,7 +45,7 @@ base = "./tiles"
 def test_create():
     """See if the file got loaded."""
     hits = 0
-    basemap = BaseMapper(infile, base, "topo", False)
+    basemap = BaseMapper(boundary, base, "topo", False)
     tiles = list()
     for level in [8, 9, 10, 11, 12]:
         basemap.getTiles(level)
@@ -64,7 +64,6 @@ def test_create():
     shutil.rmtree(base)
 
     assert hits == 2
-
 
 if __name__ == "__main__":
     test_create()
