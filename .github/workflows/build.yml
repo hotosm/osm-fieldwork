@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci-build:
-    uses: hotosm/gh-workflows/.github/workflows/image_build.yml@1.2.3
+    uses: hotosm/gh-workflows/.github/workflows/image_build.yml@1.2.4
     with:
       build_target: prod
       image_name: "ghcr.io/${{ github.repository }}"
