@@ -20,7 +20,6 @@
 
 import argparse
 import concurrent.futures
-import json
 import logging
 import queue
 import re
@@ -29,6 +28,7 @@ import threading
 from pathlib import Path
 from typing import Union
 
+import geojson
 import mercantile
 from cpuinfo import get_cpu_info
 from pmtiles.tile import (
@@ -101,6 +101,7 @@ def dlthread(
             # Create the subdirectories as pySmartDL doesn't do it for us
             Path(dest).mkdir(parents=True, exist_ok=True)
 
+        dl = None
         try:
             if site["source"] == "topo":
                 filespec += "." + site["suffix"]
@@ -112,7 +113,10 @@ def dlthread(
                 log.debug("%s exists!" % (outfile))
         except Exception as e:
             log.error(e)
-            log.error("Couldn't download from %r: %s" % (filespec, dl.get_errors()))
+            if dl:
+                log.error(f"Couldn't download {filespec}: {dl.get_errors()}")
+            else:
+                log.error(f"Couldn't download {filespec}")
 
 
 class BaseMapper(object):
@@ -292,10 +296,10 @@ class BaseMapper(object):
 
         log.debug(f"Reading geojson file: {boundary}")
         with open(boundary, "r") as f:
-            poly = json.load(f)
+            poly = geojson.load(f)
         if "features" in poly:
             geometry = shape(poly["features"][0]["geometry"])
-        if "geometry" in poly:
+        elif "geometry" in poly:
             geometry = shape(poly["geometry"])
         else:
             geometry = shape(poly)

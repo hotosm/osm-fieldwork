@@ -267,7 +267,7 @@ class JsonDump(Convert):
                 tags[key] = v
             total.append(tags)
 
-        log.debug(f"Finsished parsing JSON file {filespec}")
+        # log.debug(f"Finished parsing JSON file {filespec}")
         return total
 
     def createEntry(
@@ -417,10 +417,10 @@ def json2osm(input_file, yaml_file=None):
                     log.warning(f"Bad record! {feature}")
                     continue  # Skip bad records
 
-            log.debug("Writing final OSM XML file...")
             jsonin.writeOSM(feature)
+    # log.debug("Writing final OSM XML file...")
 
-    jsonin.finishOSM()
+    # jsonin.finishOSM()
     log.info(f"Wrote OSM XML file: {osmoutfile}")
 
     return osmoutfile
