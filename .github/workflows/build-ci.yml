@@ -17,4 +17,4 @@ jobs:
     with:
       build_target: ci
       image_tags: |
-        "ghcr.io/hotosm/osm-rawdata:ci"
+        "ghcr.io/${{ github.repository }}:ci"

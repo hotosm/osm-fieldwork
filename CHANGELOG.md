@@ -1,3 +1,14 @@
+## 0.3.8 (2023-11-18)
+
+### Fix
+
+- Make less verbose
+- Always escape the value for embedded quotes
+- Fix bug with referencing an out of scope variable
+- Use geojson instead of json to read in the boundary file
+- Don't call OsmFile.footer, it's now handled by a destructor
+- Add link to XLSForm design doc
+
 ## 0.3.7 (2023-10-23)
 
 ### Fix
