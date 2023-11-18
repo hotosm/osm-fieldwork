@@ -142,6 +142,7 @@ CMD [""]
 
 FROM runtime as prod
 # Pre-compile packages to .pyc (init speed gains)
-RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
+RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
+    && chmod +x /container-entrypoint.sh
 ENTRYPOINT ["/container-entrypoint.sh"]
 CMD ["bash"]
