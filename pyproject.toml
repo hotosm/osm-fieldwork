@@ -67,6 +67,7 @@ version_files = [
     "osm_fieldwork/__version__.py",
     "Makefile:VERSION",
 ]
+update_changelog_on_bump = true
 
 [tool.pdm]
 version = {from = "osm_fieldwork/__version__.py"}
