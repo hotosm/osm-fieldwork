@@ -74,6 +74,9 @@ def main():
     infile = open(args.infile, "r")
     indata = geojson.load(infile)
 
+    tourism = None
+    highway = None
+    amenity = None
     # gpxpy.gpxfield.GPXField()
     gpx = gpxpy.gpx.GPX()
     gpx.nsmap["osmand"] = "https://osmand.net"

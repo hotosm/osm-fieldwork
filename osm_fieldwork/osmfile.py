@@ -197,12 +197,9 @@ class OsmFile(object):
             line += "%s=%r " % (ref, str(value))
         osm += "  <way " + line + ">"
 
-        for ref in way["refs"]:
-            osm += '\n    <nd ref="%s"/>' % ref
-
-        import epdb
-
-        epdb.st()
+        if 'refs' in way:
+            for ref in way["refs"]:
+                osm += '\n    <nd ref="%s"/>' % ref
         if "tags" in way:
             for key, value in way["tags"].items():
                 if value is None:
