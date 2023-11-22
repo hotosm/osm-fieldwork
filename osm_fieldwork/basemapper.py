@@ -20,7 +20,6 @@
 
 import argparse
 import concurrent.futures
-import geojson
 import logging
 import queue
 import re
@@ -29,6 +28,7 @@ import threading
 from pathlib import Path
 from typing import Union
 
+import geojson
 import mercantile
 from cpuinfo import get_cpu_info
 from pmtiles.tile import (
