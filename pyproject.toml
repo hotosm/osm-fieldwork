@@ -73,7 +73,7 @@ update_changelog_on_bump = true
 version = {from = "osm_fieldwork/__version__.py"}
 [tool.pdm.build]
 includes = ["osm_fieldwork"]
-source-includes = ["tests", "LICENSE", "README.md"]
+source-includes = ["LICENSE.md", "README.md"]
 excludes = ["osm_fieldwork/*.db", "osm_fieldwork/*.sql"]
 [tool.pdm.dev-dependencies]
 dev = [
@@ -94,6 +94,12 @@ docs = [
     "mkdocs-material>=9.2.3",
     "mkdocstrings-python>=1.5.1",
     "mkdocs-exclude>=1.0.2",
+]
+ui = [
+    "kivy[base]>=2.2.1",
+    "kivymd @ https://github.com/kivymd/KivyMD/archive/master.zip",
+    "plyer>=2.1.0",
+    "androidstorage4kivy>=0.1.1",
 ]
 
 [tool.black]
