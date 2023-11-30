@@ -46,15 +46,17 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir pdm==2.6.1
 RUN pdm export --prod > requirements.txt \
     && pdm export -G debug -G test -G docs \
-        --no-default > requirements-ci.txt
+        --no-default > requirements-ci.txt \
+    && pdm export -G ui \
+        --no-default > requirements-ui.txt
 
 
 
 FROM base as build-wheel
 WORKDIR /build
-COPY . .
-RUN pip install pdm==2.6.1 \
-    && pdm build
+COPY pyproject.toml pdm.lock README.md LICENSE.md ./
+COPY osm_fieldwork ./osm_fieldwork
+RUN pip install pdm==2.6.1 && pdm build
 
 
 
@@ -112,6 +114,79 @@ COPY --from=build \
     /root/.local
 WORKDIR /data
 COPY entrypoint.sh /container-entrypoint.sh
+
+
+
+FROM runtime as ui-base
+ARG PYTHON_IMG_TAG
+COPY --from=extract-deps \
+    /opt/python/requirements-ui.txt /opt/python/
+RUN mv /root/.local/bin/* /usr/local/bin/ \
+    && mv /root/.local/lib/python${PYTHON_IMG_TAG}/site-packages/* \
+    /usr/local/lib/python${PYTHON_IMG_TAG}/site-packages/ \
+    && set -ex \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install \
+    -y --no-install-recommends \
+        "git" \
+        "xclip" \
+        "libmtdev-dev" \
+        "libgl-dev" \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --upgrade --no-warn-script-location \
+    --no-cache-dir -r \
+    /opt/python/requirements-ui.txt \
+    # Add flask, required for webdebugger
+    && pip install --upgrade --no-warn-script-location \
+    --no-cache-dir flask==3.0.0 \
+    && rm -r /opt/python
+WORKDIR /app
+COPY ui/main.py ui/osmfieldwork.kv ui/buildozer.spec ./
+# Update the requirements in buildozer.spec
+RUN requirements_list=$(grep -v '^#' requirements-ci.txt \
+    | tr '\n' ',' | sed 's/^,//; s/,$//') \
+    && sed -e "/^requirements =/c\requirements = $requirements_list" \
+    buildozer.spec > temp_file.txt \
+    && mv temp_file.txt buildozer.spec
+
+
+
+FROM ui-base as ui-debug
+# Default app storage dir
+VOLUME ["/root/.config/osmfieldwork"]
+VOLUME ["/tmp/.X11-unix"]
+CMD ["python", "main.py", "-m", "webdebugger"]
+
+
+
+FROM ui-base as ui-build
+RUN set -ex \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install \
+    -y --no-install-recommends \
+        "build-essential" \
+        "automake" \
+        "ant" \
+        "cmake" \
+        "zip" \
+        "unzip" \
+        "openjdk-17-jdk" \
+        "autoconf" \
+        "libtool" \
+        "patch" \
+        "pkg-config" \
+        "zlib1g-dev" \
+        "libncurses5-dev" \
+        "libncursesw5-dev" \
+        "libtinfo5" \
+        "libffi-dev" \
+        "libssl-dev" \
+        "libltdl-dev" \
+    && rm -rf /var/lib/apt/lists/*
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir buildozer==1.5.0 \
+    Cython==0.29.33 virtualenv==20.24.7
+CMD ["buildozer", "android", "release"]
 
 
 
