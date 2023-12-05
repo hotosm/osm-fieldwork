@@ -6,7 +6,7 @@ groups = ["default", "docs", "debug", "test", "dev", "ui"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:d29394d70376452b5cc9c73046abf80c28530e5fa9373b4a85d2bfbec75c4e7c"
+content_hash = "sha256:66ece6f1232bfaffd245cac4d00c3e8b8646d508b391e3e3ba600ca2117ca00e"
 
 [[package]]
 name = "androidstorage4kivy"
@@ -988,24 +988,24 @@ files = [
 
 [[package]]
 name = "osm-rawdata"
-version = "0.1.6"
+version = "0.1.7"
 requires_python = ">=3.10"
 summary = "Make data extracts from OSM data."
 dependencies = [
-    "GeoAlchemy2>=0.12.5",
-    "PyYAML>=6.0.1",
-    "SQLAlchemy-Utils>=0.41.1",
+    "GeoAlchemy2>=0.11.0",
+    "PyYAML>=6.0.0",
+    "SQLAlchemy-Utils>=0.38.3",
     "flatdict>=4.0.1",
     "geojson>=2.5.0",
-    "psycopg2>=2.9.9",
+    "psycopg2>=2.9.1",
     "pyarrow>=14.0.1",
-    "requests>=2.28.2",
-    "shapely>=2.0.1",
-    "sqlalchemy>=1.4.41",
+    "requests>=2.26.0",
+    "shapely>=1.8.1",
+    "sqlalchemy>=2.0.0",
 ]
 files = [
-    {file = "osm-rawdata-0.1.6.tar.gz", hash = "sha256:e1e4b5c92dfbf6fd4846766ac2634b4a539b12d5dec30f540bf25fbb3ed3995d"},
-    {file = "osm_rawdata-0.1.6-py3-none-any.whl", hash = "sha256:a61e6b70a79efb4d294584dfe9ad46bfbd344fc7592b9f39bf6c5e1cd7b74d09"},
+    {file = "osm-rawdata-0.1.7.tar.gz", hash = "sha256:b012a20e15cca925ed4d0494cd65ebf3fd97759323ed64fb94dc8cf46ce67b6f"},
+    {file = "osm_rawdata-0.1.7-py3-none-any.whl", hash = "sha256:9de18ac8ddc5d25058b79506aa940ab688fc9bf096e09c641bc76266678611a8"},
 ]
 
 [[package]]

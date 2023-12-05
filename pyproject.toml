@@ -27,7 +27,7 @@ dependencies = [
     "py-cpuinfo>=9.0.0",
     "requests>=2.26.0",
     "pmtiles>=3.2.0",
-    "osm-rawdata>=0.1.6",
+    "osm-rawdata>=0.1.7",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
