@@ -3,8 +3,9 @@
 
 # Allow files and directories
 !osm_fieldwork
+!ui
 !pyproject.toml
 !pdm.lock
 !entrypoint.sh
 !README.md
-!LICENSE
+!LICENSE.md

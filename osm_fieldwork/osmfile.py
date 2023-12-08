@@ -197,7 +197,7 @@ class OsmFile(object):
             line += "%s=%r " % (ref, str(value))
         osm += "  <way " + line + ">"
 
-        if 'refs' in way:
+        if "refs" in way:
             for ref in way["refs"]:
                 osm += '\n    <nd ref="%s"/>' % ref
         if "tags" in way:
