@@ -1,3 +1,15 @@
+## 0.4.0 (2023-12-05)
+
+### Feat
+
+- basic kivy ui to download basemaps
+
+### Fix
+
+- Fix merge conflict
+- Make sure ref exists before trying to use it from a dict
+- Add default variables
+
 ## 0.3.8 (2023-11-18)
 
 ### Fix
