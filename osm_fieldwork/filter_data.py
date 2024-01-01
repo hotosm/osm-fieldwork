@@ -196,6 +196,9 @@ class FilterData(object):
                             continue
                         log.warning(f"Tag {key} not in the data model!")
                         continue
+            if 'title' not in properties:
+                properties["label"] = properties["id"]
+                properties["title"] = properties["id"]
             newfeature = Feature(geometry=feature["geometry"], properties=properties)
             collection.append(newfeature)
         if type(data) == str:
