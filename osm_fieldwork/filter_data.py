@@ -153,7 +153,7 @@ class FilterData(object):
         keep = ("osm_id", "id", "version")
         collection = list()
         for feature in indata["features"]:
-            log.debug(f"FIXME0: {feature}")
+            # log.debug(f"FIXME0: {feature}")
             properties = dict()
             for key, value in feature["properties"].items():
                 # log.debug(f"{key} = {value}")
