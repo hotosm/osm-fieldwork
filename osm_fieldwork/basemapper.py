@@ -17,6 +17,7 @@
 #     You should have received a copy of the GNU General Public License
 #     along with OSM-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
+"""Module for generating basemaps from various providers."""
 
 import argparse
 import concurrent.futures
@@ -120,6 +121,8 @@ def dlthread(
 
 
 class BaseMapper(object):
+    """Basemapper parent class."""
+
     def __init__(
         self,
         boundary: str,
@@ -198,8 +201,10 @@ class BaseMapper(object):
         self.source = "custom"
 
     def getFormat(self):
-        """Returns:
-        (str): the upstream source for map tiles.
+        """Get the image format of the map tiles.
+
+        Returns:
+            (str): the upstream source for map tiles.
         """
         return self.sources[self.source]["suffix"]
 
@@ -431,6 +436,17 @@ def create_basemap_file(
         formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         log.addHandler(ch)
+
+    log.debug(
+        "Creating basemap with params: "
+        f"boundary={boundary} | "
+        f"outfile={outfile} | "
+        f"zooms={zooms} | "
+        f"outdir={outdir} | "
+        f"source={source} | "
+        f"xy={xy} | "
+        f"tms={tms}"
+    )
 
     # Get all the zoom levels we want
     zoom_levels = list()
