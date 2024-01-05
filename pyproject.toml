@@ -121,6 +121,8 @@ exclude = [
 ]
 [tool.ruff.pydocstyle]
 convention = "google"
+[tool.ruff.per-file-ignores]
+"osm_fieldwork/basemapper.py" = ["N802"]
 
 [project.scripts]
 json2osm = "osm_fieldwork.json2osm:main"
