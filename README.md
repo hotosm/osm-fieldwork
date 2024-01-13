@@ -29,7 +29,7 @@
   <a href="https://pypistats.org/packages/osm-fieldwork" target="_blank">
       <img src="https://img.shields.io/pypi/dm/osm-fieldwork.svg" alt="Downloads">
   </a>
-  <a href="https://github.com/hotosm/osm-fieldwork/blob/main/LICENSE" target="_blank">
+  <a href="https://github.com/hotosm/osm-fieldwork/blob/main/LICENSE.md" target="_blank">
       <img src="https://img.shields.io/github/license/hotosm/osm-fieldwork.svg" alt="License">
   </a>
 </p>
@@ -78,9 +78,6 @@ seamlessly from his phone to OSM requires minimal effort. To this day,
 Rob continues his weekly field mapping every few months while continuously
 enhancing the software used in the project.
 
-<!-- ![Rob Savoye](https://github.com/hotosm/osm-fieldwork/assets/97789856/0e25966e-cb3e-4634-9730-1c4606cf937a) -->
-<!-- ![osm-fieldwork](https://github.com/hotosm/osm-fieldwork/assets/97789856/a008e149-11a3-4d4e-b3e4-342cc6320c4b) -->
-
 ## About OSM Fieldwork
 
 Osm-Fieldwork is a project for processing data collection using
@@ -100,7 +97,8 @@ talk from SOTM-US 2022 titled [OSM For
 Firefighting](https://www.youtube.com/watch?v=qgk9al1rluE). Much of
 the tech and usage is explained in these [tech
 briefs](https://www.senecass.com/projects/Mapping/tech/). Currently
-these are now part of the backend for the [Field Mapping Tasking Manager](https://hotosm.github.io/fmtm) project at
+these are now part of the backend for the
+[Field Mapping Tasking Manager](https://hotosm.github.io/fmtm) project at
 [HOT](https://www.hotosm.org).
 
 ## Installation
