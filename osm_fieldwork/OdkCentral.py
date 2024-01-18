@@ -651,7 +651,7 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, auth=self.auth, params=filters, verify=self.verify)
         if result.ok:
             self.submissions = result.json()
-            return self.submissions["value"]
+            return self.submissions
         else:
             return list()
 
