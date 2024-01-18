@@ -1,3 +1,18 @@
+## 0.4.1 (2024-01-18)
+
+### Fix
+
+- For ODK, make sure there is always a label & title
+- Fix logging, and fix polygon vs centroid
+- Be less verbose with debugging
+- Improve the values for the tags so it actually works
+- Add filter_data api doc
+
+### Refactor
+
+- return full submissions detail
+- add param debug log during basemap generation
+
 ## 0.4.0 (2023-12-05)
 
 ### Feat
