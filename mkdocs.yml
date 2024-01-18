@@ -69,7 +69,8 @@ nav:
       - Troubleshooting: about/Troubleshooting.md
       - Changelog: CHANGELOG.md
       - Code of Conduct: Code-of-Conduct.md
-      - License: LICENSE
+      - License: LICENSE.md
+      - Versioning: https://docs.hotosm.org/dev-guide/version-control/#creating-releases
   - User Manual: about/user-manual.md
   - Core Program Usage:
       - ODK Client: about/odk_client.md
