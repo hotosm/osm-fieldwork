@@ -69,7 +69,7 @@ nav:
       - FAQ: about/FAQ.md
       - Troubleshooting: about/Troubleshooting.md
       - Changelog: CHANGELOG.md
-      - Code of Conduct: Code-of-Conduct.md
+      - Code of Conduct: https://docs.hotosm.org/code-of-conduct
       - License: LICENSE.md
       - Versioning: https://docs.hotosm.org/dev-guide/version-control/#creating-releases
   - User Manual: about/user-manual.md
