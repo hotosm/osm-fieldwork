@@ -56,18 +56,21 @@ def main():
     xmlfiles = list()
     if args.instance.find("*") >= 0:
         toplevel = Path()
-        for dir in toplevel.glob(args.instance):
-            if dir.is_dir():
-                xml = os.listdir(dir)
+        unesc = args.instance.replace('\\', '')
+        for directory in toplevel.glob(unesc):
+            if directory.is_dir():
+                xml = os.listdir(directory)
                 # There is always only one XML file per instance
-                full = os.path.join(dir, xml[0])
-                xmlfiles.append(full)
+                full = os.path.join(directory, xml[0])
+            xmlfiles.append(full)
     else:
         toplevel = Path(args.instance)
         if toplevel.is_dir():
             # There is always only one XML file per instance
             full = os.path.join(toplevel, os.path.basename(toplevel))
             xmlfiles.append(full + ".xml")
+        else:
+            xmlfiles.append(args.instance)
 
     # print(xmlfiles)
 
@@ -104,12 +107,12 @@ def main():
 
     now = datetime.now()
     timestamp = f"_{now.year}_{now.month}-{now.day}-{now.hour}-{now.minute}"
-    outfile = args.instance.replace("*", "") + timestamp + ".geojson"
-    outfile = outfile.replace(" ", "")
-    fout = open(outfile, "w")
+    # outfile = args.instance.replace("*", "") + timestamp + ".geojson"
+    # outfile = outfile.replace(" ", "")
+    fout = open(args.outfile, "w")
     dump(collection, fout)
 
-    print(f"Wrote output file {outfile}")
+    print(f"Wrote output file {args.outfile}")
 
 
 if __name__ == "__main__":
