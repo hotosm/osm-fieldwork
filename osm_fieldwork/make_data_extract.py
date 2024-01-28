@@ -74,7 +74,7 @@ class MakeExtract(object):
         Returns:
             (MakeExtract): An instance of this object
         """
-        self.db = PostgresClient(dburi, f"{data_models_path}/{config}")
+        self.db = PostgresClient(dburi, f"{data_models_path}/{config}.yaml")
 
         # Read in the XLSFile
         if "/" in xlsfile:
@@ -107,7 +107,7 @@ class MakeExtract(object):
             poly = boundary["geometry"]
         shape(poly)
 
-        collection = self.db.execQuery(boundary)
+        collection = self.db.execQuery(boundary, None, False)
         if not collection:
             return None
 
@@ -182,13 +182,16 @@ def main():
         quit()
 
     # if verbose, dump to the terminal.
-    if args.verbose:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
+    log_level = os.getenv("LOG_LEVEL", default="INFO")
+    if args.verbose is not None:
+        log_level = logging.DEBUG
+
+    logging.basicConfig(
+        level=log_level,
+        format=("%(asctime)s.%(msecs)03d [%(levelname)s] " "%(name)s | %(funcName)s:%(lineno)d | %(message)s"),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=sys.stdout,
+    )
 
     extract = MakeExtract(args.uri, args.config, args.xlsfile)
     file = open(args.boundary, "r")

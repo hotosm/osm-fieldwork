@@ -45,6 +45,7 @@ markdown_extensions:
 
 plugins:
   - search
+  - git-revision-date-localized
   - exclude:
       glob:
         - plugins/*
@@ -68,8 +69,9 @@ nav:
       - FAQ: about/FAQ.md
       - Troubleshooting: about/Troubleshooting.md
       - Changelog: CHANGELOG.md
-      - Code of Conduct: Code-of-Conduct.md
-      - License: LICENSE
+      - Code of Conduct: https://docs.hotosm.org/code-of-conduct
+      - License: LICENSE.md
+      - Versioning: https://docs.hotosm.org/dev-guide/version-control/#creating-releases
   - User Manual: about/user-manual.md
   - Core Program Usage:
       - ODK Client: about/odk_client.md

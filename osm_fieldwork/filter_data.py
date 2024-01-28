@@ -153,7 +153,7 @@ class FilterData(object):
         keep = ("osm_id", "id", "version")
         collection = list()
         for feature in indata["features"]:
-            log.debug(f"FIXME0: {feature}")
+            # log.debug(f"FIXME0: {feature}")
             properties = dict()
             for key, value in feature["properties"].items():
                 # log.debug(f"{key} = {value}")
@@ -196,6 +196,9 @@ class FilterData(object):
                             continue
                         log.warning(f"Tag {key} not in the data model!")
                         continue
+            if "title" not in properties:
+                properties["label"] = properties["id"]
+                properties["title"] = properties["id"]
             newfeature = Feature(geometry=feature["geometry"], properties=properties)
             collection.append(newfeature)
         if type(data) == str:

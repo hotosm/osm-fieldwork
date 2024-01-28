@@ -651,7 +651,7 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, auth=self.auth, params=filters, verify=self.verify)
         if result.ok:
             self.submissions = result.json()
-            return self.submissions["value"]
+            return self.submissions
         else:
             return list()
 
@@ -960,6 +960,26 @@ class OdkForm(OdkCentral):
         else:
             log.info(f"Published {xform} on Central.")
         return result.status_code
+
+    def form_fields(self, projectId: int, xform: str):
+        """Retrieves the form fields for a xform from odk central.
+
+        Args:
+            projectId (int): The ID of the project on ODK Central
+            xform (str): The XForm to get the details of from ODK Central
+
+        Returns:
+            dict: A json object containing the form fields.
+
+        """
+        if xform.find("_") > 0:
+            xid = xform.split("_")[2]
+        else:
+            xid = xform
+
+        url = f"{self.base}projects/{projectId}/forms/{xid}/fields?odata=true"
+        result = self.session.get(url, auth=self.auth)
+        return result.json()
 
     def dump(self):
         """Dump internal data structures, for debugging purposes only."""

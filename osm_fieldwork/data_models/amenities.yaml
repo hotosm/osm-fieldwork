@@ -6,26 +6,10 @@ from:
 where:
   tags:
     - amenity:
-        - brewery
         - cafe
         - bar
         - pub
-        - fuel
-        - fire_station
-        - library
-        - townhall
-        - courthouse
-        - hospital
-        - restaurant
-        - clinic
-      shop:
-        - alcohol
-        - bakery
-        - car_parts
-        - hardware
-        - convienience
-        - general
-      cuisine: not null
+    - shop: not null
 
 keep:
   - leisure
@@ -43,3 +27,6 @@ keep:
   - amenity
   - convenience
   - diesel
+  - version
+  - name
+  - name:en

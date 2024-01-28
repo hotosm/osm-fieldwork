@@ -194,8 +194,8 @@ FROM runtime as ci
 ARG PYTHON_IMG_TAG
 COPY --from=extract-deps \
     /opt/python/requirements-ci.txt /opt/python/
-RUN mv /root/.local/bin/* /usr/local/bin/ \
-    && mv /root/.local/lib/python${PYTHON_IMG_TAG}/site-packages/* \
+RUN cp -r /root/.local/bin/* /usr/local/bin/ \
+    && cp -r /root/.local/lib/python${PYTHON_IMG_TAG}/site-packages/* \
     /usr/local/lib/python${PYTHON_IMG_TAG}/site-packages/ \
     && set -ex \
     && apt-get update \
@@ -206,7 +206,7 @@ RUN mv /root/.local/bin/* /usr/local/bin/ \
     && pip install --upgrade --no-warn-script-location \
     --no-cache-dir -r \
     /opt/python/requirements-ci.txt \
-    && rm -r /opt/python \
+    && rm -r /opt/python && rm -r /root/.local \
     # Pre-compile packages to .pyc (init speed gains)
     && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
 # Override entrypoint, as not possible in Github action

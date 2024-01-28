@@ -59,7 +59,7 @@ pythonpath = "osm_fieldwork"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.4.0"
+version = "0.4.1"
 version_files = [
     "pyproject.toml:version",
     "osm_fieldwork/__version__.py",
@@ -121,6 +121,8 @@ exclude = [
 ]
 [tool.ruff.pydocstyle]
 convention = "google"
+[tool.ruff.per-file-ignores]
+"osm_fieldwork/basemapper.py" = ["N802"]
 
 [project.scripts]
 json2osm = "osm_fieldwork.json2osm:main"
