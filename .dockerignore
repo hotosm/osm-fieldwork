@@ -7,5 +7,6 @@
 !pyproject.toml
 !pdm.lock
 !entrypoint.sh
+!nginx/certs/central-fullchain.crt
 !README.md
 !LICENSE.md
