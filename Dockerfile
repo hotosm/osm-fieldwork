@@ -192,6 +192,8 @@ CMD ["buildozer", "android", "release"]
 
 FROM runtime as ci
 ARG PYTHON_IMG_TAG
+# Add the SSL cert for debug odkcentral
+COPY nginx/certs/central-fullchain.crt /usr/local/share/ca-certificates/
 COPY --from=extract-deps \
     /opt/python/requirements-ci.txt /opt/python/
 RUN cp -r /root/.local/bin/* /usr/local/bin/ \
@@ -207,6 +209,8 @@ RUN cp -r /root/.local/bin/* /usr/local/bin/ \
     --no-cache-dir -r \
     /opt/python/requirements-ci.txt \
     && rm -r /opt/python && rm -r /root/.local \
+    # Update CA Certs
+    && update-ca-certificates \
     # Pre-compile packages to .pyc (init speed gains)
     && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
 # Override entrypoint, as not possible in Github action

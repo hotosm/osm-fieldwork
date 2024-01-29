@@ -1,0 +1,116 @@
+# Copyright (c) 2022, 2023 Humanitarian OpenStreetMap Team
+# This file is part of osm-fieldwork.
+#
+#     osm-fieldwork is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     osm-fieldwork is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with osm-fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
+#
+
+version: "3"
+
+networks:
+  net:
+    name: osm-fieldwork
+
+services:
+  fieldwork:
+    image: "ghcr.io/hotosm/osm-fieldwork:ci"
+    build:
+      target: ci
+    container_name: osm-fieldwork
+    volumes:
+      # Mount local package
+      - ./osm_fieldwork:/root/.local/lib/python3.10/site-packages/osm_fieldwork
+      # Mount local tests
+      - ./tests:/data/tests
+    depends_on:
+      proxy:
+        condition: service_started
+    networks:
+      - net
+    restart: "unless-stopped"
+    command: "pytest"
+
+  # db:
+  #   image: "postgis/postgis:14-3.4-alpine"
+  #   environment:
+  #     - POSTGRES_USER=osm
+  #     - POSTGRES_PASSWORD=dummycipassword
+  #     - POSTGRES_DB=fieldwork
+  #   networks:
+  #     - net
+  #   restart: "unless-stopped"
+  #   healthcheck:
+  #     test: pg_isready -U osm -d fieldwork
+  #     start_period: 5s
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+
+  proxy:
+    image: "docker.io/nginx:1.25.3-bookworm"
+    depends_on:
+      central:
+        condition: service_healthy
+    volumes:
+      - ./nginx/odk.conf:/etc/nginx/conf.d/odk.conf
+      - ./nginx/certs/central-fullchain.crt:/etc/nginx/central-fullchain.crt
+      - ./nginx/certs/central.key:/etc/nginx/central.key
+    networks:
+      - net
+    restart: "unless-stopped"
+
+  central:
+    image: "ghcr.io/hotosm/fmtm/odkcentral:v2023.5.0"
+    depends_on:
+      central-db:
+        condition: service_healthy
+    environment:
+      - DOMAIN=local
+      - SYSADMIN_EMAIL=test@hotosm.org
+      - SYSADMIN_PASSWD=Password1234
+      - HTTPS_PORT=443
+      - DB_HOST=central-db
+      - DB_USER=odk
+      - DB_PASSWORD=odk
+      - DB_NAME=odk
+      - DB_SSL=${DB_SSL:-null}
+      - EMAIL_FROM=test@hotosm.org
+      - EMAIL_HOST=mail
+      - EMAIL_PORT=25
+      - EMAIL_SECURE=false
+      - EMAIL_IGNORE_TLS=true
+      - EMAIL_USER=''
+      - EMAIL_PASSWORD=''
+      - OIDC_ENABLED=false
+      - SENTRY_ORG_SUBDOMAIN=o130137
+      - SENTRY_KEY=3cf75f54983e473da6bd07daddf0d2ee
+      - SENTRY_PROJECT=1298632
+    networks:
+      - net
+    restart: "unless-stopped"
+
+  central-db:
+    image: "postgis/postgis:14-3.4-alpine"
+    environment:
+      - POSTGRES_USER=odk
+      - POSTGRES_PASSWORD=odk
+      - POSTGRES_DB=odk
+    networks:
+      - net
+    restart: "unless-stopped"
+    healthcheck:
+      test: pg_isready -U odk -d odk
+      start_period: 5s
+      interval: 10s
+      timeout: 5s
+      retries: 3
