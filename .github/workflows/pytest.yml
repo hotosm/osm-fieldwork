@@ -12,7 +12,13 @@ on:
 
 jobs:
   pytest:
-    uses: hotosm/gh-workflows/.github/workflows/test_pytest.yml@1.2.4
+    uses: hotosm/gh-workflows/.github/workflows/test_compose.yml@1.4.5
     with:
       image_name: ghcr.io/${{ github.repository }}
       tag_override: ${{ github.event_name == 'push' && 'ci' || '' }}
+      pre_command: docker compose up -d proxy && docker compose exec api /app-entrypoint.sh
+      compose_service: fieldwork
+      compose_command: pytest
+      cache_extra_imgs: |
+        "docker.io/postgis/postgis:${{ vars.POSTGIS_TAG }}"
+        "ghcr.io/hotosm/fmtm/odkcentral:${{ vars.ODK_CENTRAL_TAG }}"
