@@ -22,25 +22,23 @@ from pathlib import Path
 import segno
 
 
-def test_delete_appuser(appuser, appuser_details, project_details):
+async def test_delete_appuser(appuser, appuser_details, project_details):
     """Create a QR Code for an appuser."""
-    response = appuser.delete(
+    response = await appuser.delete(
         project_details.get("id"),
         appuser_details.get("id"),
     )
-    assert response.ok
-    assert response.json().get("success") == True
+    assert response.get("success") is True
 
 
-# def test_update_role(appuser, project_details, appuser_details, xform_details):
+# async def test_update_role(appuser, project_details, appuser_details, xform_details):
 #     """Test updating appuser role."""
 #     response = appuser.updateRole(
 #         projectId=project_details.get("id"), xform=xform_details.get("id"), actorId=appuser_details.get("id")
 #     )
-#     assert response.ok
 
 
-# def test_grant_access(appuser, project_details, appuser_details, xform_details):
+# async def test_grant_access(appuser, project_details, appuser_details, xform_details):
 #     """Create granting appuser access to a form."""
 #     response = appuser.grantAccess(
 #         projectId=project_details.get("id"), xform=xform_details.get("id"), actorId=appuser_details.get("id")
@@ -48,9 +46,9 @@ def test_delete_appuser(appuser, appuser_details, project_details):
 #     assert response.ok
 
 
-def test_create_qrcode(appuser, appuser_details):
+async def test_create_qrcode(appuser, appuser_details):
     """Create a QR Code for an appuser."""
-    qrcode = appuser.createQRCode(
+    qrcode = await appuser.createQRCode(
         odk_id=1,
         project_name="test project",
         appuser_token=appuser_details.get("token"),
@@ -60,7 +58,7 @@ def test_create_qrcode(appuser, appuser_details):
     )
     assert isinstance(qrcode, segno.QRCode)
 
-    qrcode = appuser.createQRCode(
+    qrcode = await appuser.createQRCode(
         odk_id=1,
         project_name="test project",
         appuser_token=appuser_details.get("token"),

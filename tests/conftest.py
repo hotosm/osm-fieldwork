@@ -21,7 +21,7 @@ import logging
 import sys
 import uuid
 
-import pytest
+import pytest_asyncio
 
 # from pyxform.xls2xform import xls2xform_convert
 from osm_fieldwork.OdkCentral import OdkAppUser, OdkForm, OdkProject
@@ -89,19 +89,19 @@ logging.basicConfig(
 #     return response.json().get("token")
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 def project():
     """Get persistent ODK Central requests session."""
     return OdkProject("https://proxy", "test@hotosm.org", "Password1234")
 
 
-@pytest.fixture(scope="function")
-def project_details(project):
+@pytest_asyncio.fixture(scope="function")
+async def project_details(project):
     """Get persistent ODK Central requests session."""
-    return project.createProject("test project")
+    return await project.createProject("test project")
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 def appuser():
     """Get appuser for a project."""
     return OdkAppUser(
@@ -111,11 +111,11 @@ def appuser():
     )
 
 
-@pytest.fixture(scope="function")
-def appuser_details(appuser, project_details):
+@pytest_asyncio.fixture(scope="function")
+async def appuser_details(appuser, project_details):
     """Get appuser for a project."""
     appuser_name = f"test_appuser_{uuid.uuid4()}"
-    response = appuser.create(project_details.get("id"), appuser_name)
+    response = await appuser.create(project_details.get("id"), appuser_name)
 
     assert response.get("projectId") == 1
     assert response.get("displayName") == appuser_name
@@ -123,8 +123,8 @@ def appuser_details(appuser, project_details):
     return response
 
 
-@pytest.fixture(scope="function")
-def xform():
+@pytest_asyncio.fixture(scope="function")
+async def xform():
     """Get appuser for a project."""
     return OdkForm(
         url="https://proxy",

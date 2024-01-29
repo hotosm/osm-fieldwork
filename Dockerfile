@@ -94,7 +94,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/root/.local/bin:$PATH" \
     PYTHON_LIB="/root/.local/lib/python$PYTHON_IMG_TAG/site-packages" \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
-    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
     CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 RUN set -ex \
     && apt-get update \
