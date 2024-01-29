@@ -40,7 +40,6 @@ collection.
 [shapely](https://pypi.org/project/shapely/),
 [pyxform](https://pypi.org/project/pyxform/),
 [xmltodict](https://pypi.org/project/xmltodict/),
-[psycopg2](https://pypi.org/project/psycopg/), and
 [pandas](https://pypi.org/project/pandas/)
 
 <hr></hr>
@@ -68,11 +67,16 @@ and technical writers are always welcome.
 
 **A:** There are several ways you can contribute to osm-fieldwork, including:
 
-- Development: If you have experience in development, you can contribute by fixing bugs, adding new features, or improving the existing codebase.
+- Development: If you have experience in development, you can contribute
+  by fixing bugs, adding new features, or improving the existing codebase.
 
-- Documentation: If you have experience in technical writing, you can contribute by writing documentation, tutorials, or other educational materials.
+- Documentation: If you have experience in technical writing, you can
+  contribute by writing documentation, tutorials, or other educational
+  materials.
 
-- Testing: If you have experience in software testing, you can contribute by testing the application and reporting bugs or suggesting improvements.
+- Testing: If you have experience in software testing, you can
+  contribute by testing the application and reporting bugs or suggesting
+  improvements.
 
 <hr></hr>
 
