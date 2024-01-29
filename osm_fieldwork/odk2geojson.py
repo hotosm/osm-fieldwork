@@ -56,7 +56,7 @@ def main():
     xmlfiles = list()
     if args.instance.find("*") >= 0:
         toplevel = Path()
-        unesc = args.instance.replace('\\', '')
+        unesc = args.instance.replace("\\", "")
         for directory in toplevel.glob(unesc):
             if directory.is_dir():
                 xml = os.listdir(directory)
