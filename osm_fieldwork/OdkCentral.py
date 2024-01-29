@@ -640,20 +640,29 @@ class OdkForm(OdkCentral):
     def listSubmissions(self, projectId: int, xform: str, filters: dict = None):
         """Fetch a list of submission instances for a given form.
 
+        Returns data in format:
+
+        {
+            "value":[],
+            "@odata.context": "URL/v1/projects/52/forms/103.svc/$metadata#Submissions",
+            "@odata.count":0
+        }
+
         Args:
             projectId (int): The ID of the project on ODK Central
             xform (str): The XForm to get the details of from ODK Central
 
         Returns:
-            (list): The list of Submissions
+            (json): The JSON of Submissions.
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}.svc/Submissions"
         result = self.session.get(url, auth=self.auth, params=filters, verify=self.verify)
+
         if result.ok:
             self.submissions = result.json()
             return self.submissions
-        else:
-            return list()
+
+        return {}
 
     def listAssignments(
         self,
@@ -693,7 +702,7 @@ class OdkForm(OdkCentral):
             json (bool): Download JSON or CSV format
 
         Returns:
-            (list): The lit of submissions
+            (bytes): The list of submissions as JSON or CSV bytes object.
         """
         headers = {"Content-Type": "application/json"}
         now = datetime.now()
@@ -725,7 +734,7 @@ class OdkForm(OdkCentral):
             return result.content
         else:
             log.error(f"Submissions for {projectId}, Form {xform}" + " doesn't exist")
-            return list()
+            return bytes()
 
     def getSubmissionMedia(
         self,
