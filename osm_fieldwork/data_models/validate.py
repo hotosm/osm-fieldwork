@@ -26,8 +26,6 @@ import sys
 import pandas as pd
 import requests
 
-# from requests.auth import HTTPBasicAuth
-
 #
 # This program is a utility to validate tags & values from the
 # Impact spreadsheet with what is defined on the OSM Wiki
