@@ -31,6 +31,7 @@ import sys
 import zlib
 from base64 import b64encode
 from datetime import datetime
+from typing import Optional
 
 import requests
 import segno
@@ -180,10 +181,13 @@ class OdkCentral(object):
         self.session.headers.update({"accept": "odkcentral"})
 
         # Get a session token
-        response = self.session.post(f"{self.base}sessions", json={
-            "email": self.user,
-            "password": self.passwd,
-        })
+        response = self.session.post(
+            f"{self.base}sessions",
+            json={
+                "email": self.user,
+                "password": self.passwd,
+            },
+        )
         if not response.ok:
             response.raise_for_status()
 
@@ -1037,17 +1041,32 @@ class OdkAppUser(OdkCentral):
     ):
         """Create a new app-user for a form.
 
+        Example response:
+
+        {
+        "createdAt": "2018-04-18T23:19:14.802Z",
+        "displayName": "My Display Name",
+        "id": 115,
+        "type": "user",
+        "updatedAt": "2018-04-18T23:42:11.406Z",
+        "deletedAt": "2018-04-18T23:42:11.406Z",
+        "token": "d1!E2GVHgpr4h9bpxxtqUJ7EVJ1Q$Dusm2RBXg8XyVJMCBCbvyE8cGacxUx3bcUT",
+        "projectId": 1
+        }
+
         Args:
             projectId (int): The ID of the project on ODK Central
             name (str): The name of the XForm
 
         Returns:
-            (bool): Whether it was created or not
+            (dict): The response JSON from ODK Central
         """
         url = f"{self.base}projects/{projectId}/app-users"
         response = self.session.post(url, json={"displayName": name}, verify=self.verify)
         self.user = name
-        return result
+        if response.ok:
+            return response.json()
+        return {}
 
     def delete(
         self,
@@ -1072,7 +1091,7 @@ class OdkAppUser(OdkCentral):
         projectId: int,
         xform: str,
         roleId: int = 2,
-        actorId: int = None,
+        actorId: Optional[int] = None,
     ):
         """Update the role of an app user for a form.
 
@@ -1104,40 +1123,66 @@ class OdkAppUser(OdkCentral):
             (bool): Whether access was granted or not
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}/assignments/{roleId}/{actorId}"
-        result = self.session.post(url, auth=self.auth, verify=self.verify)
+        result = self.session.post(url, verify=self.verify)
         return result
 
     def createQRCode(
         self,
-        project_id: int,
-        token: str,
-        name: str,
-    ):
+        odk_id: int,
+        project_name: str,
+        appuser_token: str,
+        basemap: str = "osm",
+        osm_username: str = "svchotosm",
+        upstream_task_id: str = "",
+        save_qrcode: bool = False,
+    ) -> segno.QRCode:
         """Get the QR Code for an app-user.
 
+        Notes on QR code params:
+
+        - form_update_mode: 'manual' allows for easier offline mapping, while
+            if set to 'match_exactly', it will attempt sync with Central
+
+        - metadata_email: we 'misuse' this field to add additional metadata,
+            in this case a task id from an upstream application (FMTM).
+
         Args:
-            project_id (int): The ID of the project on ODK Central
-            token (str): The user's token
-            name (str): The name of the project
+            odk_id (int): The ID of the project on ODK Central
+            project_name (str): The name of the project to set
+            appuser_token (str): The user's token
+            basemap (str): Default basemap to use on Collect.
+                Options: "google", "mapbox", "osm", "usgs", "stamen", "carto".
+            osm_username (str): The OSM username to attribute to the mapping.
+            save_qrcode (bool): Save the generated QR code to disk.
 
         Returns:
-            (bytes): The new QR code
+            segno.QRCode: The new QR code object
         """
-        log.info('Generating QR Code for app-user "%s" for project %s' % (name, project_id))
+        log.info(f"Generating QR Code for project ({odk_id}) {project_name}")
+
         self.settings = {
             "general": {
-                "server_url": f"{self.base}key/{token}/projects/{project_id}",
+                "server_url": f"{self.base}key/{appuser_token}/projects/{odk_id}",
                 "form_update_mode": "manual",
-                "basemap_source": "MapBox",
+                "basemap_source": basemap,
                 "autosend": "wifi_and_cellular",
+                "metadata_username": osm_username,
+                "metadata_email": upstream_task_id,
             },
-            "project": {"name": f"{name}"},
+            "project": {"name": f"{project_name}"},
             "admin": {},
         }
+
+        # Base64 encode JSON params for QR code
         qr_data = b64encode(zlib.compress(json.dumps(self.settings).encode("utf-8")))
+        # Generate QR code
         self.qrcode = segno.make(qr_data, micro=False)
-        self.qrcode.save(f"{name}.png", scale=5)
-        return qr_data
+
+        if save_qrcode:
+            log.debug(f"Saving QR code to {project_name}.png")
+            self.qrcode.save(f"{project_name}.png", scale=5)
+
+        return self.qrcode
 
 
 # This following code is only for debugging purposes, since this is easier
