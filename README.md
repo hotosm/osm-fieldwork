@@ -21,7 +21,7 @@
       <img src="https://github.com/hotosm/osm-fieldwork/workflows/Publish to PyPi.org/badge.svg" alt="Publish">
   </a>
   <a href="https://github.com/hotosm/osm-fieldwork/actions/workflows/pytest.yml" target="_blank">
-      <img src="https://github.com/hotosm/osm-fieldwork/workflows/PyTest/badge.svg" alt="Test">
+      <img src="https://github.com/hotosm/osm-fieldwork/actions/workflows/pytest.yml/badge.svg?branch=main" alt="Test">
   </a>
   <a href="https://pypi.org/project/osm-fieldwork" target="_blank">
       <img src="https://img.shields.io/pypi/v/osm-fieldwork?color=%2334D058&label=pypi%20package" alt="Package version">
