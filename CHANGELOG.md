@@ -1,3 +1,13 @@
+## 0.4.2 (2024-01-30)
+
+### Fix
+
+- update OdkAppUser qrcode & create methods
+- replace HTTPBasicAuth with session tokens
+- return types for OdkCentral submission methods
+- work with wildcsrds with spaces
+- Add tile filespec if it's an empty image
+
 ## 0.4.1 (2024-01-18)
 
 ### Fix
