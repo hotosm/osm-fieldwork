@@ -23,6 +23,7 @@
 # Author: Reetta Valimaki <reetta.valimaki8@gmail.com>
 
 
+import asyncio
 import concurrent.futures
 import json
 import logging
@@ -33,10 +34,11 @@ from base64 import b64encode
 from datetime import datetime
 from typing import Optional
 
-import requests
-import segno
+from aiohttp import ClientError, ClientResponse, ClientSession
 from codetiming import Timer
 from cpuinfo import get_cpu_info
+from segno import QRCode
+from segno import make as make_qrcode
 
 # Set log level for urllib
 log_level = os.getenv("LOG_LEVEL", default="INFO")
@@ -45,7 +47,7 @@ logging.getLogger("urllib3").setLevel(log_level)
 log = logging.getLogger(__name__)
 
 
-def downloadThread(project_id: int, xforms: list, odk_credentials: dict, filters: dict = None):
+async def downloadThread(project_id: int, xforms: list, odk_credentials: dict, filters: dict = None):
     """Download a list of submissions from ODK Central.
 
     Args:
@@ -63,7 +65,7 @@ def downloadThread(project_id: int, xforms: list, odk_credentials: dict, filters
     for task in xforms:
         form = OdkForm(odk_credentials["url"], odk_credentials["user"], odk_credentials["passwd"])
         # submissions = form.getSubmissions(project_id, task, 0, False, True)
-        subs = form.listSubmissions(project_id, task, filters)
+        subs = await form.listSubmissions(project_id, task, filters)
         if type(subs) == dict:
             log.error(f"{subs['message']}, {subs['code']} ")
             continue
@@ -106,11 +108,6 @@ class OdkCentral(object):
             self.verify = eval(verify)
         else:
             self.verify = verify
-        # These are settings used by ODK Collect
-        self.general = {
-            "form_update_mode": "match_exactly",
-            "autosend": "wifi_and_cellular",
-        }
         # If there is a config file with authentication setting, use that
         # so we don't have to supply this all the time. This is only used
         # when odk_client is used, and no parameters are passed in.
@@ -143,10 +140,11 @@ class OdkCentral(object):
         self.base = self.url + "/" + self.version + "/"
 
         # Use a persistant connect, better for multiple requests
-        self.session = requests.Session()
+        self.session = ClientSession(raise_for_status=True)
 
         # Authentication with session token
-        self.authenticate()
+        self.loop = asyncio.get_event_loop()
+        self.loop.run_until_complete(self.authenticate())
 
         # These are just cached data from the queries
         self.projects = dict()
@@ -155,12 +153,12 @@ class OdkCentral(object):
         info = get_cpu_info()
         self.cores = info["count"]
 
-    def authenticate(
+    async def authenticate(
         self,
         url: str = None,
         user: str = None,
         passwd: str = None,
-    ):
+    ) -> ClientResponse:
         """Setup authenticate to an ODK Central server.
 
         Args:
@@ -169,7 +167,7 @@ class OdkCentral(object):
             passwd (str):  The user's account password on ODK Central
 
         Returns:
-            (requests.Response): A response from ODK Central after auth
+            (ClientResponse): A response from ODK Central after auth
         """
         if not self.url:
             self.url = url
@@ -181,22 +179,23 @@ class OdkCentral(object):
         self.session.headers.update({"accept": "odkcentral"})
 
         # Get a session token
-        response = self.session.post(
+        async with self.session.post(
             f"{self.base}sessions",
             json={
                 "email": self.user,
                 "password": self.passwd,
             },
-        )
-        if not response.ok:
-            response.raise_for_status()
+            verify_ssl=self.verify,
+        ) as response:
+            token = (await response.json()).get("token")
 
-        self.session.headers.update({"Authorization": f"Bearer {response.json().get('token')}"})
+            self.session.headers.update({"Authorization": f"Bearer {token}"})
 
-        # Connect to the server
-        return self.session.get(self.url, verify=self.verify)
+            # Connect to the server
+            async with self.session.get(f"{self.base}projects", verify_ssl=self.verify) as response:
+                return await response.json()
 
-    def listProjects(self):
+    async def listProjects(self):
         """Fetch a list of projects from an ODK Central server, and
         store it as an indexed list.
 
@@ -205,8 +204,10 @@ class OdkCentral(object):
         """
         log.info("Getting a list of projects from %s" % self.url)
         url = f"{self.base}projects"
-        result = self.session.get(url, verify=self.verify)
-        projects = result.json()
+
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            projects = await response.json()
+
         for project in projects:
             if isinstance(project, dict):
                 if project.get("id") is not None:
@@ -215,7 +216,7 @@ class OdkCentral(object):
                 log.info("No projects returned. Is this a first run?")
         return projects
 
-    def createProject(
+    async def createProject(
         self,
         name: str,
     ):
@@ -229,26 +230,26 @@ class OdkCentral(object):
             (json): The response from ODK Central
         """
         log.debug(f"Checking if project named {name} exists already")
-        exists = self.findProject(name=name)
+        exists = await self.findProject(name=name)
         if exists:
             log.debug(f"Project named {name} already exists.")
             return exists
         else:
+            project_json = {}
             url = f"{self.base}projects"
             log.debug(f"POSTing project {name} to {url} with verify={self.verify}")
             try:
-                result = self.session.post(url, json={"name": name}, verify=self.verify, timeout=4)
-                result.raise_for_status()
-            except requests.exceptions.RequestException as e:
+                async with self.session.post(url, json={"name": name}, verify_ssl=self.verify, timeout=4) as response:
+                    project_json = await response.json()
+            except ClientError as e:
                 log.error(e)
                 log.error("Failed to submit to ODKCentral")
-            json_response = result.json()
-            log.debug(f"Returned: {json_response}")
+            log.debug(f"Returned: {project_json}")
             # update the internal list of projects
-            self.listProjects()
-            return json_response
+            await self.listProjects()
+            return project_json
 
-    def deleteProject(
+    async def deleteProject(
         self,
         project_id: int,
     ):
@@ -261,12 +262,14 @@ class OdkCentral(object):
             (str): The project name
         """
         url = f"{self.base}projects/{project_id}"
-        self.session.delete(url, verify=self.verify)
+        self.session.delete(url, verify_ssl=self.verify)
+        async with self.session.delete(url, verify_ssl=self.verify):
+            log.info(f"Deleted ODK project {project_id}")
         # update the internal list of projects
-        self.listProjects()
-        return self.findProject(project_id=project_id)
+        await self.listProjects()
+        return await self.findProject(project_id=project_id)
 
-    def findProject(
+    async def findProject(
         self,
         name: str = None,
         project_id: int = None,
@@ -280,7 +283,7 @@ class OdkCentral(object):
             (dict): the project data from ODK Central
         """
         # First, populate self.projects
-        self.listProjects()
+        await self.listProjects()
 
         if self.projects:
             if name:
@@ -297,7 +300,7 @@ class OdkCentral(object):
                         return value
         return None
 
-    def findAppUser(
+    async def findAppUser(
         self,
         user_id: int,
         name: str = None,
@@ -328,7 +331,7 @@ class OdkCentral(object):
                     return None
         return None
 
-    def listUsers(self):
+    async def listUsers(self):
         """Fetch a list of users on the ODK Central server.
 
         Returns:
@@ -336,11 +339,11 @@ class OdkCentral(object):
         """
         log.info("Getting a list of users from %s" % self.url)
         url = self.base + "users"
-        result = self.session.get(url, verify=self.verify)
-        self.users = result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            self.users = await response.json()
         return self.users
 
-    def dump(self):
+    async def dump(self):
         """Dump internal data structures, for debugging purposes only."""
         # print("URL: %s" % self.url)
         # print("User: %s" % self.user)
@@ -379,10 +382,10 @@ class OdkProject(OdkCentral):
         self.forms = list()
         self.submissions = list()
         self.data = None
-        self.appusers = None
+        self.appusers = list()
         self.id = None
 
-    def getData(
+    async def getData(
         self,
         keyword: str,
     ):
@@ -394,7 +397,7 @@ class OdkProject(OdkCentral):
         """
         return self.data[keyword]
 
-    def listForms(self, project_id: int, metadata: bool = False):
+    async def listForms(self, project_id: int, metadata: bool = False):
         """Fetch a list of forms in a project on an ODK Central server.
 
         Args:
@@ -406,11 +409,11 @@ class OdkProject(OdkCentral):
         url = f"{self.base}projects/{project_id}/forms"
         if metadata:
             self.session.headers.update({"X-Extended-Metadata": "true"})
-        result = self.session.get(url, verify=self.verify)
-        self.forms = result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            self.forms = await response.json()
         return self.forms
 
-    def getAllSubmissions(self, project_id: int, xforms: list = None, filters: dict = None):
+    async def getAllSubmissions(self, project_id: int, xforms: list = None, filters: dict = None):
         """Fetch a list of submissions in a project on an ODK Central server.
 
         Args:
@@ -423,7 +426,7 @@ class OdkProject(OdkCentral):
         timer = Timer(text="getAllSubmissions() took {seconds:.0f}s")
         timer.start()
         if not xforms:
-            xforms_data = self.listForms(project_id)
+            xforms_data = await self.listForms(project_id)
             xforms = [d["xmlFormId"] for d in xforms_data]
 
         chunk = round(len(xforms) / self.cores) if round(len(xforms) / self.cores) > 0 else 1
@@ -460,7 +463,7 @@ class OdkProject(OdkCentral):
         timer.stop()
         return newdata
 
-    def listAppUsers(
+    async def listAppUsers(
         self,
         projectId: int,
     ):
@@ -473,11 +476,11 @@ class OdkProject(OdkCentral):
             (list): A list of app-users on ODK Central for this project
         """
         url = f"{self.base}projects/{projectId}/app-users"
-        result = self.session.get(url, verify=self.verify)
-        self.appusers = result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            self.appusers = await response.json()
         return self.appusers
 
-    def listAssignments(
+    async def listAssignments(
         self,
         projectId: int,
     ):
@@ -490,10 +493,10 @@ class OdkProject(OdkCentral):
             (json): The list of assignments
         """
         url = f"{self.base}projects/{projectId}/assignments"
-        result = self.session.get(url, verify=self.verify)
-        return result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            return await response.json()
 
-    def getDetails(
+    async def getDetails(
         self,
         projectId: int,
     ):
@@ -506,11 +509,11 @@ class OdkProject(OdkCentral):
             (json): Get the data about a project on ODK Central
         """
         url = f"{self.base}projects/{projectId}"
-        result = self.session.get(url, verify=self.verify)
-        self.data = result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            self.data = await response.json()
         return self.data
 
-    def getFullDetails(
+    async def getFullDetails(
         self,
         projectId: int,
     ):
@@ -524,12 +527,12 @@ class OdkProject(OdkCentral):
         """
         url = f"{self.base}projects/{projectId}"
         self.session.headers.update({"X-Extended-Metadata": "true"})
-        result = self.session.get(url, verify=self.verify)
-        return result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            return await response.json()
 
-    def dump(self):
+    async def dump(self):
         """Dump internal data structures, for debugging purposes only."""
-        super().dump()
+        await super().dump()
         if self.forms:
             print("There are %d forms in this project" % len(self.forms))
             for data in self.forms:
@@ -576,7 +579,7 @@ class OdkForm(OdkCentral):
         # self.xmlFormId = None
         # self.projectId = None
 
-    # def getName(self):
+    # async def getName(self):
     #     """
     #     Extract the name from a form on an ODK Central server
     #
@@ -587,14 +590,14 @@ class OdkForm(OdkCentral):
     #     else:
     #         log.warning("Execute OdkForm.getDetails() to get this data.")
 
-    # def getFormId(self):
+    # async def getFormId(self):
     #     """Extract the xmlFormId from a form on an ODK Central server"""
     #     if "xmlFormId" in self.data:
     #         return self.data["xmlFormId"]
     #     else:
     #         log.warning("Execute OdkForm.getDetails() to get this data.")
 
-    def getDetails(
+    async def getDetails(
         self,
         projectId: int,
         xform: str,
@@ -609,11 +612,11 @@ class OdkForm(OdkCentral):
             (json): The data for this XForm
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}"
-        result = self.session.get(url, verify=self.verify)
-        self.data = result.json()
-        return result
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            self.data = await response.json()
+        return self.data
 
-    def getFullDetails(
+    async def getFullDetails(
         self,
         projectId: int,
         xform: str,
@@ -629,10 +632,10 @@ class OdkForm(OdkCentral):
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}"
         self.session.headers.update({"X-Extended-Metadata": "true"})
-        result = self.session.get(url, verify=self.verify)
-        return result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            return await response.json()
 
-    def listSubmissionBasicInfo(
+    async def listSubmissionBasicInfo(
         self,
         projectId: int,
         xform: str,
@@ -647,10 +650,10 @@ class OdkForm(OdkCentral):
             (json): The data for this XForm
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}/submissions"
-        result = self.session.get(url, verify=self.verify)
-        return result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            return await response.json()
 
-    def listSubmissions(self, projectId: int, xform: str, filters: dict = None):
+    async def listSubmissions(self, projectId: int, xform: str, filters: dict = None):
         """Fetch a list of submission instances for a given form.
 
         Returns data in format:
@@ -669,14 +672,15 @@ class OdkForm(OdkCentral):
             (json): The JSON of Submissions.
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}.svc/Submissions"
-        result = self.session.get(url, params=filters, verify=self.verify)
-        if result.ok:
-            self.submissions = result.json()
-            return self.submissions
+
+        async with self.session.get(url, params=filters, verify_ssl=self.verify) as response:
+            if response.ok:
+                self.submissions = await response.json()
+                return self.submissions
 
         return {}
 
-    def listAssignments(
+    async def listAssignments(
         self,
         projectId: int,
         xform: str,
@@ -693,10 +697,10 @@ class OdkForm(OdkCentral):
             (json): The data for this XForm
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}/assignments"
-        result = self.session.get(url, verify=self.verify)
-        return result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            return await response.json()
 
-    def getSubmissions(
+    async def getSubmissions(
         self,
         projectId: int,
         xform: str,
@@ -731,28 +735,29 @@ class OdkForm(OdkCentral):
             url = url + f"('{submission_id}')"
 
         # log.debug(f'Getting submissions for {projectId}, Form {xform}')
-        result = self.session.get(url, headers=headers, verify=self.verify)
-        if result.status_code == 200:
-            if disk:
-                # id = self.forms[0]['xmlFormId']
-                try:
-                    file = open(filespec, "xb")
-                    file.write(result.content)
-                except FileExistsError:
-                    file = open(filespec, "wb")
-                    file.write(result.content)
-                log.info("Wrote output file %s" % filespec)
-                file.close()
-            return result.content
-        else:
-            log.error(f"Submissions for {projectId}, Form {xform}" + " doesn't exist")
-            return bytes()
+        async with self.session.get(url, headers=headers, verify_ssl=self.verify) as response:
+            if response.status == 200:
+                content = await response.read()
+                if disk:
+                    # id = self.forms[0]['xmlFormId']
+                    try:
+                        file = open(filespec, "xb")
+                        file.write(content)
+                    except FileExistsError:
+                        file = open(filespec, "wb")
+                        file.write(content)
+                    log.info("Wrote output file %s" % filespec)
+                    file.close()
+                return content
+            else:
+                log.error(f"Submissions for {projectId}, Form {xform}" + " doesn't exist")
+                return bytes()
 
-    def getSubmissionMedia(
+    async def getSubmissionMedia(
         self,
         projectId: int,
         xform: str,
-    ):
+    ) -> bytes:
         """Fetch a ZIP file of the submissions with media to a survey form.
 
         Args:
@@ -763,10 +768,10 @@ class OdkForm(OdkCentral):
             (list): The media file
         """
         url = self.base + f"projects/{projectId}/forms/{xform}/submissions.csv.zip"
-        result = self.session.get(url, verify=self.verify)
-        return result
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            return await response.read()
 
-    def addMedia(
+    async def addMedia(
         self,
         media: str,
         filespec: str,
@@ -780,7 +785,7 @@ class OdkForm(OdkCentral):
         # FIXME: this also needs the data
         self.media[filespec] = media
 
-    def addXMLForm(
+    async def addXMLForm(
         self,
         projectId: int,
         xmlFormId: int,
@@ -794,11 +799,11 @@ class OdkForm(OdkCentral):
         """
         self.xml = xform
 
-    def listMedia(
+    async def listMedia(
         self,
         projectId: int,
         xform: str,
-    ):
+    ) -> bytes:
         """List all the attchements for this form.
 
         Args:
@@ -812,17 +817,17 @@ class OdkForm(OdkCentral):
             url = f"{self.base}projects/{projectId}/forms/{xform}/draft/attachments"
         else:
             url = f"{self.base}projects/{projectId}/forms/{xform}/attachments"
-        result = self.session.get(url, verify=self.verify)
-        self.media = result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            self.media = await response.read()
         return self.media
 
-    def uploadMedia(
+    async def uploadMedia(
         self,
         projectId: int,
         xform: str,
         filespec: str,
         convert_to_draft: bool = True,
-    ):
+    ) -> dict:
         """Upload an attachement to the ODK Central server.
 
         Args:
@@ -837,28 +842,28 @@ class OdkForm(OdkCentral):
 
         if convert_to_draft:
             url = f"{self.base}projects/{projectId}/forms/{xid}/draft"
-            result = self.session.post(url, verify=self.verify)
-            if result.status_code == 200:
-                log.debug(f"Modified {title} to draft")
-            else:
-                status = eval(result._content)
-                log.error(f"Couldn't modify {title} to draft: {status['message']}")
+
+            async with self.session.post(url, verify_ssl=self.verify) as response:
+                if response.status == 200:
+                    log.debug(f"Modified {title} to draft")
+                else:
+                    content = await response.json()
+                    log.error(f"Couldn't modify {title} to draft: {content.get('message')}")
 
         url = f"{self.base}projects/{projectId}/forms/{xid}/draft/attachments/{datafile}"
         headers = {"Content-Type": "*/*"}
         file = open(filespec, "rb")
         media = file.read()
         file.close()
-        result = self.session.post(url, data=media, headers=headers, verify=self.verify)
-        if result.status_code == 200:
-            log.debug(f"Uploaded {filespec} to Central")
-        else:
-            status = eval(result._content)
-            log.error(f"Couldn't upload {filespec} to Central: {status['message']}")
+        async with self.session.post(url, data=media, headers=headers, verify_ssl=self.verify) as response:
+            content = await response.json()
+            if response.status == 200:
+                log.debug(f"Uploaded {filespec} to Central")
+            else:
+                log.error(f"Couldn't upload {filespec} to Central: {content.get('message')}")
+            return content
 
-        return result
-
-    def getMedia(
+    async def getMedia(
         self,
         projectId: int,
         xform: str,
@@ -878,22 +883,22 @@ class OdkForm(OdkCentral):
             url = f"{self.base}projects/{projectId}/forms/{xform}/draft/attachments/{filename}"
         else:
             url = f"{self.base}projects/{projectId}/forms/{xform}/attachments/{filename}"
-        result = self.session.get(url, verify=self.verify)
-        if result.status_code == 200:
-            log.debug(f"fetched {filename} from Central")
-        else:
-            status = eval(result._content)
-            log.error(f"Couldn't fetch {filename} from Central: {status['message']}")
-        self.media = result.content
-        return self.media
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            content = await response.json()
+            if response.status == 200:
+                log.debug(f"fetched {filename} from Central")
+            else:
+                log.error(f"Couldn't fetch {filename} from Central: {content.get('message')}")
+            self.media = content
+            return self.media
 
-    def createForm(
+    async def createForm(
         self,
         projectId: int,
         xform: str,
         filespec: str,
         draft: bool = False,
-    ):
+    ) -> int:
         """Create a new form on an ODK Central server.
 
         Args:
@@ -919,30 +924,30 @@ class OdkForm(OdkCentral):
         file.close()
         log.info("Read %d bytes from %s" % (len(xml), filespec))
 
-        result = self.session.post(url, data=xml, headers=headers, verify=self.verify)
-        # epdb.st()
-        # FIXME: should update self.forms with the new form
-        if result.status_code != 200:
-            if result.status_code == 409:
-                log.error(f"{xform} already exists on Central")
-            else:
-                status = eval(result._content)
-                log.error(f"Couldn't create {xform} on Central: {status['message']}")
+        async with self.session.post(url, data=xml, headers=headers, verify_ssl=self.verify) as response:
+            # epdb.st()
+            # FIXME: should update self.forms with the new form
+            content = await response.json()
+            if response.status != 200:
+                if response.status == 409:
+                    log.error(f"{xform} already exists on Central")
+                else:
+                    log.error(f"Couldn't create {xform} on Central: {content.get('message')}")
 
-        return result.status_code
+            return response.status
 
-    def deleteForm(
+    async def deleteForm(
         self,
         projectId: int,
         xform: str,
-    ):
+    ) -> dict:
         """Delete a form from an ODK Central server.
 
         Args:
             projectId (int): The ID of the project on ODK Central
             xform (str): The XForm to get the details of from ODK Central
         Returns:
-            (bool): did it get deleted
+            (dict): Response JSON.
         """
         # FIXME: If your goal is to prevent it from showing up on survey clients like ODK Collect, consider
         # setting its state to closing or closed
@@ -950,10 +955,11 @@ class OdkForm(OdkCentral):
             url = f"{self.base}projects/{projectId}/forms/{xform}/draft"
         else:
             url = f"{self.base}projects/{projectId}/forms/{xform}"
-        result = self.session.delete(url, verify=self.verify)
-        return result
+        async with self.session.delete(url, verify_ssl=self.verify) as response:
+            log.info(f"Deleted form ({xform}) from project ({projectId})")
+        return await response.json()
 
-    def publishForm(
+    async def publishForm(
         self,
         projectId: int,
         xform: str,
@@ -974,15 +980,15 @@ class OdkForm(OdkCentral):
             xid = xform
 
         url = f"{self.base}projects/{projectId}/forms/{xid}/draft/publish?version={version}"
-        result = self.session.post(url, verify=self.verify)
-        if result.status_code != 200:
-            status = eval(result._content)
-            log.error(f"Couldn't publish {xform} on Central: {status['message']}")
-        else:
-            log.info(f"Published {xform} on Central.")
-        return result.status_code
+        async with self.session.post(url, verify_ssl=self.verify) as response:
+            content = await response.json()
+            if response.status != 200:
+                log.error(f"Couldn't publish {xform} on Central: {content.get('message')}")
+            else:
+                log.info(f"Published {xform} on Central.")
+            return response.status
 
-    def form_fields(self, projectId: int, xform: str):
+    async def form_fields(self, projectId: int, xform: str):
         """Retrieves the form fields for a xform from odk central.
 
         Args:
@@ -999,10 +1005,10 @@ class OdkForm(OdkCentral):
             xid = xform
 
         url = f"{self.base}projects/{projectId}/forms/{xid}/fields?odata=true"
-        result = self.session.get(url, verify=self.verify)
-        return result.json()
+        async with self.session.get(url, verify_ssl=self.verify) as response:
+            return await response.json()
 
-    def dump(self):
+    async def dump(self):
         """Dump internal data structures, for debugging purposes only."""
         # super().dump()
         entries = len(self.media)
@@ -1034,7 +1040,7 @@ class OdkAppUser(OdkCentral):
         self.qrcode = None
         self.id = None
 
-    def create(
+    async def create(
         self,
         projectId: int,
         name: str,
@@ -1062,37 +1068,38 @@ class OdkAppUser(OdkCentral):
             (dict): The response JSON from ODK Central
         """
         url = f"{self.base}projects/{projectId}/app-users"
-        response = self.session.post(url, json={"displayName": name}, verify=self.verify)
-        self.user = name
-        if response.ok:
-            return response.json()
+        async with self.session.post(url, json={"displayName": name}, verify_ssl=self.verify) as response:
+            if response.status == 200:
+                self.user = name
+                return await response.json()
         return {}
 
-    def delete(
+    async def delete(
         self,
         projectId: int,
         userId: int,
-    ):
-        """Create a new app-user for a form.
+    ) -> dict:
+        """Delete an app user for a form.
 
         Args:
             projectId (int): The ID of the project on ODK Central
             userId (int): The ID of the user on ODK Central to delete
 
         Returns:
-            (bool): Whether the user got deleted or not
+            (dict): JSON response with success key
         """
         url = f"{self.base}projects/{projectId}/app-users/{userId}"
-        result = self.session.delete(url, verify=self.verify)
-        return result
+        async with self.session.delete(url, verify_ssl=self.verify) as response:
+            log.info(f"Deleted appuser ({userId}) for project ({projectId})")
+            return await response.json()
 
-    def updateRole(
+    async def updateRole(
         self,
         projectId: int,
         xform: str,
         roleId: int = 2,
         actorId: Optional[int] = None,
-    ):
+    ) -> dict:
         """Update the role of an app user for a form.
 
         Args:
@@ -1102,14 +1109,14 @@ class OdkAppUser(OdkCentral):
             actorId (int): The ID of the user
 
         Returns:
-            (bool): Whether it was update or not
+            (dict): JSON response with success key
         """
         log.info("Update access to XForm %s for %s" % (xform, actorId))
         url = f"{self.base}projects/{projectId}/forms/{xform}/assignments/{roleId}/{actorId}"
-        result = self.session.post(url, verify=self.verify)
-        return result
+        async with self.session.post(url, verify_ssl=self.verify) as response:
+            return await response.json()
 
-    def grantAccess(self, projectId: int, roleId: int = 2, userId: int = None, xform: str = None, actorId: int = None):
+    async def grantAccess(self, projectId: int, roleId: int = 2, userId: int = None, xform: str = None, actorId: int = None):
         """Grant access to an app user for a form.
 
         Args:
@@ -1120,13 +1127,13 @@ class OdkAppUser(OdkCentral):
             actorId (int): The actor ID of the user on ODK Central
 
         Returns:
-            (bool): Whether access was granted or not
+            (dict): JSON response with success key
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}/assignments/{roleId}/{actorId}"
-        result = self.session.post(url, verify=self.verify)
-        return result
+        async with self.session.post(url, verify_ssl=self.verify) as response:
+            return await response.json()
 
-    def createQRCode(
+    async def createQRCode(
         self,
         odk_id: int,
         project_name: str,
@@ -1135,7 +1142,7 @@ class OdkAppUser(OdkCentral):
         osm_username: str = "svchotosm",
         upstream_task_id: str = "",
         save_qrcode: bool = False,
-    ) -> segno.QRCode:
+    ) -> QRCode:
         """Get the QR Code for an app-user.
 
         Notes on QR code params:
@@ -1156,7 +1163,7 @@ class OdkAppUser(OdkCentral):
             save_qrcode (bool): Save the generated QR code to disk.
 
         Returns:
-            segno.QRCode: The new QR code object
+            QRCode: The new QR code object
         """
         log.info(f"Generating QR Code for project ({odk_id}) {project_name}")
 
@@ -1176,7 +1183,7 @@ class OdkAppUser(OdkCentral):
         # Base64 encode JSON params for QR code
         qr_data = b64encode(zlib.compress(json.dumps(self.settings).encode("utf-8")))
         # Generate QR code
-        self.qrcode = segno.make(qr_data, micro=False)
+        self.qrcode = make_qrcode(qr_data, micro=False)
 
         if save_qrcode:
             log.debug(f"Saving QR code to {project_name}.png")
@@ -1187,9 +1194,8 @@ class OdkAppUser(OdkCentral):
 
 # This following code is only for debugging purposes, since this is easier
 # to use a debugger with instead of pytest.
-if __name__ == "__main__":
-    """
-    This main function lets this class be run standalone by a bash script
+async def main():
+    """This main function lets this class be run standalone by a bash script
     for development purposes. To use it, try the odk_client program instead.
     """
     logging.basicConfig(
@@ -1201,26 +1207,23 @@ if __name__ == "__main__":
 
     # Gotta start somewhere...
     project = OdkProject()
-    # Start the persistent HTTPS connection to the ODK Central server
-    project.authenticate()
     # Get a list of all the projects on this ODK Central server
-    project.listProjects()
+    await project.listProjects()
     # List all the users on this ODK Central server
-    project.listUsers()
+    await project.listUsers()
     # List all the forms for this project. FIXME: don't hardcode the project ID
-    project.listForms(4)
+    await project.listForms(4)
     # List all the app users for this project. FIXME: don't hardcode the project ID
-    project.listAppUsers(4)
+    await project.listAppUsers(4)
     # List all the submissions for this project. FIXME: don't hardcode the project ID ad form name
     # project.listSubmissions(4, "cemeteries")
     # project.getSubmission(4, "cemeteries")
     # Dump all the internal data
-    project.dump()
+    await project.dump()
 
     # Form management
     form = OdkForm()
-    form.authenticate()
-    x = form.getDetails(4, "cemeteries")
+    x = await form.getDetails(4, "cemeteries")
     # print(x.json())
     # x = form.listMedia(4, "waterpoints", 'uuid:fbe3ef41-6298-40c1-a694-6c9d25a8c476')
     # Make a new form
@@ -1230,14 +1233,17 @@ if __name__ == "__main__":
     # csv2 = "/home/rob/projects/HOT/osm_fieldwork.git/osm_fieldwork/xlsforms/towns.csv"
     # form.addMedia(csv1)
     # form.addMedia(csv2)
-    x = form.createForm(4, "cemeteries", "cemeteries.xls", True)
-    print(x.json())
+    x = await form.createForm(4, "cemeteries", "cemeteries.xls", True)
+    print(x)
     # x = form.publish(4, 'cemeteries', "cemeteries.xls")
-    print(x.json())
-    x = form.uploadMedia(4, "cemeteries", "towns.csv")
-    print(x.json())
-    x = form.uploadMedia(4, "cemeteries", "municipality.csv")
-    print(x.json())
-    x = form.listMedia(4, "cemeteries")
-    print(x.json())
-    form.dump()
+    x = await form.uploadMedia(4, "cemeteries", "towns.csv")
+    print(x)
+    x = await form.uploadMedia(4, "cemeteries", "municipality.csv")
+    print(x)
+    x = await form.listMedia(4, "cemeteries")
+    print(x)
+    await form.dump()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

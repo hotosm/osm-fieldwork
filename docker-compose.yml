@@ -29,9 +29,10 @@ services:
     container_name: osm-fieldwork
     volumes:
       # Mount local package
-      - ./osm_fieldwork:/root/.local/lib/python3.10/site-packages/osm_fieldwork
+      - ./osm_fieldwork:/root/.local/lib/python3.10/site-packages/osm_fieldwork:ro
       # Mount local tests
-      - ./tests:/data/tests
+      - ./tests:/data/tests:ro
+      - ./pyproject.toml:/data/pyproject.toml:ro
     depends_on:
       proxy:
         condition: service_started
