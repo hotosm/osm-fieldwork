@@ -22,6 +22,7 @@ import logging
 import os
 import re
 import sys
+import csv
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
@@ -102,14 +103,21 @@ def main():
                             continue
                         if jj is None:
                             continue
-                        # print(f"tag: {i} == {j}")
+                        print(f"tag2: {i} == {j}")
                         if type(jj) == OrderedDict or type(jj) == dict:
                             for iii, jjj in jj.items():
                                 if jjj is not None:
-                                    tags[iii] = jjj
-                                    # print(iii, jjj)
+                                    pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
+                                    if pat.match(str(jjj)):
+                                        gps = jjj.split(" ")
+                                        tags["lat"] = gps[0]
+                                        tags["lon"] = gps[1]
+                                        continue
+                                    else:
+                                        tags[iii] = jjj
+                                        # print(f"FOO {iii}, {jjj}")
                         else:
-                            # print(ii, jj)
+                            # print(f"WHERE {ii}, {jj}")
                             fields.append(ii)
                             tags[ii] = jj
                 else:
@@ -121,21 +129,21 @@ def main():
     tmp = xml.replace(" ", "").split("_")
     now = datetime.now()
     timestamp = f"_{now.year}_{now.hour}_{now.minute}"
+
     outfile = tmp[0] + timestamp + ".csv"
 
-    # with open(outfile, "w", newline="") as csvfile:
-    #     fields = list()
-    #     for row in rows:
-    #         for key in row.keys():
-    #             if key not in fields:
-    #                 fields.append(key)
-    #     csv = csv.DictWriter(csvfile, dialect="excel", fieldnames=fields)
-    #     csv.writeheader()
-    #     for row in rows:
-    #         csv.writerow(row)
+    with open(outfile, "w", newline="") as csvfile:
+        fields = list()
+        for row in rows:
+            for key in row.keys():
+                if key not in fields:
+                    fields.append(key)
+        out = csv.DictWriter(csvfile, dialect="excel", fieldnames=fields)
+        out.writeheader()
+        for row in rows:
+            out.writerow(row)
 
     print("Wrote: %s" % outfile)
-
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
