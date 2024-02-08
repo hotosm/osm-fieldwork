@@ -64,12 +64,12 @@ def downloadThread(project_id: int, xforms: list, odk_credentials: dict, filters
         form = OdkForm(odk_credentials["url"], odk_credentials["user"], odk_credentials["passwd"])
         # submissions = form.getSubmissions(project_id, task, 0, False, True)
         subs = form.listSubmissions(project_id, task, filters)
-        if type(subs) == dict:
+        if subs == {}:
             log.error(f"{subs['message']}, {subs['code']} ")
             continue
         # log.debug(f"There are {len(subs)} submissions for {task}")
-        if len(subs) > 0:
-            data += subs
+        if len(subs["value"]) > 0:
+            data += subs["value"]
     # log.debug(f"There are {len(xforms)} Xforms, and {len(submissions)} submissions total")
     timer.stop()
     return data
