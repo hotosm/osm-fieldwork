@@ -64,8 +64,8 @@ def downloadThread(project_id: int, xforms: list, odk_credentials: dict, filters
         form = OdkForm(odk_credentials["url"], odk_credentials["user"], odk_credentials["passwd"])
         # submissions = form.getSubmissions(project_id, task, 0, False, True)
         subs = form.listSubmissions(project_id, task, filters)
-        if subs == {}:
-            log.error(f"{subs['message']}, {subs['code']} ")
+        if not subs:
+            log.error(f"Failed to get submissions for project ({project_id}) task ({task})")
             continue
         # log.debug(f"There are {len(subs)} submissions for {task}")
         if len(subs["value"]) > 0:
@@ -669,12 +669,15 @@ class OdkForm(OdkCentral):
             (json): The JSON of Submissions.
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}.svc/Submissions"
-        result = self.session.get(url, params=filters, verify=self.verify)
-        if result.ok:
+        try:
+            result = self.session.get(url, params=filters, verify=self.verify)
+            result.raise_for_status()  # Raise an error for non-2xx status codes
             self.submissions = result.json()
             return self.submissions
+        except Exception as e:
+            log.error(f"Error fetching submissions: {e}")
+            return {}
 
-        return {}
 
     def listAssignments(
         self,
