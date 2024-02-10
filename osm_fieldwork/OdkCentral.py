@@ -678,7 +678,6 @@ class OdkForm(OdkCentral):
             log.error(f"Error fetching submissions: {e}")
             return {}
 
-
     def listAssignments(
         self,
         projectId: int,
