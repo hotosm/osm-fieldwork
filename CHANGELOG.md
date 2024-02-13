@@ -1,3 +1,9 @@
+## 0.4.3rc0 (2024-02-13)
+
+### Fix
+
+- error handling in submission downloadThread (#227)
+
 ## 0.4.2 (2024-01-30)
 
 ### Fix
