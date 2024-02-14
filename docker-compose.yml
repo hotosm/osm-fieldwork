@@ -29,7 +29,7 @@ services:
     container_name: osm-fieldwork
     volumes:
       # Mount local package
-      - ./osm_fieldwork:/root/.local/lib/python3.10/site-packages/osm_fieldwork
+      - ./osm_fieldwork:/usr/local/lib/python3.10/site-packages/osm_fieldwork
       # Mount local tests
       - ./tests:/data/tests
     depends_on:
