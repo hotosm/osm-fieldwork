@@ -1,3 +1,9 @@
+## 0.4.3 (2024-02-26)
+
+### Fix
+
+- more flexible parsing of xform name for uploadMedia
+
 ## 0.4.3rc0 (2024-02-13)
 
 ### Fix
