@@ -835,7 +835,11 @@ class OdkForm(OdkCentral):
         """
         title = os.path.basename(os.path.splitext(filespec)[0])
         datafile = f"{title}.geojson"
-        xid = xform.split("_")[2]
+
+        if xform.find("_") > 0:
+            xid = xform.split("_")[2]
+        else:
+            xid = xform
 
         if convert_to_draft:
             url = f"{self.base}projects/{projectId}/forms/{xid}/draft"
