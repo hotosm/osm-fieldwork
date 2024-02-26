@@ -1,3 +1,9 @@
+## 0.4.4 (2024-02-26)
+
+### Fix
+
+- do not index xform path for form name
+
 ## 0.4.3 (2024-02-26)
 
 ### Fix
