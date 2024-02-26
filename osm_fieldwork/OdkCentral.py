@@ -31,6 +31,7 @@ import sys
 import zlib
 from base64 import b64encode
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 import requests
@@ -833,28 +834,21 @@ class OdkForm(OdkCentral):
             filespec (str): The filespec of the media file
             convert_to_draft (bool): Whether to convert a published XForm to draft
         """
-        title = os.path.basename(os.path.splitext(filespec)[0])
-        datafile = f"{title}.geojson"
-
-        if xform.find("_") > 0:
-            xid = xform.split("_")[2]
-        else:
-            xid = xform
+        geojson_file = Path(filespec).name
 
         if convert_to_draft:
-            url = f"{self.base}projects/{projectId}/forms/{xid}/draft"
+            url = f"{self.base}projects/{projectId}/forms/{xform}/draft"
             result = self.session.post(url, verify=self.verify)
             if result.status_code == 200:
-                log.debug(f"Modified {title} to draft")
+                log.debug(f"Modified {xform} to draft")
             else:
                 status = eval(result._content)
-                log.error(f"Couldn't modify {title} to draft: {status['message']}")
+                log.error(f"Couldn't modify {xform} to draft: {status['message']}")
 
-        url = f"{self.base}projects/{projectId}/forms/{xid}/draft/attachments/{datafile}"
+        url = f"{self.base}projects/{projectId}/forms/{xform}/draft/attachments/{geojson_file}"
         headers = {"Content-Type": "*/*"}
-        file = open(filespec, "rb")
-        media = file.read()
-        file.close()
+        with open(filespec, "rb") as file:
+            media = file.read()
         result = self.session.post(url, data=media, headers=headers, verify=self.verify)
         if result.status_code == 200:
             log.debug(f"Uploaded {filespec} to Central")
@@ -974,12 +968,8 @@ class OdkForm(OdkCentral):
             (int): The staus code from ODK Central
         """
         version = datetime.now().strftime("%Y-%m-%dT%TZ")
-        if xform.find("_") > 0:
-            xid = xform.split("_")[2]
-        else:
-            xid = xform
 
-        url = f"{self.base}projects/{projectId}/forms/{xid}/draft/publish?version={version}"
+        url = f"{self.base}projects/{projectId}/forms/{xform}/draft/publish?version={version}"
         result = self.session.post(url, verify=self.verify)
         if result.status_code != 200:
             status = eval(result._content)
@@ -999,12 +989,7 @@ class OdkForm(OdkCentral):
             dict: A json object containing the form fields.
 
         """
-        if xform.find("_") > 0:
-            xid = xform.split("_")[2]
-        else:
-            xid = xform
-
-        url = f"{self.base}projects/{projectId}/forms/{xid}/fields?odata=true"
+        url = f"{self.base}projects/{projectId}/forms/{xform}/fields?odata=true"
         result = self.session.get(url, verify=self.verify)
         return result.json()
 
