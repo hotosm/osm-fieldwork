@@ -820,6 +820,33 @@ class OdkForm(OdkCentral):
         self.media = result.json()
         return self.media
 
+    def validateMedia(self, filename: str):
+        """Validate the specified filename is present in the XForm."""
+        if not self.xml:
+            return
+        xform_filenames = []
+        namespaces = {
+            "h": "http://www.w3.org/1999/xhtml",
+            "odk": "http://www.opendatakit.org/xforms",
+            "xforms": "http://www.w3.org/2002/xforms",
+        }
+
+        root = ElementTree.fromstring(self.xml)
+        instances = root.findall(".//xforms:model/xforms:instance[@src]", namespaces)
+
+        for inst in instances:
+            src_value = inst.attrib.get("src", "")
+            src_stripped = src_value.strip("jr://")
+            if "file/" in src_stripped:
+                src_stripped = src_stripped.strip("file/")
+            xform_filenames.append(src_stripped)
+
+        if filename not in xform_filenames:
+            log.error(f"Filename ({filename}) is not present in XForm: {xform_filenames}")
+            return False
+
+        return True
+
     def uploadMedia(
         self,
         projectId: int,
@@ -854,6 +881,10 @@ class OdkForm(OdkCentral):
                 media = file.read()
             filename = str(Path(data).name)
 
+        # Validate filename present in XForm
+        if self.xml:
+            if not self.validateMedia(filename):
+                return None
             result = self.session.post(url, verify=self.verify)
             if result.status_code == 200:
                 log.debug(f"Modified {xform} to draft")
