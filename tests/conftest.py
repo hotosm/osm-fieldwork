@@ -89,13 +89,13 @@ logging.basicConfig(
 #     return response.json().get("token")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def project():
     """Get persistent ODK Central requests session."""
     return OdkProject("https://proxy", "test@hotosm.org", "Password1234")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def project_details(project):
     """Get persistent ODK Central requests session."""
     return project.createProject("test project")
@@ -117,20 +117,35 @@ def appuser_details(appuser, project_details):
     appuser_name = f"test_appuser_{uuid.uuid4()}"
     response = appuser.create(project_details.get("id"), appuser_name)
 
-    assert response.get("projectId") == 1
     assert response.get("displayName") == appuser_name
 
     return response
 
 
 @pytest.fixture(scope="function")
-def xform():
+def odk_form(project_details) -> tuple:
     """Get appuser for a project."""
-    return OdkForm(
+    odk_id = project_details.get("id")
+    form = OdkForm(
         url="https://proxy",
         user="test@hotosm.org",
         passwd="Password1234",
     )
+    return odk_id, form
+
+
+@pytest.fixture(scope="session", autouse=True)
+def cleanup():
+    """Cleanup projects and forms after tests."""
+    project = OdkProject(
+        url="https://proxy",
+        user="test@hotosm.org",
+        passwd="Password1234",
+    )
+
+    for item in project.listProjects():
+        project_id = item.get("id")
+        project.deleteProject(project_id)
 
 
 # @pytest.fixture(scope="function")
@@ -139,6 +154,6 @@ def xform():
 #     xlsform = xls2xform_convert(buildings)
 #     response = xform.createForm(
 #         projectId=project_details.get("id"),
-#         xform="1",
 #         filespec=xlsform,
+#         xform="1",
 #     )
