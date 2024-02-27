@@ -22,7 +22,6 @@
 # Author: Ivan Gayton <ivangayton@gmail.com>
 # Author: Reetta Valimaki <reetta.valimaki8@gmail.com>
 
-
 import concurrent.futures
 import json
 import logging
@@ -34,6 +33,7 @@ from datetime import datetime
 from io import BytesIO
 from pathlib import Path
 from typing import Optional, Union
+from xml.etree import ElementTree
 
 import requests
 import segno
@@ -566,15 +566,15 @@ class OdkForm(OdkCentral):
         super().__init__(url, user, passwd)
         self.name = None
         # Draft is for a form that isn't published yet
-        self.draft = True
+        self.draft = False
+        self.published = False
         # this is only populated if self.getDetails() is called first.
-        self.data = dict()
-        self.attach = list()
-        self.publish = True
-        self.media = list()
+        self.data = {}
+        self.attach = []
+        self.media = {}
         self.xml = None
-        self.submissions = list()
-        self.appusers = dict()
+        self.submissions = []
+        self.appusers = {}
         # self.xmlFormId = None
         # self.projectId = None
 
@@ -720,7 +720,6 @@ class OdkForm(OdkCentral):
         Returns:
             (bytes): The list of submissions as JSON or CSV bytes object.
         """
-        headers = {"Content-Type": "application/json"}
         now = datetime.now()
         timestamp = f"{now.year}_{now.hour}_{now.minute}"
 
@@ -735,7 +734,11 @@ class OdkForm(OdkCentral):
             url = url + f"('{submission_id}')"
 
         # log.debug(f'Getting submissions for {projectId}, Form {xform}')
-        result = self.session.get(url, headers=headers, verify=self.verify)
+        result = self.session.get(
+            url,
+            headers=dict({"Content-Type": "application/json", "accept": "odkcentral"}, **self.session.headers),
+            verify=self.verify,
+        )
         if result.status_code == 200:
             if disk:
                 # id = self.forms[0]['xmlFormId']
@@ -772,7 +775,7 @@ class OdkForm(OdkCentral):
 
     def addMedia(
         self,
-        media: str,
+        media: bytes,
         filespec: str,
     ):
         """Add a data file to this form.
@@ -945,7 +948,7 @@ class OdkForm(OdkCentral):
         else:
             status = eval(result._content)
             log.error(f"Couldn't fetch {filename} from Central: {status['message']}")
-        self.media = result.content
+        self.addMedia(result.content, filename)
         return self.media
 
     def createForm(
@@ -1060,17 +1063,34 @@ class OdkForm(OdkCentral):
         # FIXME: If your goal is to prevent it from showing up on survey clients like ODK Collect, consider
         # setting its state to closing or closed
         if self.draft:
+            log.debug(f"Deleting draft form on ODK server: ({xform})")
             url = f"{self.base}projects/{projectId}/forms/{xform}/draft"
         else:
+            log.debug(f"Deleting form on ODK server: ({xform})")
             url = f"{self.base}projects/{projectId}/forms/{xform}"
+
         result = self.session.delete(url, verify=self.verify)
-        return result
+        if not result.ok:
+            try:
+                # Log response to terminal
+                json_data = result.json()
+                log.warning(json_data)
+                return False
+            except json.decoder.JSONDecodeError:
+                log.error("Could not parse response json during form deletion. " f"status_code={result.status_code}")
+            finally:
+                return False
+
+        self.draft = False
+        self.published = False
+
+        return True
 
     def publishForm(
         self,
         projectId: int,
         xform: str,
-    ):
+    ) -> int:
         """Publish a draft form. When creating a form that isn't a draft, it can get publised then.
 
         Args:
@@ -1080,7 +1100,7 @@ class OdkForm(OdkCentral):
         Returns:
             (int): The staus code from ODK Central
         """
-        version = datetime.now().strftime("%Y-%m-%dT%TZ")
+        version = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
 
         url = f"{self.base}projects/{projectId}/forms/{xform}/draft/publish?version={version}"
         result = self.session.post(url, verify=self.verify)
@@ -1089,6 +1109,10 @@ class OdkForm(OdkCentral):
             log.error(f"Couldn't publish {xform} on Central: {status['message']}")
         else:
             log.info(f"Published {xform} on Central.")
+
+        self.draft = False
+        self.published = True
+
         return result.status_code
 
     def form_fields(self, projectId: int, xform: str):
@@ -1109,11 +1133,12 @@ class OdkForm(OdkCentral):
     def dump(self):
         """Dump internal data structures, for debugging purposes only."""
         # super().dump()
-        entries = len(self.media)
+        entries = len(self.media.keys())
         print("Form has %d attachments" % entries)
-        for form in self.media:
-            if "name" in form:
-                print("Name: %s" % form["name"])
+        for filename, content in self.media:
+            print("Filename: %s" % filename)
+            print("Content length: %s" % len(content))
+            print("")
 
 
 class OdkAppUser(OdkCentral):
@@ -1334,7 +1359,7 @@ if __name__ == "__main__":
     # csv2 = "/home/rob/projects/HOT/osm_fieldwork.git/osm_fieldwork/xlsforms/towns.csv"
     # form.addMedia(csv1)
     # form.addMedia(csv2)
-    x = form.createForm(4, "cemeteries", "cemeteries.xls", True)
+    x = form.createForm(4, "cemeteries.xls", "cemeteries")
     print(x.json())
     # x = form.publish(4, 'cemeteries', "cemeteries.xls")
     print(x.json())
