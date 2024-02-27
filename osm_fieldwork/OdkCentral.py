@@ -885,23 +885,37 @@ class OdkForm(OdkCentral):
         if self.xml:
             if not self.validateMedia(filename):
                 return None
-            result = self.session.post(url, verify=self.verify)
-            if result.status_code == 200:
-                log.debug(f"Modified {xform} to draft")
-            else:
-                status = eval(result._content)
-                log.error(f"Couldn't modify {xform} to draft: {status['message']}")
 
-        url = f"{self.base}projects/{projectId}/forms/{xform}/draft/attachments/{geojson_file}"
-        headers = {"Content-Type": "*/*"}
-        with open(filespec, "rb") as file:
-            media = file.read()
-        result = self.session.post(url, data=media, headers=headers, verify=self.verify)
+        # Must first convert to draft if already published
+        if not self.draft or self.published:
+            # TODO should this use self.createForm ?
+            log.debug(f"Updating form ({form_name}) to draft")
+            url = f"{self.base}projects/{projectId}/forms/{form_name}/draft?ignoreWarnings=true"
+            result = self.session.post(url, verify=self.verify)
+            if result.status_code != 200:
+                status = eval(result._content)
+                log.error(f"Couldn't modify {form_name} to draft: {status['message']}")
+                return None
+
+        # Upload the media
+        url = f"{self.base}projects/{projectId}/forms/{form_name}/draft/attachments/{filename}"
+        log.debug(f"Uploading media to URL: {url}")
+        result = self.session.post(
+            url, data=b"test", headers=dict({"Content-Type": "*/*"}, **self.session.headers), verify=self.verify
+        )
+
         if result.status_code == 200:
-            log.debug(f"Uploaded {filespec} to Central")
+            log.debug(f"Uploaded {filename} to Central")
         else:
             status = eval(result._content)
-            log.error(f"Couldn't upload {filespec} to Central: {status['message']}")
+            log.error(f"Couldn't upload {filename} to Central: {status['message']}")
+            return None
+
+        # Publish the draft by default
+        if self.published:
+            self.publishForm(projectId, form_name)
+
+        self.addMedia(media, filename)
 
         return result
 
