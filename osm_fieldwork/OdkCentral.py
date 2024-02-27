@@ -976,26 +976,59 @@ class OdkForm(OdkCentral):
                 self.xml = xml_file.read()
             log.info("Read %d bytes from %s" % (len(self.xml), data))
 
+        if form_name or self.draft:
+            self.draft = True
+            log.debug(f"Creating draft from template form: {form_name}")
+            url = f"{self.base}projects/{projectId}/forms/{form_name}/draft?ignoreWarnings=true"
         else:
-            url = f"{self.base}projects/{projectId}/forms?ignoreWarnings=true&publish=true"
+            # This is not a draft form, its an entirely new form (even if publish=false)
+            self.published = True if publish else False
+            url = f"{self.base}projects/{projectId}/forms?ignoreWarnings=true&{'publish=true' if publish else ''}"
 
-        # Read the XML or XLS file
-        file = open(filespec, "rb")
-        xml = file.read()
-        file.close()
-        log.info("Read %d bytes from %s" % (len(xml), filespec))
+        result = self.session.post(
+            url, data=self.xml, headers=dict({"Content-Type": "application/xml"}, **self.session.headers), verify=self.verify
+        )
 
-        result = self.session.post(url, data=xml, headers=headers, verify=self.verify)
+        if result.status_code != 200:
+            try:
+                status = result.json()
+                msg = status.get("message", "Unknown error")
+                if result.status_code == 409:
+                    log.warning(msg)
+                    last_full_stop_index = msg.rfind(".")
+                    last_comma_index = msg.rfind(",")
+                    if last_full_stop_index != -1 and last_comma_index != -1:
+                        # Extract xmlFormId from error msg
+                        xmlFormId = msg[last_comma_index + 1 : last_full_stop_index].strip()
+                        return xmlFormId
+                    else:
+                        log.warning("Unable to extract xmlFormId from error message")
+                        return None
+                else:
+                    log.error(f"Couldn't create {form_name} on Central: {msg}")
+                    return None
+            except json.decoder.JSONDecodeError:
+                log.error(f"Couldn't create {form_name} on Central: Error decoding JSON response")
+                return None
+
+        try:
+            # Log response to terminal
+            json_data = result.json()
+        except json.decoder.JSONDecodeError:
+            log.error("Could not parse response json during form creation")
+            return None
+
         # epdb.st()
         # FIXME: should update self.forms with the new form
-        if result.status_code != 200:
-            if result.status_code == 409:
-                log.error(f"{xform} already exists on Central")
-            else:
-                status = eval(result._content)
-                log.error(f"Couldn't create {xform} on Central: {status['message']}")
 
-        return result.status_code
+        if "success" in json_data:
+            log.debug(f"Created draft XForm on ODK server: ({form_name})")
+            return form_name
+
+        new_form_name = json_data.get("xmlFormId")
+        log.warning(json_data)
+        log.debug(f"Creating XForm on ODK server: ({new_form_name})")
+        return new_form_name
 
     def deleteForm(
         self,
