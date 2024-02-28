@@ -1,3 +1,21 @@
+## 0.5.0 (2024-02-28)
+
+### Feat
+
+- add media upload filename validation against xform
+- allow passing bytesio object for createForm & uploadMedia
+- add media upload filename validation against xform
+- allow passing bytesio object for createForm & uploadMedia
+
+### Fix
+
+- minor fixes to OdkForm
+- mediaUpload for xform geojson
+- return form name regardless of if exists or not
+- minor fixes to OdkForm
+- mediaUpload for xform geojson
+- return form name regardless of if exists or not
+
 ## 0.4.4 (2024-02-26)
 
 ### Fix
