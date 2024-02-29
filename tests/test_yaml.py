@@ -26,13 +26,9 @@ from osm_fieldwork.yamlfile import YamlFile
 
 log = logging.getLogger(__name__)
 
-parser = argparse.ArgumentParser(description="Read and parse a YAML file")
-parser.add_argument("--infile", help="The YAML input file")
-args = parser.parse_args()
-
 path = xlsforms_path.replace("/xlsforms", "")
-infile = f"{path}/xforms.yaml"
-data = YamlFile(infile)
+# FIXME use fixture
+data = YamlFile(f"{path}/xforms.yaml")
 # data.dump()
 
 
@@ -86,6 +82,10 @@ def test_ignore():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Read and parse a YAML file")
+    parser.add_argument("--infile", help="The YAML input file")
+    args = parser.parse_args()
+
     test_load()
     test_good()
     test_private()

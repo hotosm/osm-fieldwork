@@ -26,11 +26,6 @@ from osm_fieldwork.xlsforms import xlsforms_path
 
 # find the path of root tests dir
 rootdir = os.path.dirname(os.path.abspath(__file__))
-
-parser = argparse.ArgumentParser(description="Read and convert a JSON file from ODK Central")
-parser.add_argument("--infile", default=f"{rootdir}/testdata/testcamps.json", help="The JSON input file")
-args = parser.parse_args()
-
 path = xlsforms_path.replace("/xlsforms", "")
 csv = Convert(f"{path}/xforms.yaml")
 
@@ -88,6 +83,10 @@ def test_multiple_value():
 
 # Run standalone for easier debugging when not under pytest
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Read and convert a JSON file from ODK Central")
+    parser.add_argument("--infile", default=f"{rootdir}/testdata/testcamps.json", help="The JSON input file")
+    args = parser.parse_args()
+
     test_keywords()
     test_convert_tag()
     test_single_value()

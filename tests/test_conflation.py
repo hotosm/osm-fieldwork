@@ -27,20 +27,13 @@ from osm_fieldwork.osmfile import OsmFile
 # find the path of root tests dir
 rootdir = os.path.dirname(os.path.abspath(__file__))
 
-parser = argparse.ArgumentParser(description="Test odk_merge")
-parser.add_argument("--odk", default=f"{rootdir}/testdata/odk_pois.osm", help="The ODK file")
-parser.add_argument("--osm", default=f"{rootdir}/testdata/osm_buildings.geojson", help="The OSM data")
-parser.add_argument("-d", "--database", default="PG:colorado", help="The database name")
-parser.add_argument("-b", "--boundary", default=f"{rootdir}/testdata/Salida.geojson", help="The project AOI")
-args = parser.parse_args()
 
-
-def test_file():
+def test_file(osm_file=f"{rootdir}/testdata/odk_pois.osm"):
     """This tests conflating against the GeoJson data extract file."""
     passes = 0
     osm = OsmFile()
-    osmdata = osm.loadFile(args.odk)
-    odk = OdkMerge(args.osm)
+    osmdata = osm.loadFile(osm_file)
+    odk = OdkMerge(f"{rootdir}/testdata/osm_buildings.geojson")
     # Although the code is multi-threaded, we can call the function that
     # does all the work directly without threading. Easier to debug this qay.
     data = conflateThread(osmdata, odk, 0)
@@ -74,7 +67,7 @@ def test_file():
 #     #     passes += 1
 
 #     osm = OsmFile()
-#     osmdata = osm.loadFile(args.odk)
+#     osmdata = osm.loadFile(f"{rootdir}/testdata/odk_pois.osm")
 #     if len(osmdata) == 8:
 #         passes += 1
 
@@ -94,8 +87,15 @@ def test_file():
 #     assert(passes == 4)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Test odk_merge")
+    parser.add_argument("--odk", default=f"{rootdir}/testdata/odk_pois.osm", help="The ODK file")
+    parser.add_argument("--osm", default=f"{rootdir}/testdata/osm_buildings.geojson", help="The OSM data")
+    parser.add_argument("-d", "--database", default="PG:colorado", help="The database name")
+    parser.add_argument("-b", "--boundary", default=f"{rootdir}/testdata/Salida.geojson", help="The project AOI")
+    args = parser.parse_args()
+
     print("--- test_file() ---")
-    test_file()
+    test_file(osm_file=args.odk)
     # print("--- test_db() ---")
     # test_db()
     print("--- done ---")
