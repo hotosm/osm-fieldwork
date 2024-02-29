@@ -1,3 +1,9 @@
+## 0.5.1 (2024-02-29)
+
+### Fix
+
+- rename form_fields --> formFields and handle all http errors (#230)
+
 ## 0.5.0 (2024-02-28)
 
 ### Feat
