@@ -20,6 +20,8 @@
 from io import BytesIO
 from pathlib import Path
 
+import pytest
+import requests
 import segno
 
 testdata_dir = Path(__file__).parent / "testdata"
@@ -91,23 +93,13 @@ def test_create_form_delete(project, odk_form):
     assert len(project.listForms(odk_id)) == 0
 
 
-def test_create_form_and_publish(project, odk_form):
+def test_create_form_and_publish(project, odk_form_cleanup):
     """Create form and publish."""
-    odk_id, xform = odk_form
-    test_xform = testdata_dir / "buildings.xml"
-
-    form_name = xform.createForm(odk_id, str(test_xform))
-    assert form_name == "test_form"
+    odk_id, form_name, xform = odk_form_cleanup
 
     response_code = xform.publishForm(odk_id, form_name)
     assert response_code == 200
     assert xform.published == True
-
-    success = xform.deleteForm(odk_id, form_name)
-    assert success
-
-    forms = project.listForms(odk_id)
-    assert len(forms) == 0
 
 
 def test_create_form_and_publish_immediately(project, odk_form):
@@ -125,14 +117,12 @@ def test_create_form_and_publish_immediately(project, odk_form):
     assert len(project.listForms(odk_id)) == 0
 
 
-def test_create_form_draft(project, odk_form):
+def test_create_form_draft(project, odk_form_cleanup):
     """Create form draft from existing form."""
-    odk_id, xform = odk_form
+    odk_id, original_form_name, xform = odk_form_cleanup
     test_xform = testdata_dir / "buildings.xml"
 
-    # Create original form
-    original_form_name = xform.createForm(odk_id, str(test_xform))
-    assert original_form_name == "test_form"
+    # Check original form is not draft
     assert xform.draft == False
 
     # Publish original form
@@ -162,21 +152,10 @@ def test_create_form_draft(project, odk_form):
 
     assert len(project.listForms(odk_id)) == 1
 
-    # Delete published draft form
-    success = xform.deleteForm(odk_id, draft_form_name)
-    assert success
 
-    assert len(project.listForms(odk_id)) == 0
-
-
-def test_upload_media_filepath(project, odk_form):
+def test_upload_media_filepath(project, odk_form_cleanup):
     """Create form and upload media."""
-    odk_id, xform = odk_form
-    test_xform = testdata_dir / "buildings.xml"
-
-    # Create form
-    form_name = xform.createForm(odk_id, str(test_xform))
-    assert form_name == "test_form"
+    odk_id, form_name, xform = odk_form_cleanup
 
     # Publish form first
     response_code = xform.publishForm(odk_id, form_name)
@@ -190,12 +169,6 @@ def test_upload_media_filepath(project, odk_form):
         str(testdata_dir / "osm_buildings.geojson"),
     )
     assert result.status_code == 200
-
-    # Delete form
-    success = xform.deleteForm(odk_id, "test_form")
-    assert success
-
-    assert len(project.listForms(odk_id)) == 0
 
 
 def test_upload_media_bytesio_publish(project, odk_form):
@@ -225,3 +198,29 @@ def test_upload_media_bytesio_publish(project, odk_form):
     assert success
 
     assert len(project.listForms(odk_id)) == 0
+
+
+def test_form_fields_no_form(odk_form):
+    """Attempt usage of form_fields before form exists."""
+    odk_id, xform = odk_form
+    with pytest.raises(requests.exceptions.HTTPError):
+        xform.formFields(odk_id, "test_form")
+
+
+def test_form_fields(odk_form_cleanup):
+    """Test form fields for created form."""
+    odk_id, form_name, xform = odk_form_cleanup
+
+    # Get form fields
+    form_fields = xform.formFields(odk_id, form_name)
+    assert len(form_fields) == 66
+
+    sorted_form_fields = sorted(form_fields, key=lambda x: x["name"])
+    buildings_heritage = sorted_form_fields[30]
+    assert buildings_heritage == {
+        "path": "/all/buildings/heritage",
+        "name": "heritage",
+        "type": "string",
+        "binary": None,
+        "selectMultiple": None,
+    }
