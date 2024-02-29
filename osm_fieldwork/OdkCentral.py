@@ -1043,7 +1043,6 @@ class OdkForm(OdkCentral):
             return form_name
 
         new_form_name = json_data.get("xmlFormId")
-        log.warning(json_data)
         log.debug(f"Creating XForm on ODK server: ({new_form_name})")
         return new_form_name
 
@@ -1115,7 +1114,7 @@ class OdkForm(OdkCentral):
 
         return result.status_code
 
-    def form_fields(self, projectId: int, xform: str):
+    def formFields(self, projectId: int, xform: str):
         """Retrieves the form fields for a xform from odk central.
 
         Args:
@@ -1127,8 +1126,18 @@ class OdkForm(OdkCentral):
 
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}/fields?odata=true"
-        result = self.session.get(url, verify=self.verify)
-        return result.json()
+        response = self.session.get(url, verify=self.verify)
+
+        # TODO wrap this logic and put in every method requiring form name
+        if response.status_code != 200:
+            if response.status_code == 404:
+                msg = f"The ODK form you referenced does not exist yet: {xform}"
+                log.debug(msg)
+                raise requests.exceptions.HTTPError(msg)
+            log.debug(f"Failed to retrieve form fields. Status code: {response.status_code}")
+            response.raise_for_status()
+
+        return response.json()
 
     def dump(self):
         """Dump internal data structures, for debugging purposes only."""

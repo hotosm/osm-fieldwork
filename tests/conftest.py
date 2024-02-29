@@ -20,6 +20,7 @@
 import logging
 import sys
 import uuid
+from pathlib import Path
 
 import pytest
 
@@ -32,6 +33,8 @@ logging.basicConfig(
     datefmt="%y-%m-%d %H:%M:%S",
     stream=sys.stdout,
 )
+
+testdata_dir = Path(__file__).parent / "testdata"
 
 
 # from sqlalchemy import create_engine
@@ -134,9 +137,28 @@ def odk_form(project_details) -> tuple:
     return odk_id, form
 
 
+@pytest.fixture(scope="function")
+def odk_form_cleanup(odk_form):
+    """Get xform for project, with automatic cleanup after."""
+    odk_id, xform = odk_form
+    test_xform = testdata_dir / "buildings.xml"
+
+    # Create form
+    form_name = xform.createForm(odk_id, str(test_xform))
+    assert form_name == "test_form"
+
+    # Before yield is used in tests
+    yield odk_id, form_name, xform
+    # After yield is test cleanup
+
+    # Delete form
+    success = xform.deleteForm(odk_id, "test_form")
+    assert success
+
+
 @pytest.fixture(scope="session", autouse=True)
 def cleanup():
-    """Cleanup projects and forms after tests."""
+    """Cleanup projects and forms after all tests (session)."""
     project = OdkProject(
         url="https://proxy",
         user="test@hotosm.org",
