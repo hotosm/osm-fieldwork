@@ -1,3 +1,9 @@
+## 0.5.2 (2024-03-04)
+
+### Fix
+
+- **regression**: upload Media uploading test data instead of real data
+
 ## 0.5.1 (2024-02-29)
 
 ### Fix
