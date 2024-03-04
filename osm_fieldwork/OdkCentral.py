@@ -904,7 +904,7 @@ class OdkForm(OdkCentral):
         url = f"{self.base}projects/{projectId}/forms/{form_name}/draft/attachments/{filename}"
         log.debug(f"Uploading media to URL: {url}")
         result = self.session.post(
-            url, data=b"test", headers=dict({"Content-Type": "*/*"}, **self.session.headers), verify=self.verify
+            url, data=media, headers=dict({"Content-Type": "*/*"}, **self.session.headers), verify=self.verify
         )
 
         if result.status_code == 200:
