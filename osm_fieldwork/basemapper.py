@@ -273,7 +273,7 @@ class BaseMapper(object):
     def makeBbox(
         self,
         boundary: str,
-    ):
+    ) -> tuple[float, float, float, float]:
         """Make a bounding box from a shapely geometry.
 
         Args:
@@ -292,12 +292,14 @@ class BaseMapper(object):
                     # BBOX valid
                     return bbox
                 else:
-                    log.error(f"BBOX string malformed: {bbox}")
-                    return
+                    msg = f"BBOX string malformed: {bbox}"
+                    log.error(msg)
+                    raise ValueError(msg)
             except Exception as e:
                 log.error(e)
-                log.error(f"Failed to parse BBOX string: {boundary}")
-                return
+                msg = f"Failed to parse BBOX string: {boundary}"
+                log.error(msg)
+                raise ValueError(msg)
 
         log.debug(f"Reading geojson file: {boundary}")
         with open(boundary, "r") as f:
@@ -315,8 +317,9 @@ class BaseMapper(object):
             geometry = unary_union(geometry)
 
         if geometry.is_empty:
-            log.warning(f"No bbox extracted from {geometry}")
-            return None
+            msg = f"No bbox extracted from {geometry}"
+            log.error(msg)
+            raise ValueError(msg)
 
         bbox = geometry.bounds
         # left, bottom, right, top
