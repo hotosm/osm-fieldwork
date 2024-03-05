@@ -186,7 +186,7 @@ file. This is just a short overview.
 
 This program converts the data collected from ODK Collect into
 the proper OpenStreetMap tagging schema. The conversion is controlled
-by an
+by a
 [YAML](https://github.com/hotosm/osm-fieldwork/blob/main/osm-fieldwork/xforms.yaml)
 file, so easy to modify for other projects. The output are two files,
 one is suitable for OSM,and is in OSM XML format. The other
