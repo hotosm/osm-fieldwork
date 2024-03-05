@@ -839,13 +839,14 @@ class OdkForm(OdkCentral):
 
         for inst in instances:
             src_value = inst.attrib.get("src", "")
-            src_stripped = src_value.strip("jr://")
-            if "file/" in src_stripped:
-                src_stripped = src_stripped.strip("file/")
-            xform_filenames.append(src_stripped)
+            if src_value.startswith("jr://"):
+                src_value = src_value[len("jr://") :]  # Remove jr:// prefix
+            if src_value.startswith("file/"):
+                src_value = src_value[len("file/") :]  # Remove file/ prefix
+            xform_filenames.append(src_value)
 
         if filename not in xform_filenames:
-            log.error(f"Filename ({filename}) is not present in XForm: {xform_filenames}")
+            log.error(f"Filename ({filename}) is not present in XForm media: {xform_filenames}")
             return False
 
         return True
