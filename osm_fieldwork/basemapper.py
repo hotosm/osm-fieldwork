@@ -470,28 +470,24 @@ def create_basemap_file(
         else:
             zoom_levels.append(int(zooms))
 
-    # Make a bounding box from the boundary file
-    if not boundary:
-        err = "You need to specify a boundary! (file or bbox)"
-        log.error(err)
-        raise ValueError(err)
-
     if not outdir:
-        base = "/var/www/html"
+        base = Path.cwd().absolute()
     else:
-        base = outdir
+        base = Path(outdir).absolute()
 
     source = "custom" if tms else source
-    base = str(Path(base) / f"{source}tiles")
+    tiledir = base / f"{source}tiles"
     # Make tile download directory
-    Path(base).mkdir(parents=True, exist_ok=True)
+    tiledir.mkdir(parents=True, exist_ok=True)
+    # Convert to string for other methods
+    tiledir = str(tiledir)
 
     if not source and not tms:
         err = "You need to specify a source!"
         log.error(err)
         raise ValueError(err)
 
-    basemap = BaseMapper(boundary, base, source, xy)
+    basemap = BaseMapper(boundary, tiledir, source, xy)
 
     if tms:
         # Add TMS URL to sources for download
@@ -505,7 +501,7 @@ def create_basemap_file(
         tiles += basemap.tiles
 
     if not outfile:
-        log.info(f"No outfile specified, tile download finished: {base}")
+        log.info(f"No outfile specified, tile download finished: {tiledir}")
         return
 
     suffix = Path(outfile).suffix.lower()
@@ -516,15 +512,15 @@ def create_basemap_file(
         if suffix == ".mbtiles":
             outf.addBounds(basemap.bbox)
         # Create output database and specify image format, png, jpg, or tif
-        outf.writeTiles(tiles, base)
+        outf.writeTiles(tiles, tiledir)
 
     elif suffix == ".pmtiles":
-        tile_dir_to_pmtiles(outfile, base, basemap.bbox, source)
+        tile_dir_to_pmtiles(outfile, tiledir, basemap.bbox, source)
 
     else:
         msg = f"Format {suffix} not supported"
         log.error(msg)
-        raise ValueError(msg)
+        raise ValueError(msg) from None
     log.info(f"Wrote {outfile}")
 
 
