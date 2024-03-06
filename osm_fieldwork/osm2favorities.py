@@ -21,6 +21,7 @@
 import argparse
 import logging
 import sys
+import os
 
 import geojson
 import gpxpy
@@ -29,7 +30,12 @@ import shapely
 from lxml import etree
 from shapely.geometry import shape
 
+
+#Instantiate logger
+log_level = os.getenv("LOG_LEVEL", default="INFO")
 # set log level for urlib
+logging.getLogger("urllib3").setLevel(log_level)
+log_stream = sys.stderr # default log stream
 log = logging.getLogger(__name__)
 
 
@@ -62,14 +68,17 @@ def main():
     parser.add_argument("-i", "--infile", required=True, help="The data extract")
     args = parser.parse_args()
 
-    # if verbose, dump to the termina
+    # if verbose, dump to the terminal.
     if args.verbose is not None:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
+        log_level = logging.DEBUG
+        log_stream = sys.stdout
+
+    logging.basicConfig(
+        level=log_level,
+        format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=log_stream,
+    )
 
     infile = open(args.infile, "r")
     indata = geojson.load(infile)

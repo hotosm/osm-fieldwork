@@ -36,6 +36,8 @@ from osm_fieldwork.data_models import data_models_path
 from osm_fieldwork.osmfile import OsmFile
 
 # Instantiate logger
+log_level = os.getenv("LOG_LEVEL", default="INFO")
+log_stream = sys.stderr #default log stream
 log = logging.getLogger(__name__)
 
 # The number of threads is based on the CPU cores
@@ -553,13 +555,16 @@ def main():
         source = unknown[1]
 
     # if verbose, dump to the terminal.
-    if args.verbose:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
+    if args.verbose is not None:
+        log_level = logging.DEBUG
+        log_stream = sys.stdout
+
+    logging.basicConfig(
+        level=log_level,
+        format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=log_stream,
+    )    
 
     if args.outfile:
         outfile = args.outfile

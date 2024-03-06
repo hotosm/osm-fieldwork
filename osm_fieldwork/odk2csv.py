@@ -30,6 +30,8 @@ from pathlib import Path
 import xmltodict
 
 # Instantiate logger
+log_level = os.getenv("LOG_LEVEL", default="INFO")
+log_stream = sys.stderr # default log stream
 log = logging.getLogger(__name__)
 
 
@@ -46,14 +48,18 @@ def main():
     # parser.add_argument("-o","--outfile", default='tmp.csv', help='The output file for JOSM')
     args = parser.parse_args()
 
-    # if verbose, dump to the termina
+
+    # if verbose, dump to the terminal
     if args.verbose is not None:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
+        log_level = logging.DEBUG
+        log_stream = sys.stdout
+
+    logging.basicConfig(
+        level=log_level,
+        format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=log_stream,
+    )
 
     xmlfiles = list()
     if args.instance.find("*") >= 0:

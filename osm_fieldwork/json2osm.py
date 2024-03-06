@@ -24,6 +24,7 @@ import logging
 
 # import pandas as pd
 import re
+import os
 import sys
 from pathlib import Path
 
@@ -36,6 +37,9 @@ from osm_fieldwork.convert import Convert
 from osm_fieldwork.osmfile import OsmFile
 
 # set log level for urlib
+log_level = os.getenv("LOG_LEVEL", default="INFO")
+log_stream = sys.stderr # default log stream
+logging.getLogger("urllib3").setLevel(log_level)
 log = logging.getLogger(__name__)
 
 
@@ -437,12 +441,15 @@ def main():
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
+        log_level = logging.DEBUG
+        log_stream = sys.stdout
+
+    logging.basicConfig(
+        level=log_level,
+        format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=log_stream,
+    )
 
     json2osm(args.infile, args.yaml)
 

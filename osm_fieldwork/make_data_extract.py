@@ -36,6 +36,8 @@ from osm_fieldwork.filter_data import FilterData
 from osm_fieldwork.xlsforms import xlsforms_path
 
 # Instantiate logger
+log_level = os.getenv("LOG_LEVEL", default="INFO")
+log_stream = sys.stderr
 log = logging.getLogger(__name__)
 
 
@@ -182,15 +184,15 @@ def main():
         quit()
 
     # if verbose, dump to the terminal.
-    log_level = os.getenv("LOG_LEVEL", default="INFO")
     if args.verbose is not None:
         log_level = logging.DEBUG
+        log_stream = sys.stdout
 
     logging.basicConfig(
         level=log_level,
         format=("%(asctime)s.%(msecs)03d [%(levelname)s] " "%(name)s | %(funcName)s:%(lineno)d | %(message)s"),
         datefmt="%y-%m-%d %H:%M:%S",
-        stream=sys.stdout,
+        stream=log_stream,
     )
 
     extract = MakeExtract(args.uri, args.config, args.xlsfile)

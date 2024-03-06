@@ -21,11 +21,14 @@
 import argparse
 import logging
 import sys
+import os
 
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
 
 # Instantiate logger
+log_level = os.getenv("LOG_LEVEL", default="INFO")
+log_stream = sys.stderr # default log stream
 log = logging.getLogger(__name__)
 
 
@@ -328,12 +331,15 @@ def main():
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
+        log_level = logging.DEBUG
+        log_stream = sys.stdout
+
+    logging.basicConfig(
+        level=log_level,
+        format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=log_stream,
+    )
 
     # convert = Convert(args.xform)
     convert = Convert("xforms.yaml")
