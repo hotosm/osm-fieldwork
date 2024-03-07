@@ -19,6 +19,7 @@
 #
 """Test functionalty of basemapper.py."""
 
+import io
 import logging
 import os
 import shutil
@@ -66,5 +67,31 @@ def test_create():
     assert hits == 2
 
 
+def test_create_with_byteio():
+    """Test loading with a BytesIO boundary"""
+    hits = 0
+    with open(boundary, "rb") as f:
+        boundary_bytes = io.BytesIO(f.read())
+    basemap = BaseMapper(boundary_bytes, base, "topo", False)
+    tiles = list()
+    for level in [8, 9, 10, 11, 12]:
+        basemap.getTiles(level)
+        tiles += basemap.tiles
+
+    if len(tiles) == 5:
+        hits += 1
+
+    if tiles[0].x == 52 and tiles[1].y == 193 and tiles[2].x == 211:
+        hits += 1
+
+    outf = DataFile(outfile, basemap.getFormat())
+    outf.writeTiles(tiles, base)
+
+    os.remove(outfile)
+    shutil.rmtree(base)
+
+    assert hits == 2    
+
 if __name__ == "__main__":
     test_create()
+    test_create_with_byteio()
