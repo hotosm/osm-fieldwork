@@ -354,7 +354,7 @@ def main():
                 path = Path(file)
                 if path.suffix == ".xml":
                     logging.info("Creating XForm from %s" % file)
-                    result = form.createForm(args.id, args.form, file, True)
+                    result = form.createForm(args.id, file, args.form)
                 elif path.suffix == ".csv":
                     logging.info("Uploading media file %r for XForm %s" % (file, file))
                     result = form.uploadMedia(args.id, args.form, file)

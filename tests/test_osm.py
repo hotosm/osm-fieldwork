@@ -26,31 +26,22 @@ from osm_fieldwork.osmfile import OsmFile
 # find the path of root tests dir
 rootdir = os.path.dirname(os.path.abspath(__file__))
 
-parser = argparse.ArgumentParser(description="Read and parse a CSV file from ODK Central")
-parser.add_argument("--infile", default=f"{rootdir}/testdata/odk_pois.osm", help="The CSV input file")
-parser.add_argument("--outfile", default=f"{rootdir}/testdata/test-out.osm", help="The output OSM XML file")
-args = parser.parse_args()
 
-# Delete the test output file
-if os.path.exists(args.outfile):
-    os.remove(args.outfile)
-
-osm = OsmFile(args.outfile)
-
-
-def test_init():
+def test_init(infile=f"{rootdir}/testdata/odk_pois.osm"):
     """Make sure the OSM file is initialized."""
-    assert os.path.exists(args.infile)
+    assert os.path.exists(infile)
 
 
-def test_header():
+def test_header(infile=f"{rootdir}/testdata/odk_pois.osm"):
+    osm = OsmFile(f"{rootdir}/testdata/test-out.osm")
     osm.header()
-    assert os.stat(args.infile).st_size > 0
+    assert os.stat(infile).st_size > 0
 
 
-def test_footer():
+def test_footer(infile=f"{rootdir}/testdata/odk_pois.osm"):
+    osm = OsmFile(f"{rootdir}/testdata/test-out.osm")
     osm.footer()
-    tmp = open(args.infile, "r")
+    tmp = open(infile, "r")
     lines = tmp.readlines()
     for line in lines:
         last = line
@@ -58,11 +49,13 @@ def test_footer():
 
 
 def test_create_tag():
+    osm = OsmFile(f"{rootdir}/testdata/test-out.osm")
     tmp = osm.createTag("foo", "bar")
     assert tmp["foo"] == "bar"
 
 
 def test_create_node_notags():
+    osm = OsmFile(f"{rootdir}/testdata/test-out.osm")
     node = dict()
     attrs = dict(id=12345, lat=1, lon=2, uid=54321, user="bar")
     node["attrs"] = attrs
@@ -72,6 +65,7 @@ def test_create_node_notags():
 
 
 def test_create_node_modified():
+    osm = OsmFile(f"{rootdir}/testdata/test-out.osm")
     node = dict()
     attrs = dict(id=12345, lat=1, lon=2, version=2, uid=54321, user="bar")
     node["attrs"] = attrs
@@ -82,6 +76,7 @@ def test_create_node_modified():
 
 
 def test_create_node_tags():
+    osm = OsmFile(f"{rootdir}/testdata/test-out.osm")
     node = dict()
     attrs = dict(id=12345, lat=1, lon=2, uid=54321, user="bar")
     node["attrs"] = attrs
@@ -91,6 +86,7 @@ def test_create_node_tags():
 
 
 def test_create_way():
+    osm = OsmFile(f"{rootdir}/testdata/test-out.osm")
     way = dict()
     way = dict()
     attrs = dict(id=12345, lat=1, lon=2, uid=54321, user="bar")
@@ -107,9 +103,18 @@ def test_create_way():
 
 
 if __name__ == "__main__":
-    test_init()
-    test_header()
-    test_footer()
+    parser = argparse.ArgumentParser(description="Read and parse a CSV file from ODK Central")
+    parser.add_argument("--infile", default=f"{rootdir}/testdata/odk_pois.osm", help="The CSV input file")
+    parser.add_argument("--outfile", default=f"{rootdir}/testdata/test-out.osm", help="The output OSM XML file")
+    args = parser.parse_args()
+
+    # Delete the test output file
+    if os.path.exists(args.outfile):
+        os.remove(args.outfile)
+
+    test_init(infile=args.infile)
+    test_header(infile=args.infile)
+    test_footer(infile=args.infile)
     test_create_tag()
     test_create_node_notags()
     test_create_node_tags()

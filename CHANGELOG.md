@@ -1,3 +1,61 @@
+## 0.5.3 (2024-03-05)
+
+### Fix
+
+- **odk**: upload media failing validation if extension stripped accidentally
+- argparse parsing of bbox string
+- default outdir to current working dir
+- optional bbox as space separated and comma separated
+- add correct typing for bbox var and return types
+
+## 0.5.2 (2024-03-04)
+
+### Fix
+
+- **regression**: upload Media uploading test data instead of real data
+
+## 0.5.1 (2024-02-29)
+
+### Fix
+
+- rename form_fields --> formFields and handle all http errors (#230)
+
+## 0.5.0 (2024-02-28)
+
+### Feat
+
+- add media upload filename validation against xform
+- allow passing bytesio object for createForm & uploadMedia
+- add media upload filename validation against xform
+- allow passing bytesio object for createForm & uploadMedia
+
+### Fix
+
+- minor fixes to OdkForm
+- mediaUpload for xform geojson
+- return form name regardless of if exists or not
+- minor fixes to OdkForm
+- mediaUpload for xform geojson
+- return form name regardless of if exists or not
+
+## 0.4.4 (2024-02-26)
+
+### Fix
+
+- do not index xform path for form name
+
+## 0.4.3 (2024-02-26)
+
+### Fix
+
+- more flexible parsing of xform name for uploadMedia
+
+## 0.4.3rc0 (2024-02-13)
+
+### Fix
+
+- error handling in submission downloadThread (#227)
+
 ## 0.4.2 (2024-01-30)
 
 ### Fix

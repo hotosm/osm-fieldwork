@@ -26,27 +26,24 @@ from osm_fieldwork.CSVDump import CSVDump
 # find the path of root tests dir
 rootdir = os.path.dirname(os.path.abspath(__file__))
 
-parser = argparse.ArgumentParser(description="Read and parse a CSV file from ODK Central")
-parser.add_argument("--infile", default=f"{rootdir}/testdata/test.csv", help="The CSV input file")
-args = parser.parse_args()
-csv = CSVDump()
-print(args)
-data = csv.parse(args.infile)
-print(data)
-
 
 def test_csv():
     """Make sure the CSV file got loaded and parsed."""
+    # FIXME use fixture
+    csv = CSVDump()
+    data = csv.parse(f"{rootdir}/testdata/test.csv")
     assert len(data) > 0
 
 
 def test_init():
     """Make sure the YAML file got loaded."""
+    csv = CSVDump()
     assert len(csv.yaml.yaml) > 0
 
 
-def test_osm_entry():
-    csv.createOSM(args.infile)
+def test_osm_entry(infile=f"{rootdir}/testdata/test.csv"):
+    csv = CSVDump()
+    csv.createOSM(infile)
     line = {
         "timestamp": "2021-09-25T14:27:43.862Z",
         "end": "2021-09-24T17:55:26.194-06:00",
@@ -64,6 +61,10 @@ def test_osm_entry():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Read and parse a CSV file from ODK Central")
+    parser.add_argument("--infile", default=f"{rootdir}/testdata/test.csv", help="The CSV input file")
+    args = parser.parse_args()
+
     test_init()
     test_csv()
-    # test_osm_entry()
+    test_osm_entry(infile=args.infile)

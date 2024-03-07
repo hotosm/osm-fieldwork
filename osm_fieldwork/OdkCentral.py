@@ -22,7 +22,6 @@
 # Author: Ivan Gayton <ivangayton@gmail.com>
 # Author: Reetta Valimaki <reetta.valimaki8@gmail.com>
 
-
 import concurrent.futures
 import json
 import logging
@@ -31,7 +30,10 @@ import sys
 import zlib
 from base64 import b64encode
 from datetime import datetime
-from typing import Optional
+from io import BytesIO
+from pathlib import Path
+from typing import Optional, Union
+from xml.etree import ElementTree
 
 import requests
 import segno
@@ -64,12 +66,12 @@ def downloadThread(project_id: int, xforms: list, odk_credentials: dict, filters
         form = OdkForm(odk_credentials["url"], odk_credentials["user"], odk_credentials["passwd"])
         # submissions = form.getSubmissions(project_id, task, 0, False, True)
         subs = form.listSubmissions(project_id, task, filters)
-        if type(subs) == dict:
-            log.error(f"{subs['message']}, {subs['code']} ")
+        if not subs:
+            log.error(f"Failed to get submissions for project ({project_id}) task ({task})")
             continue
         # log.debug(f"There are {len(subs)} submissions for {task}")
-        if len(subs) > 0:
-            data += subs
+        if len(subs["value"]) > 0:
+            data += subs["value"]
     # log.debug(f"There are {len(xforms)} Xforms, and {len(submissions)} submissions total")
     timer.stop()
     return data
@@ -218,7 +220,7 @@ class OdkCentral(object):
     def createProject(
         self,
         name: str,
-    ):
+    ) -> dict:
         """Create a new project on an ODK Central server if it doesn't
         already exist.
 
@@ -564,15 +566,15 @@ class OdkForm(OdkCentral):
         super().__init__(url, user, passwd)
         self.name = None
         # Draft is for a form that isn't published yet
-        self.draft = True
+        self.draft = False
+        self.published = False
         # this is only populated if self.getDetails() is called first.
-        self.data = dict()
-        self.attach = list()
-        self.publish = True
-        self.media = list()
+        self.data = {}
+        self.attach = []
+        self.media = {}
         self.xml = None
-        self.submissions = list()
-        self.appusers = dict()
+        self.submissions = []
+        self.appusers = {}
         # self.xmlFormId = None
         # self.projectId = None
 
@@ -669,12 +671,14 @@ class OdkForm(OdkCentral):
             (json): The JSON of Submissions.
         """
         url = f"{self.base}projects/{projectId}/forms/{xform}.svc/Submissions"
-        result = self.session.get(url, params=filters, verify=self.verify)
-        if result.ok:
+        try:
+            result = self.session.get(url, params=filters, verify=self.verify)
+            result.raise_for_status()  # Raise an error for non-2xx status codes
             self.submissions = result.json()
             return self.submissions
-
-        return {}
+        except Exception as e:
+            log.error(f"Error fetching submissions: {e}")
+            return {}
 
     def listAssignments(
         self,
@@ -716,7 +720,6 @@ class OdkForm(OdkCentral):
         Returns:
             (bytes): The list of submissions as JSON or CSV bytes object.
         """
-        headers = {"Content-Type": "application/json"}
         now = datetime.now()
         timestamp = f"{now.year}_{now.hour}_{now.minute}"
 
@@ -731,7 +734,11 @@ class OdkForm(OdkCentral):
             url = url + f"('{submission_id}')"
 
         # log.debug(f'Getting submissions for {projectId}, Form {xform}')
-        result = self.session.get(url, headers=headers, verify=self.verify)
+        result = self.session.get(
+            url,
+            headers=dict({"Content-Type": "application/json", "accept": "odkcentral"}, **self.session.headers),
+            verify=self.verify,
+        )
         if result.status_code == 200:
             if disk:
                 # id = self.forms[0]['xmlFormId']
@@ -768,7 +775,7 @@ class OdkForm(OdkCentral):
 
     def addMedia(
         self,
-        media: str,
+        media: bytes,
         filespec: str,
     ):
         """Add a data file to this form.
@@ -816,45 +823,103 @@ class OdkForm(OdkCentral):
         self.media = result.json()
         return self.media
 
+    def validateMedia(self, filename: str):
+        """Validate the specified filename is present in the XForm."""
+        if not self.xml:
+            return
+        xform_filenames = []
+        namespaces = {
+            "h": "http://www.w3.org/1999/xhtml",
+            "odk": "http://www.opendatakit.org/xforms",
+            "xforms": "http://www.w3.org/2002/xforms",
+        }
+
+        root = ElementTree.fromstring(self.xml)
+        instances = root.findall(".//xforms:model/xforms:instance[@src]", namespaces)
+
+        for inst in instances:
+            src_value = inst.attrib.get("src", "")
+            if src_value.startswith("jr://"):
+                src_value = src_value[len("jr://") :]  # Remove jr:// prefix
+            if src_value.startswith("file/"):
+                src_value = src_value[len("file/") :]  # Remove file/ prefix
+            xform_filenames.append(src_value)
+
+        if filename not in xform_filenames:
+            log.error(f"Filename ({filename}) is not present in XForm media: {xform_filenames}")
+            return False
+
+        return True
+
     def uploadMedia(
         self,
         projectId: int,
-        xform: str,
-        filespec: str,
-        convert_to_draft: bool = True,
-    ):
+        form_name: str,
+        data: Union[str, Path, BytesIO],
+        filename: Optional[str] = None,
+    ) -> Optional[requests.Response]:
         """Upload an attachement to the ODK Central server.
 
         Args:
             projectId (int): The ID of the project on ODK Central
-            xform (str): The XForm to get the details of from ODK Central
-            filespec (str): The filespec of the media file
-            convert_to_draft (bool): Whether to convert a published XForm to draft
+            form_name (str): The XForm to get the details of from ODK Central
+            data (str, Path, BytesIO): The file path or BytesIO media file
+            filename (str): If BytesIO object used, provide a file name.
+
+        Returns:
+            result (requests.Response): The response object.
         """
-        title = os.path.basename(os.path.splitext(filespec)[0])
-        datafile = f"{title}.geojson"
-        xid = xform.split("_")[2]
+        # BytesIO memory object
+        if isinstance(data, BytesIO):
+            if filename is None:
+                log.error("Cannot pass BytesIO object and not include the filename arg")
+                return None
+            media = data.getvalue()
+        # Filepath
+        elif isinstance(data, str) or isinstance(data, Path):
+            media_file_path = Path(data)
+            if not media_file_path.exists():
+                log.error(f"File does not exist on disk: {data}")
+                return None
+            with open(media_file_path, "rb") as file:
+                media = file.read()
+            filename = str(Path(data).name)
 
-        if convert_to_draft:
-            url = f"{self.base}projects/{projectId}/forms/{xid}/draft"
+        # Validate filename present in XForm
+        if self.xml:
+            if not self.validateMedia(filename):
+                return None
+
+        # Must first convert to draft if already published
+        if not self.draft or self.published:
+            # TODO should this use self.createForm ?
+            log.debug(f"Updating form ({form_name}) to draft")
+            url = f"{self.base}projects/{projectId}/forms/{form_name}/draft?ignoreWarnings=true"
             result = self.session.post(url, verify=self.verify)
-            if result.status_code == 200:
-                log.debug(f"Modified {title} to draft")
-            else:
+            if result.status_code != 200:
                 status = eval(result._content)
-                log.error(f"Couldn't modify {title} to draft: {status['message']}")
+                log.error(f"Couldn't modify {form_name} to draft: {status['message']}")
+                return None
 
-        url = f"{self.base}projects/{projectId}/forms/{xid}/draft/attachments/{datafile}"
-        headers = {"Content-Type": "*/*"}
-        file = open(filespec, "rb")
-        media = file.read()
-        file.close()
-        result = self.session.post(url, data=media, headers=headers, verify=self.verify)
+        # Upload the media
+        url = f"{self.base}projects/{projectId}/forms/{form_name}/draft/attachments/{filename}"
+        log.debug(f"Uploading media to URL: {url}")
+        result = self.session.post(
+            url, data=media, headers=dict({"Content-Type": "*/*"}, **self.session.headers), verify=self.verify
+        )
+
         if result.status_code == 200:
-            log.debug(f"Uploaded {filespec} to Central")
+            log.debug(f"Uploaded {filename} to Central")
         else:
             status = eval(result._content)
-            log.error(f"Couldn't upload {filespec} to Central: {status['message']}")
+            log.error(f"Couldn't upload {filename} to Central: {status['message']}")
+            return None
+
+        # Publish the draft by default
+        if self.published:
+            self.publishForm(projectId, form_name)
+
+        self.addMedia(media, filename)
 
         return result
 
@@ -884,52 +949,103 @@ class OdkForm(OdkCentral):
         else:
             status = eval(result._content)
             log.error(f"Couldn't fetch {filename} from Central: {status['message']}")
-        self.media = result.content
+        self.addMedia(result.content, filename)
         return self.media
 
     def createForm(
         self,
         projectId: int,
-        xform: str,
-        filespec: str,
-        draft: bool = False,
-    ):
+        data: Union[str, Path, BytesIO],
+        form_name: Optional[str] = None,
+        publish: Optional[bool] = False,
+    ) -> Optional[str]:
         """Create a new form on an ODK Central server.
+
+        - If no form_name is passed, the form name is generated by default in draft.
+            If the publish param is also passed, then the form is published.
+        - If form_name is passed, a new form is created from this in draft state.
+            This copies across all attachments.
+
+        Note:
+            The form name (xmlFormId) is generated from the id="…" attribute
+            immediately inside the <instance> tag of the XForm XML.
 
         Args:
             projectId (int): The ID of the project on ODK Central
-            xform (str): The XForm to get the details of from ODK Central
-            filespec (str): The name of the attachment for the XForm on ODK Central
-            draft (bool): Whether to create the XForm in draft or published
+            form_name (str): The XForm to get the details of from ODK Central
+            data (str, Path, BytesIO): The XForm file path, or BytesIO memory obj
+            publish (bool): If the new form should be published.
+                Only valid if form_name is not passed, i.e. a new form.
 
         Returns:
-            (int): The status code from ODK Central
+            (str, Optional): The form name, else None if failure.
         """
-        if draft is not None:
-            self.draft = draft
-        headers = {"Content-Type": "application/xml"}
-        if self.draft:
-            url = f"{self.base}projects/{projectId}/forms/{xform}/draft?ignoreWarnings=true&publish=false"
+        # BytesIO memory object
+        if isinstance(data, BytesIO):
+            self.xml = data.getvalue().decode("utf-8")
+        # Filepath
+        elif isinstance(data, str) or isinstance(data, Path):
+            xml_path = Path(data)
+            if not xml_path.exists():
+                log.error(f"File does not exist on disk: {data}")
+                return None
+            # Read the XML or XLS file
+            with open(xml_path, "rb") as xml_file:
+                self.xml = xml_file.read()
+            log.info("Read %d bytes from %s" % (len(self.xml), data))
+
+        if form_name or self.draft:
+            self.draft = True
+            log.debug(f"Creating draft from template form: {form_name}")
+            url = f"{self.base}projects/{projectId}/forms/{form_name}/draft?ignoreWarnings=true"
         else:
-            url = f"{self.base}projects/{projectId}/forms?ignoreWarnings=true&publish=true"
+            # This is not a draft form, its an entirely new form (even if publish=false)
+            self.published = True if publish else False
+            url = f"{self.base}projects/{projectId}/forms?ignoreWarnings=true&{'publish=true' if publish else ''}"
 
-        # Read the XML or XLS file
-        file = open(filespec, "rb")
-        xml = file.read()
-        file.close()
-        log.info("Read %d bytes from %s" % (len(xml), filespec))
+        result = self.session.post(
+            url, data=self.xml, headers=dict({"Content-Type": "application/xml"}, **self.session.headers), verify=self.verify
+        )
 
-        result = self.session.post(url, data=xml, headers=headers, verify=self.verify)
+        if result.status_code != 200:
+            try:
+                status = result.json()
+                msg = status.get("message", "Unknown error")
+                if result.status_code == 409:
+                    log.warning(msg)
+                    last_full_stop_index = msg.rfind(".")
+                    last_comma_index = msg.rfind(",")
+                    if last_full_stop_index != -1 and last_comma_index != -1:
+                        # Extract xmlFormId from error msg
+                        xmlFormId = msg[last_comma_index + 1 : last_full_stop_index].strip()
+                        return xmlFormId
+                    else:
+                        log.warning("Unable to extract xmlFormId from error message")
+                        return None
+                else:
+                    log.error(f"Couldn't create {form_name} on Central: {msg}")
+                    return None
+            except json.decoder.JSONDecodeError:
+                log.error(f"Couldn't create {form_name} on Central: Error decoding JSON response")
+                return None
+
+        try:
+            # Log response to terminal
+            json_data = result.json()
+        except json.decoder.JSONDecodeError:
+            log.error("Could not parse response json during form creation")
+            return None
+
         # epdb.st()
         # FIXME: should update self.forms with the new form
-        if result.status_code != 200:
-            if result.status_code == 409:
-                log.error(f"{xform} already exists on Central")
-            else:
-                status = eval(result._content)
-                log.error(f"Couldn't create {xform} on Central: {status['message']}")
 
-        return result.status_code
+        if "success" in json_data:
+            log.debug(f"Created draft XForm on ODK server: ({form_name})")
+            return form_name
+
+        new_form_name = json_data.get("xmlFormId")
+        log.debug(f"Creating XForm on ODK server: ({new_form_name})")
+        return new_form_name
 
     def deleteForm(
         self,
@@ -947,17 +1063,34 @@ class OdkForm(OdkCentral):
         # FIXME: If your goal is to prevent it from showing up on survey clients like ODK Collect, consider
         # setting its state to closing or closed
         if self.draft:
+            log.debug(f"Deleting draft form on ODK server: ({xform})")
             url = f"{self.base}projects/{projectId}/forms/{xform}/draft"
         else:
+            log.debug(f"Deleting form on ODK server: ({xform})")
             url = f"{self.base}projects/{projectId}/forms/{xform}"
+
         result = self.session.delete(url, verify=self.verify)
-        return result
+        if not result.ok:
+            try:
+                # Log response to terminal
+                json_data = result.json()
+                log.warning(json_data)
+                return False
+            except json.decoder.JSONDecodeError:
+                log.error("Could not parse response json during form deletion. " f"status_code={result.status_code}")
+            finally:
+                return False
+
+        self.draft = False
+        self.published = False
+
+        return True
 
     def publishForm(
         self,
         projectId: int,
         xform: str,
-    ):
+    ) -> int:
         """Publish a draft form. When creating a form that isn't a draft, it can get publised then.
 
         Args:
@@ -967,22 +1100,22 @@ class OdkForm(OdkCentral):
         Returns:
             (int): The staus code from ODK Central
         """
-        version = datetime.now().strftime("%Y-%m-%dT%TZ")
-        if xform.find("_") > 0:
-            xid = xform.split("_")[2]
-        else:
-            xid = xform
+        version = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
 
-        url = f"{self.base}projects/{projectId}/forms/{xid}/draft/publish?version={version}"
+        url = f"{self.base}projects/{projectId}/forms/{xform}/draft/publish?version={version}"
         result = self.session.post(url, verify=self.verify)
         if result.status_code != 200:
             status = eval(result._content)
             log.error(f"Couldn't publish {xform} on Central: {status['message']}")
         else:
             log.info(f"Published {xform} on Central.")
+
+        self.draft = False
+        self.published = True
+
         return result.status_code
 
-    def form_fields(self, projectId: int, xform: str):
+    def formFields(self, projectId: int, xform: str):
         """Retrieves the form fields for a xform from odk central.
 
         Args:
@@ -993,23 +1126,29 @@ class OdkForm(OdkCentral):
             dict: A json object containing the form fields.
 
         """
-        if xform.find("_") > 0:
-            xid = xform.split("_")[2]
-        else:
-            xid = xform
+        url = f"{self.base}projects/{projectId}/forms/{xform}/fields?odata=true"
+        response = self.session.get(url, verify=self.verify)
 
-        url = f"{self.base}projects/{projectId}/forms/{xid}/fields?odata=true"
-        result = self.session.get(url, verify=self.verify)
-        return result.json()
+        # TODO wrap this logic and put in every method requiring form name
+        if response.status_code != 200:
+            if response.status_code == 404:
+                msg = f"The ODK form you referenced does not exist yet: {xform}"
+                log.debug(msg)
+                raise requests.exceptions.HTTPError(msg)
+            log.debug(f"Failed to retrieve form fields. Status code: {response.status_code}")
+            response.raise_for_status()
+
+        return response.json()
 
     def dump(self):
         """Dump internal data structures, for debugging purposes only."""
         # super().dump()
-        entries = len(self.media)
+        entries = len(self.media.keys())
         print("Form has %d attachments" % entries)
-        for form in self.media:
-            if "name" in form:
-                print("Name: %s" % form["name"])
+        for filename, content in self.media:
+            print("Filename: %s" % filename)
+            print("Content length: %s" % len(content))
+            print("")
 
 
 class OdkAppUser(OdkCentral):
@@ -1230,7 +1369,7 @@ if __name__ == "__main__":
     # csv2 = "/home/rob/projects/HOT/osm_fieldwork.git/osm_fieldwork/xlsforms/towns.csv"
     # form.addMedia(csv1)
     # form.addMedia(csv2)
-    x = form.createForm(4, "cemeteries", "cemeteries.xls", True)
+    x = form.createForm(4, "cemeteries.xls", "cemeteries")
     print(x.json())
     # x = form.publish(4, 'cemeteries', "cemeteries.xls")
     print(x.json())

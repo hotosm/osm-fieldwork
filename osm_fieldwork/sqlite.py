@@ -127,7 +127,7 @@ class DataFile(object):
 
     def addBounds(
         self,
-        bounds: int,
+        bounds: tuple[float, float, float, float],
     ):
         """Mbtiles has a bounds field, Osmand doesn't.
 
