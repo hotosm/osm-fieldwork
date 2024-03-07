@@ -90,7 +90,8 @@ def test_create_with_byteio():
     os.remove(outfile)
     shutil.rmtree(base)
 
-    assert hits == 2    
+    assert hits == 2
+
 
 if __name__ == "__main__":
     test_create()

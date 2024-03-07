@@ -26,9 +26,9 @@ import queue
 import re
 import sys
 import threading
+from io import BytesIO
 from pathlib import Path
 from typing import Union
-from io import BytesIO
 
 import geojson
 import mercantile
@@ -127,7 +127,7 @@ class BaseMapper(object):
 
     def __init__(
         self,
-        boundary: Union[str, BytesIO], # Updated type hint to accept BytesIO
+        boundary: Union[str, BytesIO],  # Updated type hint to accept BytesIO
         base: str,
         source: str,
         xy: bool,
@@ -135,7 +135,7 @@ class BaseMapper(object):
         """Create an tile basemap for ODK Collect.
 
         Args:
-            boundary (Union[str, BytesIO]): The boundary for the area you want. 
+            boundary (Union[str, BytesIO]): The boundary for the area you want.
                 Can be a BBOX string, or GeoJSON file of the AOI or BytesIO object containing GeoJSON data.
                 The GeoJSON can contain multiple geometries.
             base (str): The base directory to cache map tile in
@@ -275,7 +275,7 @@ class BaseMapper(object):
 
     def makeBbox(
         self,
-        boundary: Union[str, BytesIO], 
+        boundary: Union[str, BytesIO],
     ) -> tuple[float, float, float, float]:
         """Make a bounding box from a shapely geometry.
 
@@ -321,19 +321,18 @@ class BaseMapper(object):
             # Process BytesIO object
             try:
                 boundary.seek(0)
-                geojson_data = boundary.read().decode('utf-8')
+                geojson_data = boundary.read().decode("utf-8")
                 poly = geojson.loads(geojson_data)
                 return self.extract_bbox(poly)
             except Exception as e:
                 log.error(e)
                 raise ValueError("Failed to decode GeoJSON data from BytesIO object") from e
         else:
-            raise ValueError(f"Invalid boundary type: {type(boundary)}. It must be a BBOX string or (.json, .geojson) flie or BytesIO object")
+            raise ValueError(
+                f"Invalid boundary type: {type(boundary)}. It must be a BBOX string or (.json, .geojson) flie or BytesIO object"
+            )
 
-
-    def extract_bbox(
-        self, poly: Union[BaseGeometry, None]
-    ) -> tuple[float, float, float, float]:
+    def extract_bbox(self, poly: Union[BaseGeometry, None]) -> tuple[float, float, float, float]:
         """Extract bounding box from GeoJSON polygon."""
         if "features" in poly:
             geometry = shape(poly["features"][0]["geometry"])
@@ -355,7 +354,7 @@ class BaseMapper(object):
         bbox = geometry.bounds
         # left, bottom, right, top
         # minX, minY, maxX, maxY
-        return bbox 
+        return bbox
 
 
 def tileid_from_y_tile(filepath: Union[Path | str]):
@@ -448,7 +447,7 @@ def create_basemap_file(
 
     Args:
         verbose (bool, optional): Enable verbose output if True.
-        boundary (Union[str, BytesIO], optional): The boundary for the area you want. 
+        boundary (Union[str, BytesIO], optional): The boundary for the area you want.
         tms (str, optional): Custom TMS URL.
         xy (bool, optional): Swap the X & Y coordinates when using a
             custom TMS if True.
