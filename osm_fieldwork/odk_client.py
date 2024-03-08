@@ -30,10 +30,6 @@ from osm_fieldwork.json2osm import JsonDump
 from osm_fieldwork.OdkCentral import OdkAppUser, OdkCentral, OdkForm, OdkProject
 
 # Set log level
-log_level = os.getenv("LOG_LEVEL", default="INFO")
-logging.getLogger("urllib3").setLevel(log_level)
-
-log_stream = sys.stderr #default log stream
 log = logging.getLogger(__name__)
 
 
@@ -158,16 +154,22 @@ def main():
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        log_level = logging.DEBUG
-        log_stream = sys.stdout
-
-    logging.basicConfig(
-        level=log_level,
-        format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
-        datefmt="%y-%m-%d %H:%M:%S",
-        stream=log_stream,
-    )    
-
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )    
+        logging.getLogger("urllib3").setLevel(logging.DEBUG)
+    else:
+        logging.basicConfig(
+            level=logging.INFO,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stderr,
+        )    
+        logging.getLogger("urllib3").setLevel(logging.INFO)
+        
     timer = Timer(text="odk_client() took {seconds:.0f}s")
     timer.start()
     # Commands to the ODK Central server, which gets data that applies

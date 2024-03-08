@@ -34,7 +34,6 @@ from shapely.geometry import shape
 #Instantiate logger
 log_level = os.getenv("LOG_LEVEL", default="INFO")
 # set log level for urlib
-logging.getLogger("urllib3").setLevel(log_level)
 log_stream = sys.stderr # default log stream
 log = logging.getLogger(__name__)
 
@@ -70,15 +69,21 @@ def main():
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        log_level = logging.DEBUG
-        log_stream = sys.stdout
-
-    logging.basicConfig(
-        level=log_level,
-        format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
-        datefmt="%y-%m-%d %H:%M:%S",
-        stream=log_stream,
-    )
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )    
+        logging.getLogger("urllib3").setLevel(logging.DEBUG)
+    else:
+        logging.basicConfig(
+            level=logging.INFO,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stderr,
+        )    
+        logging.getLogger("urllib3").setLevel(logging.INFO)
 
     infile = open(args.infile, "r")
     indata = geojson.load(infile)

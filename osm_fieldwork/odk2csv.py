@@ -30,8 +30,6 @@ from pathlib import Path
 import xmltodict
 
 # Instantiate logger
-log_level = os.getenv("LOG_LEVEL", default="INFO")
-log_stream = sys.stderr # default log stream
 log = logging.getLogger(__name__)
 
 
@@ -51,15 +49,19 @@ def main():
 
     # if verbose, dump to the terminal
     if args.verbose is not None:
-        log_level = logging.DEBUG
-        log_stream = sys.stdout
-
-    logging.basicConfig(
-        level=log_level,
-        format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
-        datefmt="%y-%m-%d %H:%M:%S",
-        stream=log_stream,
-    )
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )    
+    else:
+        logging.basicConfig(
+            level=logging.INFO,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stderr,
+        )    
 
     xmlfiles = list()
     if args.instance.find("*") >= 0:
