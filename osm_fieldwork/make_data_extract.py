@@ -189,13 +189,6 @@ def main():
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
         )    
-    else:
-        logging.basicConfig(
-            level=logging.INFO,
-            format=("%(asctime)s.%(msecs)03d [%(levelname)s] " "%(name)s | %(funcName)s:%(lineno)d | %(message)s"),
-            datefmt="%y-%m-%d %H:%M:%S",
-            stream=sys.stderr,
-        )    
 
     extract = MakeExtract(args.uri, args.config, args.xlsfile)
     file = open(args.boundary, "r")

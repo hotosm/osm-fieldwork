@@ -50,14 +50,7 @@ def main():
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
         )    
-    else:
-        logging.basicConfig(
-            level=logging.INFO,
-            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
-            datefmt="%y-%m-%d %H:%M:%S",
-            stream=sys.stderr,
-        )    
-        
+
     xmlfiles = list()
     if args.instance.find("*") >= 0:
         toplevel = Path()

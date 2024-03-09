@@ -51,13 +51,6 @@ if args.verbose is not None:
         datefmt="%y-%m-%d %H:%M:%S",
         stream=sys.stdout,
     )    
-else:
-    logging.basicConfig(
-        level=logging.INFO,
-        format=("%(asctime)s - %(name)s - %(levelname)s - %(message)s"),
-        datefmt="%y-%m-%d %H:%M:%S",
-        stream=sys.stderr,
-    )    
 
 # Get the basename without the suffix
 xform = args.xform.replace(".xml", "")
