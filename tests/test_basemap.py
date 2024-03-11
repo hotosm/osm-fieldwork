@@ -22,7 +22,7 @@
 import logging
 import os
 import shutil
-
+from io import BytesIO
 from osm_fieldwork.basemapper import BaseMapper
 from osm_fieldwork.sqlite import DataFile
 
@@ -65,6 +65,34 @@ def test_create():
 
     assert hits == 2
 
+def test_create_basemapper_from_byte_stream():
+    with open(boundary, "rb") as geojson_file:
+        boundary_bytesio = BytesIO(geojson_file.read())
+
+    hits = 0
+    basemap = BaseMapper(boundary_bytesio, base, "topo", False)
+    tiles = list()
+    for level in [8, 9, 10, 11, 12]:
+        basemap.getTiles(level)
+        tiles += basemap.tiles
+
+    if len(tiles) == 5:
+        hits += 1
+
+    if tiles[0].x == 52 and tiles[1].y == 193 and tiles[2].x == 211:
+        hits += 1
+
+    outf = DataFile(outfile, basemap.getFormat())
+    outf.writeTiles(tiles, base)
+
+    os.remove(outfile)
+    shutil.rmtree(base)
+
+    assert hits == 2
+
+
+
 
 if __name__ == "__main__":
     test_create()
+    test_create_basemapper_from_byte_stream()

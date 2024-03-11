@@ -26,6 +26,7 @@ import queue
 import re
 import sys
 import threading
+from io import BytesIO
 from pathlib import Path
 from typing import Union
 
@@ -129,6 +130,7 @@ class BaseMapper(object):
         base: str,
         source: str,
         xy: bool,
+        is_boundary_byte_string: bool = True
     ):
         """Create an tile basemap for ODK Collect.
 
@@ -143,6 +145,7 @@ class BaseMapper(object):
             (BaseMapper): An instance of this class
         """
         self.bbox = self.makeBbox(boundary)
+        self.bbox = self.makeBbox(boundary, is_boundary_byte_string)
         self.tiles = list()
         self.base = base
         # sources for imagery
