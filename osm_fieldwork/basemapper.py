@@ -276,7 +276,7 @@ class BaseMapper(object):
     def makeBbox(
         self,
         boundary: str,
-    ):
+    ) -> tuple[float, float, float, float]:
         """Make a bounding box from a shapely geometry.
 
         Args:
@@ -289,18 +289,23 @@ class BaseMapper(object):
         if not boundary.lower().endswith((".json", ".geojson")):
             # Is BBOX string
             try:
-                bbox_parts = boundary.split(",")
+                if "," in boundary:
+                    bbox_parts = boundary.split(",")
+                else:
+                    bbox_parts = boundary.split(" ")
                 bbox = tuple(float(x) for x in bbox_parts)
                 if len(bbox) == 4:
                     # BBOX valid
                     return bbox
                 else:
-                    log.error(f"BBOX string malformed: {bbox}")
-                    return
+                    msg = f"BBOX string malformed: {bbox}"
+                    log.error(msg)
+                    raise ValueError(msg) from None
             except Exception as e:
                 log.error(e)
-                log.error(f"Failed to parse BBOX string: {boundary}")
-                return
+                msg = f"Failed to parse BBOX string: {boundary}"
+                log.error(msg)
+                raise ValueError(msg) from None
 
         log.debug(f"Reading geojson file: {boundary}")
         with open(boundary, "r") as f:
@@ -318,8 +323,9 @@ class BaseMapper(object):
             geometry = unary_union(geometry)
 
         if geometry.is_empty:
-            log.warning(f"No bbox extracted from {geometry}")
-            return None
+            msg = f"No bbox extracted from {geometry}"
+            log.error(msg)
+            raise ValueError(msg) from None
 
         bbox = geometry.bounds
         # left, bottom, right, top
@@ -451,6 +457,12 @@ def create_basemap_file(
         f"tms={tms}"
     )
 
+    # Validation
+    if not boundary:
+        err = "You need to specify a boundary! (file or bbox)"
+        log.error(err)
+        raise ValueError(err)
+
     # Get all the zoom levels we want
     zoom_levels = list()
     if zooms:
@@ -467,28 +479,24 @@ def create_basemap_file(
         else:
             zoom_levels.append(int(zooms))
 
-    # Make a bounding box from the boundary file
-    if not boundary:
-        err = "You need to specify a boundary! (file or bbox)"
-        log.error(err)
-        raise ValueError(err)
-
     if not outdir:
-        base = "/var/www/html"
+        base = Path.cwd().absolute()
     else:
-        base = outdir
+        base = Path(outdir).absolute()
 
     source = "custom" if tms else source
-    base = str(Path(base) / f"{source}tiles")
+    tiledir = base / f"{source}tiles"
     # Make tile download directory
-    Path(base).mkdir(parents=True, exist_ok=True)
+    tiledir.mkdir(parents=True, exist_ok=True)
+    # Convert to string for other methods
+    tiledir = str(tiledir)
 
     if not source and not tms:
         err = "You need to specify a source!"
         log.error(err)
         raise ValueError(err)
 
-    basemap = BaseMapper(boundary, base, source, xy)
+    basemap = BaseMapper(boundary, tiledir, source, xy)
 
     if tms:
         # Add TMS URL to sources for download
@@ -502,7 +510,7 @@ def create_basemap_file(
         tiles += basemap.tiles
 
     if not outfile:
-        log.info(f"No outfile specified, tile download finished: {base}")
+        log.info(f"No outfile specified, tile download finished: {tiledir}")
         return
 
     suffix = Path(outfile).suffix.lower()
@@ -513,15 +521,15 @@ def create_basemap_file(
         if suffix == ".mbtiles":
             outf.addBounds(basemap.bbox)
         # Create output database and specify image format, png, jpg, or tif
-        outf.writeTiles(tiles, base)
+        outf.writeTiles(tiles, tiledir)
 
     elif suffix == ".pmtiles":
-        tile_dir_to_pmtiles(outfile, base, basemap.bbox, source)
+        tile_dir_to_pmtiles(outfile, tiledir, basemap.bbox, source)
 
     else:
         msg = f"Format {suffix} not supported"
         log.error(msg)
-        raise ValueError(msg)
+        raise ValueError(msg) from None
     log.info(f"Wrote {outfile}")
 
 
@@ -529,7 +537,15 @@ def main():
     """This main function lets this class be run standalone by a bash script."""
     parser = argparse.ArgumentParser(description="Create an tile basemap for ODK Collect")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
-    parser.add_argument("-b", "--boundary", required=True, help="The boundary for the area you want")
+    parser.add_argument(
+        "-b",
+        "--boundary",
+        nargs="*",
+        required=True,
+        help=(
+            "The boundary for the area you want. " "Accepts path to geojson file or bbox string. " "Format min_x min_y max_x max_y"
+        ),
+    )
     parser.add_argument("-t", "--tms", help="Custom TMS URL")
     parser.add_argument("--xy", default=False, help="Swap the X & Y coordinates when using a custom TMS")
     parser.add_argument(
@@ -556,9 +572,26 @@ def main():
         parser.print_help()
         quit()
 
+    if len(args.boundary) == 1:
+        if Path(args.boundary[0]).suffix not in [".json", ".geojson"]:
+            log.error("")
+            log.error("*Error*: the boundary file must have .json or .geojson extension")
+            log.error("")
+            parser.print_help()
+            quit()
+        boundary_parsed = args.boundary[0]
+    elif len(args.boundary) == 4:
+        boundary_parsed = ",".join(args.boundary)
+    else:
+        log.error("")
+        log.error("*Error*: the bounding box must have 4 coordinates")
+        log.error("")
+        parser.print_help()
+        quit()
+
     create_basemap_file(
         verbose=args.verbose,
-        boundary=args.boundary,
+        boundary=boundary_parsed,
         tms=args.tms,
         xy=args.xy,
         outfile=args.outfile,
