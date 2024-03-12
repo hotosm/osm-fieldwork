@@ -300,9 +300,9 @@ class BaseMapper(object):
         else:
             geojson_dictionary = geojson.loads(boundary)
 
-        return self.construct_bbox_from_geojson_dictionary(geojson_dictionary)
+        return self.build_bbox_from_geojson_dictionary(geojson_dictionary)
 
-    def construct_bbox_from_geojson_dictionary(self, geojson_dictionary: dict) -> tuple[float, float, float, float]:
+    def build_bbox_from_geojson_dictionary(self, geojson_dictionary: dict) -> tuple[float, float, float, float]:
         """Make a bounding box from a geojson dictionary.
 
         Args:
