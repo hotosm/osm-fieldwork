@@ -577,7 +577,7 @@ def main():
 
     if len(args.boundary) == 1:
         if not (isinstance(args.boundary, BytesIO)) and Path(args.boundary[0]).suffix in [".json", ".geojson"]:
-            with open(args.boundary, "rb") as geojson_file:
+            with open(args.boundary[0], "rb") as geojson_file:
                 boundary = geojson_file.read()
                 boundary_parsed = BytesIO(boundary)
         elif not (isinstance(args.boundary, BytesIO)) and Path(args.boundary[0]).suffix not in [".json", ".geojson"]:

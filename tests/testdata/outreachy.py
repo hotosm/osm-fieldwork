@@ -1,7 +1,5 @@
 from io import BytesIO
 from osm_fieldwork.basemapper import create_basemap_file
-import os
-print(os.getcwd())
 
 def main():
     with open("/Users/pro-3ies/Desktop/osm-fieldwork/tests/testdata/Rollinsville.geojson", "rb") as geojson_file:
