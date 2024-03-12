@@ -1,10 +1,13 @@
 from io import BytesIO
+
 from osm_fieldwork.basemapper import create_basemap_file
+
 
 def main():
     with open("/Users/pro-3ies/Desktop/osm-fieldwork/tests/testdata/Rollinsville.geojson", "rb") as geojson_file:
-        boundary = geojson_file.read() 
-        boundary_bytesio = BytesIO( boundary)  
+        boundary = geojson_file.read()
+        boundary_bytesio = BytesIO(boundary)
+
 
 create_basemap_file(
     verbose=True,

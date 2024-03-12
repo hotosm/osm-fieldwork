@@ -23,6 +23,7 @@ import logging
 import os
 import shutil
 from io import BytesIO
+
 from osm_fieldwork.basemapper import BaseMapper
 from osm_fieldwork.sqlite import DataFile
 
@@ -65,6 +66,7 @@ def test_create():
 
     assert hits == 2
 
+
 def test_create_basemapper_from_byte_stream():
     with open(boundary, "rb") as geojson_file:
         boundary_bytesio = BytesIO(geojson_file.read())
@@ -79,7 +81,6 @@ def test_create_basemapper_from_byte_stream():
 
     os.remove(outfile)
     shutil.rmtree(base)
-
 
 
 if __name__ == "__main__":

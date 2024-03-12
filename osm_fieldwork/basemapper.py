@@ -137,7 +137,6 @@ class BaseMapper(object):
         Returns:
             (BaseMapper): An instance of this class
         """
-
         self.bbox = self.makeBbox(boundary, should_parse_boundary_as_bytesio)
         self.tiles = list()
         self.base = base
