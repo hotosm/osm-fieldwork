@@ -49,6 +49,7 @@ from shapely.ops import unary_union
 from osm_fieldwork.sqlite import DataFile, MapTile
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
+from io import BytesIO
 
 log = logging.getLogger(__name__)
 
@@ -460,6 +461,12 @@ def create_basemap_file(
         log.error(err)
         raise ValueError(err)
 
+    # convert the boundary into a BytesIO object if passed as a str
+    if isinstance(boundary, str):
+        boundary_byteio = BytesIO(boundary.encode())
+    else:
+        boundary_byteio = boundary
+
     # Get all the zoom levels we want
     zoom_levels = list()
     if zooms:
@@ -493,7 +500,7 @@ def create_basemap_file(
         log.error(err)
         raise ValueError(err)
 
-    basemap = BaseMapper(boundary, tiledir, source, xy)
+    basemap = BaseMapper(boundary_byteio, tiledir, source, xy)
 
     if tms:
         # Add TMS URL to sources for download
