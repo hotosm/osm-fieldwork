@@ -2,10 +2,7 @@
 
 from kivy.logger import Logger as log
 from kivymd.app import MDApp
-
-# from plyer import storagepath
-
-
+from plyer import storagepath
 class OsmFieldworkApp(MDApp):
     """The main Kivy app."""
 
