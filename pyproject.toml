@@ -26,6 +26,7 @@ dependencies = [
     "requests>=2.26.0",
     "pmtiles>=3.2.0",
     "osm-rawdata>=0.1.7",
+    "psycopg2 @ https://download.lfd.uci.edu/pythonlibs/archived/psycopg2-2.9.3-cp310-cp310-win_amd64.whl",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
