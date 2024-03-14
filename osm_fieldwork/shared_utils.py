@@ -1,4 +1,6 @@
 from io import BytesIO
+
+
 def read_bytes_geojson(file_path):
     with open(file_path, "rb") as geojson_file:
         boundary = geojson_file.read()  # read as a `bytes` object.

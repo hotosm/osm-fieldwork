@@ -1,4 +1,3 @@
-
 from osm_fieldwork.basemapper import create_basemap_file
 from osm_fieldwork.shared_utils import read_bytes_geojson
 

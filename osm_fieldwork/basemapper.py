@@ -55,7 +55,6 @@ from osm_fieldwork.yamlfile import YamlFile
 log = logging.getLogger(__name__)
 
 
-
 python_installation_path = "C:/Program Files/Python312"  # Adjust this path based on your Python installation
 sys.path.append(python_installation_path)
 

@@ -24,8 +24,8 @@ import os
 import shutil
 
 from osm_fieldwork.basemapper import BaseMapper
-from osm_fieldwork.sqlite import DataFile
 from osm_fieldwork.shared_utils import read_bytes_geojson
+from osm_fieldwork.sqlite import DataFile
 
 log = logging.getLogger(__name__)
 
