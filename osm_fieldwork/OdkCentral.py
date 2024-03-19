@@ -190,8 +190,11 @@ class OdkCentral(object):
                 "password": self.passwd,
             },
         )
-        if not response.ok:
-            response.raise_for_status()
+        if response.status_code == 401:
+            # Unauthorized, invalid credentials
+            raise ValueError("ODK credentials are invalid, or may have been updated. Please update them.")
+        elif not response.ok:
+            response.raise_for_status()  # Handle other errors
 
         self.session.headers.update({"Authorization": f"Bearer {response.json().get('token')}"})
 
