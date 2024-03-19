@@ -24,12 +24,13 @@ import os
 import shutil
 
 from osm_fieldwork.basemapper import BaseMapper
+from osm_fieldwork.shared_utils import read_bytes_geojson
 from osm_fieldwork.sqlite import DataFile
 
 log = logging.getLogger(__name__)
 
 rootdir = os.path.dirname(os.path.abspath(__file__))
-boundary = f"{rootdir}/testdata/Rollinsville.geojson"
+boundary = read_bytes_geojson(f"{rootdir}/testdata/Rollinsville.geojson")
 outfile = f"{rootdir}/testdata/rollinsville.mbtiles"
 base = "./tiles"
 # boundary = open(infile, "r")
