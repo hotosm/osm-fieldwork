@@ -1,3 +1,10 @@
+## 0.5.4 (2024-03-19)
+
+### Fix
+
+- updated the error message for invalid odk-credentials (#241)
+- method to update review state of submission (#236)
+
 ## 0.5.3 (2024-03-05)
 
 ### Fix
