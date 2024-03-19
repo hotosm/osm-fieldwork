@@ -545,6 +545,24 @@ class OdkProject(OdkCentral):
         for data in self.appusers:
             print("\t%s: %s" % (data["id"], data["displayName"]))
 
+    def updateReviewState(self, projectId: int, xmlFormId: str, instanceId: str, review_state: dict) -> dict:
+        """Updates the review state of a submission in ODK Central.
+
+        Args:
+            projectId (int): The ID of the odk project.
+            xmlFormId (str): The ID of the form.
+            instanceId (str): The ID of the submission instance.
+            review_state (dict): The updated review state.
+        """
+        try:
+            url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/submissions/{instanceId}"
+            result = self.session.patch(url, json=review_state)
+            result.raise_for_status()
+            return result.json()
+        except Exception as e:
+            log.error(f"Error updating review state: {e}")
+            return {}
+
 
 class OdkForm(OdkCentral):
     """Class to manipulate a from on an ODK Central server."""
