@@ -21,6 +21,8 @@
 
 import argparse
 import concurrent.futures
+import io
+import json
 import logging
 import queue
 import re
@@ -125,7 +127,7 @@ class BaseMapper(object):
 
     def __init__(
         self,
-        boundary: str,
+        boundary: Union[str, io.BytesIO],
         base: str,
         source: str,
         xy: bool,
@@ -133,7 +135,7 @@ class BaseMapper(object):
         """Create an tile basemap for ODK Collect.
 
         Args:
-            boundary (str): A BBOX string or GeoJSON file of the AOI.
+            boundary (Union[str, io.BytesIO]): A BBOX string or BytesIO object of the AOI.
                 The GeoJSON can contain multiple geometries.
             base (str): The base directory to cache map tile in
             source (str): The upstream data source for map tiles
@@ -272,41 +274,43 @@ class BaseMapper(object):
 
     def makeBbox(
         self,
-        boundary: str,
+        boundary: Union[str, io.BytesIO],
     ) -> tuple[float, float, float, float]:
         """Make a bounding box from a shapely geometry.
 
         Args:
-            boundary (str): A BBOX string or GeoJSON file of the AOI.
+            boundary (Union[str, io.BytesIO]): A BBOX string or BytesIO object of the AOI.
                 The GeoJSON can contain multiple geometries.
 
         Returns:
             (list): The bounding box coordinates
         """
-        if not boundary.lower().endswith((".json", ".geojson")):
-            # Is BBOX string
-            try:
-                if "," in boundary:
-                    bbox_parts = boundary.split(",")
-                else:
-                    bbox_parts = boundary.split(" ")
-                bbox = tuple(float(x) for x in bbox_parts)
-                if len(bbox) == 4:
-                    # BBOX valid
-                    return bbox
-                else:
-                    msg = f"BBOX string malformed: {bbox}"
+        if isinstance(boundary, str):
+            if not boundary.lower().endswith((".json", ".geojson")):
+                # Is BBOX string
+                try:
+                    if "," in boundary:
+                        bbox_parts = boundary.split(",")
+                    else:
+                        bbox_parts = boundary.split(" ")
+                    bbox = tuple(float(x) for x in bbox_parts)
+                    if len(bbox) == 4:
+                        # BBOX valid
+                        return bbox
+                    else:
+                        msg = f"BBOX string malformed: {bbox}"
+                        log.error(msg)
+                        raise ValueError(msg) from None
+                except Exception as e:
+                    log.error(e)
+                    msg = f"Failed to parse BBOX string: {boundary}"
                     log.error(msg)
                     raise ValueError(msg) from None
-            except Exception as e:
-                log.error(e)
-                msg = f"Failed to parse BBOX string: {boundary}"
-                log.error(msg)
-                raise ValueError(msg) from None
-
-        log.debug(f"Reading geojson file: {boundary}")
-        with open(boundary, "r") as f:
-            poly = geojson.load(f)
+        elif isinstance(boundary, io.BytesIO):
+            boundary.seek(0)
+            poly = geojson.load(boundary)
+        else:
+            raise ValueError("Unsupported boundary type. Expected str or BytesIO.")
         if "features" in poly:
             geometry = shape(poly["features"][0]["geometry"])
         elif "geometry" in poly:
@@ -576,9 +580,9 @@ def main():
             log.error("")
             parser.print_help()
             quit()
-        boundary_parsed = args.boundary[0]
+        boundary_parsed = open(args.boundary[0], "rb").read()
     elif len(args.boundary) == 4:
-        boundary_parsed = ",".join(args.boundary)
+        boundary_parsed = io.BytesIO(json.dumps(args.boundary).encode())
     else:
         log.error("")
         log.error("*Error*: the bounding box must have 4 coordinates")
