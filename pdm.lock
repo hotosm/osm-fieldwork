@@ -5,7 +5,7 @@
 groups = ["default", "docs", "debug", "test", "dev", "ui"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:703f97481128e95a20fc69cc3ce8f571f000d4bc036947c0190f429b5690de7c"
+content_hash = "sha256:f1b63afc2061886f0a6d115aa98fd7557df9cd956ff0e8d818cdf6d525b760d5"
 
 [[package]]
 name = "androidstorage4kivy"
@@ -672,7 +672,7 @@ summary = "Set of widgets for Kivy inspired by Google's Material Design"
 dependencies = [
     "asynckivy<0.7,>=0.6",
     "kivy>=2.3.0",
-    "materialyoucolor",
+    "materialyoucolor>=2.0.7",
     "pillow",
 ]
 files = [
@@ -805,14 +805,22 @@ files = [
 
 [[package]]
 name = "materialyoucolor"
-version = "1.2.0"
+version = "2.0.7"
 summary = "Material You color generation algorithms in pure python!"
 dependencies = [
     "pillow",
 ]
 files = [
-    {file = "materialyoucolor-1.2.0-py3-none-any.whl", hash = "sha256:455708ce7d77398cc3821d17969c11845def67d8636a3c97af78acf1e7d1876b"},
-    {file = "materialyoucolor-1.2.0.tar.gz", hash = "sha256:c5a8fe5f7d0b2f17c36bd9efd049d765900e1386624ee79760af65b70e3484f8"},
+    {file = "materialyoucolor-2.0.7-cp310-cp310-macosx_11_0_x86_64.whl", hash = "sha256:c7234db3be526cefaa06878e28f556f50260ba6905a505217e1069ef757e7e71"},
+    {file = "materialyoucolor-2.0.7-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:09e270cec990510a976a1146d36369ac77f38dad1396bd8d742bd6d1bf6e6db8"},
+    {file = "materialyoucolor-2.0.7-cp310-cp310-win_amd64.whl", hash = "sha256:d5bab0696e286fc49998dcb66cf55aeeca654b2f1606049166f1af4d0250c643"},
+    {file = "materialyoucolor-2.0.7-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:f6755be10e58b8a20ee12f4526f814470854fd138b42ef2eb782e15faab5208a"},
+    {file = "materialyoucolor-2.0.7-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b535c7998b0cfe08e5c4852bfdf656ec89a52c7acc41ae8b914276597ca4bd03"},
+    {file = "materialyoucolor-2.0.7-cp311-cp311-win_amd64.whl", hash = "sha256:5de99cebbe201ec9b4da32a4124f1ea686237bc7df466156da46cbd6c96476bd"},
+    {file = "materialyoucolor-2.0.7-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:dbca9ab4158bcc375eb220c930ab9211fc43814ff67d172b7c2f73d6be57cfb2"},
+    {file = "materialyoucolor-2.0.7-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f0bcb910b9ac47fde9ccd9a8dc4c63b7535eb96af63170fc1a601d75de87bf99"},
+    {file = "materialyoucolor-2.0.7-cp312-cp312-win_amd64.whl", hash = "sha256:7e6cf01051f9d7770556042e0d0d86b9f4985e8bd5a236caaf03016d8849d26f"},
+    {file = "materialyoucolor-2.0.7.tar.gz", hash = "sha256:b9ca69bf0e0b3e20ad619b989dae9857700bb312034b20c0c69f07ba2bb0068c"},
 ]
 
 [[package]]
@@ -1255,17 +1263,12 @@ files = [
 
 [[package]]
 name = "psycopg2"
-version = "2.9.9"
-requires_python = ">=3.7"
+version = "2.9.3"
+requires_python = ">=3.6"
+url = "https://download.lfd.uci.edu/pythonlibs/archived/psycopg2-2.9.3-cp310-cp310-win_amd64.whl"
 summary = "psycopg2 - Python-PostgreSQL Database Adapter"
 files = [
-    {file = "psycopg2-2.9.9-cp310-cp310-win32.whl", hash = "sha256:38a8dcc6856f569068b47de286b472b7c473ac7977243593a288ebce0dc89516"},
-    {file = "psycopg2-2.9.9-cp310-cp310-win_amd64.whl", hash = "sha256:426f9f29bde126913a20a96ff8ce7d73fd8a216cfb323b1f04da402d452853c3"},
-    {file = "psycopg2-2.9.9-cp311-cp311-win32.whl", hash = "sha256:ade01303ccf7ae12c356a5e10911c9e1c51136003a9a1d92f7aa9d010fb98372"},
-    {file = "psycopg2-2.9.9-cp311-cp311-win_amd64.whl", hash = "sha256:121081ea2e76729acfb0673ff33755e8703d45e926e416cb59bae3a86c6a4981"},
-    {file = "psycopg2-2.9.9-cp312-cp312-win32.whl", hash = "sha256:d735786acc7dd25815e89cc4ad529a43af779db2e25aa7c626de864127e5a024"},
-    {file = "psycopg2-2.9.9-cp312-cp312-win_amd64.whl", hash = "sha256:a7653d00b732afb6fc597e29c50ad28087dcb4fbfb28e86092277a559ae4e693"},
-    {file = "psycopg2-2.9.9.tar.gz", hash = "sha256:d1454bde93fb1e224166811694d600e746430c006fbb031ea06ecc2ea41bf156"},
+    {file = "psycopg2-2.9.3-cp310-cp310-win_amd64.whl", hash = "sha256:739d5b895343d3d47c09166ea71238d546fdaf5ad41f85695536fcae093decc0"},
 ]
 
 [[package]]
