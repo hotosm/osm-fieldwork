@@ -1,7 +1,7 @@
 [project]
 name = "osm-fieldwork"
 dynamic = ["version"]
-description = "Processing field data from OpenDataKit to OpenStreetMap format."
+description = "Processing field data from ODK to OpenStreetMap format."
 authors = [
     {name = "Rob Savoye", email = "rob.savoye@hotosm.org"},
     {name = "Sam Woodcock", email = "sam.woodcock@hotosm.org"},
@@ -30,7 +30,7 @@ dependencies = [
 requires-python = ">=3.10"
 readme = "README.md"
 license = "GPL-3.0-only"
-keywords = ["hot", "odk", "openstreetmap", "opendatakit", "fmtm"]
+keywords = ["hot", "odk", "openstreetmap", "fmtm"]
 classifiers = [
     "Topic :: Utilities",
     "Topic :: Scientific/Engineering :: GIS",
