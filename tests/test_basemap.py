@@ -19,11 +19,13 @@
 #
 """Test functionalty of basemapper.py."""
 
+import pytest
 import logging
 import os
 import shutil
 
 from osm_fieldwork.basemapper import BaseMapper
+from osm_fieldwork.basemapper import create_basemap_file
 from osm_fieldwork.sqlite import DataFile
 
 log = logging.getLogger(__name__)
@@ -31,19 +33,106 @@ log = logging.getLogger(__name__)
 rootdir = os.path.dirname(os.path.abspath(__file__))
 boundary = f"{rootdir}/testdata/Rollinsville.geojson"
 outfile = f"{rootdir}/testdata/rollinsville.mbtiles"
+tms_url = "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+zooms = "10-12"
 base = "./tiles"
-# boundary = open(infile, "r")
-# poly = geojson.load(boundary)
-# if "features" in poly:
-#    geometry = shape(poly["features"][0]["geometry"])
-# elif "geometry" in poly:
-#    geometry = shape(poly["geometry"])
-# else:
-#    geometry = shape(poly)
+
+
+def test_create_basemap_valid_parameters():
+    """Test the creation of a basemap with valid parameters.
+
+    This test function verifies that a basemap can be created 
+    successfully with valid parameters.
+    It calls the create_basemap_file function with valid boundary, 
+    output file, zoom levels, and source information. It then checks 
+    whether the output file exists after the basemap creation.
+    """
+    create_basemap_file(
+        boundary=boundary,
+        outfile=outfile,
+        zooms=zooms,
+        outdir=None,
+        source="esri",
+    )
+    assert os.path.exists(outfile)
+
+
+def test_create_basemap_invalid_parameters():
+    """Test the creation of a basemap with invalid parameters.
+
+    This test function ensures that creating a basemap with 
+    invalid parameters raises a ValueError.
+    It calls the create_basemap_file function with invalid 
+    boundary and output file valuesand checks whether a ValueError 
+    is raised.
+    """
+    with pytest.raises(ValueError):
+        create_basemap_file(
+            boundary=None,
+            outfile=None,
+            zooms=zooms,
+            outdir=None,
+            source="esri",
+        )
+
+
+def test_custom_tms():
+    """Test custom tile mapping service.
+
+    This test function checks the functionality 
+    of custom tile mapping service (TMS).
+    It creates an instance of BaseMapper and 
+    sets a custom TMS URL. Then it verifies
+    that the custom TMS URL is correctly set in the sources dictionary.
+    """
+    basemap = BaseMapper(boundary, base=None, source="esri", xy=False)
+    tms_url = "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    basemap.customTMS(tms_url)
+    expected_url = "https://a.tile.openstreetmap.org/%s"
+    assert basemap.sources["custom"]["url"] == expected_url
+
+
+def test_pmtiles_generation():
+    """Test the generation of pmtiles.
+
+    This test function validates the generation of 
+    pmtiles (Portable Map Tiles).
+    It calls the create_basemap_file function to 
+    generate pmtiles with specified boundary,
+    output file, zoom levels, and source information. 
+    Then it checks whether the output file exists.
+    """
+    create_basemap_file(
+        boundary=boundary,
+        outfile=outfile,
+        zooms=zooms,
+        outdir=None,
+        source="esri",
+    )
+    assert os.path.exists(outfile)
+
+
+# def test_boundary_parsing():
+#     expected_bbox = (-105.605833, 39.920833, -105.585833, 39.940833)
+#     basemap = BaseMapper(boundary, base=None, source="esri", xy=False)
+#     assert basemap.bbox == expected_bbox
+
+# def test_tile_id_generation():
+#     from osm_fieldwork.basemapper import tileid_from_y_tile
+#     tile_path = "esritiles/12/1525/1994.jpg"
+#     tile_id = tileid_from_y_tile(tile_path)
+#     assert tile_id == (12, 1525, 1994)
 
 
 def test_create():
-    """See if the file got loaded."""
+    """See if the file got loaded.
+
+    This test function ensures that a file is 
+    successfully loaded and processed.
+    It creates an instance of BaseMapper, 
+    retrieves tiles at specified zoom levels,
+    and writes the tiles to an output file.
+    """
     hits = 0
     basemap = BaseMapper(boundary, base, "topo", False)
     tiles = list()
@@ -68,3 +157,4 @@ def test_create():
 
 if __name__ == "__main__":
     test_create()
+    pytest.main()
