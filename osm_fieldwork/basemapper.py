@@ -586,7 +586,6 @@ def main():
         )
 
     create_basemap_file(
-        verbose=args.verbose,
         boundary=boundary_parsed,
         tms=args.tms,
         xy=args.xy,
