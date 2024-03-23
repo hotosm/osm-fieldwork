@@ -21,7 +21,6 @@ import argparse
 import logging
 import re
 import sys
-import os
 from datetime import datetime
 
 from osm_fieldwork.convert import Convert
@@ -50,7 +49,7 @@ if args.verbose is not None:
         format=("%(asctime)s - %(name)s - %(levelname)s - %(message)s"),
         datefmt="%y-%m-%d %H:%M:%S",
         stream=sys.stdout,
-    )    
+    )
 
 # Get the basename without the suffix
 xform = args.xform.replace(".xml", "")

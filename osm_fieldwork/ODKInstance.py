@@ -28,7 +28,7 @@ from collections import OrderedDict
 
 import xmltodict
 
-# Instantiate logger 
+# Instantiate logger
 log = logging.getLogger(__name__)
 
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
             format=("%(asctime)s - %(name)s - %(levelname)s - %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        )    
+        )
 
     if not args.infile:
         parser.print_help()

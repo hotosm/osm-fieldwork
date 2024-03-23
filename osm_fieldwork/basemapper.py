@@ -25,7 +25,6 @@ import logging
 import queue
 import re
 import sys
-import os
 import threading
 from pathlib import Path
 from typing import Union
@@ -434,7 +433,6 @@ def create_basemap_file(
     Returns:
         None
     """
-
     log.debug(
         "Creating basemap with params: "
         f"boundary={boundary} | "
@@ -585,8 +583,8 @@ def main():
             format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        ) 
-        
+        )
+
     create_basemap_file(
         verbose=args.verbose,
         boundary=boundary_parsed,

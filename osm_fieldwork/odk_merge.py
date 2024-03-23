@@ -559,8 +559,8 @@ def main():
             format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        )    
-    
+        )
+
     if args.outfile:
         outfile = args.outfile
     else:

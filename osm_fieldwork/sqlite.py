@@ -248,8 +248,8 @@ if __name__ == "__main__":
             format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        )    
-    
+        )
+
     outfile = DataFile(args.database, "jpg")
     toplevel = "/var/www/html/topotiles/"
     foo = "15/12744/6874.png"

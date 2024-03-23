@@ -454,8 +454,8 @@ if __name__ == "__main__":
             format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        )    
-        
+        )
+
     osm = OsmFile()
     osm.loadFile(args.osmfile)
     osm.dump()

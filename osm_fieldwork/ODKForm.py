@@ -22,7 +22,7 @@ import logging
 import os
 import sys
 
-# Instantiate logger 
+# Instantiate logger
 log = logging.getLogger(__name__)
 
 
@@ -148,8 +148,8 @@ if __name__ == "__main__":
             format=("%(asctime)s - %(name)s - %(levelname)s - %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        )    
-    
+        )
+
     odkform = ODKForm()
     odkform.parse(args.infile)
 

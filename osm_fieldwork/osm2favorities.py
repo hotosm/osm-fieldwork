@@ -20,8 +20,8 @@
 
 import argparse
 import logging
-import sys
 import os
+import sys
 
 import geojson
 import gpxpy
@@ -30,11 +30,10 @@ import shapely
 from lxml import etree
 from shapely.geometry import shape
 
-
-#Instantiate logger
+# Instantiate logger
 log_level = os.getenv("LOG_LEVEL", default="INFO")
 # set log level for urlib
-log_stream = sys.stderr # default log stream
+log_stream = sys.stderr  # default log stream
 log = logging.getLogger(__name__)
 
 
@@ -74,7 +73,7 @@ def main():
             format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        )    
+        )
         logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
     infile = open(args.infile, "r")

@@ -21,7 +21,6 @@
 import argparse
 import logging
 import sys
-import os
 
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
@@ -334,7 +333,7 @@ def main():
             format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        )    
+        )
 
     # convert = Convert(args.xform)
     convert = Convert("xforms.yaml")

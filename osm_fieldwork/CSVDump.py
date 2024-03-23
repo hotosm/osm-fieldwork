@@ -32,7 +32,7 @@ from osm_fieldwork.convert import Convert
 from osm_fieldwork.osmfile import OsmFile
 from osm_fieldwork.xlsforms import xlsforms_path
 
-#Instantiate logger
+# Instantiate logger
 log = logging.getLogger(__name__)
 
 
@@ -327,7 +327,7 @@ def main():
             format=("%(asctime)s - %(name)s - %(levelname)s - %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        )    
+        )
         logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
     if args.yaml:

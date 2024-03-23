@@ -188,7 +188,7 @@ def main():
             format=("%(asctime)s.%(msecs)03d [%(levelname)s] " "%(name)s | %(funcName)s:%(lineno)d | %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        )    
+        )
 
     extract = MakeExtract(args.uri, args.config, args.xlsfile)
     file = open(args.boundary, "r")

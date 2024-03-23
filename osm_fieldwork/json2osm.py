@@ -24,7 +24,6 @@ import logging
 
 # import pandas as pd
 import re
-import os
 import sys
 from pathlib import Path
 
@@ -442,7 +441,7 @@ def main():
             format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
-        )    
+        )
         logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
     json2osm(args.infile, args.yaml)

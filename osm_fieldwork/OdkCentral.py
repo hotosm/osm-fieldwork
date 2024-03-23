@@ -40,7 +40,7 @@ import segno
 from codetiming import Timer
 from cpuinfo import get_cpu_info
 
-#Instantiate logger
+# Instantiate logger
 log_level = os.getenv("LOG_LEVEL", default="INFO")
 # Set log level for urllib
 logging.getLogger("urllib3").setLevel(log_level)
