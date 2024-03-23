@@ -1,5 +1,5 @@
 site_name: osm-fieldwork
-site_description: Processing data from OpenDataKit to OpenStreetMap format, and other field data collection utils.
+site_description: Processing data from ODK to OpenStreetMap format, and other field data collection utils.
 # strict: true
 site_url: "https://www.hotosm.org"
 
@@ -100,6 +100,7 @@ nav:
       - Data conflation: about/conflation.md
       - The Config File: about/configuring.md
       - XLSForm Design: about/xlsforms.md
+      - ODK Entities: about/odk-entities.md
   #  - odk2geojson: api/odk2geojson.md
   #  - odk2csv: api/odk2csv.md
   #  - odk2osm: api/odk2osm.md

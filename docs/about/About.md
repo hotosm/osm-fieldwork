@@ -2,7 +2,7 @@
 
 ## OSM-Fieldwork Project
 
-Osm_Fieldwork is a project that aims to simplify the process of processing data collected using OpenDataKit into OpenStreetMap format. It consists of several utility programs that automate different parts of the data flow. These include creating satellite imagery basemaps and data extracts from OpenStreetMap so they can be used with ODK Collect. It is maintained by the [Humanitarian OpenStreetMap Team (HOT)](https://www.hotosm.org/) and designed to work with [ODK Collect](https://docs.getodk.org/collect-intro/), an Android app for data collection, and [ODK Central](https://docs.getodk.org/central-intro/), a web-based platform for managing and visualizing data.
+Osm_Fieldwork is a project that aims to simplify the process of processing data collected using ODK into OpenStreetMap format. It consists of several utility programs that automate different parts of the data flow. These include creating satellite imagery basemaps and data extracts from OpenStreetMap so they can be used with ODK Collect. It is maintained by the [Humanitarian OpenStreetMap Team (HOT)](https://www.hotosm.org/) and designed to work with [ODK Collect](https://docs.getodk.org/collect-intro/), an Android app for data collection, and [ODK Central](https://docs.getodk.org/central-intro/), a web-based platform for managing and visualizing data.
 
 ## osm_fieldwork
 

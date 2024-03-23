@@ -1,3 +1,20 @@
+## 0.5.4 (2024-03-19)
+
+### Fix
+
+- updated the error message for invalid odk-credentials (#241)
+- method to update review state of submission (#236)
+
+## 0.5.3 (2024-03-05)
+
+### Fix
+
+- **odk**: upload media failing validation if extension stripped accidentally
+- argparse parsing of bbox string
+- default outdir to current working dir
+- optional bbox as space separated and comma separated
+- add correct typing for bbox var and return types
+
 ## 0.5.2 (2024-03-04)
 
 ### Fix

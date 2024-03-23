@@ -3,7 +3,7 @@
 **Q:** What is OSM Fieldwork?
 
 **A:** OSM Fieldwork is a project to support field data collection using
-[OpenDataKit](https://opendatakit.org/software/) and
+[ODK](https://ODK.org/software/) and
 [OpenStreetMap](https://www.openstreetmap.org). The primary
 functionality is the ability to convert data collected with ODK
 Collect into OSM XML. In addition it can also create satellite imagery

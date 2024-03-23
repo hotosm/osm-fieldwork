@@ -191,8 +191,11 @@ class OdkCentral(object):
                 "password": self.passwd,
             },
         )
-        if not response.ok:
-            response.raise_for_status()
+        if response.status_code == 401:
+            # Unauthorized, invalid credentials
+            raise ValueError("ODK credentials are invalid, or may have been updated. Please update them.")
+        elif not response.ok:
+            response.raise_for_status()  # Handle other errors
 
         self.session.headers.update({"Authorization": f"Bearer {response.json().get('token')}"})
 
@@ -546,6 +549,24 @@ class OdkProject(OdkCentral):
         for data in self.appusers:
             print("\t%s: %s" % (data["id"], data["displayName"]))
 
+    def updateReviewState(self, projectId: int, xmlFormId: str, instanceId: str, review_state: dict) -> dict:
+        """Updates the review state of a submission in ODK Central.
+
+        Args:
+            projectId (int): The ID of the odk project.
+            xmlFormId (str): The ID of the form.
+            instanceId (str): The ID of the submission instance.
+            review_state (dict): The updated review state.
+        """
+        try:
+            url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/submissions/{instanceId}"
+            result = self.session.patch(url, json=review_state)
+            result.raise_for_status()
+            return result.json()
+        except Exception as e:
+            log.error(f"Error updating review state: {e}")
+            return {}
+
 
 class OdkForm(OdkCentral):
     """Class to manipulate a from on an ODK Central server."""
@@ -840,13 +861,14 @@ class OdkForm(OdkCentral):
 
         for inst in instances:
             src_value = inst.attrib.get("src", "")
-            src_stripped = src_value.strip("jr://")
-            if "file/" in src_stripped:
-                src_stripped = src_stripped.strip("file/")
-            xform_filenames.append(src_stripped)
+            if src_value.startswith("jr://"):
+                src_value = src_value[len("jr://") :]  # Remove jr:// prefix
+            if src_value.startswith("file/"):
+                src_value = src_value[len("file/") :]  # Remove file/ prefix
+            xform_filenames.append(src_value)
 
         if filename not in xform_filenames:
-            log.error(f"Filename ({filename}) is not present in XForm: {xform_filenames}")
+            log.error(f"Filename ({filename}) is not present in XForm media: {xform_filenames}")
             return False
 
         return True
