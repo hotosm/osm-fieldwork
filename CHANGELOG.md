@@ -1,3 +1,13 @@
+## 0.6.0 (2024-03-24)
+
+### Feat
+
+- v1 entities implementation in OdkCentral.py (#245)
+
+### Refactor
+
+- use logger.basicConfig for verbose flag (#244)
+
 ## 0.5.4 (2024-03-19)
 
 ### Fix
