@@ -182,16 +182,13 @@ def main():
         quit()
 
     # if verbose, dump to the terminal.
-    log_level = os.getenv("LOG_LEVEL", default="INFO")
     if args.verbose is not None:
-        log_level = logging.DEBUG
-
-    logging.basicConfig(
-        level=log_level,
-        format=("%(asctime)s.%(msecs)03d [%(levelname)s] " "%(name)s | %(funcName)s:%(lineno)d | %(message)s"),
-        datefmt="%y-%m-%d %H:%M:%S",
-        stream=sys.stdout,
-    )
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(asctime)s.%(msecs)03d [%(levelname)s] " "%(name)s | %(funcName)s:%(lineno)d | %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )
 
     extract = MakeExtract(args.uri, args.config, args.xlsfile)
     file = open(args.boundary, "r")

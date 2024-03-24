@@ -19,6 +19,7 @@
 import argparse
 import logging
 import os
+import sys
 from datetime import datetime
 from sys import argv
 
@@ -26,7 +27,7 @@ import xmltodict
 
 from osm_fieldwork.convert import Convert, escape
 
-# Intantiate logger
+# Instantiate logger
 log = logging.getLogger(__name__)
 
 
@@ -448,12 +449,12 @@ if __name__ == "__main__":
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )
 
     osm = OsmFile()
     osm.loadFile(args.osmfile)

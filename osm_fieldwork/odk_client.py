@@ -18,7 +18,6 @@
 
 import argparse
 import logging
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -30,9 +29,6 @@ from osm_fieldwork.json2osm import JsonDump
 from osm_fieldwork.OdkCentral import OdkAppUser, OdkCentral, OdkForm, OdkProject
 
 # Set log level
-log_level = os.getenv("LOG_LEVEL", default="INFO")
-logging.getLogger("urllib3").setLevel(log_level)
-
 log = logging.getLogger(__name__)
 
 
@@ -157,12 +153,13 @@ def main():
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )
+        logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
     timer = Timer(text="odk_client() took {seconds:.0f}s")
     timer.start()
