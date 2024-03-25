@@ -21,11 +21,13 @@
 
 import argparse
 import concurrent.futures
+import json
 import logging
 import queue
 import re
 import sys
 import threading
+from io import BytesIO
 from pathlib import Path
 from typing import Union
 
@@ -50,7 +52,6 @@ from osm_fieldwork.sqlite import DataFile, MapTile
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
 
-# Instantiate logger
 log = logging.getLogger(__name__)
 
 
@@ -284,7 +285,7 @@ class BaseMapper(object):
         Returns:
             (list): The bounding box coordinates
         """
-        if not boundary.lower().endswith((".json", ".geojson")):
+        if isinstance(boundary, str) and not boundary.lower().endswith((".json", ".geojson")):
             # Is BBOX string
             try:
                 if "," in boundary:
@@ -305,9 +306,33 @@ class BaseMapper(object):
                 log.error(msg)
                 raise ValueError(msg) from None
 
-        log.debug(f"Reading geojson file: {boundary}")
-        with open(boundary, "r") as f:
-            poly = geojson.load(f)
+        elif isinstance(boundary, str) and boundary.lower().endswith((".json", ".geojson")):
+            log.debug(f"Reading geojson file: {boundary}")
+            try:
+                with open(boundary, "r") as f:
+                    poly = geojson.load(f)
+            except Exception as e:
+                log.error(e)
+                msg = f"Failed to parse GeoJSON file: {boundary}"
+                log.error(msg)
+                raise ValueError(msg) from None
+
+        elif isinstance(boundary, BytesIO):
+            log.debug(f"Reading BytesIO object: {boundary}")
+            boundary.seek(0)
+            try:
+                boundary_data = boundary.read().decode()
+                print(boundary_data)
+                poly = json.loads(boundary_data)
+            except Exception as e:
+                log.error(e)
+                msg = f"Failed to parse GeoJSON file from BytesIO object: {boundary}"
+                log.error(msg)
+                raise ValueError(msg) from None
+
+        else:
+            raise ValueError("Invalid boundary type: %s" % type(boundary))
+
         if "features" in poly:
             geometry = shape(poly["features"][0]["geometry"])
         elif "geometry" in poly:
@@ -408,17 +433,19 @@ def tile_dir_to_pmtiles(outfile: str, tile_dir: str, bbox: tuple, attribution: s
 
 
 def create_basemap_file(
-    boundary=None,
-    tms=None,
-    xy=False,
-    outfile=None,
-    zooms="12-17",
-    outdir=None,
-    source="esri",
+    verbose: bool = False,
+    boundary: Union[str, BytesIO] = None,
+    tms: str = None,
+    xy: bool = False,
+    outfile: str = None,
+    zooms: str = "12-17",
+    outdir: str = None,
+    source: str = "esri",
 ):
     """Create a basemap with given parameters.
 
     Args:
+        verbose (bool, optional): Enable verbose output if True.
         boundary (str, optional): The boundary for the area you want.
         tms (str, optional): Custom TMS URL.
         xy (bool, optional): Swap the X & Y coordinates when using a
@@ -433,6 +460,15 @@ def create_basemap_file(
     Returns:
         None
     """
+    # if verbose, dump to the terminal.
+    if verbose is not None:
+        log.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
+        ch.setFormatter(formatter)
+        log.addHandler(ch)
+
     log.debug(
         "Creating basemap with params: "
         f"boundary={boundary} | "
@@ -576,16 +612,8 @@ def main():
         parser.print_help()
         quit()
 
-    # if verbose, dump to the terminal.
-    if args.verbose is not None:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
-            datefmt="%y-%m-%d %H:%M:%S",
-            stream=sys.stdout,
-        )
-
     create_basemap_file(
+        verbose=args.verbose,
         boundary=boundary_parsed,
         tms=args.tms,
         xy=args.xy,
