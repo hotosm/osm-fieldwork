@@ -1,0 +1,10 @@
+digraph "osm_fieldwork.convert.Convert.convertValue"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="osm_fieldwork.convert.Convert.convert\lValue",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="osm_fieldwork.convert.Convert.get\lValues",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1convert_1_1Convert.html#a0c16897ef0c4b5a91d9c72669ad36d9c",tooltip=" "];
+}

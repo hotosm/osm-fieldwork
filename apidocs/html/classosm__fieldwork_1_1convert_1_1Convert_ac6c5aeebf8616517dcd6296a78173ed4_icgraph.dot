@@ -1,0 +1,12 @@
+digraph "osm_fieldwork.convert.Convert.dump"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="RL";
+  Node1 [label="osm_fieldwork.convert.Convert.dump",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="osm_fieldwork.CSVDump.CSVDump.finish\lGeoJson",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1CSVDump_1_1CSVDump.html#a2b51b6565b10dfcdb85c9014fe307ce7",tooltip=" "];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="osm_fieldwork.json2osm.Json\lDump.finishGeoJson",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1json2osm_1_1JsonDump.html#ac72cf714275c0b555136580f2dce844b",tooltip=" "];
+}

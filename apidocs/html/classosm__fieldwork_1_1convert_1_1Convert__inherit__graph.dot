@@ -1,0 +1,15 @@
+digraph "osm_fieldwork.convert.Convert"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="{osm_fieldwork.convert.Convert\n|+ yaml\l+ filespec\l+ convert\l+ ignore\l+ private\l+ multiple\l|+ __init__()\l+ privateData()\l+ convertData()\l+ ignoreData()\l+ getKeyword()\l+ getValues()\l+ convertEntry()\l+ convertValue()\l+ convertTag()\l+ dump()\l}",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node2 [label="{osm_fieldwork.yamlfile.YamlFile\n|+ filespec\l+ file\l+ yaml\l|+ __init__()\l+ privateData()\l+ ignoreData()\l+ convertData()\l+ dump()\l+ write()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1yamlfile_1_1YamlFile.html",tooltip=" "];
+  Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node3 [label="{object\n||}",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip=" "];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node4 [label="{osm_fieldwork.CSVDump.CSVDump\n|+ fields\l+ nodesets\l+ data\l+ osm\l+ json\l+ features\l+ config\l+ saved\l+ defaults\l|+ __init__()\l+ lastSaved()\l+ updateSaved()\l+ parseXLS()\l+ createOSM()\l+ writeOSM()\l+ finishOSM()\l+ createGeoJson()\l+ writeGeoJson()\l+ finishGeoJson()\l+ parse()\l+ basename()\l+ createEntry()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1CSVDump_1_1CSVDump.html",tooltip=" "];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",arrowtail="onormal",fontname="Helvetica"];
+  Node5 [label="{osm_fieldwork.json2osm.JsonDump\n|+ fields\l+ nodesets\l+ data\l+ osm\l+ json\l+ features\l+ config\l|+ __init__()\l+ createOSM()\l+ writeOSM()\l+ finishOSM()\l+ createGeoJson()\l+ writeGeoJson()\l+ finishGeoJson()\l+ parse()\l+ createEntry()\l}",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1json2osm_1_1JsonDump.html",tooltip=" "];
+}

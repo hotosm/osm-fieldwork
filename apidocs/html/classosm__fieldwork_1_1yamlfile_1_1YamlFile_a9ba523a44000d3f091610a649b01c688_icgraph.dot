@@ -1,0 +1,12 @@
+digraph "osm_fieldwork.yamlfile.YamlFile.write"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="RL";
+  Node1 [label="osm_fieldwork.yamlfile.Yaml\lFile.write",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="osm_fieldwork.CSVDump.CSVDump.writeOSM",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1CSVDump_1_1CSVDump.html#ac00097ec888ebdb6cd3f263c924c1fdd",tooltip=" "];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="osm_fieldwork.json2osm.Json\lDump.writeOSM",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1json2osm_1_1JsonDump.html#a532b6d63bab6db38c649556ab6f488d3",tooltip=" "];
+}
