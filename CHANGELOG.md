@@ -1,3 +1,9 @@
+## 0.6.1 (2024-03-25)
+
+### Fix
+
+- add standardised entity registration form
+
 ## 0.6.0 (2024-03-24)
 
 ### Feat
