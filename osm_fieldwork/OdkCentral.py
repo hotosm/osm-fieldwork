@@ -1441,7 +1441,7 @@ class OdkEntity(OdkCentral):
         datasetName: str,
         label: str,
         data: dict,
-    ):
+    ) -> dict:
         """Create a new Entity in a project dataset (entity list).
 
         JSON request:
