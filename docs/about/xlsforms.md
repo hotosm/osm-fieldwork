@@ -49,9 +49,9 @@ for those of us use ODK based apps to collect data for
 [OpenStreetMap(OSM)](https://www.openstreetmap.org), a well designed
 XLSForm is easier to convert and upload to OSM.
 
-## OpenDataKit
+## ODK
 
-[OpenDataKit (ODK)](https://www.opendatakit.org) is a software suite that
+[ODK](https://getodk.org) is a software suite that
 includes a mobile app called [ODK Collect](https://docs.getodk.org/collect-intro/)
 and a server called [ODK
 Central](https://docs.getodk.org/central-intro/). ODK Collect is designed to
@@ -73,7 +73,7 @@ the organization behind it.
 
 ## OpenMapKit
 
-[OpenMapKit (OMK)](https://www.openmapkit.org) is an extension of OpenDataKit (ODK)
+[OpenMapKit (OMK)](https://www.openmapkit.org) is an extension of ODK
 that allows users to create professional quality mobile data collection surveys
 for field data collection. The tool was designed to simplify the process of
 collecting data for OpenStreetMap (OSM) in the field.

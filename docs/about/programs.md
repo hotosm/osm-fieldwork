@@ -75,7 +75,7 @@ data conversion. More detail on this module [is here](yamlfile.md).
 ## odk2csv.py
 
 Odk2csv.py is a command-line tool that is part of the osm-fieldwork
-package. Its main purpose is to convert an Open Data Kit (ODK) XML
+package. Its main purpose is to convert an ODK XML
 instance file to CSV format, which can be easily imported into ODK
 Central for analysis. This is primarily only used when working
 offline, as it removes the need to access ODK Central.
@@ -90,7 +90,7 @@ offline, as it removes the need to access ODK Central.
 ## ODKDump.py
 
 ODKDump.py is a Python module that is part of the OSM-Fieldwork
-toolset for converting Open Data Kit (ODK) data into various
+toolset for converting ODK data into various
 formats. It is used to parse the contents of an ODK Collect Instance
 file into a readable format. This module currently is not finished,
 instead use the **CSVDump.py** utility instead.

@@ -1,8 +1,8 @@
 ﻿# Osm-Fieldwork User Manual
 
 The osm-fieldwork project is a collection of utilities useful for
-field data collection, focused on OpenStreetMap (OSM) and OpenDataKit
-(ODK). Both of these are used heavily for humanitarian and emergency
+field data collection, focused on OpenStreetMap (OSM) and ODK.
+Both of these are used heavily for humanitarian and emergency
 response by many organizations. The problem is these two projects were
 never designed to work together, so this project was born to fill the
 gaps. Included are a few other useful utilities for field
@@ -14,9 +14,9 @@ data processing can also be run standalone, and also works fully
 offline. All the standalone programs run in a terminal, and are
 written in Python.
 
-## OpenDataKit (ODK)
+## ODK
 
-[OpenDataKit](https://opendatakit.org/software/) is a format for
+[ODK](https://getodk.org) is a format for
 collecting data on mobile devices, including the spatial coordinates
 of that data item. The primary source file is a spreadsheet called an
 XLSForm, which gets converted to an XForm using the

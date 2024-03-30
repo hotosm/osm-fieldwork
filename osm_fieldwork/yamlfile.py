@@ -164,12 +164,12 @@ if __name__ == "__main__":
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )
 
     yaml1 = YamlFile(args.infile)
     yaml1.dump()

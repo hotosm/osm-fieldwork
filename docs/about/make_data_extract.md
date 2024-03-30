@@ -105,7 +105,7 @@ the option is not specified, the program uses the input file name with
 
 ## File Formats
 
-OpenDataKit has 3 file formats. The primary one is the source file,
+ODK has 3 file formats. The primary one is the source file,
 which is in XLSX format, and follows the XLSXForm specification. This
 file is edited using a spreadsheet program, and convert using the
 xls2xform program. That conversion products an ODK XML file. That file

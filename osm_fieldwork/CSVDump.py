@@ -32,7 +32,7 @@ from osm_fieldwork.convert import Convert
 from osm_fieldwork.osmfile import OsmFile
 from osm_fieldwork.xlsforms import xlsforms_path
 
-# set log level for urlib
+# Instantiate logger
 log = logging.getLogger(__name__)
 
 
@@ -322,14 +322,13 @@ def main():
 
     # if verbose, dump to the terminal.
     if args.verbose is not None:
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        root.addHandler(ch)
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(asctime)s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )
+        logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
     if args.yaml:
         csvin = CSVDump(args.yaml)
