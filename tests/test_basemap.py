@@ -19,13 +19,13 @@
 #
 """Test functionalty of basemapper.py."""
 
-import pytest
 import logging
 import os
 import shutil
 
-from osm_fieldwork.basemapper import BaseMapper
-from osm_fieldwork.basemapper import create_basemap_file
+import pytest
+
+from osm_fieldwork.basemapper import BaseMapper, create_basemap_file
 from osm_fieldwork.sqlite import DataFile
 
 log = logging.getLogger(__name__)
@@ -41,10 +41,10 @@ base = "./tiles"
 def test_create_basemap_valid_parameters():
     """Test the creation of a basemap with valid parameters.
 
-    This test function verifies that a basemap can be created 
+    This test function verifies that a basemap can be created
     successfully with valid parameters.
-    It calls the create_basemap_file function with valid boundary, 
-    output file, zoom levels, and source information. It then checks 
+    It calls the create_basemap_file function with valid boundary,
+    output file, zoom levels, and source information. It then checks
     whether the output file exists after the basemap creation.
     """
     create_basemap_file(
@@ -60,10 +60,10 @@ def test_create_basemap_valid_parameters():
 def test_create_basemap_invalid_parameters():
     """Test the creation of a basemap with invalid parameters.
 
-    This test function ensures that creating a basemap with 
+    This test function ensures that creating a basemap with
     invalid parameters raises a ValueError.
-    It calls the create_basemap_file function with invalid 
-    boundary and output file valuesand checks whether a ValueError 
+    It calls the create_basemap_file function with invalid
+    boundary and output file valuesand checks whether a ValueError
     is raised.
     """
     with pytest.raises(ValueError):
@@ -79,9 +79,9 @@ def test_create_basemap_invalid_parameters():
 def test_custom_tms():
     """Test custom tile mapping service.
 
-    This test function checks the functionality 
+    This test function checks the functionality
     of custom tile mapping service (TMS).
-    It creates an instance of BaseMapper and 
+    It creates an instance of BaseMapper and
     sets a custom TMS URL. Then it verifies
     that the custom TMS URL is correctly set in the sources dictionary.
     """
@@ -95,11 +95,11 @@ def test_custom_tms():
 def test_pmtiles_generation():
     """Test the generation of pmtiles.
 
-    This test function validates the generation of 
+    This test function validates the generation of
     pmtiles (Portable Map Tiles).
-    It calls the create_basemap_file function to 
+    It calls the create_basemap_file function to
     generate pmtiles with specified boundary,
-    output file, zoom levels, and source information. 
+    output file, zoom levels, and source information.
     Then it checks whether the output file exists.
     """
     create_basemap_file(
@@ -127,9 +127,9 @@ def test_pmtiles_generation():
 def test_create():
     """See if the file got loaded.
 
-    This test function ensures that a file is 
+    This test function ensures that a file is
     successfully loaded and processed.
-    It creates an instance of BaseMapper, 
+    It creates an instance of BaseMapper,
     retrieves tiles at specified zoom levels,
     and writes the tiles to an output file.
     """
