@@ -19,18 +19,17 @@
 #
 """Module for generating basemaps from various providers."""
 
-import json
 import argparse
 import concurrent.futures
+import json  # Used for parsing GeoJSON strings
 import logging
 import queue
 import re
 import sys
 import threading
-from shapely.ops import unary_union  # Used to handle cases where multiple geometries are provided
-from shapely.geometry import shape, MultiPolygon, Polygon  # Used to model and manipulate geometric shapes like Polygon
+from io import BytesIO  # Used for handling in-memory GeoJSON
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Tuple, Union
 
 import geojson
 import mercantile
@@ -46,15 +45,12 @@ from pmtiles.tile import (
 )
 from pmtiles.writer import Writer as PMTileWriter
 from pySmartDL import SmartDL
-from shapely.geometry import shape
-from shapely.ops import unary_union
+from shapely.geometry import shape  # Used to model and manipulate geometric shapes like Polygon
+from shapely.ops import unary_union  # Used to handle cases where multiple geometries are provided
 
 from osm_fieldwork.sqlite import DataFile, MapTile
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
-
-from io import BytesIO  # Used for handling in-memory GeoJSON
-import json  # Used for parsing GeoJSON strings
 
 log = logging.getLogger(__name__)
 
@@ -176,19 +172,22 @@ class BaseMapper(object):
 
     def makeBboxFromBytes(self, boundary_bytes: bytes) -> Tuple[float, float, float, float]:
         """Make a bounding box from an in-memory GeoJSON (bytes).
+
         Calculate the bounding box from GeoJSON data given in bytes.
-        This function takes GeoJSON data in bytes format and finds 
+        This function takes GeoJSON data in bytes format and finds
         the corners of a rectangle that surrounds the map area described by the data.
-        The bounding box defines the rectangular area enclosing the 
+        The bounding box defines the rectangular area enclosing the
         spatial extent of the provided GeoJSON geometry or dataset.
 
         Args:
-            boundary_bytes (bytes): GeoJSON data in bytes format. 
+            boundary_bytes (bytes): GeoJSON data in bytes format.
             It represents the geographic features or geometries.
 
         Returns:
-            Tuple[float, float, float, float]: A set of four numbers that tell you the corners of the rectangle surrounding the map area.
-            The numbers represent the left, bottom, right, and top edges of the rectangle, respectively.
+            Tuple[float, float, float, float]: A set of four numbers
+            that tell you the corners of the rectangle surrounding the map area.
+            The numbers represent the left, bottom, right,
+            and top edges of the rectangle, respectively.
 
         Raises:
             ValueError: If the GeoJSON data cannot be understood or does not contain valid map information.
@@ -210,24 +209,24 @@ class BaseMapper(object):
             raise ValueError("Failed to parse in-memory GeoJSON.") from e
 
     def makeBbox(self, boundary: Union[str, BytesIO]) -> Tuple[float, float, float, float]:
-        """
-        Make a bounding box from a shapely geometry, BBOX string, or GeoJSON bytes object.
+        """Make a bounding box from a shapely geometry, BBOX string, or GeoJSON bytes object!
+
             This function calculates the corners of a rectangle that surrounds a piece of map data.
             You can give it different types of map data:
 
             - A string that says where the edges of the map are.
             - A file that holds a map you've already made in a special format.
 
-            Args:
-                boundary (Union[str, BytesIO]): This is the information you're giving the 
+        Args:
+                boundary (Union[str, BytesIO]): This is the information you're giving the
                 function so it knows what map area you're talking about.
                 It could be:
                 - Something you drew on the map.
                 - A written-down description of the map's edges.
                 - A file that holds a map you've already made.
 
-            Returns:
-            tuple[float, float, float, float]: This tells you the corners 
+        Returns:
+            tuple[float, float, float, float]: This tells you the corners
             of the rectangle that surrounds the map area.
             The corners are given in the order: (left edge, bottom edge, right edge, top edge).
         """
@@ -377,15 +376,7 @@ class BaseMapper(object):
         self,
         boundary: str,
     ) -> tuple[float, float, float, float]:
-        """Make a bounding box from a shapely geometry.
-
-        Args:
-            boundary (str): A BBOX string or GeoJSON file of the AOI.
-                The GeoJSON can contain multiple geometries.
-
-        Returns:
-            (list): The bounding box coordinates
-        """
+        """Definition of makebox without bytes."""
         if not boundary.lower().endswith((".json", ".geojson")):
             # Is BBOX string
             try:
