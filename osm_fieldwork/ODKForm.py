@@ -1,3 +1,4 @@
+"""Module ODKForm."""
 #!/usr/bin/python3
 
 #
@@ -30,6 +31,7 @@ class ODKForm(object):
     """Support for parsing an XLS Form, currently a work in progress..."""
 
     def __init__(self):
+
         """Returns:
         (ODKForm): An instance of this object.
         """
@@ -38,7 +40,7 @@ class ODKForm(object):
         self.groups = dict()
         self.ignore = ("label", "@appearance", "hint", "upload")
 
-    def parseSelect(
+    def parseselect(
         self,
         select: dict,
     ):
@@ -62,7 +64,7 @@ class ODKForm(object):
             print("\tQQQQQ %r" % (newsel))
         return newsel
 
-    def parseItems(
+    def parseitems(
         self,
         items: list,
     ):
@@ -106,7 +108,7 @@ class ODKForm(object):
         # return group, subgroup, newitems
         return newitems
 
-    def parseGroup(
+    def parsegroup(
         self,
         group: dict(),
     ):

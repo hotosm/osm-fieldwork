@@ -1,3 +1,4 @@
+"""Module for dumping ODK data."""
 #!/usr/bin/python3
 
 #

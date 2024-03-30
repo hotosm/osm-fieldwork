@@ -1,3 +1,4 @@
+"""Module for dumping CSV data to OSM and GeoJSON formats."""
 #!/usr/bin/python3
 
 # Copyright (c) 2020, 2021, 2022, 2023 Humanitarian OpenStreetMap Team
@@ -43,6 +44,12 @@ class CSVDump(Convert):
         self,
         yaml: str = None,
     ):
+        """
+    Initialize the CSVDump class.
+
+    Args:
+        yaml (str): Path to a YAML configuration file.
+    """
         self.fields = dict()
         self.nodesets = dict()
         self.data = list()
@@ -58,7 +65,7 @@ class CSVDump(Convert):
         self.saved = dict()
         self.defaults = dict()
 
-    def lastSaved(
+    def lastsaved(
         self,
         keyword: str,
     ):
@@ -66,7 +73,7 @@ class CSVDump(Convert):
             return self.saved[keyword]
         return None
 
-    def updateSaved(
+    def updatesaved(
         self,
         keyword: str,
         value: str,
@@ -74,7 +81,7 @@ class CSVDump(Convert):
         if keyword is not None and value is not None and len(value) > 0:
             self.saved[keyword] = value
 
-    def parseXLS(
+    def parsexls(
         self,
         xlsfile: str,
     ):
@@ -98,7 +105,7 @@ class CSVDump(Convert):
                 i += 1
         return True
 
-    def createOSM(
+    def createosm(
         self,
         filespec: str,
     ):
@@ -107,7 +114,7 @@ class CSVDump(Convert):
         self.osm = OsmFile(filespec)
         # self.osm.header()
 
-    def writeOSM(
+    def writeosm(
         self,
         feature: dict,
     ):
@@ -123,11 +130,11 @@ class CSVDump(Convert):
             out += self.osm.createWay(feature)
         self.osm.write(out)
 
-    def finishOSM(self):
+    def finishosm(self):
         """Write the OSM XML file footer and close it."""
         self.osm.footer()
 
-    def createGeoJson(
+    def creategeojson(
         self,
         file: str = "tmp.geojson",
     ):
@@ -135,7 +142,7 @@ class CSVDump(Convert):
         log.debug("Creating GeoJson file: %s" % file)
         self.json = open(file, "w")
 
-    def writeGeoJson(
+    def writegeojson(
         self,
         feature: dict,
     ):
@@ -145,7 +152,7 @@ class CSVDump(Convert):
             return None
         self.features.append(feature)
 
-    def finishGeoJson(self):
+    def finishgeojson(self):
         """Write the GeoJson FeatureCollection to the output file and close it."""
         features = list()
         for item in self.features:
@@ -234,7 +241,7 @@ class CSVDump(Convert):
         base = tmp[len(tmp) - 1]
         return base
 
-    def createEntry(
+    def createentry(
         self,
         entry: dict,
     ):
