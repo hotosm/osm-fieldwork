@@ -34,14 +34,13 @@ log = logging.getLogger(__name__)
 
 
 class ODKInstance(object):
-
     """Main class"""
+
     def __init__(
         self,
         filespec: str = None,
         data: str = None,
     ):
-        
         """This class imports a ODK Instance file, which is in XML into a data
         structure.
 
@@ -64,7 +63,6 @@ class ODKInstance(object):
         filespec: str,
         data: str = None,
     ):
-        
         """Import an ODK XML Instance file ito a data structure. The input is
         either a filespec to the Instance file copied off your phone, or
         the XML that has been read in elsewhere.
@@ -129,7 +127,6 @@ class ODKInstance(object):
 
 
 if __name__ == "__main__":
-    
     """This is just a hook so this file can be run standlone during development."""
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")

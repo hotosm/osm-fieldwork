@@ -31,7 +31,6 @@ class ODKForm(object):
     """Support for parsing an XLS Form, currently a work in progress..."""
 
     def __init__(self):
-
         """Returns:
         (ODKForm): An instance of this object.
         """

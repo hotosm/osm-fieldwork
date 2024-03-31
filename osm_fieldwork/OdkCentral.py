@@ -51,7 +51,6 @@ log = logging.getLogger(__name__)
 
 
 def downloadthread(project_id: int, xforms: list, odk_credentials: dict, filters: dict = None):
-
     """Download a list of submissions from ODK Central.
 
     Args:
@@ -83,14 +82,12 @@ def downloadthread(project_id: int, xforms: list, odk_credentials: dict, filters
 
 
 class OdkCentral(object):
-
     def __init__(
         self,
         url: Optional[str] = None,
         user: Optional[str] = None,
         passwd: Optional[str] = None,
     ):
-        
         """A Class for accessing an ODK Central server via it's REST API.
 
         Args:
@@ -212,7 +209,6 @@ class OdkCentral(object):
         return self.session.get(self.url, verify=self.verify)
 
     def listprojects(self):
-
         """Fetch a list of projects from an ODK Central server, and
         store it as an indexed list.
 
@@ -235,7 +231,6 @@ class OdkCentral(object):
         self,
         name: str,
     ) -> dict:
-        
         """Create a new project on an ODK Central server if it doesn't
         already exist.
 
@@ -269,7 +264,6 @@ class OdkCentral(object):
         self,
         project_id: int,
     ):
-        
         """Delete a project on an ODK Central server.
 
         Args:
@@ -289,7 +283,6 @@ class OdkCentral(object):
         name: str = None,
         project_id: int = None,
     ):
-        
         """Get the project data from Central.
 
         Args:
@@ -321,7 +314,6 @@ class OdkCentral(object):
         user_id: int,
         name: str = None,
     ):
-        
         """Get the data for an app user.
 
         Args:
@@ -349,7 +341,6 @@ class OdkCentral(object):
         return None
 
     def listusers(self):
-
         """Fetch a list of users on the ODK Central server.
 
         Returns:
@@ -362,7 +353,6 @@ class OdkCentral(object):
         return self.users
 
     def dump(self):
-
         """Dump internal data structures, for debugging purposes only."""
         # print("URL: %s" % self.url)
         # print("User: %s" % self.user)
@@ -381,7 +371,6 @@ class OdkCentral(object):
 
 
 class OdkProject(OdkCentral):
-
     """Class to manipulate a project on an ODK Central server."""
 
     def __init__(
@@ -390,7 +379,6 @@ class OdkProject(OdkCentral):
         user: Optional[str] = None,
         passwd: Optional[str] = None,
     ):
-        
         """Args:
             url (str): The URL of the ODK Central
             user (str): The user's account name on ODK Central
@@ -410,7 +398,6 @@ class OdkProject(OdkCentral):
         self,
         keyword: str,
     ):
-        
         """Args:
             keyword (str): The keyword to search for.
 
@@ -420,7 +407,6 @@ class OdkProject(OdkCentral):
         return self.data[keyword]
 
     def listforms(self, project_id: int, metadata: bool = False):
-
         """Fetch a list of forms in a project on an ODK Central server.
 
         Args:
@@ -437,7 +423,6 @@ class OdkProject(OdkCentral):
         return self.forms
 
     def getallsubmissions(self, project_id: int, xforms: list = None, filters: dict = None):
-
         """Fetch a list of submissions in a project on an ODK Central server.
 
         Args:
@@ -491,7 +476,6 @@ class OdkProject(OdkCentral):
         self,
         projectId: int,
     ):
-        
         """Fetch a list of app users for a project from an ODK Central server.
 
         Args:
@@ -509,7 +493,6 @@ class OdkProject(OdkCentral):
         self,
         projectId: int,
     ):
-        
         """List the Role & Actor assignments for users on a project.
 
         Args:
@@ -526,7 +509,6 @@ class OdkProject(OdkCentral):
         self,
         projectId: int,
     ):
-        
         """Get all the details for a project on an ODK Central server.
 
         Args:
@@ -544,7 +526,6 @@ class OdkProject(OdkCentral):
         self,
         projectId: int,
     ):
-        
         """Get extended details for a project on an ODK Central server.
 
         Args:
@@ -559,9 +540,7 @@ class OdkProject(OdkCentral):
         return result.json()
 
     def dump(self):
-
         """Dump internal data structures, for debugging purposes only."""
-
         super().dump()
         if self.forms:
             print("There are %d forms in this project" % len(self.forms))
@@ -596,15 +575,12 @@ class OdkProject(OdkCentral):
 
 
 class OdkForm(OdkCentral):
-
-
     def __init__(
         self,
         url: Optional[str] = None,
         user: Optional[str] = None,
         passwd: Optional[str] = None,
     ):
-        
         """Args:
             url (str): The URL of the ODK Central
             user (str): The user's account name on ODK Central
@@ -651,7 +627,6 @@ class OdkForm(OdkCentral):
         projectId: int,
         xform: str,
     ):
-        
         """Get all the details for a form on an ODK Central server.
 
         Args:
@@ -671,7 +646,6 @@ class OdkForm(OdkCentral):
         projectId: int,
         xform: str,
     ):
-        
         """Get the full details for a form on an ODK Central server.
 
         Args:
@@ -691,7 +665,6 @@ class OdkForm(OdkCentral):
         projectId: int,
         xform: str,
     ):
-        
         """Fetch a list of submission instances basic information for a given form.
 
         Args:
@@ -706,7 +679,6 @@ class OdkForm(OdkCentral):
         return result.json()
 
     def listsubmissions(self, projectId: int, xform: str, filters: dict = None):
-
         """Fetch a list of submission instances for a given form.
 
         Returns data in format:
@@ -739,7 +711,6 @@ class OdkForm(OdkCentral):
         projectId: int,
         xform: str,
     ):
-        
         """List the Role & Actor assignments for users on a project.
 
         Fetch a list of submission instances basic information for a given form.
@@ -763,7 +734,6 @@ class OdkForm(OdkCentral):
         disk: bool = False,
         json: bool = True,
     ):
-        
         """Fetch a CSV or JSON file of the submissions without media to a survey form.
 
         Args:
@@ -816,7 +786,6 @@ class OdkForm(OdkCentral):
         projectId: int,
         xform: str,
     ):
-        
         """Fetch a ZIP file of the submissions with media to a survey form.
 
         Args:
@@ -835,7 +804,6 @@ class OdkForm(OdkCentral):
         media: bytes,
         filespec: str,
     ):
-        
         """Add a data file to this form.
 
         Args:
@@ -851,7 +819,6 @@ class OdkForm(OdkCentral):
         xmlFormId: int,
         xform: str,
     ):
-        
         """Add an XML file to this form.
 
         Args:
@@ -865,7 +832,6 @@ class OdkForm(OdkCentral):
         projectId: int,
         xform: str,
     ):
-        
         """List all the attchements for this form.
 
         Args:
@@ -884,7 +850,6 @@ class OdkForm(OdkCentral):
         return self.media
 
     def validatemedia(self, filename: str):
-
         """Validate the specified filename is present in the XForm."""
         if not self.xml:
             return
@@ -919,7 +884,6 @@ class OdkForm(OdkCentral):
         data: Union[str, Path, BytesIO],
         filename: Optional[str] = None,
     ) -> Optional[requests.Response]:
-        
         """Upload an attachement to the ODK Central server.
 
         Args:
@@ -991,7 +955,6 @@ class OdkForm(OdkCentral):
         xform: str,
         filename: str,
     ):
-        
         """Fetch a specific attachment by filename from a submission to a form.
 
         Args:
@@ -1022,7 +985,6 @@ class OdkForm(OdkCentral):
         form_name: Optional[str] = None,
         publish: Optional[bool] = False,
     ) -> Optional[str]:
-        
         """Create a new form on an ODK Central server.
 
         - If no form_name is passed, the form name is generated by default in draft.
@@ -1116,7 +1078,6 @@ class OdkForm(OdkCentral):
         projectId: int,
         xform: str,
     ):
-        
         """Delete a form from an ODK Central server.
 
         Args:
@@ -1156,7 +1117,6 @@ class OdkForm(OdkCentral):
         projectId: int,
         xform: str,
     ) -> int:
-        
         """Publish a draft form. When creating a form that isn't a draft, it can get publised then.
 
         Args:
@@ -1182,7 +1142,6 @@ class OdkForm(OdkCentral):
         return result.status_code
 
     def formfields(self, projectId: int, xform: str):
-
         """Retrieves the form fields for a xform from odk central.
 
         Args:
@@ -1208,7 +1167,6 @@ class OdkForm(OdkCentral):
         return response.json()
 
     def dump(self):
-
         """Dump internal data structures, for debugging purposes only."""
         # super().dump()
         entries = len(self.media.keys())
@@ -1220,14 +1178,12 @@ class OdkForm(OdkCentral):
 
 
 class OdkAppUser(OdkCentral):
-
     def __init__(
         self,
         url: Optional[str] = None,
         user: Optional[str] = None,
         passwd: Optional[str] = None,
     ):
-        
         """A Class for app user data.
 
         Args:
@@ -1248,7 +1204,6 @@ class OdkAppUser(OdkCentral):
         projectId: int,
         name: str,
     ):
-        
         """Create a new app-user for a form.
 
         Example response:
@@ -1283,7 +1238,6 @@ class OdkAppUser(OdkCentral):
         projectId: int,
         userId: int,
     ):
-        
         """Create a new app-user for a form.
 
         Args:
@@ -1304,7 +1258,6 @@ class OdkAppUser(OdkCentral):
         roleId: int = 2,
         actorId: Optional[int] = None,
     ):
-        
         """Update the role of an app user for a form.
 
         Args:
@@ -1322,7 +1275,6 @@ class OdkAppUser(OdkCentral):
         return result
 
     def grantaccess(self, projectId: int, roleId: int = 2, userId: int = None, xform: str = None, actorId: int = None):
-
         """Grant access to an app user for a form.
 
         Args:
@@ -1349,7 +1301,6 @@ class OdkAppUser(OdkCentral):
         upstream_task_id: str = "",
         save_qrcode: bool = False,
     ) -> segno.QRCode:
-        
         """Get the QR Code for an app-user.
 
         Notes on QR code params:

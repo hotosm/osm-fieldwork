@@ -44,12 +44,11 @@ class CSVDump(Convert):
         self,
         yaml: str = None,
     ):
-        """
-    Initialize the CSVDump class.
+        """Initialize the CSVDump class.
 
-    Args:
+        Args:
         yaml (str): Path to a YAML configuration file.
-    """
+        """
         self.fields = dict()
         self.nodesets = dict()
         self.data = list()
