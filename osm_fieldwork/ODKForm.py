@@ -23,7 +23,7 @@ import logging
 import os
 import sys
 
-# Logging
+# Instantiate logger
 log = logging.getLogger(__name__)
 
 
@@ -144,14 +144,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # if verbose, dump to the terminal as well as the logfile.
-    if not args.verbose:
-        log.setLevel(logging.DEBUG)
-
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
+    if args.verbose is not None:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(asctime)s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )
 
     odkform = ODKForm()
     odkform.parse(args.infile)
