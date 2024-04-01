@@ -419,21 +419,21 @@ def process_geojson(geojson_content):
     geojson_data = json.loads(geojson_content)
 
     # Extract the geometry from the GeoJSON data
-    if 'features' in geojson_data:
+    if "features" in geojson_data:
         # Handle GeoJSON with multiple features
-        geometries = [shape(feature['geometry']) for feature in geojson_data['features']]
+        geometries = [shape(feature["geometry"]) for feature in geojson_data["features"]]
         # Merge multiple geometries into a single geometry
         boundary_geometry = geometries[0] if len(geometries) == 1 else geometries[0].union(geometries[1:])
     else:
         # Handle GeoJSON with single geometry
-        boundary_geometry = shape(geojson_data['geometry'])
+        boundary_geometry = shape(geojson_data["geometry"])
 
     # Extract the bounding box from the geometry
     bbox = boundary_geometry.bounds
 
     return bbox
 
-    
+
 def create_basemap_file(
     verbose=False,
     boundary=None,
@@ -487,10 +487,10 @@ def create_basemap_file(
         err = "You need to specify a boundary! (file or bbox)"
         log.error(err)
         raise ValueError(err)
-    # code added:-    
+    # code added:-
     # Check the type of the boundary parameter
     if isinstance(boundary, io.BytesIO):
-        boundary_content = boundary.read().decode('utf-8')  # Convert BytesIO content to string
+        boundary_content = boundary.read().decode("utf-8")  # Convert BytesIO content to string
        elif isinstance(boundary, str):
         # Process bbox string
         bbox_parts = boundary.split(",")
@@ -505,7 +505,7 @@ def create_basemap_file(
         with open(boundary, "r") as f:
             geojson_data = json.load(f)
         # Process the GeoJSON data to extract the bounding box
-        bbox = process_geojson(geojson_data)  
+        bbox = process_geojson(geojson_data)
         log.debug(f"Bounding box from GeoJSON: {bbox}")
     #added code ends!!!
     # Get all the zoom levels we want
