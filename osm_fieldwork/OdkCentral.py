@@ -158,9 +158,6 @@ class OdkCentral(object):
         # These are just cached data from the queries
         self.projects = dict()
         self.users = list()
-        # The number of threads is based on the CPU cores
-        info = get_cpu_info()
-        self.cores = info["count"]
 
     def authenticate(
         self,
@@ -430,6 +427,10 @@ class OdkProject(OdkCentral):
         Returns:
             (json): All of the submissions for all of the XForm in a project
         """
+       # The number of threads is based on the CPU cores
+        info = get_cpu_info()
+        self.cores = info["count"]
+
         timer = Timer(text="getAllSubmissions() took {seconds:.0f}s")
         timer.start()
         if not xforms:
