@@ -1,0 +1,64 @@
+import os
+
+def generate_data_extract(category):
+    """
+    Generates a data extract based on the specified category.
+    If no data model exists for the category, creates a dummy extract with the centroid of the project AOI.
+    
+    Parameters:
+        category (str): The category for which data extraction is needed.
+    """
+    if check_data_model(category):
+        generate_regular_data_extract(category)
+    else:
+        create_dummy_data_extract(category)
+
+def check_data_model(category):
+    """
+    Checks if a data model exists for the specified category.
+    
+    Parameters:
+        category (str): The category to check for data model existence.
+        
+    Returns:
+        bool: True if data model exists, False otherwise.
+    """
+    # Placeholder logic to check for the existence of the data model
+    return False  # Replace with actual logic
+
+def generate_regular_data_extract(category):
+    """
+    Generates a regular data extract based on the specified category.
+    
+    Parameters:
+        category (str): The category for which to generate the data extract.
+    """
+    # Placeholder logic to generate regular data extract
+    pass  # Replace with actual logic
+
+def create_dummy_data_extract(category):
+    """
+    Creates a dummy data extract with the centroid of the project AOI.
+    
+    Parameters:
+        category (str): The category for which to create the dummy data extract.
+    """
+    centroid = calculate_centroid()
+    # Write dummy data to a file
+    with open(f"{category}_dummy_extract.txt", "w") as file:
+        file.write(f"Category: {category}\n")
+        file.write(f"Centroid: {centroid}\n")
+
+def calculate_centroid():
+    """
+    Calculates the centroid of the project AOI.
+    
+    Returns:
+        tuple: The coordinates (latitude, longitude) of the centroid.
+    """
+    # Placeholder logic to calculate centroid
+    return (0, 0)  # Replace with actual centroid calculation
+
+# Example usage
+category = "example_category"
+generate_data_extract(category)
