@@ -427,7 +427,7 @@ class OdkProject(OdkCentral):
         Returns:
             (json): All of the submissions for all of the XForm in a project
         """
-       # The number of threads is based on the CPU cores
+        # The number of threads is based on the CPU cores
         info = get_cpu_info()
         self.cores = info["count"]
 
