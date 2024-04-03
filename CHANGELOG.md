@@ -1,3 +1,13 @@
+## 0.7.0 (2024-04-03)
+
+### Feat
+
+- add OdkCentralAsync for async entities workflow (#253)
+
+### Fix
+
+- only get cpu cores in getAllSubmissions method
+
 ## 0.6.1 (2024-03-25)
 
 ### Fix
