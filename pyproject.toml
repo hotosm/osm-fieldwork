@@ -26,6 +26,7 @@ dependencies = [
     "requests>=2.26.0",
     "pmtiles>=3.2.0",
     "osm-rawdata>=0.1.7",
+    "aiohttp>=3.9.3",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
