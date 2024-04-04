@@ -13,9 +13,9 @@ surveying the people in it.
 As of time of writing (March 2024), Entities in ODK are working and more
 or less implemented, but not yet in wide use or well debugged.
 
-# Use of Entities with FMTM
+## Use of Entities with FMTM
 
-In FMTM, we want to:
+In osm-fieldwork / FMTM, we want to:
 
 - Be aware of features that have already been mapped
   - the ODK map views don't yet support styling features differently
@@ -31,7 +31,7 @@ In FMTM, we want to:
 The ODK core development team has strongly suggested that the FMTM team
 use the Entities to achieve the above goals.
 
-## Workflow Using Entities
+### Workflow Using Entities
 
 The basic workflow would probably resemble:
 
@@ -39,8 +39,8 @@ The basic workflow would probably resemble:
   - In standard ODK settings, this simply means adding an `entities`
     tab to the XLSForm (as per
     [the example Entities form created by the ODK team](https://docs.google.com/spreadsheets/d/1xboXBJhIUlhs0wlblCxcQ3DB5Ubpx2AxLDuaXh_JYyw/edit#gid=2050654322).
-    This seems to create what ODK refers to as a Dataset (in developer-facing documenation only;
-    they avoid this word in user-facing documentation).
+    This seems to create what ODK refers to as a Dataset (in developer-facing
+    documenation only; they avoid this word in user-facing documentation).
 - Upload the Entities via the API:
   - There is currenltly no way to bulk upload Entities to a Dataset via the API.
   - Instead we must upload each Entity individually, including a geometry field
@@ -62,10 +62,13 @@ The basic workflow would probably resemble:
   - Update the entity label to be prefixed with ✅ ❌ for a nicer visual cue.
     <https://docs.getodk.org/central-entities/#building-a-form-that-updates-an-entity>
 
-# Resources
+## Resources
 
-- [Here's the introductory page from ODK discussing the rationale for and use of Entities](https://docs.getodk.org/central-entities/). It has some example forms you can use to get started figuring out how to use Entities.
+- [Here's the introductory page from ODK](https://docs.getodk.org/central-entities/).
+  discussing the rationale for and use of Entities.
+  It has some example forms you can use to get started figuring out how to use Entities.
 - [Here's the specification for Entities in the XForms language](https://getodk.github.io/xforms-spec/entities).
 - [Here's the ODK Central API documentation for dealing with Entities](https://docs.getodk.org/central-api-entity-management/)
 - [Here's the ODK Central API documentation for dealing with the "Datasets" they are part of](https://docs.getodk.org/central-api-form-management/#related-datasets)
 - [Here's a discussion of how you can attach a draft form to an entity "dataset"](https://docs.getodk.org/central-api-form-management/#linking-a-dataset-to-a-draft-form-attachment)
+- [OSM Diary Detailing Entity Usage](https://www.openstreetmap.org/user/spwoodcock/diary/403845)
