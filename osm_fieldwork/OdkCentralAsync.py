@@ -310,8 +310,6 @@ class OdkEntity(OdkCentral):
         """
         # The CSV must contain a geometry field to work
         # TODO also add this validation to uploadMedia if CSV format
-        print(label)
-        print(data)
 
         required_fields = ["geometry"]
         if not all(key in data for key in required_fields):
