@@ -85,6 +85,7 @@ nav:
       - odk2csv: about/odk2csv.md
   - API:
       - ODK Central: api/OdkCentral.md
+      - ODK Central (Async): api/OdkCentralAsync.md
       - basemapper: api/basemapper.md
       - make_data_extract: api/make_data_extract.md
       - convert: api/convert.md
