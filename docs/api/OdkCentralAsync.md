@@ -15,10 +15,9 @@ options:
 show_source: false
 heading_level: 3
 
-## Usage
+## Usage Example
 
 - An async context manager must be used (`async with`).
-- As of 2024-04 the session and authentication must be handled manually.
 
 ```python
 from osm_fieldwork.OdkCentralAsync import OdkProject
@@ -28,8 +27,5 @@ async with OdkProject(
     user="user@domain.com",
     passwd="password",
 ) as odk_central:
-    await odk_central.create_session()
-    await odk_central.authenticate()
-
     projects = await odk_central.listProjects()
 ```
