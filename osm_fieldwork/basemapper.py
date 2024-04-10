@@ -50,6 +50,7 @@ from osm_fieldwork.sqlite import DataFile, MapTile
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
 
+# Instantiate logger
 log = logging.getLogger(__name__)
 
 
@@ -407,7 +408,6 @@ def tile_dir_to_pmtiles(outfile: str, tile_dir: str, bbox: tuple, attribution: s
 
 
 def create_basemap_file(
-    verbose=False,
     boundary=None,
     tms=None,
     xy=False,
@@ -419,7 +419,6 @@ def create_basemap_file(
     """Create a basemap with given parameters.
 
     Args:
-        verbose (bool, optional): Enable verbose output if True.
         boundary (str, optional): The boundary for the area you want.
         tms (str, optional): Custom TMS URL.
         xy (bool, optional): Swap the X & Y coordinates when using a
@@ -434,15 +433,6 @@ def create_basemap_file(
     Returns:
         None
     """
-    # if verbose, dump to the terminal.
-    if verbose is not None:
-        log.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(threadName)10s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        log.addHandler(ch)
-
     log.debug(
         "Creating basemap with params: "
         f"boundary={boundary} | "
@@ -586,8 +576,16 @@ def main():
         parser.print_help()
         quit()
 
+    # if verbose, dump to the terminal.
+    if args.verbose is not None:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )
+
     create_basemap_file(
-        verbose=args.verbose,
         boundary=boundary_parsed,
         tms=args.tms,
         xy=args.xy,

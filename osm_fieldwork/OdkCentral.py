@@ -33,6 +33,7 @@ from datetime import datetime
 from io import BytesIO
 from pathlib import Path
 from typing import Optional, Union
+from uuid import uuid4
 from xml.etree import ElementTree
 
 import requests
@@ -40,8 +41,9 @@ import segno
 from codetiming import Timer
 from cpuinfo import get_cpu_info
 
-# Set log level for urllib
+# Instantiate logger
 log_level = os.getenv("LOG_LEVEL", default="INFO")
+# Set log level for urllib
 logging.getLogger("urllib3").setLevel(log_level)
 
 log = logging.getLogger(__name__)
@@ -105,9 +107,12 @@ class OdkCentral(object):
         self.passwd = passwd
         verify = os.getenv("ODK_CENTRAL_SECURE", default=True)
         if type(verify) == str:
-            self.verify = eval(verify)
+            self.verify = verify.lower() in ("true", "1", "t")
         else:
             self.verify = verify
+        # Set cert bundle path for requests in environment
+        if self.verify:
+            os.environ["REQUESTS_CA_BUNDLE"] = "/etc/ssl/certs/ca-certificates.crt"
         # These are settings used by ODK Collect
         self.general = {
             "form_update_mode": "match_exactly",
@@ -153,9 +158,6 @@ class OdkCentral(object):
         # These are just cached data from the queries
         self.projects = dict()
         self.users = list()
-        # The number of threads is based on the CPU cores
-        info = get_cpu_info()
-        self.cores = info["count"]
 
     def authenticate(
         self,
@@ -190,8 +192,11 @@ class OdkCentral(object):
                 "password": self.passwd,
             },
         )
-        if not response.ok:
-            response.raise_for_status()
+        if response.status_code == 401:
+            # Unauthorized, invalid credentials
+            raise ValueError("ODK credentials are invalid, or may have been updated. Please update them.")
+        elif not response.ok:
+            response.raise_for_status()  # Handle other errors
 
         self.session.headers.update({"Authorization": f"Bearer {response.json().get('token')}"})
 
@@ -422,6 +427,10 @@ class OdkProject(OdkCentral):
         Returns:
             (json): All of the submissions for all of the XForm in a project
         """
+        # The number of threads is based on the CPU cores
+        info = get_cpu_info()
+        self.cores = info["count"]
+
         timer = Timer(text="getAllSubmissions() took {seconds:.0f}s")
         timer.start()
         if not xforms:
@@ -545,9 +554,27 @@ class OdkProject(OdkCentral):
         for data in self.appusers:
             print("\t%s: %s" % (data["id"], data["displayName"]))
 
+    def updateReviewState(self, projectId: int, xmlFormId: str, instanceId: str, review_state: dict) -> dict:
+        """Updates the review state of a submission in ODK Central.
+
+        Args:
+            projectId (int): The ID of the odk project.
+            xmlFormId (str): The ID of the form.
+            instanceId (str): The ID of the submission instance.
+            review_state (dict): The updated review state.
+        """
+        try:
+            url = f"{self.base}projects/{projectId}/forms/{xmlFormId}/submissions/{instanceId}"
+            result = self.session.patch(url, json=review_state)
+            result.raise_for_status()
+            return result.json()
+        except Exception as e:
+            log.error(f"Error updating review state: {e}")
+            return {}
+
 
 class OdkForm(OdkCentral):
-    """Class to manipulate a from on an ODK Central server."""
+    """Class to manipulate a form on an ODK Central server."""
 
     def __init__(
         self,
@@ -1322,6 +1349,310 @@ class OdkAppUser(OdkCentral):
             self.qrcode.save(f"{project_name}.png", scale=5)
 
         return self.qrcode
+
+
+class OdkEntity(OdkCentral):
+    """Class to manipulate a Entity on an ODK Central server."""
+
+    def __init__(
+        self,
+        url: Optional[str] = None,
+        user: Optional[str] = None,
+        passwd: Optional[str] = None,
+    ):
+        """Args:
+            url (str): The URL of the ODK Central
+            user (str): The user's account name on ODK Central
+            passwd (str):  The user's account password on ODK Central.
+
+        Returns:
+            (OdkEntity): An instance of this object.
+        """
+        super().__init__(url, user, passwd)
+        self.name = None
+
+    def listDatasets(
+        self,
+        projectId: int,
+    ):
+        """Get all Entity datasets (entity lists) for a project.
+
+        JSON response:
+        [
+            {
+                "name": "people",
+                "createdAt": "2018-01-19T23:58:03.395Z",
+                "projectId": 1,
+                "approvalRequired": true
+            }
+        ]
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+
+        Returns:
+            list: a list of JSON dataset metadata.
+        """
+        url = f"{self.base}projects/{projectId}/datasets/"
+        result = self.session.get(url, verify=self.verify)
+        return result.json()
+
+    def listEntities(
+        self,
+        projectId: int,
+        datasetName: str,
+    ):
+        """Get all Entities for a project dataset (entity list).
+
+        JSON format:
+        [
+        {
+            "uuid": "uuid:85cb9aff-005e-4edd-9739-dc9c1a829c44",
+            "createdAt": "2018-01-19T23:58:03.395Z",
+            "updatedAt": "2018-03-21T12:45:02.312Z",
+            "deletedAt": "2018-03-21T12:45:02.312Z",
+            "creatorId": 1,
+            "currentVersion": {
+            "label": "John (88)",
+            "current": true,
+            "createdAt": "2018-03-21T12:45:02.312Z",
+            "creatorId": 1,
+            "userAgent": "Enketo/3.0.4",
+            "version": 1,
+            "baseVersion": null,
+            "conflictingProperties": null
+            }
+        }
+        ]
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            datasetName (str): The name of a dataset, specific to a project.
+
+        Returns:
+            list: a list of JSON entity metadata, for a dataset.
+        """
+        url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities"
+        response = self.session.get(url, verify=self.verify)
+        return response.json()
+
+    def createEntity(
+        self,
+        projectId: int,
+        datasetName: str,
+        label: str,
+        data: dict,
+    ) -> dict:
+        """Create a new Entity in a project dataset (entity list).
+
+        JSON request:
+        {
+        "uuid": "54a405a0-53ce-4748-9788-d23a30cc3afa",
+        "label": "John Doe (88)",
+        "data": {
+            "firstName": "John",
+            "age": "88"
+        }
+        }
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            datasetName (int): The name of a dataset, specific to a project.
+            label (str): Label for the Entity.
+            data (dict): Key:Value pairs to insert as Entity data.
+
+        Returns:
+            dict: JSON of entity details.
+                The 'uuid' field includes the unique entity identifier.
+        """
+        # The CSV must contain a geometry field to work
+        # TODO also add this validation to uploadMedia if CSV format
+        required_fields = ["geometry"]
+        if not all(key in data for key in required_fields):
+            msg = "'geometry' data field is mandatory"
+            log.debug(msg)
+            raise ValueError(msg)
+
+        url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities"
+        response = self.session.post(
+            url,
+            verify=self.verify,
+            json={
+                "uuid": str(uuid4()),
+                "label": label,
+                "data": data,
+            },
+        )
+        if not response.ok:
+            if response.status_code == 404:
+                msg = f"Does not exist: project ({projectId}) dataset ({datasetName})"
+                log.debug(msg)
+                raise requests.exceptions.HTTPError(msg)
+            if response.status_code == 400:
+                msg = response.json().get("message")
+                log.debug(msg)
+                raise requests.exceptions.HTTPError(msg)
+            log.debug(f"Failed to create Entity. Status code: {response.status_code}")
+            response.raise_for_status()
+        return response.json()
+
+    def updateEntity(
+        self,
+        projectId: int,
+        datasetName: str,
+        entityUuid: str,
+        label: Optional[str] = None,
+        data: Optional[dict] = None,
+        newVersion: Optional[int] = None,
+    ):
+        """Update an existing Entity in a project dataset (entity list).
+
+        The JSON request format is the same as creating, minus the 'uuid' field.
+        The PATCH will only update the specific fields specified, leaving the
+            remainder.
+
+        If no 'newVersion' param is provided, the entity will be force updated
+            in place.
+        If 'newVersion' is provided, this must be a single integer increment
+            from the current version.
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            datasetName (int): The name of a dataset, specific to a project.
+            entityUuid (str): Unique itentifier of the entity.
+            label (str): Label for the Entity.
+            data (dict): Key:Value pairs to insert as Entity data.
+            newVersion (int): Integer version to increment to (current version + 1).
+
+        Returns:
+            dict: JSON of entity details.
+                The 'uuid' field includes the unique entity identifier.
+        """
+        if not label and not data:
+            msg = "One of either the 'label' or 'data' fields must be passed"
+            log.debug(msg)
+            raise requests.exceptions.HTTPError(msg)
+
+        json_data = {}
+        if data:
+            json_data["data"] = data
+        if label:
+            json_data["label"] = label
+
+        url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities/{entityUuid}"
+        if newVersion:
+            url = f"{url}?baseVersion={newVersion - 1}"
+        else:
+            url = f"{url}?force=true"
+
+        log.debug(f"Calling {url} with params {json_data}")
+        response = self.session.patch(
+            url,
+            verify=self.verify,
+            json=json_data,
+        )
+        if not response.ok:
+            if response.status_code == 404:
+                msg = f"Does not exist: project ({projectId}) dataset ({datasetName})"
+                log.debug(msg)
+                raise requests.exceptions.HTTPError(msg)
+            if response.status_code == 400:
+                msg = response.json().get("message")
+                log.debug(msg)
+                raise requests.exceptions.HTTPError(msg)
+            if response.status_code == 409:
+                msg = response.json().get("message")
+                log.debug(msg)
+                raise requests.exceptions.HTTPError(msg)
+            log.debug(f"Failed to create Entity. Status code: {response.status_code}")
+            response.raise_for_status()
+        return response.json()
+
+    def deleteEntity(
+        self,
+        projectId: int,
+        datasetName: str,
+        entityUuid: str,
+    ):
+        """Delete an Entity in a project dataset (entity list).
+
+        Only performs a soft deletion, so the Entity is actually archived.
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            datasetName (int): The name of a dataset, specific to a project.
+            entityUuid (str): Unique itentifier of the entity.
+
+        Returns:
+            bool: Deletion successful or not.
+        """
+        url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities/{entityUuid}"
+        log.debug(f"Deleting dataset ({datasetName}) entity UUID ({entityUuid})")
+        response = self.session.delete(url, verify=self.verify)
+
+        if not response.ok:
+            if response.status_code == 404:
+                msg = f"Does not exist: project ({projectId}) dataset ({datasetName}) " f"entity ({entityUuid})"
+                log.debug(msg)
+                raise requests.exceptions.HTTPError(msg)
+            log.debug(f"Failed to delete Entity. Status code: {response.status_code}")
+            response.raise_for_status()
+
+        success = (response_msg := response.json()).get("success", False)
+
+        if not success:
+            log.debug(f"Server returned deletion unsuccessful: {response_msg}")
+
+        return success
+
+    def getEntityData(
+        self,
+        projectId: int,
+        datasetName: str,
+    ):
+        """Get a lightweight JSON of the entity data fields in a dataset.
+
+        Example response JSON:
+        [
+        {
+            "0": {
+                "__id": "523699d0-66ec-4cfc-a76b-4617c01c6b92",
+                "label": "the_label_you_defined",
+                "__system": {
+                    "createdAt": "2024-03-24T06:30:31.219Z",
+                    "creatorId": "7",
+                    "creatorName": "fmtm@hotosm.org",
+                    "updates": 4,
+                    "updatedAt": "2024-03-24T07:12:55.871Z",
+                    "version": 5,
+                    "conflict": null
+                },
+                "geometry": "javarosa format geometry",
+                "user_defined_field2": "text",
+                "user_defined_field2": "text",
+                "user_defined_field3": "test"
+            }
+        }
+        ]
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            datasetName (int): The name of a dataset, specific to a project.
+
+        Returns:
+            list: All entity data for a project dataset.
+        """
+        url = f"{self.base}projects/{projectId}/datasets/{datasetName}.svc/Entities"
+        response = self.session.get(url, verify=self.verify)
+
+        if not response.ok:
+            if response.status_code == 404:
+                msg = f"Does not exist: project ({projectId}) dataset ({datasetName})"
+                log.debug(msg)
+                raise requests.exceptions.HTTPError(msg)
+            log.debug(f"Failed to get Entity data. Status code: {response.status_code}")
+            response.raise_for_status()
+        return response.json().get("value", {})
 
 
 # This following code is only for debugging purposes, since this is easier

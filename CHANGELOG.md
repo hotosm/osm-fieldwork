@@ -1,3 +1,36 @@
+## 0.7.0 (2024-04-03)
+
+### Feat
+
+- add OdkCentralAsync for async entities workflow (#253)
+
+### Fix
+
+- only get cpu cores in getAllSubmissions method
+
+## 0.6.1 (2024-03-25)
+
+### Fix
+
+- add standardised entity registration form
+
+## 0.6.0 (2024-03-24)
+
+### Feat
+
+- v1 entities implementation in OdkCentral.py (#245)
+
+### Refactor
+
+- use logger.basicConfig for verbose flag (#244)
+
+## 0.5.4 (2024-03-19)
+
+### Fix
+
+- updated the error message for invalid odk-credentials (#241)
+- method to update review state of submission (#236)
+
 ## 0.5.3 (2024-03-05)
 
 ### Fix

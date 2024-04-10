@@ -32,6 +32,8 @@ if __name__ != "__main__":
     print("This is not a loadable python module!")
     exit
 
+log = logging.getLogger(__name__)
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
 parser.add_argument("-x", "--xform", required=True, help="input xform file in XML format")
@@ -39,16 +41,15 @@ parser.add_argument("-i", "--infile", required=True, help="input data in XML for
 parser.add_argument("-o", "--outdir", help="Output Directory (defaults to $PWD)")
 args = parser.parse_args()
 
-# if verbose, dump to the terminal as well as the logfile.
-if not args.verbose:
-    root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
 
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    ch.setFormatter(formatter)
-    root.addHandler(ch)
+# if verbose, dump to the terminal as well as the logfile.
+if args.verbose is not None:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=("%(asctime)s - %(name)s - %(levelname)s - %(message)s"),
+        datefmt="%y-%m-%d %H:%M:%S",
+        stream=sys.stdout,
+    )
 
 # Get the basename without the suffix
 xform = args.xform.replace(".xml", "")
