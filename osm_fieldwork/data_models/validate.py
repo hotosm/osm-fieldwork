@@ -24,7 +24,6 @@ import sqlite3
 import sys
 
 import pandas as pd
-import requests
 
 #
 # This program is a utility to validate tags & values from the
@@ -46,10 +45,6 @@ class ValidateModel(object):
             self.taginfo = taginfo
         self.db = sqlite3.connect(self.taginfo)
         self.cursor = self.db.cursor()
-        self.threshold = dict()
-        self.url = "https://taginfo.openstreetmap.org/taginfo/apidoc#api_4_key_values?"
-        self.session = requests.Session()
-        self.headers = {"Content-Type": "application/json;charset=UTF-8"}
         self.threshold = 100
 
     def parse(self):
