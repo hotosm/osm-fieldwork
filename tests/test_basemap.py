@@ -22,8 +22,12 @@
 import logging
 import os
 import shutil
+from pathlib import Path
 
-from osm_fieldwork.basemapper import BaseMapper
+from pmtiles.reader import MemorySource
+from pmtiles.reader import Reader as PMTileReader
+
+from osm_fieldwork.basemapper import BaseMapper, create_basemap_file
 from osm_fieldwork.sqlite import DataFile
 
 log = logging.getLogger(__name__)
@@ -64,6 +68,25 @@ def test_create():
     shutil.rmtree(base)
 
     assert hits == 2
+
+
+def test_pmtiles():
+    """Test PMTile creation via helper function."""
+    create_basemap_file(
+        boundary="-4.730494 41.650541 -4.725634 41.652874",
+        outfile=f"{rootdir}/../test.pmtiles",
+        zooms="12-14",
+        outdir=f"{rootdir}/../",
+        source="esri",
+    )
+    tiles = Path(f"{rootdir}/../test.pmtiles")
+    assert tiles.exists()
+    # Test reading
+    with open(tiles, "rb") as pmtile_file:
+        data = pmtile_file.read()
+    pmtile = PMTileReader(MemorySource(data))
+    assert pmtile.header().get("tile_data_length") == 75524
+    assert len(pmtile.metadata().keys()) == 1
 
 
 if __name__ == "__main__":

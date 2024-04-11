@@ -1,3 +1,14 @@
+## 0.7.1 (2024-04-11)
+
+### Fix
+
+- update entities registration form to include status field
+- remove usage of requests from validate.py in prep for dep removal
+
+### Refactor
+
+- remove missed print statements from OdkCentralAsync
+
 ## 0.7.0 (2024-04-03)
 
 ### Feat

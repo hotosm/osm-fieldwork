@@ -25,7 +25,7 @@ from pathlib import Path
 import pytest
 
 # from pyxform.xls2xform import xls2xform_convert
-from osm_fieldwork.OdkCentral import OdkAppUser, OdkForm, OdkProject
+from osm_fieldwork.OdkCentral import OdkAppUser, OdkEntity, OdkForm, OdkProject
 
 logging.basicConfig(
     level="DEBUG",
@@ -152,7 +152,45 @@ def odk_form_cleanup(odk_form):
     # After yield is test cleanup
 
     # Delete form
-    success = xform.deleteForm(odk_id, "test_form")
+    success = xform.deleteForm(odk_id, form_name)
+    assert success
+
+
+@pytest.fixture(scope="function")
+def odk_entity(project_details) -> tuple:
+    """Get entity for a project."""
+    odk_id = project_details.get("id")
+    entity = OdkEntity(
+        url="https://proxy",
+        user="test@hotosm.org",
+        passwd="Password1234",
+    )
+    return odk_id, entity
+
+
+@pytest.fixture(scope="function")
+def odk_entity_cleanup(odk_form, odk_entity):
+    """Get Entity for project, with automatic cleanup after."""
+    odk_id, xform = odk_form
+    test_xform = testdata_dir / "buildings_entity_registration.xls"
+
+    # Create form
+    # FIXME not creating form correctly
+    form_name = xform.createForm(odk_id, str(test_xform), publish=True)
+
+    # Create entity
+    odk_id, entity = odk_entity
+    entity_json = entity.createEntity(odk_id, "buildings", "test entity", {"osm_id": "1", "geometry": "test"})
+    entity_uuid = entity_json.get("uuid")
+
+    # Before yield is used in tests
+    yield odk_id, "buildings", entity
+    # After yield is test cleanup
+
+    # Delete form
+    success = entity.deleteEntity(odk_id, "buildings", entity_uuid)
+    success = xform.deleteForm(odk_id, form_name)
+
     assert success
 
 
