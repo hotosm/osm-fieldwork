@@ -1,3 +1,9 @@
+## 0.7.2 (2024-04-11)
+
+### Fix
+
+- revert broken basemapper.py and tests
+
 ## 0.7.1 (2024-04-11)
 
 ### Fix
