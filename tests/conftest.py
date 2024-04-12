@@ -24,8 +24,9 @@ from pathlib import Path
 
 import pytest
 
-# from pyxform.xls2xform import xls2xform_convert
 from osm_fieldwork.OdkCentral import OdkAppUser, OdkForm, OdkProject
+from osm_fieldwork.OdkCentralAsync import OdkEntity
+from osm_fieldwork.xlsforms.entities import registration_form_xml
 
 logging.basicConfig(
     level="DEBUG",
@@ -143,7 +144,6 @@ def odk_form_cleanup(odk_form):
     odk_id, xform = odk_form
     test_xform = testdata_dir / "buildings.xml"
 
-    # Create form
     form_name = xform.createForm(odk_id, str(test_xform))
     assert form_name == "test_form"
 
@@ -151,9 +151,54 @@ def odk_form_cleanup(odk_form):
     yield odk_id, form_name, xform
     # After yield is test cleanup
 
-    # Delete form
-    success = xform.deleteForm(odk_id, "test_form")
+    success = xform.deleteForm(odk_id, form_name)
     assert success
+
+
+# NOTE this is session scoped as odk_entity_cleanup depends on it
+@pytest.fixture(scope="session")
+def odk_entity(project_details) -> tuple:
+    """Get entity for a project."""
+    odk_id = project_details.get("id")
+    entity = OdkEntity(
+        url="https://proxy",
+        user="test@hotosm.org",
+        passwd="Password1234",
+    )
+    return odk_id, entity
+
+
+# NOTE this is session scoped to avoid attempting to create duplicate form
+@pytest.fixture(scope="session")
+async def odk_entity_cleanup(odk_entity):
+    """Get Entity for project, with automatic cleanup after."""
+    odk_id, entity = odk_entity
+
+    # Create entity registration form
+    form = OdkForm(
+        entity.url,
+        entity.user,
+        entity.passwd,
+    )
+    form_name = form.createForm(odk_id, str(registration_form_xml), publish=True)
+    if not form_name:
+        raise AssertionError("Failed to create form")
+
+    dataset_name = "features"
+    async with entity:
+        entity_json = await entity.createEntity(odk_id, dataset_name, "test entity", {"osm_id": "1", "geometry": "test"})
+    entity_uuid = entity_json.get("uuid")
+
+    # Before yield is used in tests
+    yield odk_id, dataset_name, entity_uuid, entity
+    # After yield is test cleanup
+
+    async with entity:
+        entity_deleted = await entity.deleteEntity(odk_id, dataset_name, entity_uuid)
+        assert entity_deleted
+
+    form_deleted = form.deleteForm(odk_id, form_name)
+    assert form_deleted
 
 
 @pytest.fixture(scope="session", autouse=True)
