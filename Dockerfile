@@ -196,6 +196,8 @@ ARG PYTHON_IMG_TAG
 COPY nginx/certs/central-fullchain.crt /usr/local/share/ca-certificates/
 COPY --from=extract-deps \
     /opt/python/requirements-ci.txt /opt/python/
+# Required for pytest-asyncio config
+COPY pyproject.toml /data/
 RUN cp -r /root/.local/bin/* /usr/local/bin/ \
     && cp -r /root/.local/lib/python${PYTHON_IMG_TAG}/site-packages/* \
     /usr/local/lib/python${PYTHON_IMG_TAG}/site-packages/ \
