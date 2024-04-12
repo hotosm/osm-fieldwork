@@ -301,6 +301,35 @@ class OdkEntity(OdkCentral):
         }
         }
 
+        JSON response:
+        {
+        "uuid": "d2e03bf8-cfc9-45c6-ab23-b8bc5b7d9aba",
+        "createdAt": "2024-04-12T15:22:02.148Z",
+        "creatorId": 5,
+        "updatedAt": None,
+        "deletedAt": None,
+        "conflict": None,
+        "currentVersion": {
+            "createdAt": "2024-04-12T15:22:02.148Z",
+            "current": True,
+            "label": "test entity 1",
+            "creatorId": 5,
+            "userAgent": "Python/3.10 aiohttp/3.9.3",
+            "data": {
+                "status": "READY",
+                "geometry": "test"
+            },
+            "version": 1,
+            "baseVersion": None,
+            "dataReceived": {
+                "label": "test entity 1",
+                "status": "READY",
+                "geometry": "test"
+            },
+            "conflictingProperties": None
+        }
+        }
+
         Args:
             projectId (int): The ID of the project on ODK Central.
             datasetName (int): The name of a dataset, specific to a project.
