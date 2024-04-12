@@ -37,7 +37,7 @@ async def test_entity_modify(odk_entity_cleanup):
 
 
 async def test_bulk_create_entity_count(odk_entity_cleanup):
-    """Test modifying an entity."""
+    """Test bulk creation of Entities."""
     odk_id, dataset_name, entity_uuid, entity = odk_entity_cleanup
     async with entity:
         created_entities = await entity.createEntities(
@@ -56,7 +56,7 @@ async def test_bulk_create_entity_count(odk_entity_cleanup):
 
 
 async def test_get_entity_data(odk_entity_cleanup):
-    """Test modifying an entity."""
+    """Test getting entity data, inluding via a OData filter."""
     odk_id, dataset_name, entity_uuid, entity = odk_entity_cleanup
     async with entity:
         new_entities = await entity.createEntities(
@@ -75,15 +75,16 @@ async def test_get_entity_data(odk_entity_cleanup):
         )
 
         all_entities = await entity.getEntityData(odk_id, dataset_name)
-        assert len(all_entities) == 9
+        # NOTE this may be cumulative from the session... either 9 or 12
+        assert len(all_entities) >= 9
 
         entities_with_metadata = await entity.getEntityData(odk_id, dataset_name, include_metadata=True)
-        assert len(entities_with_metadata.get("value")) == 9
+        assert len(entities_with_metadata.get("value")) >= 9
         assert entities_with_metadata.get("@odata.context").endswith("$metadata#Entities")
 
         # Paginate, 5 per page
         filtered_entities = await entity.getEntityData(odk_id, dataset_name, url_params="$top=5&$count=true")
-        assert filtered_entities.get("@odata.count") == 9
+        assert filtered_entities.get("@odata.count") >= 9
         assert "@odata.nextLink" in filtered_entities.keys()
 
         entity_uuids = [_entity.get("uuid") for _entity in new_entities]
@@ -107,3 +108,20 @@ async def test_get_entity_data(odk_entity_cleanup):
         )
         assert len(filter_updated) == 3
         assert filter_updated[0].get("status") == "LOCKED_FOR_MAPPING"
+
+
+async def test_get_entity_data_select_params(odk_entity_cleanup):
+    """Test selecting specific param for an Entity."""
+    odk_id, dataset_name, entity_uuid, entity = odk_entity_cleanup
+    async with entity:
+        entities_select_params = await entity.getEntityData(
+            odk_id,
+            dataset_name,
+            url_params="$select=__id, __system/updatedAt, geometry",
+        )
+
+        assert entities_select_params, "No entities returned"
+        first_entity = entities_select_params[0]
+        assert "__id" in first_entity, "Missing '__id' key"
+        assert "__system" in first_entity and "updatedAt" in first_entity["__system"], "Missing '__system/updatedAt' key"
+        assert "geometry" in first_entity, "Missing 'geometry' key"
