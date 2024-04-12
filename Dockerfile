@@ -215,15 +215,21 @@ RUN cp -r /root/.local/bin/* /usr/local/bin/ \
     && update-ca-certificates \
     # Pre-compile packages to .pyc (init speed gains)
     && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
+# # Squash filesystem (reduce img size) NOTE this breaks PyTest!
+# FROM scratch as ci
+# COPY --from=ci-prep / /
 # Override entrypoint, as not possible in Github action
 ENTRYPOINT [""]
 CMD [""]
 
 
 
-FROM runtime as prod
+FROM runtime as prod-prep
 # Pre-compile packages to .pyc (init speed gains)
 RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
     && chmod +x /container-entrypoint.sh
+# Squash filesystem (reduce img size)
+FROM scratch as prod
+COPY --from=prod-prep / /
 ENTRYPOINT ["/container-entrypoint.sh"]
 CMD ["bash"]
