@@ -55,6 +55,7 @@ testpaths = [
     "tests",
 ]
 pythonpath = "osm_fieldwork"
+asyncio_mode="auto"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
@@ -85,6 +86,7 @@ debug = [
 ]
 test = [
     "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.6",
 ]
 docs = [
     "mkdocs>=1.5.2",
