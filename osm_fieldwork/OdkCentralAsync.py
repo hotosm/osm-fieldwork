@@ -557,13 +557,18 @@ class OdkEntity(OdkCentral):
         self,
         projectId: int,
         datasetName: str,
-    ):
+        url_params: Optional[str] = None,
+        include_metadata: Optional[bool] = False,
+    ) -> dict | list:
         """Get a lightweight JSON of the entity data fields in a dataset.
 
-        Example response JSON:
+        Be sure to check the latest docs to see which fields are supported for
+        OData filtering:
+        https://docs.getodk.org/central-api-odata-endpoints/#id3
+
+        Example response list (include_metadata=False):
         [
-        {
-            "0": {
+            {
                 "__id": "523699d0-66ec-4cfc-a76b-4617c01c6b92",
                 "label": "the_label_you_defined",
                 "__system": {
@@ -580,20 +585,71 @@ class OdkEntity(OdkCentral):
                 "user_defined_field2": "text",
                 "user_defined_field3": "test"
             }
-        }
         ]
+
+        Example response JSON where:
+        - url_params="$top=205&$count=true"
+        - include_metadata=True automatically due to use of $top param
+
+        {
+        "value": [
+            {
+            "__id": "523699d0-66ec-4cfc-a76b-4617c01c6b92",
+            "label": "the_label_you_defined",
+            "__system": {
+                "createdAt": "2024-03-24T06:30:31.219Z",
+                "creatorId": "7",
+                "creatorName": "fmtm@hotosm.org",
+                "updates": 4,
+                "updatedAt": "2024-03-24T07:12:55.871Z",
+                "version": 5,
+                "conflict": null
+            },
+            "geometry": "javarosa format geometry",
+            "user_defined_field2": "text",
+            "user_defined_field2": "text",
+            "user_defined_field3": "test"
+            }
+        ]
+        "@odata.context": (
+            "https://URL/v1/projects/6/datasets/buildings.svc/$metadata#Entities",
+        )
+        "@odata.nextLink": (
+            "https://URL/v1/projects/6/datasets/buildings.svc/Entities"
+            "?%24top=250&%24count=true&%24skiptoken=returnedtokenhere%3D"
+        "@odata.count": 667
+        }
+
+        Info on OData URL params:
+        http://docs.oasis-open.org
+        /odata/odata/v4.01/odata-v4.01-part1-protocol.html#_Toc31358948
 
         Args:
             projectId (int): The ID of the project on ODK Central.
             datasetName (int): The name of a dataset, specific to a project.
+            url_params (str): Any supported OData URL params, such as 'filter'
+                or 'select'. The ? is not required.
+            include_metadata (bool): Include additional metadata.
+                If true, returns a dict, if false, returns a list of Entities.
+                If $top is included in url_params, this is enabled by default to get
+                the "@odata.nextLink" field.
 
         Returns:
-            list: All entity data for a project dataset.
+            list | dict: All (or filtered) entity data for a project dataset.
         """
         url = f"{self.base}projects/{projectId}/datasets/{datasetName}.svc/Entities"
+        if url_params:
+            url += f"?{url_params}"
+            if "$top" in url_params:
+                # Force enable metadata, as required for pagination
+                include_metadata = True
+
         try:
             async with self.session.get(url, ssl=self.verify) as response:
-                return (await response.json()).get("value", {})
+                response_json = await response.json()
+                if not include_metadata:
+                    return response_json.get("value", [])
+                return response_json
         except aiohttp.ClientError as e:
             log.error(f"Failed to get Entity data: {e}")
             return {}
