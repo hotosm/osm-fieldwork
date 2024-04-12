@@ -1,3 +1,15 @@
+## 0.8.0 (2024-04-12)
+
+### Feat
+
+- support odata filters for OdkEntity.getEntityData
+- add OdkEntity.getEntityCount method to get total entities
+
+### Refactor
+
+- improve typing, docstrings, logging for OdkCentralAsync
+- update logging during OdkCentral.OdkForm form creation
+
 ## 0.7.2 (2024-04-11)
 
 ### Fix
