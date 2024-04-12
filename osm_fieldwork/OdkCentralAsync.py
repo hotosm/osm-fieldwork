@@ -524,6 +524,35 @@ class OdkEntity(OdkCentral):
             log.error(f"Failed to delete Entity: {e}")
             return False
 
+    async def getEntityCount(
+        self,
+        projectId: int,
+        datasetName: str,
+    ) -> int:
+        """Get only the count of the Entity entries.
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            datasetName (int): The name of a dataset, specific to a project.
+
+        Returns:
+            int: All entity data for a project dataset.
+        """
+        # NOTE returns no entity data (value: []), only the count
+        url = f"{self.base}projects/{projectId}/datasets/{datasetName}.svc/Entities?%24top=0&%24count=true"
+        try:
+            async with self.session.get(url, ssl=self.verify) as response:
+                count = (await response.json()).get("@odata.count", None)
+        except aiohttp.ClientError as e:
+            log.error(f"Failed to get Entity count for project ({projectId}): {e}")
+            return 0
+
+        if count is None:
+            log.debug(f"Failed to get Entity count for project ({projectId}) " f"dataset ({datasetName})")
+            return 0
+
+        return count
+
     async def getEntityData(
         self,
         projectId: int,
