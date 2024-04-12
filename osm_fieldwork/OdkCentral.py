@@ -1019,7 +1019,7 @@ class OdkForm(OdkCentral):
             # Read the XML or XLS file
             with open(xml_path, "rb") as xml_file:
                 self.xml = xml_file.read()
-            log.info("Read %d bytes from %s" % (len(self.xml), data))
+            log.debug("Read %d bytes from %s" % (len(self.xml), data))
 
         if form_name or self.draft:
             self.draft = True
@@ -1027,6 +1027,7 @@ class OdkForm(OdkCentral):
             url = f"{self.base}projects/{projectId}/forms/{form_name}/draft?ignoreWarnings=true"
         else:
             # This is not a draft form, its an entirely new form (even if publish=false)
+            log.debug("Creating new form, with name determined from form_id field")
             self.published = True if publish else False
             url = f"{self.base}projects/{projectId}/forms?ignoreWarnings=true&{'publish=true' if publish else ''}"
 
@@ -1071,7 +1072,7 @@ class OdkForm(OdkCentral):
             return form_name
 
         new_form_name = json_data.get("xmlFormId")
-        log.debug(f"Creating XForm on ODK server: ({new_form_name})")
+        log.info(f"Created XForm on ODK server: ({new_form_name})")
         return new_form_name
 
     def deleteForm(
