@@ -195,7 +195,7 @@ class OdkEntity(OdkCentral):
         url: Optional[str] = None,
         user: Optional[str] = None,
         passwd: Optional[str] = None,
-    ):
+    ) -> None:
         """Args:
             url (str): The URL of the ODK Central
             user (str): The user's account name on ODK Central
@@ -209,7 +209,7 @@ class OdkEntity(OdkCentral):
     async def listDatasets(
         self,
         projectId: int,
-    ):
+    ) -> list:
         """Get all Entity datasets (entity lists) for a project.
 
         JSON response:
@@ -240,7 +240,7 @@ class OdkEntity(OdkCentral):
         self,
         projectId: int,
         datasetName: str,
-    ):
+    ) -> list:
         """Get all Entities for a project dataset (entity list).
 
         JSON format:
@@ -252,14 +252,17 @@ class OdkEntity(OdkCentral):
             "deletedAt": "2018-03-21T12:45:02.312Z",
             "creatorId": 1,
             "currentVersion": {
-            "label": "John (88)",
-            "current": true,
-            "createdAt": "2018-03-21T12:45:02.312Z",
-            "creatorId": 1,
-            "userAgent": "Enketo/3.0.4",
-            "version": 1,
-            "baseVersion": null,
-            "conflictingProperties": null
+                "label": "John (88)",
+                "data": {
+                    "field1": "value1"
+                },
+                "current": true,
+                "createdAt": "2018-03-21T12:45:02.312Z",
+                "creatorId": 1,
+                "userAgent": "Enketo/3.0.4",
+                "version": 1,
+                "baseVersion": null,
+                "conflictingProperties": null
             }
         }
         ]
@@ -356,6 +359,7 @@ class OdkEntity(OdkCentral):
         entity_data = []
 
         entity_tasks = [self.createEntity(projectId, datasetName, label, data) for label, data in labelDataDict.items()]
+        log.info(f"Creating ({len(entity_tasks)}) entities for project " f"({projectId}) dataset ({datasetName})")
         entities = await gather(*entity_tasks, return_exceptions=True)
 
         for entity in entities:
@@ -374,7 +378,7 @@ class OdkEntity(OdkCentral):
         label: Optional[str] = None,
         data: Optional[dict] = None,
         newVersion: Optional[int] = None,
-    ):
+    ) -> dict:
         """Update an existing Entity in a project dataset (entity list).
 
         The JSON request format is the same as creating, minus the 'uuid' field.
@@ -385,6 +389,36 @@ class OdkEntity(OdkCentral):
             in place.
         If 'newVersion' is provided, this must be a single integer increment
             from the current version.
+
+        Example response:
+        {
+        "uuid": "71fff014-7518-429b-b97c-1332149efe7a",
+        "createdAt": "2024-04-12T14:22:37.121Z",
+        "creatorId": 5,
+        "updatedAt": "2024-04-12T14:22:37.544Z",
+        "deletedAt": None,
+        "conflict": None,
+        "currentVersion": {
+            "createdAt": "2024-04-12T14:22:37.544Z",
+            "current": True,
+            "label": "new label",
+            "creatorId": 5,
+            "userAgent": "Python/3.10 aiohttp/3.9.3",
+            "data": {
+                "osm_id": "1",
+                "status": "new status",
+                "geometry": "test",
+                "project_id": "100"
+            },
+            "version": 3,
+            "baseVersion": 2,
+            "dataReceived": {
+                "status": "new status",
+                "project_id": "100"
+            },
+            "conflictingProperties": None
+        }
+        }
 
         Args:
             projectId (int): The ID of the project on ODK Central.
@@ -416,6 +450,10 @@ class OdkEntity(OdkCentral):
             url = f"{url}?force=true"
 
         try:
+            log.info(
+                f"Updating Entity ({entityUuid}) for project ({projectId}) "
+                f"with params: label={label} data={data} newVersion={newVersion}"
+            )
             async with self.session.patch(
                 url,
                 ssl=self.verify,
@@ -431,7 +469,7 @@ class OdkEntity(OdkCentral):
         projectId: int,
         datasetName: str,
         entityUuid: str,
-    ):
+    ) -> bool:
         """Delete an Entity in a project dataset (entity list).
 
         Only performs a soft deletion, so the Entity is actually archived.
@@ -447,6 +485,7 @@ class OdkEntity(OdkCentral):
         url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities/{entityUuid}"
         log.debug(f"Deleting dataset ({datasetName}) entity UUID ({entityUuid})")
         try:
+            log.info(f"Deleting Entity ({entityUuid}) for project ({projectId}) " f"and dataset ({datasetName})")
             async with self.session.delete(url, ssl=self.verify) as response:
                 success = (response_msg := await response.json()).get("success", False)
                 if not success:
