@@ -125,3 +125,19 @@ async def test_get_entity_data_select_params(odk_entity_cleanup):
         assert "__id" in first_entity, "Missing '__id' key"
         assert "__system" in first_entity and "updatedAt" in first_entity["__system"], "Missing '__system/updatedAt' key"
         assert "geometry" in first_entity, "Missing 'geometry' key"
+
+
+async def test_get_single_entity(odk_entity_cleanup):
+    """Test getting specific Entity by UUID."""
+    odk_id, dataset_name, entity_uuid, entity = odk_entity_cleanup
+    async with entity:
+        single_entity = await entity.getEntity(
+            odk_id,
+            dataset_name,
+            entity_uuid,
+        )
+
+    assert single_entity.get("uuid") == entity_uuid
+    entity_info = single_entity.get("currentVersion")
+    assert entity_info.get("label") == "test entity"
+    assert entity_info.get("data", {}).get("osm_id") == "1"
