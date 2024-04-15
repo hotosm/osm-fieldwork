@@ -282,6 +282,30 @@ class OdkEntity(OdkCentral):
             log.error(f"Error fetching entities: {e}")
             return []
 
+    async def getEntity(
+        self,
+        projectId: int,
+        datasetName: str,
+        entityUuid: str,
+    ) -> dict:
+        """Get a single Entity by it's UUID for a project.
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            datasetName (str): The name of a dataset, specific to a project.
+            entityUuid (str): Unique itentifier of the entity in the dataset.
+
+        Returns:
+            dict: the JSON entity details, for a specific dataset.
+        """
+        url = f"{self.base}projects/{projectId}/datasets/{datasetName}" f"/entities/{entityUuid}"
+        try:
+            async with self.session.get(url, ssl=self.verify) as response:
+                return await response.json()
+        except aiohttp.ClientError as e:
+            log.error(f"Error fetching entity: {e}")
+            return {}
+
     async def createEntity(
         self,
         projectId: int,
