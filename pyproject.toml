@@ -59,7 +59,7 @@ asyncio_mode="auto"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.8.0"
+version = "0.8.1"
 version_files = [
     "pyproject.toml:version",
     "osm_fieldwork/__version__.py",

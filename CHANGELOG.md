@@ -1,3 +1,9 @@
+## 0.8.1 (2024-04-15)
+
+### Fix
+
+- add missing OdkEntity.getEntity method for get by uuid
+
 ## 0.8.0 (2024-04-12)
 
 ### Feat
