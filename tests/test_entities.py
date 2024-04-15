@@ -139,5 +139,6 @@ async def test_get_single_entity(odk_entity_cleanup):
 
     assert single_entity.get("uuid") == entity_uuid
     entity_info = single_entity.get("currentVersion")
-    assert entity_info.get("label") == "test entity"
+    # if ran in parallel, this is updated by test_entity_modify!
+    assert (label := entity_info.get("label")) == "test entity" or label == "new label"
     assert entity_info.get("data", {}).get("osm_id") == "1"
