@@ -290,6 +290,35 @@ class OdkEntity(OdkCentral):
     ) -> dict:
         """Get a single Entity by it's UUID for a project.
 
+        JSON response:
+        {
+        "uuid": "a54400b6-49fe-4787-9ab8-7e2f56ff52bc",
+        "createdAt": "2024-04-15T09:26:08.209Z",
+        "creatorId": 5,
+        "updatedAt": null,
+        "deletedAt": null,
+        "conflict": null,
+        "currentVersion": {
+            "createdAt": "2024-04-15T09:26:08.209Z",
+            "current": true,
+            "label": "test entity",
+            "creatorId": 5,
+            "userAgent": "Python/3.10 aiohttp/3.9.3",
+            "data": {
+                "osm_id": "1",
+                "geometry": "test"
+            },
+            "version": 1,
+            "baseVersion": null,
+            "dataReceived": {
+                "label": "test entity",
+                "osm_id": "1",
+                "geometry": "test"
+            },
+            "conflictingProperties": null
+        }
+        }
+
         Args:
             projectId (int): The ID of the project on ODK Central.
             datasetName (str): The name of a dataset, specific to a project.
