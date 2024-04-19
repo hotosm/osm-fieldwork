@@ -185,18 +185,24 @@ class OdkCentral(object):
         self.session.headers.update({"accept": "odkcentral"})
 
         # Get a session token
-        response = self.session.post(
-            f"{self.base}sessions",
-            json={
-                "email": self.user,
-                "password": self.passwd,
-            },
-        )
+        try:
+            response = self.session.post(
+                f"{self.base}sessions",
+                json={
+                    "email": self.user,
+                    "password": self.passwd,
+                },
+            )
+        except requests.exceptions.ConnectionError as request_error:
+            # URL does not exist
+            raise ConnectionError("Failed to connect to Central. Is the URL valid?") from request_error
+
         if response.status_code == 401:
             # Unauthorized, invalid credentials
-            raise ValueError("ODK credentials are invalid, or may have been updated. Please update them.")
+            raise ConnectionError("ODK credentials are invalid, or may have changed. Please update them.") from None
         elif not response.ok:
-            response.raise_for_status()  # Handle other errors
+            # Handle other errors
+            response.raise_for_status()
 
         self.session.headers.update({"Authorization": f"Bearer {response.json().get('token')}"})
 

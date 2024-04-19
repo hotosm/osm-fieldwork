@@ -90,9 +90,18 @@ class OdkCentral(object):
 
     async def authenticate(self):
         """Authenticate to an ODK Central server."""
-        async with self.session.post(f"{self.base}sessions", json={"email": self.user, "password": self.passwd}) as response:
-            token = (await response.json())["token"]
-            self.session.headers.update({"Authorization": f"Bearer {token}"})
+        try:
+            async with self.session.post(f"{self.base}sessions", json={"email": self.user, "password": self.passwd}) as response:
+                token = (await response.json())["token"]
+                self.session.headers.update({"Authorization": f"Bearer {token}"})
+        except aiohttp.ClientConnectorError as request_error:
+            await self.session.close()
+            raise ConnectionError("Failed to connect to Central. Is the URL valid?") from request_error
+        except aiohttp.ClientResponseError as response_error:
+            await self.session.close()
+            if response_error.status == 401:
+                raise ConnectionError("ODK credentials are invalid, or may have changed. Please update them.") from response_error
+            raise response_error
 
 
 class OdkProject(OdkCentral):
