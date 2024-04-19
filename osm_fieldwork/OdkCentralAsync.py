@@ -445,10 +445,12 @@ class OdkEntity(OdkCentral):
         entities = await gather(*entity_tasks, return_exceptions=True)
 
         for entity in entities:
-            if isinstance(entity, Exception):
-                log.error(f"Failed to upload entity: {entity}")
+            if not entity or isinstance(entity, Exception):
                 continue
             entity_data.append(entity)
+
+        if not entities:
+            log.warning(f"No entities were uploaded for ODK project ({projectId}) dataset name ({datasetName})")
 
         return entity_data
 
