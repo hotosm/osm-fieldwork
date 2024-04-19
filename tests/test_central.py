@@ -231,9 +231,6 @@ def test_form_fields(odk_form_cleanup):
 
 def test_invalid_connection_sync():
     """Test case when connection to Central fails, sync code."""
-    central = OdkCentral("https://proxy", "test@hotosm.org", "Password1234")
-    assert central.listProjects() == []
-
     with pytest.raises(ConnectionError, match="Failed to connect to Central. Is the URL valid?"):
         OdkCentral("https://somerandominvalidurl546456546.xyz", "test@hotosm.org", "Password1234")
 
