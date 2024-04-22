@@ -26,7 +26,7 @@ import pytest
 
 from osm_fieldwork.OdkCentral import OdkAppUser, OdkForm, OdkProject
 from osm_fieldwork.OdkCentralAsync import OdkEntity
-from osm_fieldwork.xlsforms.entities import registration_form_xml
+from osm_fieldwork.xlsforms import entities_registration_xml
 
 logging.basicConfig(
     level="DEBUG",
@@ -180,7 +180,7 @@ async def odk_entity_cleanup(odk_entity):
         entity.user,
         entity.passwd,
     )
-    form_name = form.createForm(odk_id, str(registration_form_xml), publish=True)
+    form_name = form.createForm(odk_id, str(entities_registration_xml), publish=True)
     if not form_name:
         raise AssertionError("Failed to create form")
 
