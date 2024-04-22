@@ -331,17 +331,20 @@ class BaseMapper(object):
         return bbox
 
 
-def tileid_from_y_tile(filepath: Union[Path | str]):
+def tileid_from_tms_path(filepath: Union[Path, str]):
     """Helper function to get the tile id from a tile in z/x/y directory structure.
 
     Args:
         filepath (Union[Path, str]): The path to the y tile in /z/x/y.jpg structure.
     """
-    # Get final two dirs + tile filename
-    parts = list(Path(filepath).parts[-3:])
-    # strip extension from y tile filename
-    parts[-1] = str(Path(parts[-1]).stem)
-    z, x, y = map(int, parts)
+    # Extract the final 3 parts from the TMS file path
+    zxy_path = Path(filepath).parts[-3:]
+    # Extract filename without extension
+    y_tile_filename = Path(zxy_path[-1]).stem
+    # If filename contains a dot, take the part before the dot as 'y'
+    y = int(y_tile_filename.split(".")[0]) if "." in y_tile_filename else int(y_tile_filename)
+    # Extract z and x values
+    z, x = map(int, zxy_path[:-1])
     return zxy_to_tileid(z, x, y)
 
 
@@ -379,7 +382,7 @@ def tile_dir_to_pmtiles(outfile: str, tile_dir: str, bbox: tuple, attribution: s
 
         for tile_path in tile_dir.rglob("*"):
             if tile_path.is_file():
-                tile_id = tileid_from_y_tile(tile_path)
+                tile_id = tileid_from_tms_path(tile_path)
 
                 with open(tile_path, "rb") as tile:
                     writer.write_tile(tile_id, tile.read())
@@ -415,7 +418,7 @@ def create_basemap_file(
     zooms="12-17",
     outdir=None,
     source="esri",
-):
+) -> None:
     """Create a basemap with given parameters.
 
     Args:

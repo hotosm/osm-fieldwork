@@ -1,3 +1,13 @@
+## 0.9.0 (2024-04-23)
+
+### Feat
+
+- create new entities-based xlsforms for registration/buildings
+
+### Refactor
+
+- move existing xlsforms to archived dir (replace with entities)
+
 ## 0.8.2 (2024-04-19)
 
 ### Fix
