@@ -185,18 +185,24 @@ class OdkCentral(object):
         self.session.headers.update({"accept": "odkcentral"})
 
         # Get a session token
-        response = self.session.post(
-            f"{self.base}sessions",
-            json={
-                "email": self.user,
-                "password": self.passwd,
-            },
-        )
+        try:
+            response = self.session.post(
+                f"{self.base}sessions",
+                json={
+                    "email": self.user,
+                    "password": self.passwd,
+                },
+            )
+        except requests.exceptions.ConnectionError as request_error:
+            # URL does not exist
+            raise ConnectionError("Failed to connect to Central. Is the URL valid?") from request_error
+
         if response.status_code == 401:
             # Unauthorized, invalid credentials
-            raise ValueError("ODK credentials are invalid, or may have been updated. Please update them.")
+            raise ConnectionError("ODK credentials are invalid, or may have changed. Please update them.") from None
         elif not response.ok:
-            response.raise_for_status()  # Handle other errors
+            # Handle other errors
+            response.raise_for_status()
 
         self.session.headers.update({"Authorization": f"Bearer {response.json().get('token')}"})
 
@@ -1019,7 +1025,7 @@ class OdkForm(OdkCentral):
             # Read the XML or XLS file
             with open(xml_path, "rb") as xml_file:
                 self.xml = xml_file.read()
-            log.info("Read %d bytes from %s" % (len(self.xml), data))
+            log.debug("Read %d bytes from %s" % (len(self.xml), data))
 
         if form_name or self.draft:
             self.draft = True
@@ -1027,6 +1033,7 @@ class OdkForm(OdkCentral):
             url = f"{self.base}projects/{projectId}/forms/{form_name}/draft?ignoreWarnings=true"
         else:
             # This is not a draft form, its an entirely new form (even if publish=false)
+            log.debug("Creating new form, with name determined from form_id field")
             self.published = True if publish else False
             url = f"{self.base}projects/{projectId}/forms?ignoreWarnings=true&{'publish=true' if publish else ''}"
 
@@ -1071,7 +1078,7 @@ class OdkForm(OdkCentral):
             return form_name
 
         new_form_name = json_data.get("xmlFormId")
-        log.debug(f"Creating XForm on ODK server: ({new_form_name})")
+        log.info(f"Created XForm on ODK server: ({new_form_name})")
         return new_form_name
 
     def deleteForm(

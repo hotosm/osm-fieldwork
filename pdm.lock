@@ -5,7 +5,7 @@
 groups = ["default", "docs", "debug", "test", "dev", "ui"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:5743ad0aeedd26b8affb9801d38b341701ccae7030512dbea9677277d1f952c7"
+content_hash = "sha256:5ce7d894fa5589957b2a7b8189d1c3dfc22c2d5760bd8be15f73bd57a211b35b"
 
 [[package]]
 name = "aiohttp"
@@ -1657,6 +1657,19 @@ dependencies = [
 files = [
     {file = "pytest-7.4.3-py3-none-any.whl", hash = "sha256:0d009c083ea859a71b76adf7c1d502e4bc170b80a8ef002da5806527b9591fac"},
     {file = "pytest-7.4.3.tar.gz", hash = "sha256:d989d136982de4e3b29dabcc838ad581c64e8ed52c11fbe86ddebd9da0818cd5"},
+]
+
+[[package]]
+name = "pytest-asyncio"
+version = "0.23.6"
+requires_python = ">=3.8"
+summary = "Pytest support for asyncio"
+dependencies = [
+    "pytest<9,>=7.0.0",
+]
+files = [
+    {file = "pytest-asyncio-0.23.6.tar.gz", hash = "sha256:ffe523a89c1c222598c76856e76852b787504ddb72dd5d9b6617ffa8aa2cde5f"},
+    {file = "pytest_asyncio-0.23.6-py3-none-any.whl", hash = "sha256:68516fdd1018ac57b846c9846b954f0393b26f094764a28c955eabb0536a4e8a"},
 ]
 
 [[package]]

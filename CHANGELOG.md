@@ -1,3 +1,55 @@
+## 0.9.0 (2024-04-23)
+
+### Feat
+
+- create new entities-based xlsforms for registration/buildings
+
+### Refactor
+
+- move existing xlsforms to archived dir (replace with entities)
+
+## 0.8.2 (2024-04-19)
+
+### Fix
+
+- add error handling if connecting to OdkCentral fails
+- improve handling if entities fail during bulk upload
+
+## 0.8.1 (2024-04-15)
+
+### Fix
+
+- add missing OdkEntity.getEntity method for get by uuid
+
+## 0.8.0 (2024-04-12)
+
+### Feat
+
+- support odata filters for OdkEntity.getEntityData
+- add OdkEntity.getEntityCount method to get total entities
+
+### Refactor
+
+- improve typing, docstrings, logging for OdkCentralAsync
+- update logging during OdkCentral.OdkForm form creation
+
+## 0.7.2 (2024-04-11)
+
+### Fix
+
+- revert broken basemapper.py and tests
+
+## 0.7.1 (2024-04-11)
+
+### Fix
+
+- update entities registration form to include status field
+- remove usage of requests from validate.py in prep for dep removal
+
+### Refactor
+
+- remove missed print statements from OdkCentralAsync
+
 ## 0.7.0 (2024-04-03)
 
 ### Feat

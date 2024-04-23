@@ -90,9 +90,18 @@ class OdkCentral(object):
 
     async def authenticate(self):
         """Authenticate to an ODK Central server."""
-        async with self.session.post(f"{self.base}sessions", json={"email": self.user, "password": self.passwd}) as response:
-            token = (await response.json())["token"]
-            self.session.headers.update({"Authorization": f"Bearer {token}"})
+        try:
+            async with self.session.post(f"{self.base}sessions", json={"email": self.user, "password": self.passwd}) as response:
+                token = (await response.json())["token"]
+                self.session.headers.update({"Authorization": f"Bearer {token}"})
+        except aiohttp.ClientConnectorError as request_error:
+            await self.session.close()
+            raise ConnectionError("Failed to connect to Central. Is the URL valid?") from request_error
+        except aiohttp.ClientResponseError as response_error:
+            await self.session.close()
+            if response_error.status == 401:
+                raise ConnectionError("ODK credentials are invalid, or may have changed. Please update them.") from response_error
+            raise response_error
 
 
 class OdkProject(OdkCentral):
@@ -195,7 +204,7 @@ class OdkEntity(OdkCentral):
         url: Optional[str] = None,
         user: Optional[str] = None,
         passwd: Optional[str] = None,
-    ):
+    ) -> None:
         """Args:
             url (str): The URL of the ODK Central
             user (str): The user's account name on ODK Central
@@ -209,7 +218,7 @@ class OdkEntity(OdkCentral):
     async def listDatasets(
         self,
         projectId: int,
-    ):
+    ) -> list:
         """Get all Entity datasets (entity lists) for a project.
 
         JSON response:
@@ -240,7 +249,7 @@ class OdkEntity(OdkCentral):
         self,
         projectId: int,
         datasetName: str,
-    ):
+    ) -> list:
         """Get all Entities for a project dataset (entity list).
 
         JSON format:
@@ -252,14 +261,17 @@ class OdkEntity(OdkCentral):
             "deletedAt": "2018-03-21T12:45:02.312Z",
             "creatorId": 1,
             "currentVersion": {
-            "label": "John (88)",
-            "current": true,
-            "createdAt": "2018-03-21T12:45:02.312Z",
-            "creatorId": 1,
-            "userAgent": "Enketo/3.0.4",
-            "version": 1,
-            "baseVersion": null,
-            "conflictingProperties": null
+                "label": "John (88)",
+                "data": {
+                    "field1": "value1"
+                },
+                "current": true,
+                "createdAt": "2018-03-21T12:45:02.312Z",
+                "creatorId": 1,
+                "userAgent": "Enketo/3.0.4",
+                "version": 1,
+                "baseVersion": null,
+                "conflictingProperties": null
             }
         }
         ]
@@ -279,6 +291,59 @@ class OdkEntity(OdkCentral):
             log.error(f"Error fetching entities: {e}")
             return []
 
+    async def getEntity(
+        self,
+        projectId: int,
+        datasetName: str,
+        entityUuid: str,
+    ) -> dict:
+        """Get a single Entity by it's UUID for a project.
+
+        JSON response:
+        {
+        "uuid": "a54400b6-49fe-4787-9ab8-7e2f56ff52bc",
+        "createdAt": "2024-04-15T09:26:08.209Z",
+        "creatorId": 5,
+        "updatedAt": null,
+        "deletedAt": null,
+        "conflict": null,
+        "currentVersion": {
+            "createdAt": "2024-04-15T09:26:08.209Z",
+            "current": true,
+            "label": "test entity",
+            "creatorId": 5,
+            "userAgent": "Python/3.10 aiohttp/3.9.3",
+            "data": {
+                "osm_id": "1",
+                "geometry": "test"
+            },
+            "version": 1,
+            "baseVersion": null,
+            "dataReceived": {
+                "label": "test entity",
+                "osm_id": "1",
+                "geometry": "test"
+            },
+            "conflictingProperties": null
+        }
+        }
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            datasetName (str): The name of a dataset, specific to a project.
+            entityUuid (str): Unique itentifier of the entity in the dataset.
+
+        Returns:
+            dict: the JSON entity details, for a specific dataset.
+        """
+        url = f"{self.base}projects/{projectId}/datasets/{datasetName}" f"/entities/{entityUuid}"
+        try:
+            async with self.session.get(url, ssl=self.verify) as response:
+                return await response.json()
+        except aiohttp.ClientError as e:
+            log.error(f"Error fetching entity: {e}")
+            return {}
+
     async def createEntity(
         self,
         projectId: int,
@@ -295,6 +360,35 @@ class OdkEntity(OdkCentral):
         "data": {
             "firstName": "John",
             "age": "88"
+        }
+        }
+
+        JSON response:
+        {
+        "uuid": "d2e03bf8-cfc9-45c6-ab23-b8bc5b7d9aba",
+        "createdAt": "2024-04-12T15:22:02.148Z",
+        "creatorId": 5,
+        "updatedAt": None,
+        "deletedAt": None,
+        "conflict": None,
+        "currentVersion": {
+            "createdAt": "2024-04-12T15:22:02.148Z",
+            "current": True,
+            "label": "test entity 1",
+            "creatorId": 5,
+            "userAgent": "Python/3.10 aiohttp/3.9.3",
+            "data": {
+                "status": "READY",
+                "geometry": "test"
+            },
+            "version": 1,
+            "baseVersion": None,
+            "dataReceived": {
+                "label": "test entity 1",
+                "status": "READY",
+                "geometry": "test"
+            },
+            "conflictingProperties": None
         }
         }
 
@@ -356,13 +450,16 @@ class OdkEntity(OdkCentral):
         entity_data = []
 
         entity_tasks = [self.createEntity(projectId, datasetName, label, data) for label, data in labelDataDict.items()]
+        log.info(f"Creating ({len(entity_tasks)}) entities for project " f"({projectId}) dataset ({datasetName})")
         entities = await gather(*entity_tasks, return_exceptions=True)
 
         for entity in entities:
-            if isinstance(entity, Exception):
-                log.error(f"Failed to upload entity: {entity}")
+            if not entity or isinstance(entity, Exception):
                 continue
             entity_data.append(entity)
+
+        if not entities:
+            log.warning(f"No entities were uploaded for ODK project ({projectId}) dataset name ({datasetName})")
 
         return entity_data
 
@@ -374,7 +471,7 @@ class OdkEntity(OdkCentral):
         label: Optional[str] = None,
         data: Optional[dict] = None,
         newVersion: Optional[int] = None,
-    ):
+    ) -> dict:
         """Update an existing Entity in a project dataset (entity list).
 
         The JSON request format is the same as creating, minus the 'uuid' field.
@@ -385,6 +482,36 @@ class OdkEntity(OdkCentral):
             in place.
         If 'newVersion' is provided, this must be a single integer increment
             from the current version.
+
+        Example response:
+        {
+        "uuid": "71fff014-7518-429b-b97c-1332149efe7a",
+        "createdAt": "2024-04-12T14:22:37.121Z",
+        "creatorId": 5,
+        "updatedAt": "2024-04-12T14:22:37.544Z",
+        "deletedAt": None,
+        "conflict": None,
+        "currentVersion": {
+            "createdAt": "2024-04-12T14:22:37.544Z",
+            "current": True,
+            "label": "new label",
+            "creatorId": 5,
+            "userAgent": "Python/3.10 aiohttp/3.9.3",
+            "data": {
+                "osm_id": "1",
+                "status": "new status",
+                "geometry": "test",
+                "project_id": "100"
+            },
+            "version": 3,
+            "baseVersion": 2,
+            "dataReceived": {
+                "status": "new status",
+                "project_id": "100"
+            },
+            "conflictingProperties": None
+        }
+        }
 
         Args:
             projectId (int): The ID of the project on ODK Central.
@@ -416,6 +543,10 @@ class OdkEntity(OdkCentral):
             url = f"{url}?force=true"
 
         try:
+            log.info(
+                f"Updating Entity ({entityUuid}) for project ({projectId}) "
+                f"with params: label={label} data={data} newVersion={newVersion}"
+            )
             async with self.session.patch(
                 url,
                 ssl=self.verify,
@@ -431,7 +562,7 @@ class OdkEntity(OdkCentral):
         projectId: int,
         datasetName: str,
         entityUuid: str,
-    ):
+    ) -> bool:
         """Delete an Entity in a project dataset (entity list).
 
         Only performs a soft deletion, so the Entity is actually archived.
@@ -447,6 +578,7 @@ class OdkEntity(OdkCentral):
         url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities/{entityUuid}"
         log.debug(f"Deleting dataset ({datasetName}) entity UUID ({entityUuid})")
         try:
+            log.info(f"Deleting Entity ({entityUuid}) for project ({projectId}) " f"and dataset ({datasetName})")
             async with self.session.delete(url, ssl=self.verify) as response:
                 success = (response_msg := await response.json()).get("success", False)
                 if not success:
@@ -456,17 +588,51 @@ class OdkEntity(OdkCentral):
             log.error(f"Failed to delete Entity: {e}")
             return False
 
+    async def getEntityCount(
+        self,
+        projectId: int,
+        datasetName: str,
+    ) -> int:
+        """Get only the count of the Entity entries.
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            datasetName (int): The name of a dataset, specific to a project.
+
+        Returns:
+            int: All entity data for a project dataset.
+        """
+        # NOTE returns no entity data (value: []), only the count
+        url = f"{self.base}projects/{projectId}/datasets/{datasetName}.svc/Entities?%24top=0&%24count=true"
+        try:
+            async with self.session.get(url, ssl=self.verify) as response:
+                count = (await response.json()).get("@odata.count", None)
+        except aiohttp.ClientError as e:
+            log.error(f"Failed to get Entity count for project ({projectId}): {e}")
+            return 0
+
+        if count is None:
+            log.debug(f"Failed to get Entity count for project ({projectId}) " f"dataset ({datasetName})")
+            return 0
+
+        return count
+
     async def getEntityData(
         self,
         projectId: int,
         datasetName: str,
-    ):
+        url_params: Optional[str] = None,
+        include_metadata: Optional[bool] = False,
+    ) -> dict | list:
         """Get a lightweight JSON of the entity data fields in a dataset.
 
-        Example response JSON:
+        Be sure to check the latest docs to see which fields are supported for
+        OData filtering:
+        https://docs.getodk.org/central-api-odata-endpoints/#id3
+
+        Example response list (include_metadata=False):
         [
-        {
-            "0": {
+            {
                 "__id": "523699d0-66ec-4cfc-a76b-4617c01c6b92",
                 "label": "the_label_you_defined",
                 "__system": {
@@ -483,20 +649,71 @@ class OdkEntity(OdkCentral):
                 "user_defined_field2": "text",
                 "user_defined_field3": "test"
             }
-        }
         ]
+
+        Example response JSON where:
+        - url_params="$top=205&$count=true"
+        - include_metadata=True automatically due to use of $top param
+
+        {
+        "value": [
+            {
+            "__id": "523699d0-66ec-4cfc-a76b-4617c01c6b92",
+            "label": "the_label_you_defined",
+            "__system": {
+                "createdAt": "2024-03-24T06:30:31.219Z",
+                "creatorId": "7",
+                "creatorName": "fmtm@hotosm.org",
+                "updates": 4,
+                "updatedAt": "2024-03-24T07:12:55.871Z",
+                "version": 5,
+                "conflict": null
+            },
+            "geometry": "javarosa format geometry",
+            "user_defined_field2": "text",
+            "user_defined_field2": "text",
+            "user_defined_field3": "test"
+            }
+        ]
+        "@odata.context": (
+            "https://URL/v1/projects/6/datasets/buildings.svc/$metadata#Entities",
+        )
+        "@odata.nextLink": (
+            "https://URL/v1/projects/6/datasets/buildings.svc/Entities"
+            "?%24top=250&%24count=true&%24skiptoken=returnedtokenhere%3D"
+        "@odata.count": 667
+        }
+
+        Info on OData URL params:
+        http://docs.oasis-open.org
+        /odata/odata/v4.01/odata-v4.01-part1-protocol.html#_Toc31358948
 
         Args:
             projectId (int): The ID of the project on ODK Central.
             datasetName (int): The name of a dataset, specific to a project.
+            url_params (str): Any supported OData URL params, such as 'filter'
+                or 'select'. The ? is not required.
+            include_metadata (bool): Include additional metadata.
+                If true, returns a dict, if false, returns a list of Entities.
+                If $top is included in url_params, this is enabled by default to get
+                the "@odata.nextLink" field.
 
         Returns:
-            list: All entity data for a project dataset.
+            list | dict: All (or filtered) entity data for a project dataset.
         """
         url = f"{self.base}projects/{projectId}/datasets/{datasetName}.svc/Entities"
+        if url_params:
+            url += f"?{url_params}"
+            if "$top" in url_params:
+                # Force enable metadata, as required for pagination
+                include_metadata = True
+
         try:
             async with self.session.get(url, ssl=self.verify) as response:
-                return (await response.json()).get("value", {})
+                response_json = await response.json()
+                if not include_metadata:
+                    return response_json.get("value", [])
+                return response_json
         except aiohttp.ClientError as e:
             log.error(f"Failed to get Entity data: {e}")
             return {}
