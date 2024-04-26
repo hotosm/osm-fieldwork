@@ -1,3 +1,9 @@
+## 0.9.1 (2024-04-26)
+
+### Fix
+
+- update buildings form, show all features unless task selected
+
 ## 0.9.0 (2024-04-23)
 
 ### Feat
