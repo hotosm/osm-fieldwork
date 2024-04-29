@@ -1,3 +1,9 @@
+## 0.9.2 (2024-04-29)
+
+### Fix
+
+- remove notes column from entities sheet (pyxform error)
+
 ## 0.9.1 (2024-04-26)
 
 ### Fix
