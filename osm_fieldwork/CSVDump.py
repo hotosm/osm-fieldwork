@@ -24,6 +24,7 @@ import logging
 import os
 import re
 import sys
+from datetime import datetime
 
 import pandas as pd
 from geojson import Feature, FeatureCollection, Point, dump
@@ -31,7 +32,6 @@ from geojson import Feature, FeatureCollection, Point, dump
 from osm_fieldwork.convert import Convert
 from osm_fieldwork.osmfile import OsmFile
 from osm_fieldwork.xlsforms import xlsforms_path
-from datetime import datetime
 
 # Instantiate logger
 log = logging.getLogger(__name__)
@@ -152,7 +152,7 @@ class CSVDump(Convert):
         features = list()
         for item in self.features:
             if len(item["attrs"]["lon"]) == 0 or len(item["attrs"]["lat"]) == 0:
-                log.warning("Bad location data in entry! %r", item['attrs'])
+                log.warning("Bad location data in entry! %r", item["attrs"])
                 continue
             poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
             if "private" in item:
@@ -355,9 +355,9 @@ def main():
         feature = csvin.createEntry(entry)
         if len(feature) == 0:
             continue
-        if 'refs' in feature:
+        if "refs" in feature:
             refs = list()
-            for ref in feature['refs']:
+            for ref in feature["refs"]:
                 now = datetime.now().strftime("%Y-%m-%dT%TZ")
                 if len(ref) == 0:
                     continue
@@ -367,7 +367,7 @@ def main():
                 csvin.writeOSM(node)
                 refs.append(nodeid)
                 nodeid -= 1
-            feature['refs'] = refs
+            feature["refs"] = refs
             csvin.writeOSM(feature)
         else:
             # Sometimes bad entries, usually from debugging XForm design, sneak in
