@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021, 2022, 2023 Humanitarian OpenStreetMap Team
+# Copyright (c) 2020, 2021, 2022, 2023, 2024 Humanitarian OpenStreetMap Team
 #
 # This file is part of OSM-Fieldwork.
 #
@@ -24,6 +24,7 @@ import logging
 import os
 import re
 import sys
+from datetime import datetime
 
 import pandas as pd
 from geojson import Feature, FeatureCollection, Point, dump
@@ -125,7 +126,8 @@ class CSVDump(Convert):
 
     def finishOSM(self):
         """Write the OSM XML file footer and close it."""
-        self.osm.footer()
+        # This is now handled by a destructor in the OsmFile class
+        # self.osm.footer()
 
     def createGeoJson(
         self,
@@ -149,6 +151,9 @@ class CSVDump(Convert):
         """Write the GeoJson FeatureCollection to the output file and close it."""
         features = list()
         for item in self.features:
+            if len(item["attrs"]["lon"]) == 0 or len(item["attrs"]["lat"]) == 0:
+                log.warning("Bad location data in entry! %r", item["attrs"])
+                continue
             poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
             if "private" in item:
                 props = {**item["tags"], **item["private"]}
@@ -293,8 +298,9 @@ class CSVDump(Convert):
 
                 if value is not None and value != "no" and value != "unknown":
                     if key == "track" or key == "geoline":
-                        refs.append(tag)
-                        log.debug("Adding reference %s" % tag)
+                        # refs.append(tags)
+                        # log.debug("Adding reference %s" % tags)
+                        refs = value.split(";")
                     elif len(value) > 0:
                         if self.privateData(key):
                             priv[key] = value
@@ -303,7 +309,7 @@ class CSVDump(Convert):
             if len(tags) > 0:
                 feature["attrs"] = attrs
                 feature["tags"] = tags
-            if len(refs) > 0:
+            if len(refs) > 1:
                 feature["refs"] = refs
             if len(priv) > 0:
                 feature["private"] = priv
@@ -344,12 +350,27 @@ def main():
     log.debug("Parsing csv files %r" % args.infile)
     data = csvin.parse(args.infile)
     # This OSM XML file only has OSM appropriate tags and values
+    nodeid = -1000
     for entry in data:
         feature = csvin.createEntry(entry)
-        # Sometimes bad entries, usually from debugging XForm design, sneak in
         if len(feature) == 0:
             continue
-        if len(feature) > 0:
+        if "refs" in feature:
+            refs = list()
+            for ref in feature["refs"]:
+                now = datetime.now().strftime("%Y-%m-%dT%TZ")
+                if len(ref) == 0:
+                    continue
+                coords = ref.split(" ")
+                print(coords)
+                node = {"attrs": {"id": nodeid, "version": 1, "timestamp": now, "lat": coords[0], "lon": coords[1]}, "tags": dict()}
+                csvin.writeOSM(node)
+                refs.append(nodeid)
+                nodeid -= 1
+            feature["refs"] = refs
+            csvin.writeOSM(feature)
+        else:
+            # Sometimes bad entries, usually from debugging XForm design, sneak in
             if "lat" not in feature["attrs"]:
                 log.warning("Bad record! %r" % feature)
                 continue
