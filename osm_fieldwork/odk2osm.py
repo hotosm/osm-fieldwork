@@ -22,7 +22,6 @@ import logging
 import os
 import re
 import sys
-import csv
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
@@ -144,6 +143,7 @@ def main():
             out.writerow(row)
 
     print("Wrote: %s" % outfile)
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
