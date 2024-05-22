@@ -20,7 +20,7 @@ options:
 show_source: false
 heading_level: 3
 
-::: osm_fieldwork.basemapper.tileid_from_tms_path
+::: osm_fieldwork.basemapper.tileid_from_xyz_dir_path
 options:
 show_source: false
 heading_level: 3
