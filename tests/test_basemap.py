@@ -71,7 +71,11 @@ def test_create():
 
 
 def test_pmtiles():
-    """Test PMTile creation via helper function."""
+    """Test PMTile creation via helper function.
+
+    NOTE at zoom 12-14 tiles won't easily be visible on a web map.
+    This is purely for a faster test suite.
+    """
     create_basemap_file(
         boundary="-4.730494 41.650541 -4.725634 41.652874",
         outfile=f"{rootdir}/../test.pmtiles",
@@ -79,15 +83,27 @@ def test_pmtiles():
         outdir=f"{rootdir}/../",
         source="esri",
     )
-    tiles = Path(f"{rootdir}/../test.pmtiles")
-    assert tiles.exists()
-    # Test reading
-    with open(tiles, "rb") as pmtile_file:
+    pmtile_file = Path(f"{rootdir}/../test.pmtiles")
+    assert pmtile_file.exists()
+
+    # Test reading as form of validation
+    with open(pmtile_file, "rb") as pmtile_file:
         data = pmtile_file.read()
     pmtile = PMTileReader(MemorySource(data))
+
     data_length = pmtile.header().get("tile_data_length", 0)
     assert data_length > 2000 and data_length < 80000
     assert len(pmtile.metadata().keys()) == 1
+
+    metadata = pmtile.metadata()
+    attribution = metadata.get("attribution")
+    assert attribution == "© esri"
+
+    header = pmtile.header()
+    min_zoom = header.get("min_zoom")
+    assert min_zoom == 12
+    max_zoom = header.get("max_zoom")
+    assert max_zoom == 14
 
 
 if __name__ == "__main__":
