@@ -1,3 +1,13 @@
+## 0.10.0 (2024-05-22)
+
+### Feat
+
+- add support for geotrace (#254)
+
+### Fix
+
+- tile id extraction for pmtiles correct x/y ordering
+
 ## 0.9.2 (2024-04-29)
 
 ### Fix
