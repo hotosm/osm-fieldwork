@@ -331,31 +331,54 @@ class BaseMapper(object):
         return bbox
 
 
-def tileid_from_tms_path(filepath: Union[Path, str]):
-    """Helper function to get the tile id from a tile in z/x/y directory structure.
+def tileid_from_xyz_dir_path(filepath: Union[Path, str], is_xy: bool = False) -> int:
+    """Helper function to get the tile id from a tile in xyz directory structure.
+
+    TMS typically has structure z/y/x.png
+    If the --xy flag is used during creation, then z/x/y is used.
 
     Args:
-        filepath (Union[Path, str]): The path to the y tile in /z/x/y.jpg structure.
+        filepath (Union[Path, str]): The path to tile image within the xyz directory.
+        is_xy (bool): If the X/Y are swapped in the xyz URL.
+
+    Returns:
+        int: The globally defined tile id from the xyz definition.
     """
     # Extract the final 3 parts from the TMS file path
-    zxy_path = Path(filepath).parts[-3:]
-    # Extract filename without extension
-    y_tile_filename = Path(zxy_path[-1]).stem
-    # If filename contains a dot, take the part before the dot as 'y'
-    y = int(y_tile_filename.split(".")[0]) if "." in y_tile_filename else int(y_tile_filename)
-    # Extract z and x values
-    z, x = map(int, zxy_path[:-1])
+    tile_image_path = Path(filepath).parts[-3:]
+
+    try:
+        final_tile = int(Path(tile_image_path[-1]).stem)
+    except ValueError as e:
+        msg = f"Invalid tile path (cannot parse as int): {str(tile_image_path)}"
+        log.error(msg)
+        raise ValueError(msg) from e
+
+    if is_xy:
+        y = final_tile
+        z, x = map(int, tile_image_path[:-1])
+    else:
+        x = final_tile
+        z, y = map(int, tile_image_path[:-1])
+
     return zxy_to_tileid(z, x, y)
 
 
-def tile_dir_to_pmtiles(outfile: str, tile_dir: str, bbox: tuple, attribution: str):
+def tile_dir_to_pmtiles(
+    outfile: str,
+    tile_dir: str | Path,
+    bbox: tuple,
+    attribution: str,
+    is_xy=False,
+):
     """Write PMTiles archive from tiles in the specified directory.
 
     Args:
         outfile (str): The output PMTiles archive file path.
-        tile_dir (str): The directory containing the tile images.
+        tile_dir (str | Path): The directory containing the tile images.
         bbox (tuple): Bounding box in format (min_lon, min_lat, max_lon, max_lat).
         attribution (str): Attribution string to include in PMTile archive.
+        is_xy (bool): If the X/Y are swapped in the xyz URL.
 
     Returns:
         None
@@ -376,23 +399,21 @@ def tile_dir_to_pmtiles(outfile: str, tile_dir: str, bbox: tuple, attribution: s
     # Get zoom levels from dirs
     zoom_levels = sorted([int(x.stem) for x in tile_dir.glob("*") if x.is_dir()])
 
-    # Process tiles
     with open(outfile, "wb") as pmtile_file:
         writer = PMTileWriter(pmtile_file)
 
         for tile_path in tile_dir.rglob("*"):
             if tile_path.is_file():
-                tile_id = tileid_from_tms_path(tile_path)
+                tile_id = tileid_from_xyz_dir_path(tile_path, is_xy)
 
                 with open(tile_path, "rb") as tile:
                     writer.write_tile(tile_id, tile.read())
 
-        # Extract bbox values
         min_lon, min_lat, max_lon, max_lat = bbox
 
-        # Write metadata
+        # Write PMTile metadata
         writer.finalize(
-            {
+            header={
                 # "tile_type": TileType[tile_format.lstrip(".")],
                 "tile_type": PMTileType.PNG,
                 "tile_compression": PMTileCompression.NONE,
@@ -406,7 +427,7 @@ def tile_dir_to_pmtiles(outfile: str, tile_dir: str, bbox: tuple, attribution: s
                 "center_lon_e7": int(min_lon + ((max_lon - min_lon) / 2)),
                 "center_lat_e7": int(min_lat + ((max_lat - min_lat) / 2)),
             },
-            {"attribution": f"© {attribution}"},
+            metadata={"attribution": f"© {attribution}"},
         )
 
 
@@ -514,7 +535,7 @@ def create_basemap_file(
         outf.writeTiles(tiles, tiledir)
 
     elif suffix == ".pmtiles":
-        tile_dir_to_pmtiles(outfile, tiledir, basemap.bbox, source)
+        tile_dir_to_pmtiles(outfile, tiledir, basemap.bbox, source, xy)
 
     else:
         msg = f"Format {suffix} not supported"
@@ -537,7 +558,7 @@ def main():
         ),
     )
     parser.add_argument("-t", "--tms", help="Custom TMS URL")
-    parser.add_argument("--xy", default=False, help="Swap the X & Y coordinates when using a custom TMS")
+    parser.add_argument("--xy", action="store_true", help="Swap the X & Y coordinates when using a custom TMS")
     parser.add_argument(
         "-o", "--outfile", required=False, help="Output file name, allowed extensions [.mbtiles/.sqlitedb/.pmtiles]"
     )
