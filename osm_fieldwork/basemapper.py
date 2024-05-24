@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021, 2022 Humanitarian OpenStreetMap Team
+# Copyright (c) 2020, 2021, 2022, 2023, 2024 Humanitarian OpenStreetMap Team
 #
 # This file is part of OSM-Fieldwork.
 #
@@ -439,6 +439,7 @@ def create_basemap_file(
     zooms="12-17",
     outdir=None,
     source="esri",
+    append: bool = False,
 ) -> None:
     """Create a basemap with given parameters.
 
@@ -453,6 +454,7 @@ def create_basemap_file(
         outdir (str, optional): Output directory name for tile cache.
         source (str, optional): Imagery source, one of
             ["esri", "bing", "topo", "google", "oam"] (default is "esri").
+        append (bool, optional): Whether to append to an existing file
 
     Returns:
         None
@@ -528,7 +530,7 @@ def create_basemap_file(
     log.debug(f"Basemap output format: {suffix}")
 
     if any(substring in suffix for substring in ["sqlite", "mbtiles"]):
-        outf = DataFile(outfile, basemap.getFormat())
+        outf = DataFile(outfile, basemap.getFormat(), append)
         if suffix == ".mbtiles":
             outf.addBounds(basemap.bbox)
         # Create output database and specify image format, png, jpg, or tif
@@ -564,6 +566,7 @@ def main():
     )
     parser.add_argument("-z", "--zooms", default="12-17", help="The Zoom levels")
     parser.add_argument("-d", "--outdir", help="Output directory name for tile cache")
+    parser.add_argument("-a", "--append", action="store_true", default=False, help="Append to an existing database file")
     parser.add_argument(
         "-s",
         "--source",
@@ -617,6 +620,7 @@ def main():
         zooms=args.zooms,
         outdir=args.outdir,
         source=args.source,
+        append=args.append,
     )
 
 

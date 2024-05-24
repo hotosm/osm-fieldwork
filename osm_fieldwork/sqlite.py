@@ -106,12 +106,14 @@ class DataFile(object):
         self,
         dbname: str = None,
         suffix: str = "jpg",
+        append: bool = False,
     ):
         """Handle the sqlite3 database file.
 
         Args:
             dbname (str): The name of the output sqlite file
             suffix (str): The image suffix, jpg or png usually
+            append (bool): Whether to append to or create the database
 
         Returns:
             (DataFile): An instance of this class
@@ -119,7 +121,7 @@ class DataFile(object):
         self.db = None
         self.cursor = None
         if dbname:
-            self.createDB(dbname)
+            self.createDB(dbname, append)
         self.dbname = dbname
         self.metadata = None
         self.toplevel = None
@@ -136,13 +138,14 @@ class DataFile(object):
         """
         entry = str(bounds)
         entry = entry[1 : len(entry) - 1].replace(" ", "")
-        self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('bounds', '{entry}')")
+        self.cursor.execute(f"INSERT OR IGNORE INTO metadata (name, value) VALUES('bounds', '{entry}') ")
         # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('minzoom', '9')")
         # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('maxzoom', '15')")
 
     def createDB(
         self,
         dbname: str,
+        append: bool = False,
     ):
         """Create and sqlitedb in either mbtiles or Osman sqlitedb format.
 
@@ -151,11 +154,17 @@ class DataFile(object):
         """
         suffix = os.path.splitext(dbname)[1]
 
-        if os.path.exists(dbname):
+        if os.path.exists(dbname) and append == False:
             os.remove(dbname)
 
         self.db = sqlite3.connect(dbname)
         self.cursor = self.db.cursor()
+        self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='tiles'")
+        exists = self.cursor.fetchone()
+        if exists and append:
+            logging.info("Appending to database file %s" % dbname)
+            return
+
         if suffix == ".mbtiles":
             self.cursor.execute("CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob)")
             self.cursor.execute("CREATE INDEX tiles_idx on tiles (zoom_level, tile_column, tile_row)")
