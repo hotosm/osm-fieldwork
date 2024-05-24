@@ -1,3 +1,9 @@
+## 0.10.2 (2024-05-24)
+
+### Fix
+
+- add support to optionally append to the mbtiles file (#255)
+
 ## 0.10.1 (2024-05-24)
 
 ### Fix
