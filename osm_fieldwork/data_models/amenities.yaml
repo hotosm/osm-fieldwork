@@ -9,7 +9,15 @@ where:
         - cafe
         - bar
         - pub
-    - shop: not null
+        - restaurant
+        - fuel
+    - shop:
+        - convenience
+        - supermarket
+        - bakery
+        - alcohol
+        - greengrocer
+        - farm
 
 keep:
   - leisure
