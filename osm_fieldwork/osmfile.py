@@ -108,6 +108,7 @@ class OsmFile(object):
             self.file.flush()
             if self.file is False:
                 self.file.close()
+        self.file = None
 
     def write(
         self,
