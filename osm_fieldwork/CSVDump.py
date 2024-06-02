@@ -285,81 +285,6 @@ class CSVDump(Convert):
         base = tmp[len(tmp) - 1]
         return base
 
-    def createEntry(
-        self,
-        entry: dict,
-    ) -> dict:
-        """
-        Create the feature data structure.
-
-        Args:
-            entry (dict): The feature data
-
-        Returns:
-            (dict): The OSM data structure for this entry from the json file
-        """
-        # print(line)
-        feature = dict()
-        attrs = dict()
-        tags = dict()
-        priv = dict()
-        refs = list()
-
-        # log.debug("Creating entry")
-        # First convert the tag to the approved OSM equivalent
-        if "lat" in entry and "lon" in entry:
-            attrs["lat"] = entry["lat"]
-            attrs["lon"] = entry["lon"]
-        for key, value in entry.items():
-            attributes = (
-                "id",
-                "timestamp",
-                "lat",
-                "lon",
-                "uid",
-                "user",
-                "version",
-                "action",
-            )
-
-            # When using existing OSM data, there's a special geometry field.
-            # Otherwise use the GPS coordinates where you are.
-            if key == "geometry" and len(value) > 0:
-                geometry = value.split(" ")
-                if len(geometry) == 4:
-                    attrs["lat"] = geometry[0]
-                    attrs["lon"] = geometry[1]
-                continue
-
-            if 'lat' in attrs and len(attrs["lat"]) == 0:
-                continue
-
-            if key is not None and len(key) > 0 and key in attributes:
-                attrs[key] = value
-                log.debug("Adding attribute %s with value %s" % (key, value))
-                continue
-
-            if value is not None and value != "no" and value != "unknown":
-                if key == "track" or key == "geoline":
-                    # refs.append(tags)
-                    # log.debug("Adding reference %s" % tags)
-                    refs = value.split(";")
-                elif len(value) > 0:
-                    if self.privateData(key):
-                        priv[key] = value
-                    else:
-                        tags[key] = value
-            feature["attrs"] = attrs
-            if len(tags) > 0:
-                logging.debug(f"TAGS: {tags}")
-                feature["tags"] = tags
-            if len(refs) > 1:
-                feature["refs"] = refs
-            if len(priv) > 0:
-                feature["private"] = priv
-
-        return feature
-
 def main():
     """Run conversion directly from the terminal."""
     parser = argparse.ArgumentParser(description="convert CSV from ODK Central to OSM XML")
@@ -383,6 +308,7 @@ def main():
         csvin = CSVDump(args.yaml)
     else:
         csvin = CSVDump()
+
     csvin.parseXLS(args.xlsfile)
     osmoutfile = os.path.basename(args.infile.replace(".csv", ".osm"))
     csvin.createOSM(osmoutfile)
