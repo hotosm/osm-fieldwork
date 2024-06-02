@@ -58,6 +58,8 @@ class CSVDump(Convert):
         self.config = super().__init__(yaml)
         self.saved = dict()
         self.defaults = dict()
+        self.entries = dict()
+        self.types = dict()
 
     def lastSaved(
         self,
@@ -81,10 +83,17 @@ class CSVDump(Convert):
     ):
         """Parse the source XLSFile if available to look for details we need."""
         if xlsfile is not None and len(xlsfile) > 0:
-            entries = pd.read_excel(xlsfile, sheet_name=[0])
+            self.entries = pd.read_excel(xlsfile, sheet_name=[0])[0]
             # There will only be a single sheet
-            names = entries[0]["name"]
-            defaults = entries[0]["default"]
+            names = self.entries["name"]
+            defaults = self.entries["default"]
+            i = 0
+            while i < len(self.entries):
+                if type(self.entries['type'][i]) == float:
+                    self.types[self.entries['name'][i]] = None
+                else:
+                    self.types[self.entries['name'][i]] = self.entries['type'][i].split(' ')[0]
+                i += 1
             total = len(names)
             i = 0
             while i < total:
@@ -167,8 +176,16 @@ class CSVDump(Convert):
         self,
         filespec: str,
         data: str = None,
-    ):
-        """Parse the CSV file from ODK Central and convert it to a data structure."""
+    ) -> list:
+        """
+        Parse the CSV file from ODK Central and convert it to a data structure.
+
+        Args:
+            filespec (str): The file to parse.
+            data (str): Or the data to parse.
+        Returns:
+            (list): The list of features with tags
+        """
         all_tags = list()
         if not data:
             f = open(filespec, newline="")
@@ -179,32 +196,34 @@ class CSVDump(Convert):
             tags = dict()
             # log.info(f"ROW: {row}")
             for keyword, value in row.items():
-                if keyword is None or len(keyword) == 0:
+                if keyword is None or len(value) == 0:
                     continue
-
                 base = self.basename(keyword).lower()
                 # There's many extraneous fields in the input file which we don't need.
                 if base is None or base in self.ignore or value is None:
                     continue
-                # if base in self.multiple:
-                #     epdb.st()
-                #     entry = reader[keyword]
-                #     for key, val in entry.items():
-                #         print(key)75.66.108.181
-                #         if key == "name":
-                #             tags['name'] = val
-                #     continue
                 else:
+                    # log.info(f"ITEM: {keyword} = {value}")
+                    if base in self.types:
+                        if self.types[base] == "select_multiple":
+                            vals = self.convertMultiple(value)
+                            if len(vals) > 0:
+                                for tag in vals:
+                                    tags.update(tag)
+                                # print(f"BASE {tags}")
+                            continue
                     # When using geopoint warmup, once the display changes to the map
+
                     # location, there is not always a value if the accuracy is way
                     # off. In this case use the warmup value, which is where we are
-                    # standing anyway.
+                    # hopefully standing anyway.
                     if base == "latitude" and len(value) == 0:
                         if "warmup-Latitude" in row:
                             value = row["warmup-Latitude"]
                             if base == "longitude" and len(value) == 0:
                                 value = row["warmup-Longitude"]
                     items = self.convertEntry(base, value)
+
                     # log.info(f"ROW: {base} {value}")
                     if len(items) > 0:
                         if base in self.saved:
@@ -224,6 +243,7 @@ class CSVDump(Convert):
                             tags[k] = v
                     else:
                         tags[base] = value
+
                 # log.debug(f"\tFIXME1: {tags}")
             all_tags.append(tags)
         return all_tags
@@ -231,7 +251,7 @@ class CSVDump(Convert):
     def basename(
         self,
         line: str,
-    ):
+    ) -> str:
         """Extract the basename of a path after the last -."""
         tmp = line.split("-")
         if len(tmp) == 0:
@@ -242,7 +262,7 @@ class CSVDump(Convert):
     def createEntry(
         self,
         entry: dict,
-    ):
+    ) -> list:
         """Create the feature data structure."""
         # print(line)
         feature = dict()
@@ -277,37 +297,27 @@ class CSVDump(Convert):
                     attrs["lon"] = geometry[1]
                 continue
 
-            if len(attrs["lat"]) == 0:
+            if 'lat' in attrs and len(attrs["lat"]) == 0:
                 continue
+
             if key is not None and len(key) > 0 and key in attributes:
                 attrs[key] = value
                 log.debug("Adding attribute %s with value %s" % (key, value))
-            else:
-                if key in self.multiple:
-                    for item in value:
-                        if key in item:
-                            for entry in item[key].split():
-                                vals = self.getValues(key)
-                                if entry in vals:
-                                    if vals[entry].find("="):
-                                        tmp = vals[entry].split("=")
-                                        tags[tmp[0]] = tmp[1]
-                                else:
-                                    tags[entry] = "yes"
-                    continue
+                continue
 
-                if value is not None and value != "no" and value != "unknown":
-                    if key == "track" or key == "geoline":
-                        # refs.append(tags)
-                        # log.debug("Adding reference %s" % tags)
-                        refs = value.split(";")
-                    elif len(value) > 0:
-                        if self.privateData(key):
-                            priv[key] = value
-                        else:
-                            tags[key] = value
+            if value is not None and value != "no" and value != "unknown":
+                if key == "track" or key == "geoline":
+                    # refs.append(tags)
+                    # log.debug("Adding reference %s" % tags)
+                    refs = value.split(";")
+                elif len(value) > 0:
+                    if self.privateData(key):
+                        priv[key] = value
+                    else:
+                        tags[key] = value
+            feature["attrs"] = attrs
             if len(tags) > 0:
-                feature["attrs"] = attrs
+                logging.debug(f"TAGS: {tags}")
                 feature["tags"] = tags
             if len(refs) > 1:
                 feature["refs"] = refs
@@ -367,6 +377,7 @@ def main():
                 csvin.writeOSM(node)
                 refs.append(nodeid)
                 nodeid -= 1
+
             feature["refs"] = refs
             csvin.writeOSM(feature)
         else:
