@@ -38,7 +38,9 @@ log = logging.getLogger(__name__)
 
 
 class CSVDump(Convert):
-    """A class to parse the CSV files from ODK Central."""
+    """
+    A class to parse the CSV files from ODK Central.
+    """
 
     def __init__(
         self,
@@ -64,7 +66,17 @@ class CSVDump(Convert):
     def lastSaved(
         self,
         keyword: str,
-    ):
+    ) -> str:
+        """
+        Get the last saved value for a question.
+
+        Args:
+            keyword (str): The keyword to search for
+
+        Returns:
+            (str): The last saved value for the question
+
+        """
         if keyword is not None and len(keyword) > 0:
             return self.saved[keyword]
         return None
@@ -73,15 +85,37 @@ class CSVDump(Convert):
         self,
         keyword: str,
         value: str,
-    ):
+    ) -> bool:
+        """
+        Update the last saved value for a question.
+
+        Args:
+            keyword (str): The keyword to search for
+            value (str): The new value
+
+        Returns:
+            (bool): If the new value got saved
+
+        """
         if keyword is not None and value is not None and len(value) > 0:
             self.saved[keyword] = value
+            return True
+        else:
+            return False
 
     def parseXLS(
         self,
         xlsfile: str,
-    ):
-        """Parse the source XLSFile if available to look for details we need."""
+    ) -> bool:
+        """
+        Parse the source XLSFile if available to look for details we need.
+
+        Args:
+            xlsfile (str):
+
+        Returns:
+            (bool): whether the file was parsed without error
+        """
         if xlsfile is not None and len(xlsfile) > 0:
             self.entries = pd.read_excel(xlsfile, sheet_name=[0])[0]
             # There will only be a single sheet
@@ -112,7 +146,12 @@ class CSVDump(Convert):
         self,
         filespec: str,
     ):
-        """Create an OSM XML output files."""
+        """
+        Create an OSM XML output files.
+
+        Args:
+            filespec (str): The output file name
+        """
         log.debug("Creating OSM XML file: %s" % filespec)
         self.osm = OsmFile(filespec)
         # self.osm.header()
@@ -121,7 +160,12 @@ class CSVDump(Convert):
         self,
         feature: dict,
     ):
-        """Write a feature to an OSM XML output file."""
+        """
+        Write a feature to an OSM XML output file.
+
+        Args:
+            feature (dict): The OSM feature to write to
+        """
         out = ""
         if "id" in feature["tags"]:
             feature["id"] = feature["tags"]["id"]
@@ -140,24 +184,36 @@ class CSVDump(Convert):
 
     def createGeoJson(
         self,
-        file: str = "tmp.geojson",
+        filespec: str = "tmp.geojson",
     ):
-        """Create a GeoJson output file."""
-        log.debug("Creating GeoJson file: %s" % file)
-        self.json = open(file, "w")
+        """
+        Create a GeoJson output file.
+
+        Args:
+            filespec (str): The output file name
+        """
+        log.debug("Creating GeoJson file: %s" % filespec)
+        self.json = open(filespec, "w")
 
     def writeGeoJson(
         self,
         feature: dict,
     ):
-        """Write a feature to a GeoJson output file."""
+        """
+        Write a feature to a GeoJson output file.
+
+        Args:
+            feature (dict): The OSM feature to write to
+        """
         # These get written later when finishing , since we have to create a FeatureCollection
         if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
             return None
         self.features.append(feature)
 
     def finishGeoJson(self):
-        """Write the GeoJson FeatureCollection to the output file and close it."""
+        """
+        Write the GeoJson FeatureCollection to the output file and close it.
+        """
         features = list()
         for item in self.features:
             if len(item["attrs"]["lon"]) == 0 or len(item["attrs"]["lat"]) == 0:
@@ -183,6 +239,7 @@ class CSVDump(Convert):
         Args:
             filespec (str): The file to parse.
             data (str): Or the data to parse.
+
         Returns:
             (list): The list of features with tags
         """
@@ -252,7 +309,15 @@ class CSVDump(Convert):
         self,
         line: str,
     ) -> str:
-        """Extract the basename of a path after the last -."""
+        """
+        Extract the basename of a path after the last -.
+
+        Args:
+            line (str): The path from the json file entry
+
+        Returns:
+            (str): The last node of the path
+        """
         tmp = line.split("-")
         if len(tmp) == 0:
             return line
@@ -262,8 +327,16 @@ class CSVDump(Convert):
     def createEntry(
         self,
         entry: dict,
-    ) -> list:
-        """Create the feature data structure."""
+    ) -> dict:
+        """
+        Create the feature data structure.
+
+        Args:
+            entry (dict): The feature data
+
+        Returns:
+            (dict): The OSM data structure for this entry from the json file
+        """
         # print(line)
         feature = dict()
         attrs = dict()
@@ -326,9 +399,8 @@ class CSVDump(Convert):
 
         return feature
 
-
 def main():
-    """ """
+    """Run conversion directly from the terminal."""
     parser = argparse.ArgumentParser(description="convert CSV from ODK Central to OSM XML")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-y", "--yaml", help="Alternate YAML file")
