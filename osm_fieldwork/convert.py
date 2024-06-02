@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021, 2022, 2023 Humanitarian OpenStreetMap Team
+# Copyright (c) 2020, 2021, 2022, 2023, 2024 Humanitarian OpenStreetMap Team
 #
 # This file is part of OSM-Fieldwork.
 #
@@ -28,8 +28,9 @@ from osm_fieldwork.yamlfile import YamlFile
 # Instantiate logger
 log = logging.getLogger(__name__)
 
-def escape(value: str):
-    """Escape characters like embedded quotes in text fields.
+def escape(value: str) -> str:
+    """
+    Escape characters like embedded quotes in text fields.
 
     Args:
         value (str):The string to modify
@@ -41,9 +42,9 @@ def escape(value: str):
     tmp = value.replace("&", " and ")
     return tmp.replace("'", "&apos;")
 
-
 class Convert(YamlFile):
-    """A class to apply a YAML config file and convert ODK to OSM.
+    """
+    A class to apply a YAML config file and convert ODK to OSM.
 
     Returns:
         (Convert): An instance of this object
@@ -92,13 +93,14 @@ class Convert(YamlFile):
         self,
         keyword: str,
     ) -> bool:
-        """See is a keyword is in the private data category.
+        """
+        Search he private data category for a keyword.
 
         Args:
             keyword (str): The keyword to search for
 
         Returns:
-            (bool): Check to see if the keyword is in the private data section
+            (bool): =If the keyword is in the private data section
         """
         return keyword.lower() in self.private
 
@@ -106,7 +108,8 @@ class Convert(YamlFile):
         self,
         keyword: str,
     ) -> bool:
-        """See is a keyword is in the convert data category.
+        """
+        Search the convert data category for a keyword.
 
         Args:
             keyword (str): The keyword to search for
@@ -120,7 +123,8 @@ class Convert(YamlFile):
         self,
         keyword: str,
     ) -> bool:
-        """See is a keyword is in the convert data category.
+        """
+        Search the convert data category for a ketyword.
 
         Args:
             keyword (str): The keyword to search for
@@ -134,10 +138,12 @@ class Convert(YamlFile):
         self,
         value: str,
     ) -> str:
-        """Get the keyword for a value from the yaml file.
+        """
+        Get the keyword for a value from the yaml file.
 
         Args:
             value (str): The value to find the keyword for
+
         Returns:
             (str): The keyword if found, or None
         """
@@ -152,7 +158,8 @@ class Convert(YamlFile):
         self,
         keyword: str = None,
     ) -> str:
-        """Get the values for a primary key.
+        """
+        Get the values for a primary key.
 
         Args:
             keyword (str): The keyword to get the value of
@@ -171,7 +178,8 @@ class Convert(YamlFile):
         tag: str,
         value: str,
     ) -> list:
-        """Convert a tag and value from the ODK represention to an OSM one.
+        """
+        Convert a tag and value from the ODK represention to an OSM one.
 
         Args:
             tag (str): The tag from the ODK XML file
@@ -223,7 +231,8 @@ class Convert(YamlFile):
         tag: str,
         value: str,
     ) -> list:
-        """Convert a single tag value.
+        """
+        Convert a single tag value.
 
         Args:
             tag (str): The tag from the ODK XML file
@@ -266,7 +275,8 @@ class Convert(YamlFile):
         self,
         tag: str,
     ) -> str:
-        """Convert a single tag.
+        """
+        Convert a single tag.
 
         Args:
             tag (str): The tag from the ODK XML file
@@ -299,7 +309,7 @@ class Convert(YamlFile):
         value: str,
     ) -> list:
         """
-        Convert a single tag from a select_multiple question..
+        Convert a multiple tags from a select_multiple question..
 
         Args:
             value (str): The tags from the ODK XML file
@@ -322,7 +332,9 @@ class Convert(YamlFile):
         return tags
 
     def dump(self):
-        """Dump internal data structures, for debugging purposes only."""
+        """
+        Dump internal data structures, for debugging purposes only.
+        """
         print("YAML file: %s" % self.filespec)
         print("Convert section")
         for key, val in self.convert.items():
@@ -343,7 +355,9 @@ class Convert(YamlFile):
 # this way than using pytest,
 #
 def main():
-    """This main function lets this class be run standalone by a bash script."""
+    """
+    This main function lets this class be run standalone by a bash script.
+    """
     parser = argparse.ArgumentParser(description="Read and parse a YAML file")
 
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
