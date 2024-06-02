@@ -28,7 +28,6 @@ from osm_fieldwork.yamlfile import YamlFile
 # Instantiate logger
 log = logging.getLogger(__name__)
 
-
 def escape(value: str):
     """Escape characters like embedded quotes in text fields.
 
@@ -92,7 +91,7 @@ class Convert(YamlFile):
     def privateData(
         self,
         keyword: str,
-    ):
+    ) -> bool:
         """See is a keyword is in the private data category.
 
         Args:
@@ -106,7 +105,7 @@ class Convert(YamlFile):
     def convertData(
         self,
         keyword: str,
-    ):
+    ) -> bool:
         """See is a keyword is in the convert data category.
 
         Args:
@@ -120,7 +119,7 @@ class Convert(YamlFile):
     def ignoreData(
         self,
         keyword: str,
-    ):
+    ) -> bool:
         """See is a keyword is in the convert data category.
 
         Args:
@@ -134,7 +133,7 @@ class Convert(YamlFile):
     def getKeyword(
         self,
         value: str,
-    ):
+    ) -> str:
         """Get the keyword for a value from the yaml file.
 
         Args:
@@ -152,7 +151,7 @@ class Convert(YamlFile):
     def getValues(
         self,
         keyword: str = None,
-    ):
+    ) -> str:
         """Get the values for a primary key.
 
         Args:
@@ -171,7 +170,7 @@ class Convert(YamlFile):
         self,
         tag: str,
         value: str,
-    ):
+    ) -> list:
         """Convert a tag and value from the ODK represention to an OSM one.
 
         Args:
@@ -188,6 +187,9 @@ class Convert(YamlFile):
             # logging.debug(f"FIXME: Ignoring {tag}")
             return None
         low = tag.lower()
+        if value is None:
+            return low
+
         if low not in self.convert and low not in self.ignore and low not in self.private:
             return {tag: value}
 
@@ -220,7 +222,7 @@ class Convert(YamlFile):
         self,
         tag: str,
         value: str,
-    ):
+    ) -> list:
         """Convert a single tag value.
 
         Args:
@@ -256,14 +258,14 @@ class Convert(YamlFile):
                     entry[tag] = vals[value]
                 else:
                     entry[tmp[0]] = tmp[1]
-                    logging.debug("\tValue %s converted to %s" % (value, entry))
+                    logging.debug("\tValue %s converted value to %s" % (value, entry))
                 all.append(entry)
         return all
 
     def convertTag(
         self,
         tag: str,
-    ):
+    ) -> str:
         """Convert a single tag.
 
         Args:
@@ -276,20 +278,48 @@ class Convert(YamlFile):
         if low in self.convert:
             newtag = self.convert[low]
             if type(newtag) is str:
-                logging.debug("\tTag '%s' converted to '%s'" % (tag, newtag))
+                logging.debug("\tTag '%s' converted tag to '%s'" % (tag, newtag))
                 tmp = newtag.split("=")
                 if len(tmp) > 1:
                     newtag = tmp[0]
             elif type(newtag) is list:
                 logging.error("FIXME: list()")
                 # epdb.st()
-                return low
+                return low, value
             elif type(newtag) is dict:
                 # logging.error("FIXME: dict()")
                 return low
             return newtag.lower()
         else:
+            logging.debug(f"Not in convert!: {low}")
             return low
+
+    def convertMultiple(
+        self,
+        value: str,
+    ) -> list:
+        """
+        Convert a single tag from a select_multiple question..
+
+        Args:
+            value (str): The tags from the ODK XML file
+
+        Returns:
+            (list): The new tags
+        """
+        tags = list()
+        for tag in value.split(' '):
+            low = tag.lower()
+            if self.convertData(low):
+                newtag = self.convert[low]
+                # tags.append({newtag}: {value})
+                if newtag.find('=') > 0:
+                    tmp = newtag.split('=')
+                    tags.append({tmp[0]: tmp[1]})
+            else:
+                tags.append({low: "yes"})
+        logging.debug(f"\tConverted multiple to {tags}")
+        return tags
 
     def dump(self):
         """Dump internal data structures, for debugging purposes only."""
