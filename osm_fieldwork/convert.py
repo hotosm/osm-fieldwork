@@ -21,6 +21,8 @@
 import argparse
 import logging
 import sys
+import pandas as pd
+import re
 
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
@@ -66,6 +68,9 @@ class Convert(YamlFile):
         self.convert = dict()
         self.ignore = list()
         self.private = list()
+        self.defaults = dict()
+        self.entries = dict()
+        self.types = dict()
         for item in self.yaml.yaml["convert"]:
             key = list(item.keys())[0]
             value = item[key]
@@ -331,6 +336,37 @@ class Convert(YamlFile):
         logging.debug(f"\tConverted multiple to {tags}")
         return tags
 
+    def parseXLS(
+        self,
+        xlsfile: str,
+    ):
+        """Parse the source XLSFile if available to look for details we need."""
+        if xlsfile is not None and len(xlsfile) > 0:
+            self.entries = pd.read_excel(xlsfile, sheet_name=[0])[0]
+            # There will only be a single sheet
+            names = self.entries["name"]
+            defaults = self.entries["default"]
+            i = 0
+            while i < len(self.entries):
+                if type(self.entries['type'][i]) == float:
+                    self.types[self.entries['name'][i]] = None
+                else:
+                    self.types[self.entries['name'][i]] = self.entries['type'][i].split(' ')[0]
+                i += 1
+            total = len(names)
+            i = 0
+            while i < total:
+                entry = defaults[i]
+                if str(entry) != "nan":
+                    pat = re.compile("..last-saved.*")
+                    if pat.match(entry):
+                        name = entry.split("#")[1][:-1]
+                        self.saved[name] = None
+                    else:
+                        self.defaults[names[i]] = entry
+                i += 1
+        return True
+
     def dump(self):
         """
         Dump internal data structures, for debugging purposes only.
@@ -418,7 +454,6 @@ def main():
     entry = convert.convertEntry("power", "solar")
     for i in entry:
         print("XX: %r" % i)
-
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

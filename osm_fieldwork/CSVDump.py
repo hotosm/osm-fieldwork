@@ -103,45 +103,6 @@ class CSVDump(Convert):
         else:
             return False
 
-    def parseXLS(
-        self,
-        xlsfile: str,
-    ) -> bool:
-        """
-        Parse the source XLSFile if available to look for details we need.
-
-        Args:
-            xlsfile (str):
-
-        Returns:
-            (bool): whether the file was parsed without error
-        """
-        if xlsfile is not None and len(xlsfile) > 0:
-            self.entries = pd.read_excel(xlsfile, sheet_name=[0])[0]
-            # There will only be a single sheet
-            names = self.entries["name"]
-            defaults = self.entries["default"]
-            i = 0
-            while i < len(self.entries):
-                if type(self.entries['type'][i]) == float:
-                    self.types[self.entries['name'][i]] = None
-                else:
-                    self.types[self.entries['name'][i]] = self.entries['type'][i].split(' ')[0]
-                i += 1
-            total = len(names)
-            i = 0
-            while i < total:
-                entry = defaults[i]
-                if str(entry) != "nan":
-                    pat = re.compile("..last-saved.*")
-                    if pat.match(entry):
-                        name = entry.split("#")[1][:-1]
-                        self.saved[name] = None
-                    else:
-                        self.defaults[names[i]] = entry
-                i += 1
-        return True
-
     def createOSM(
         self,
         filespec: str,
