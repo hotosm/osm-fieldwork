@@ -22,11 +22,9 @@ import argparse
 import csv
 import logging
 import os
-import re
 import sys
 from datetime import datetime
 
-import pandas as pd
 from geojson import Feature, FeatureCollection, Point, dump
 
 from osm_fieldwork.convert import Convert
@@ -38,9 +36,7 @@ log = logging.getLogger(__name__)
 
 
 class CSVDump(Convert):
-    """
-    A class to parse the CSV files from ODK Central.
-    """
+    """A class to parse the CSV files from ODK Central."""
 
     def __init__(
         self,
@@ -67,8 +63,7 @@ class CSVDump(Convert):
         self,
         keyword: str,
     ) -> str:
-        """
-        Get the last saved value for a question.
+        """Get the last saved value for a question.
 
         Args:
             keyword (str): The keyword to search for
@@ -86,8 +81,7 @@ class CSVDump(Convert):
         keyword: str,
         value: str,
     ) -> bool:
-        """
-        Update the last saved value for a question.
+        """Update the last saved value for a question.
 
         Args:
             keyword (str): The keyword to search for
@@ -107,8 +101,7 @@ class CSVDump(Convert):
         self,
         filespec: str,
     ):
-        """
-        Create an OSM XML output files.
+        """Create an OSM XML output files.
 
         Args:
             filespec (str): The output file name
@@ -121,8 +114,7 @@ class CSVDump(Convert):
         self,
         feature: dict,
     ):
-        """
-        Write a feature to an OSM XML output file.
+        """Write a feature to an OSM XML output file.
 
         Args:
             feature (dict): The OSM feature to write to
@@ -147,8 +139,7 @@ class CSVDump(Convert):
         self,
         filespec: str = "tmp.geojson",
     ):
-        """
-        Create a GeoJson output file.
+        """Create a GeoJson output file.
 
         Args:
             filespec (str): The output file name
@@ -160,8 +151,7 @@ class CSVDump(Convert):
         self,
         feature: dict,
     ):
-        """
-        Write a feature to a GeoJson output file.
+        """Write a feature to a GeoJson output file.
 
         Args:
             feature (dict): The OSM feature to write to
@@ -172,9 +162,7 @@ class CSVDump(Convert):
         self.features.append(feature)
 
     def finishGeoJson(self):
-        """
-        Write the GeoJson FeatureCollection to the output file and close it.
-        """
+        """Write the GeoJson FeatureCollection to the output file and close it."""
         features = list()
         for item in self.features:
             if len(item["attrs"]["lon"]) == 0 or len(item["attrs"]["lat"]) == 0:
@@ -194,8 +182,7 @@ class CSVDump(Convert):
         filespec: str,
         data: str = None,
     ) -> list:
-        """
-        Parse the CSV file from ODK Central and convert it to a data structure.
+        """Parse the CSV file from ODK Central and convert it to a data structure.
 
         Args:
             filespec (str): The file to parse.
@@ -270,8 +257,7 @@ class CSVDump(Convert):
         self,
         line: str,
     ) -> str:
-        """
-        Extract the basename of a path after the last -.
+        """Extract the basename of a path after the last -.
 
         Args:
             line (str): The path from the json file entry
@@ -284,6 +270,7 @@ class CSVDump(Convert):
             return line
         base = tmp[len(tmp) - 1]
         return base
+
 
 def main():
     """Run conversion directly from the terminal."""

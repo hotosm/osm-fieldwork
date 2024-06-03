@@ -23,13 +23,11 @@ import json
 import logging
 
 # import pandas as pd
-import re
 import sys
 from pathlib import Path
 
 import flatdict
 import geojson
-import shapely
 from geojson import Feature, FeatureCollection, Point, dump
 
 from osm_fieldwork.convert import Convert
@@ -45,8 +43,7 @@ class JsonDump(Convert):
         self,
         yaml: str = None,
     ):
-        """
-        A class to convert the JSON file from ODK Central, or the GeoJson
+        """A class to convert the JSON file from ODK Central, or the GeoJson
         file created by the odk2geojson utility.
 
         Args:
@@ -67,8 +64,7 @@ class JsonDump(Convert):
         self,
         filespec: str = "tmp.osm",
     ) -> OsmFile:
-        """
-        Create an OSM XML output files.
+        """Create an OSM XML output files.
 
         Args:
             filespec (str): The filespec for the output OSM XML file
@@ -84,8 +80,7 @@ class JsonDump(Convert):
         self,
         feature: dict,
     ):
-        """
-        Write a feature to an OSM XML output file.
+        """Write a feature to an OSM XML output file.
 
         Args:
             feature (dict): The feature to write to the OSM XML output file
@@ -108,8 +103,7 @@ class JsonDump(Convert):
         self.osm.write(out)
 
     def finishOSM(self):
-        """
-        Write the OSM XML file footer and close it. The destructor in the
+        """Write the OSM XML file footer and close it. The destructor in the
         OsmFile class should do this, but this is the manual way.
         """
         self.osm.footer()
@@ -118,8 +112,7 @@ class JsonDump(Convert):
         self,
         file="tmp.geojson",
     ):
-        """
-        Create a GeoJson output file.
+        """Create a GeoJson output file.
 
         Args:
             file (str): The filespec of the output GeoJson file
@@ -131,8 +124,7 @@ class JsonDump(Convert):
         self,
         feature: dict,
     ):
-        """
-        Write a feature to a GeoJson output file.
+        """Write a feature to a GeoJson output file.
 
         Args:
             feature (dict): The feature to write to the GeoJson output file
@@ -143,9 +135,7 @@ class JsonDump(Convert):
         self.features.append(feature)
 
     def finishGeoJson(self):
-        """
-        Write the GeoJson FeatureCollection to the output file and close it.
-        """
+        """Write the GeoJson FeatureCollection to the output file and close it."""
         features = list()
         for item in self.features:
             # poi = Point()
@@ -163,8 +153,7 @@ class JsonDump(Convert):
         filespec: str = None,
         data: str = None,
     ) -> list:
-        """
-        Parse the JSON file from ODK Central and convert it to a data structure.
+        """Parse the JSON file from ODK Central and convert it to a data structure.
         The input is either a filespec to open, or the data itself.
 
         Args:
@@ -276,6 +265,7 @@ class JsonDump(Convert):
         # log.debug(f"Finished parsing JSON file {filespec}")
         return total
 
+
 # def json2osm(
 #         cmdln: dict,
 # ) -> str:
@@ -331,6 +321,7 @@ class JsonDump(Convert):
 #     log.info(f"Wrote OSM XML file: {osmoutfile}")
 
 #     return osmoutfile
+
 
 def main():
     """Run conversion directly from the terminal."""
@@ -402,6 +393,7 @@ def main():
     jsonin.finishGeoJson()
     log.info("Wrote OSM XML file: %r" % osmoutfile)
     log.info("Wrote GeoJson file: %r" % jsonoutfile)
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
