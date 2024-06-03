@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2023 Humanitarian OpenStreetMap Team
+# Copyright (c) 2023, 2024 Humanitarian OpenStreetMap Team
 #
 # This file is part of OSM-Fieldwork.
 #
@@ -45,7 +45,8 @@ class JsonDump(Convert):
         self,
         yaml: str = None,
     ):
-        """A class to convert the JSON file from ODK Central, or the GeoJson
+        """
+        A class to convert the JSON file from ODK Central, or the GeoJson
         file created by the odk2geojson utility.
 
         Args:
@@ -62,33 +63,12 @@ class JsonDump(Convert):
         self.features = list()
         self.config = super().__init__(yaml)
 
-    # FIXME: a work in progress
-    # def parseXLS(self, xlsfile: str):
-    #     """Parse the source XLSFile if available to look for details we need"""
-    #     if xlsfile is not None and len(xlsfile) > 0:
-    #         entries = pd.read_excel(xlsfile, sheet_name=[0])
-    #         # There will only be a single sheet
-    #         names = entries[0]['name']
-    #         defaults = entries[0]['default']
-    #         total = len(names)
-    #         i = 0
-    #         while i < total:
-    #             entry = defaults[i]
-    #             if str(entry) != 'nan':
-    #                 pat = re.compile("..last-saved.*")
-    #                 if pat.match(entry):
-    #                     name = entry.split('#')[1][:-1]
-    #                     self.saved[name] = None
-    #                 else:
-    #                     self.defaults[names[i]] = entry
-    #             i += 1
-    #     return True
-
     def createOSM(
         self,
         filespec: str = "tmp.osm",
-    ):
-        """Create an OSM XML output files.
+    ) -> OsmFile:
+        """
+        Create an OSM XML output files.
 
         Args:
             filespec (str): The filespec for the output OSM XML file
@@ -104,7 +84,8 @@ class JsonDump(Convert):
         self,
         feature: dict,
     ):
-        """Write a feature to an OSM XML output file.
+        """
+        Write a feature to an OSM XML output file.
 
         Args:
             feature (dict): The feature to write to the OSM XML output file
@@ -127,7 +108,8 @@ class JsonDump(Convert):
         self.osm.write(out)
 
     def finishOSM(self):
-        """Write the OSM XML file footer and close it. The destructor in the
+        """
+        Write the OSM XML file footer and close it. The destructor in the
         OsmFile class should do this, but this is the manual way.
         """
         self.osm.footer()
@@ -136,10 +118,11 @@ class JsonDump(Convert):
         self,
         file="tmp.geojson",
     ):
-        """Create a GeoJson output file.
+        """
+        Create a GeoJson output file.
 
         Args:
-                file (str): The filespec of the output GeoJson file
+            file (str): The filespec of the output GeoJson file
         """
         log.debug("Creating GeoJson file: %s" % file)
         self.json = open(file, "w")
@@ -148,7 +131,8 @@ class JsonDump(Convert):
         self,
         feature: dict,
     ):
-        """Write a feature to a GeoJson output file.
+        """
+        Write a feature to a GeoJson output file.
 
         Args:
             feature (dict): The feature to write to the GeoJson output file
@@ -159,7 +143,9 @@ class JsonDump(Convert):
         self.features.append(feature)
 
     def finishGeoJson(self):
-        """Write the GeoJson FeatureCollection to the output file and close it."""
+        """
+        Write the GeoJson FeatureCollection to the output file and close it.
+        """
         features = list()
         for item in self.features:
             # poi = Point()
@@ -176,8 +162,9 @@ class JsonDump(Convert):
         self,
         filespec: str = None,
         data: str = None,
-    ):
-        """Parse the JSON file from ODK Central and convert it to a data structure.
+    ) -> list:
+        """
+        Parse the JSON file from ODK Central and convert it to a data structure.
         The input is either a filespec to open, or the data itself.
 
         Args:
@@ -188,7 +175,7 @@ class JsonDump(Convert):
             (list): A list of all the features in the input file
         """
         log.debug(f"Parsing JSON file {filespec}")
-        all_tags = list()
+        total = list()
         if not data:
             file = open(filespec, "r")
             infile = Path(filespec)
@@ -198,13 +185,12 @@ class JsonDump(Convert):
                 reader = json.load(file)
             else:
                 log.error("Need to specify a JSON or GeoJson file!")
-                return all_tags
+                return total
         elif isinstance(data, str):
             reader = geojson.loads(data)
         elif isinstance(data, list):
             reader = data
 
-        total = list()
         # JSON files from Central use value as the keyword, whereas
         # GeoJSON uses features for the same thing.
         if "value" in reader:
@@ -214,216 +200,137 @@ class JsonDump(Convert):
         else:
             data = reader
         for row in data:
-            # log.info(f"ROW: {row}")
+            # log.debug(f"ROW: {row}\n")
             tags = dict()
-            if "geometry" in row:
-                # If geom not point, convert to centroid
-                if row["geometry"]["type"] != "Point":
-                    log.debug(f"Converting {row['geometry']['type']} geometry to centroid point")
-                    geom = shapely.from_geojson(str(row))
-                    centroid = shapely.to_geojson(geom.centroid)
-                    row["geometry"] = centroid
-                tags["geometry"] = row["geometry"]
-            else:
-                pat = re.compile("[-0-9.]*, [0-9.-]*, [0-9.]*")
-                gps = re.findall(pat, str(row))
-                # If geopoint warmup is used, there will be two matches, we only
-                # want the second one, which is the location.
-                for coords in gps:
-                    tags["geometry"] = coords
+            # Extract the location regardless of what the tag is
+            # called.
+            # pat = re.compile("[-0-9.]*, [0-9.-]*, [0-9.]*")
+            # gps = re.findall(pat, str(row))
+            # tmp = list()
+            # if len(gps) == 0:
+            #     log.error(f"No location data in: {row}")
+            #     continue
+            # elif len(gps) == 1:
+            #     # Only the warmup has any coordinates.
+            #     tmp = gps[0].split(" ")
+            # elif len(gps) == 2:
+            #     # both the warmup and the coordinates have values
+            #     tmp = gps[1].split(" ")
+
+            # if len(tmp) > 0:
+            #     lat = float(tmp[0][:-1])
+            #     lon = float(tmp[1][:-1])
+            #     geom = Point([lon, lat])
+            #     row["geometry"] = geom
+            #     # tags["geometry"] = row["geometry"]
+
             if "properties" in row:
                 row["properties"]  # A GeoJson formatted file
             else:
                 pass  # A JOSM file from ODK Central
 
-            # flatten all the groups into a single data structure
+            # flatten all the groups into a sodk2geojson.pyingle data structure
             flattened = flatdict.FlatDict(row)
             for k, v in flattened.items():
                 last = k.rfind(":") + 1
                 key = k[last:]
-                # log.debug(f"Processing tag {key} = {v}")
-                # names and comments may have spaces, otherwise
-                # it's from a select_multiple
-                pat = re.compile("name[:a-z]*")
-                names = re.findall(pat, key)
-                if len(names) > 0:
-                    for name in names:
-                        tags[name] = v
-                    continue
-                if key == "comment":
-                    tags[key] = v
                 # a JSON file from ODK Central always uses coordinates as
                 # the keyword
+                if key is None or key in self.ignore or v is None:
+                    continue
+                log.debug(f"Processing tag {key} = {v}")
                 if key == "coordinates":
                     if isinstance(v, list):
-                        lat = v[1]
-                        lon = v[0]
-                        tags["geometry"] = f"{lat} {lon}"
+                        tags["lat"] = v[1]
+                        tags["lon"] = v[0]
+                        # poi = Point(float(lon), float(lat))
+                        # tags["geometry"] = poi
                     continue
-                if key == "xlocation":
-                    tags["geometry"] = v
+
+                if key in self.types:
+                    if self.types[key] == "select_multiple":
+                        # log.debug(f"Found key '{self.types[key]}'")
+                        if v is None:
+                            continue
+                        vals = self.convertMultiple(v)
+                        if len(vals) > 0:
+                            for tag in vals:
+                                tags.update(tag)
+                            # print(f"BASE {tags}")
+                        continue
+
+                items = self.convertEntry(key, v)
+                if items is None or len(items) == 0:
                     continue
-                tags[key] = v
-            total.append(tags)
+
+                if type(items) == str:
+                    log.debug(f"string Item {items}")
+                else:
+                    log.debug(f"dict Item {items}")
+                    if len(items) == 0:
+                        tags.update(items[0])
+            # log.debug(f"TAGS: {tags}")
+            if len(tags) > 0:
+                total.append(tags)
 
         # log.debug(f"Finished parsing JSON file {filespec}")
         return total
 
-    def createEntry(
-        self,
-        entry: dict,
-    ):
-        """Create the feature data structure for this entry.
+# def json2osm(
+#         cmdln: dict,
+# ) -> str:
+#     """
+#     Process the JSON file from ODK Central or the GeoJSON file to OSM XML format.
 
-        Args:
-            entry (dict): The feature to convert to the output format
+#     Args:
+#         cmdln (dict): The data from the command line
 
-        Returns:
-            (dict): The new entry for the output file
-        """
-        # print(line)
-        feature = dict()
-        attrs = dict()
-        tags = dict()
-        priv = dict()
-        refs = list()
+#     Returns:
+#         osmoutfile (str): Path to the converted OSM XML file.
+#     """
+#     log.info(f"Converting JSON file to OSM: {cmdln['infile']}")
+#     if yaml_file:
+#         jsonin = JsonDump({cmd['yaml']})
+#     else:
+#         jsonin = JsonDump()
 
-        # log.debug("Creating entry")
-        # First convert the tag to the approved OSM equivalent
-        for key, value in entry.items():
-            # When using existing OSM data, there's a special geometry field.
-            # Otherwise use the GPS coordinates where you are.
-            lat = None
-            lon = None
-            if isinstance(value, float):
-                continue
-            # log.debug(f"FIXME: {key} = {value} {type(value)}")
-            if key == "xid" and value is not None:
-                attrs["id"] = int(value)
-            if key == "geometry":
-                # The GeoJson file has the geometry field. Usually it's a list
-                # but on occasion it's a string instead, so turn it into a list
-                if isinstance(value, str) and len(coords := value.split(" ")) >= 2:
-                    lat = coords[0]
-                    lon = coords[1]
+#     # Modify the input file name for the 2 output files, which will get written
+#     # to the current directory.
 
-                # Parse as geojson
-                else:
-                    geom = shapely.from_geojson(str(value))
+#     base = Path(input_file).stem
+#     osmoutfile = f"{base}-out.osm"
+#     jsonin.createOSM(osmoutfile)
 
-                    if geom.geom_type != "Point":
-                        # Use centroid if polygon
-                        geom = geom.centroid
+#     data = jsonin.parse(input_file)
+#     # This OSM XML file only has OSM appropriate tags and values
 
-                    # Get coords from point
-                    lat = geom.y
-                    lon = geom.x
+#     for entry in data:
+#         feature = jsonin.createEntry(entry)
 
-                attrs["lat"] = lat
-                attrs["lon"] = lon
-                # log.debug(f"ATTRS: {attrs}")
+#         # Sometimes bad entries, usually from debugging XForm design, sneak in
+#         if len(feature) == 0:
+#             continue
 
-            # Some tags are actually attributes
-            # print(f"FIXME: {key} {key in attributes}")
-            # if key in self.multiple:
-            #     for item in value:
-            #         if key in item:
-            #             for entry in item[key].split():
-            #                 vals = self.getValues(key)
-            #                 if entry in vals:
-            #                     if vals[entry].find("="):
-            #                         tmp = vals[entry].split("=")
-            #                         tags[tmp[0]] = tmp[1]
-            #                 else:
-            #                     tags[entry] = "yes"
-            #     continue
+#         if len(feature) > 0:
+#             if "lat" not in feature["attrs"]:
+#                 if "geometry" in feature["tags"]:
+#                     if isinstance(feature["tags"]["geometry"], str):
+#                         coords = list(feature["tags"]["geometry"])
+#                         # del feature['tags']['geometry']
+#                 elif "coordinates" in feature["tags"]:
+#                     coords = feature["tags"]["coordinates"]
+#                     feature["attrs"] = {"lat": coords[1], "lon": coords[0]}
+#                 else:
+#                     log.warning(f"Bad record! {feature}")
+#                     continue  # Skip bad records
 
-            if isinstance(value, str) and (value == "no" or value == "unknown"):
-                pass
-            elif value is not None:
-                if key == "track" or key == "geoline":
-                    refs.append(tag)
-                    log.debug("Adding reference %s" % tag)
-                elif len(str(value)) > 0:
-                    if self.privateData(key):
-                        priv[key] = value
-                    else:
-                        item = self.convertEntry(key, value)
-                        if item is not None and isinstance(item, dict):
-                            tags.update(item)
-                        elif isinstance(item, list):
-                            for entry in item:
-                                tags.update(entry)
+#             jsonin.writeOSM(feature)
+#     # log.debug("Writing final OSM XML file...")
 
-            if len(tags) > 0:
-                if "geometry" in tags:
-                    del tags["geometry"]
-                feature["attrs"] = attrs
-                feature["tags"] = tags
-            if len(refs) > 0:
-                feature["refs"] = refs
-            if len(priv) > 0:
-                feature["private"] = priv
+#     # jsonin.finishOSM()
+#     log.info(f"Wrote OSM XML file: {osmoutfile}")
 
-        return feature
-
-
-def json2osm(input_file, yaml_file=None):
-    """Process the JSON file from ODK Central or the GeoJSON file to OSM XML format.
-
-    Args:
-        input_file (str): The path to the input JSON or GeoJSON file.
-        yaml_file (str): The path to the YAML config file (optional).
-
-    Returns:
-        osmoutfile (str): Path to the converted OSM XML file.
-    """
-    log.info(f"Converting JSON file to OSM: {input_file}")
-    if yaml_file:
-        jsonin = JsonDump(yaml_file)
-    else:
-        jsonin = JsonDump()
-
-    # jsonin.parseXLS(args.xlsfile)
-
-    # Modify the input file name for the 2 output files, which will get written
-    # to the current directory.
-
-    base = Path(input_file).stem
-    osmoutfile = f"{base}-out.osm"
-    jsonin.createOSM(osmoutfile)
-
-    data = jsonin.parse(input_file)
-    # This OSM XML file only has OSM appropriate tags and values
-
-    for entry in data:
-        feature = jsonin.createEntry(entry)
-
-        # Sometimes bad entries, usually from debugging XForm design, sneak in
-        if len(feature) == 0:
-            continue
-
-        if len(feature) > 0:
-            if "lat" not in feature["attrs"]:
-                if "geometry" in feature["tags"]:
-                    if isinstance(feature["tags"]["geometry"], str):
-                        coords = list(feature["tags"]["geometry"])
-                        # del feature['tags']['geometry']
-                elif "coordinates" in feature["tags"]:
-                    coords = feature["tags"]["coordinates"]
-                    feature["attrs"] = {"lat": coords[1], "lon": coords[0]}
-                else:
-                    log.warning(f"Bad record! {feature}")
-                    continue  # Skip bad records
-
-            jsonin.writeOSM(feature)
-    # log.debug("Writing final OSM XML file...")
-
-    # jsonin.finishOSM()
-    log.info(f"Wrote OSM XML file: {osmoutfile}")
-
-    return osmoutfile
-
+#     return osmoutfile
 
 def main():
     """Run conversion directly from the terminal."""
@@ -444,8 +351,57 @@ def main():
         )
         logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
-    json2osm(args.infile, args.yaml)
+    if args.yaml:
+        jsonvin = JsonDump(args.yaml)
+    else:
+        jsonin = JsonDump()
 
+    jsonin.parseXLS(args.xlsfile)
+
+    base = Path(args.infile).stem
+    osmoutfile = f"{base}.osm"
+    jsonin.createOSM(osmoutfile)
+
+    jsonoutfile = f"{base}.geojson"
+    jsonin.createGeoJson(jsonoutfile)
+
+    log.debug("Parsing json files %r" % args.infile)
+    data = jsonin.parse(args.infile)
+    # This OSM XML file only has OSM appropriate tags and values
+    nodeid = -1000
+    for entry in data:
+        feature = jsonin.createEntry(entry)
+        if len(feature) == 0:
+            continue
+        if "refs" in feature:
+            refs = list()
+            for ref in feature["refs"]:
+                now = datetime.now().strftime("%Y-%m-%dT%TZ")
+                if len(ref) == 0:
+                    continue
+                coords = ref.split(" ")
+                print(coords)
+                node = {"attrs": {"id": nodeid, "version": 1, "timestamp": now, "lat": coords[0], "lon": coords[1]}, "tags": dict()}
+                jsonin.writeOSM(node)
+                refs.append(nodeid)
+                nodeid -= 1
+
+            feature["refs"] = refs
+            jsonin.writeOSM(feature)
+        else:
+            # Sometimes bad entries, usually from debugging XForm design, sneak in
+            if "lat" not in feature["attrs"]:
+                log.warning("Bad record! %r" % feature)
+                continue
+            jsonin.writeOSM(feature)
+            # This GeoJson file has all the data values
+            jsonin.writeGeoJson(feature)
+            # print("TAGS: %r" % feature['tags'])
+
+    jsonin.finishOSM()
+    jsonin.finishGeoJson()
+    log.info("Wrote OSM XML file: %r" % osmoutfile)
+    log.info("Wrote GeoJson file: %r" % jsonoutfile)
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

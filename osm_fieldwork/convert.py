@@ -71,6 +71,7 @@ class Convert(YamlFile):
         self.defaults = dict()
         self.entries = dict()
         self.types = dict()
+        self.saved = dict()
         for item in self.yaml.yaml["convert"]:
             key = list(item.keys())[0]
             value = item[key]
@@ -413,12 +414,12 @@ class Convert(YamlFile):
                     attrs["lon"] = geometry[1]
                 continue
 
-            if 'lat' in attrs and len(attrs["lat"]) == 0:
-                continue
+            # if 'lat' in attrs and len(attrs["lat"]) == 0:
+            #    continue
 
             if key is not None and len(key) > 0 and key in attributes:
                 attrs[key] = value
-                log.debug("Adding attribute %s with value %s" % (key, value))
+                # log.debug("Adding attribute %s with value %s" % (key, value))
                 continue
 
             if value is not None and value != "no" and value != "unknown":
@@ -426,6 +427,11 @@ class Convert(YamlFile):
                     # refs.append(tags)
                     # log.debug("Adding reference %s" % tags)
                     refs = value.split(";")
+                elif type(value) != str:
+                    if self.privateData(key):
+                        priv[key] = str(value)
+                    else:
+                        tags[key] = str(value)
                 elif len(value) > 0:
                     if self.privateData(key):
                         priv[key] = value
