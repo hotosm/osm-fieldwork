@@ -15,8 +15,6 @@
 #     along with osm-fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-version: "3"
-
 networks:
   net:
     name: osm-fieldwork
