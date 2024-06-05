@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2021, 2022, 2023 Humanitarian OpenStreetMap Team
+# Copyright (c) 2021, 2022, 2023, 2024 Humanitarian OpenStreetMap Team
 #
 # This file is part of Osm-Fieldwork.
 #
@@ -19,10 +19,15 @@
 #
 
 import argparse
+import logging
 import os
+import sys
 
 from osm_fieldwork.convert import Convert
 from osm_fieldwork.xlsforms import xlsforms_path
+
+# Instantiate logger
+log = logging.getLogger(__name__)
 
 # find the path of root tests dir
 rootdir = os.path.dirname(os.path.abspath(__file__))
@@ -74,9 +79,9 @@ def test_sub_value():
 def test_multiple_value():
     """Test tag value conversion."""
     hits = 0
-    # Test a value that gets converted
-    vals = csv.convertValue("amenity", "coffee")
-    if len(vals) == 2 and vals[0]["amenity"] == "cafe" and vals[1]["cuisine"] == "coffee_shop":
+    vals = csv.convertMultiple("picnic_table fire_pit parking")
+    print(vals)
+    if len(vals) > 0 and vals[0]["leisure"] == "picnic_table" and vals[1]["leisure"] == "firepit":
         hits += 1
     assert hits == 1
 
@@ -84,8 +89,18 @@ def test_multiple_value():
 # Run standalone for easier debugging when not under pytest
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Read and convert a JSON file from ODK Central")
+    parser.add_argument("-v", "--verbose", nargs="?", const="0", help="verbose output")
     parser.add_argument("--infile", default=f"{rootdir}/testdata/testcamps.json", help="The JSON input file")
     args = parser.parse_args()
+
+    # if verbose, dump to the terminal
+    if args.verbose is not None:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )
 
     test_keywords()
     test_convert_tag()

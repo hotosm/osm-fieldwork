@@ -12,6 +12,8 @@
 convert:
   - camptype: tourism
   - openfire: leisure=firepit
+  - fire_pit: leisure=firepit
+  - picnic_table: leisure=picnic_table
   - latitude: lat
   - longitude: lon
   - altitude: ele
@@ -20,7 +22,6 @@ convert:
   - submissiondate: timestamp
   - comment: note
   - view: viewpoint
-  - cell: cellular
   - Monday: Mo
   - Tuesday: Tu
   - Wednesday: We
@@ -113,6 +114,8 @@ private:
   - lateral_system
   - access_roof
   - updatedat
+  - cell
+  - cellular
 
 # All of these tags are in the CSV file, and can be ignored
 ignore:
@@ -120,7 +123,6 @@ ignore:
   - __id
   - model
   - type
-  - features
   - accuracy
   - meta
   - __system
@@ -160,8 +162,12 @@ ignore:
   - government_menu
   - note
   - instanceid
+  - begin_group
+  - end_group
+  - image
 
 multiple:
   - healthcare
   - amenity_type
   - specialty
+  - features
