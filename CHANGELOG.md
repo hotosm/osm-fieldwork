@@ -1,3 +1,14 @@
+## 0.11.0 (2024-06-05)
+
+### Feat
+
+- update buildings xlsform & add healthcare entity form
+- add support for select_multiple in XLSForms (#257)
+
+### Fix
+
+- improve Amenities XLSForm & data model (#256)
+
 ## 0.10.2 (2024-05-24)
 
 ### Fix
