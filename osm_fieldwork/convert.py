@@ -405,6 +405,8 @@ class Convert(YamlFile):
                 "action",
             )
 
+            if key in self.ignore:
+                continue
             # When using existing OSM data, there's a special geometry field.
             # Otherwise use the GPS coordinates where you are.
             if key == "geometry" and len(value) > 0:
@@ -421,8 +423,18 @@ class Convert(YamlFile):
                 attrs[key] = value
                 # log.debug("Adding attribute %s with value %s" % (key, value))
                 continue
-
             if value is not None and value != "no" and value != "unknown":
+                if key == 'username':
+                    tags['user'] = value
+                    continue
+                items = self.convertEntry(key, value)
+                if key in self.types:
+                    if self.types[key] == "select_multiple":
+                        vals = self.convertMultiple(value)
+                        if len(vals) > 0:
+                            for tag in vals:
+                                tags.update(tag)
+                        continue
                 if key == "track" or key == "geoline":
                     # refs.append(tags)
                     # log.debug("Adding reference %s" % tags)
