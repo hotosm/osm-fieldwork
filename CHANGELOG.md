@@ -1,3 +1,10 @@
+## 0.11.1 (2024-06-07)
+
+### Fix
+
+- rename healthcare.xls form to health.xls (osm tag = healthcare)
+- bug in CSVDump where parsing fails if value is None
+
 ## 0.11.0 (2024-06-05)
 
 ### Feat
