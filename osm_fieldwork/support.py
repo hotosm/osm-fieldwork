@@ -28,6 +28,24 @@ from pathlib import Path
 # Instantiate logger
 log = logging.getLogger(__name__)
 
+def basename(
+    line: str,
+) -> str:
+    """
+    Extract the basename of a path after the last -.
+
+    Args:
+        line (str): The path from the json file entry
+
+    Returns:
+        (str): The last node of the path
+    """
+    tmp = line.split("-")
+    if len(tmp) == 0:
+        return line
+    base = tmp[len(tmp) - 1]
+    return base
+
 class OutSupport(object):
     def __init__(self,
                filespec: str = None,
@@ -140,3 +158,57 @@ class OutSupport(object):
             features.append(Feature(geometry=poi, properties=props))
         collection = FeatureCollection(features)
         dump(collection, self.json)
+
+
+    def WriteData(self,
+                  base: str,
+                  data: dict(),
+                  ) -> bool:
+        """
+        Write the data to the output files.
+
+        Args:
+            base (str): The base of the input file name
+            data (dict): The data to write
+
+        Returns:
+            (bool): Whether the data got written
+        """
+        osmoutfile = f"{base}.osm"
+        self.createOSM(osmoutfile)
+
+        jsonoutfile = f"{base}.geojson"
+        self.createGeoJson(jsonoutfile)
+
+        nodeid = -1000
+        for feature in data:
+            if len(feature) == 0:
+                continue
+            if "refs" in feature:
+                # it's a way
+                refs = list()
+                for ref in feature["refs"]:
+                    now = datetime.now().strftime("%Y-%m-%dT%TZ")
+                    if len(ref) == 0:
+                        continue
+                    coords = ref.split(" ")
+                    node = {"attrs": {"id": nodeid, "version": 1, "timestamp": now, "lat": coords[0], "lon": coords[1]}, "tags": dict()}
+                    self.writeOSM(node)
+                    self.writeGeoJson(node)
+                    refs.append(nodeid)
+                    nodeid -= 1
+                feature["refs"] = refs
+            else:
+                # it's a node
+                if "lat" not in feature["attrs"]:
+                    # Sometimes bad entries, usually from debugging XForm design, sneak in
+                    log.warning("Bad record! %r" % feature)
+                    continue
+            self.writeOSM(feature)
+
+        self.finishOSM()
+        log.info("Wrote OSM XML file: %r" % osmoutfile)
+        self.finishGeoJson()
+        log.info("Wrote GeoJson file: %r" % jsonoutfile)
+
+        return True
