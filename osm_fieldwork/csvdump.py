@@ -32,6 +32,7 @@ from geojson import Feature, FeatureCollection, Point, dump
 from osm_fieldwork.convert import Convert
 from osm_fieldwork.osmfile import OsmFile
 from osm_fieldwork.xlsforms import xlsforms_path
+from osm_fieldwork.support import basename
 
 # Instantiate logger
 log = logging.getLogger(__name__)
@@ -41,7 +42,6 @@ class CSVDump(Convert):
     """
     A class to parse the CSV files from ODK Central.
     """
-
     def __init__(
         self,
         yaml: str = None,
@@ -62,132 +62,6 @@ class CSVDump(Convert):
         self.defaults = dict()
         self.entries = dict()
         self.types = dict()
-
-    def lastSaved(
-        self,
-        keyword: str,
-    ) -> str:
-        """
-        Get the last saved value for a question.
-
-        Args:
-            keyword (str): The keyword to search for
-
-        Returns:
-            (str): The last saved value for the question
-
-        """
-        if keyword is not None and len(keyword) > 0:
-            return self.saved[keyword]
-        return None
-
-    def updateSaved(
-        self,
-        keyword: str,
-        value: str,
-    ) -> bool:
-        """
-        Update the last saved value for a question.
-
-        Args:
-            keyword (str): The keyword to search for
-            value (str): The new value
-
-        Returns:
-            (bool): If the new value got saved
-
-        """
-        if keyword is not None and value is not None and len(value) > 0:
-            self.saved[keyword] = value
-            return True
-        else:
-            return False
-
-    def createOSM(
-        self,
-        filespec: str,
-    ):
-        """
-        Create an OSM XML output files.
-
-        Args:
-            filespec (str): The output file name
-        """
-        log.debug("Creating OSM XML file: %s" % filespec)
-        self.osm = OsmFile(filespec)
-        # self.osm.header()
-
-    def writeOSM(
-        self,
-        feature: dict,
-    ):
-        """
-        Write a feature to an OSM XML output file.
-
-        Args:
-            feature (dict): The OSM feature to write to
-        """
-        out = ""
-        if "id" in feature["tags"]:
-            feature["id"] = feature["tags"]["id"]
-        if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
-            return None
-        if "refs" not in feature:
-            out += self.osm.createNode(feature)
-        else:
-            out += self.osm.createWay(feature)
-        self.osm.write(out)
-
-    def finishOSM(self):
-        """Write the OSM XML file footer and close it."""
-        # This is now handled by a destructor in the OsmFile class
-        # self.osm.footer()
-
-    def createGeoJson(
-        self,
-        filespec: str = "tmp.geojson",
-    ):
-        """
-        Create a GeoJson output file.
-
-        Args:
-            filespec (str): The output file name
-        """
-        log.debug("Creating GeoJson file: %s" % filespec)
-        self.json = open(filespec, "w")
-
-    def writeGeoJson(
-        self,
-        feature: dict,
-    ):
-        """
-        Write a feature to a GeoJson output file.
-
-        Args:
-            feature (dict): The OSM feature to write to
-        """
-        # These get written later when finishing , since we have to create a FeatureCollection
-        if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
-            return None
-        self.features.append(feature)
-
-    def finishGeoJson(self):
-        """
-        Write the GeoJson FeatureCollection to the output file and close it.
-        """
-        features = list()
-        for item in self.features:
-            if len(item["attrs"]["lon"]) == 0 or len(item["attrs"]["lat"]) == 0:
-                log.warning("Bad location data in entry! %r", item["attrs"])
-                continue
-            poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
-            if "private" in item:
-                props = {**item["tags"], **item["private"]}
-            else:
-                props = item["tags"]
-            features.append(Feature(geometry=poi, properties=props))
-        collection = FeatureCollection(features)
-        dump(collection, self.json)
 
     def parse(
         self,
@@ -216,7 +90,7 @@ class CSVDump(Convert):
             for keyword, value in row.items():
                 if keyword is None or len(value) == 0:
                     continue
-                base = self.basename(keyword).lower()
+                base = basename(keyword).lower()
                 # There's many extraneous fields in the input file which we don't need.
                 if base is None or base in self.ignore or value is None:
                     continue
@@ -241,7 +115,6 @@ class CSVDump(Convert):
                             if base == "longitude" and len(value) == 0:
                                 value = row["warmup-Longitude"]
                     items = self.convertEntry(base, value)
-
                     # log.info(f"ROW: {base} {value}")
                     if len(items) > 0:
                         if base in self.saved:
@@ -265,25 +138,6 @@ class CSVDump(Convert):
                 # log.debug(f"\tFIXME1: {tags}")
             all_tags.append(tags)
         return all_tags
-
-    def basename(
-        self,
-        line: str,
-    ) -> str:
-        """
-        Extract the basename of a path after the last -.
-
-        Args:
-            line (str): The path from the json file entry
-
-        Returns:
-            (str): The last node of the path
-        """
-        tmp = line.split("-")
-        if len(tmp) == 0:
-            return line
-        base = tmp[len(tmp) - 1]
-        return base
 
 def main():
     """Run conversion directly from the terminal."""
@@ -353,7 +207,6 @@ def main():
     csvin.finishGeoJson()
     log.info("Wrote OSM XML file: %r" % osmoutfile)
     log.info("Wrote GeoJson file: %r" % jsonoutfile)
-
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
