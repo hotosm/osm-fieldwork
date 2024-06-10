@@ -1,3 +1,9 @@
+## 0.11.2 (2024-06-10)
+
+### Fix
+
+- make digitization_correct question mandatory
+
 ## 0.11.1 (2024-06-07)
 
 ### Fix
