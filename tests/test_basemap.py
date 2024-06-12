@@ -19,13 +19,13 @@
 #
 """Test functionalty of basemapper.py."""
 
-from io import BytesIO
 import logging
 import os
 import shutil
-import pytest
+from io import BytesIO
 from pathlib import Path
 
+import pytest
 from pmtiles.reader import MemorySource
 from pmtiles.reader import Reader as PMTileReader
 
