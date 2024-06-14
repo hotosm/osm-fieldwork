@@ -128,13 +128,8 @@ convention = "google"
 "osm_fieldwork/basemapper.py" = ["N802"]
 
 [project.scripts]
-json2osm = "osm_fieldwork.json2osm:main"
 basemapper = "osm_fieldwork.basemapper:main"
 osm2favorites = "osm_fieldwork.osm2favorities:main"
-csv2osm = "osm_fieldwork.CSVDump:main"
-odk2csv = "osm_fieldwork.odk2csv:main"
 odk2osm = "osm_fieldwork.odk2osm:main"
-odk2geojson = "osm_fieldwork.odk2geojson:main"
-odk_merge = "osm_fieldwork.odk_merge:main"
 odk_client = "osm_fieldwork.odk_client:main"
 make_data_extract = "osm_fieldwork.make_data_extract:main"
