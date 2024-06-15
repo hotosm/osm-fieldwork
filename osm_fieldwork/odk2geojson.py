@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 
+# This file has been replaced by ODKParsers(), and will be delete in the next release.
+
 #
-#   Copyright (C) 2023 Humanitarian OpenstreetMap Team
+#   Copyright (C) 2023, 2024 Humanitarian OpenstreetMap Team
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
