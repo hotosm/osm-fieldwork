@@ -31,8 +31,7 @@ import glob
 from osm_fieldwork.convert import Convert
 from osm_fieldwork.ODKInstance import ODKInstance
 from osm_fieldwork.support import OutSupport
-from osm_fieldwork.jsondump import JsonDump
-from osm_fieldwork.csvdump import CSVDump
+from osm_fieldwork.parsers import ODKParsers
 
 # Instantiate logger
 log = logging.getLogger(__name__)
@@ -60,9 +59,10 @@ def main():
         )
 
     toplevel = Path(args.infile)
+    odk = ODKParsers(args.yaml)
+    odk.parseXLS(args.xlsfile)
     out = OutSupport()
     xmlfiles = list()
-    convert = Convert()
     data = list()
     # It's a wildcard, used for XML instance files
     if args.infile.find("*") >= 0:
@@ -70,13 +70,11 @@ def main():
         toplevel = Path(args.infile[:-1])
         for dirs in glob.glob(args.infile):
             xml = os.listdir(dirs)
-            # There ilineagelineages always only one XML file per infile
             full = os.path.join(dirs, xml[0])
             xmlfiles.append(full)
         for infile in xmlfiles:
-            logging.info(f"Processing infile {infile}")
-            odk = ODKInstance(infile)
-            entry = convert.createEntry(odk.data)
+            tmp = odk.XMLparser(infile)
+            entry = odk.createEntry(tmp[0])
             data.append(entry)
     elif toplevel.suffix == '.xml':
         # It's an instance file from ODK Collect
@@ -84,27 +82,18 @@ def main():
         # There is always only one XML file per infile
         full = os.path.join(toplevel, os.path.basename(toplevel))
         xmlfiles.append(full + ".xml")
-        odk = ODKInstance(args.infile)
-        entry = convert.createEntry(odk.data)
+        tmp = odk.XMLparser(args.infile)
+        # odki = ODKInstance(filespec=args.infile, yaml=args.yaml)
+        entry = odk.createEntry(tmp)
         data.append(entry)
     elif toplevel.suffix == ".csv":
         log.debug(f"Parsing csv files {args.infile}")
-        if args.yaml:
-            csvin = CSVDump(args.yaml)
-        else:
-            csvin = CSVDump()
-        csvin.parseXLS(args.xlsfile)
-        for entry in csvin.parse(args.infile):
-            data.append(convert.createEntry(entry))
+        for entry in odk.CSVparser(args.infile):
+            data.append(odk.createEntry(entry))
     elif toplevel.suffix == ".json":
         log.debug(f"Parsing json files {args.infile}")
-        if args.yaml:
-            jsonin = JsonDump(args.yaml)
-        else:
-            jsonin = JsonDump()
-        jsonin.parseXLS(args.xlsfile)
-        for entry in jsonin.parse(args.infile):
-            data.append(convert.createEntry(entry))
+        for entry in odk.JSONparser(args.infile):
+            data.append(odk.createEntry(entry))
 
     # Write the data
     out.WriteData(toplevel.stem, data)
