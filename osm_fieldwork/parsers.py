@@ -92,7 +92,9 @@ class ODKParsers(Convert):
             tags = dict()
             # log.info(f"ROW: {row}")
             for keyword, value in row.items():
-                if keyword is None or len(value) == 0:
+                if keyword is None or value is None:
+                    continue
+                if len(value) == 0:
                     continue
                 base = basename(keyword).lower()
                 # There's many extraneous fields in the input file which we don't need.
