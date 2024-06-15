@@ -40,11 +40,17 @@ def basename(
     Returns:
         (str): The last node of the path
     """
-    tmp = line.split("-")
-    if len(tmp) == 0:
+    if line.find("-") > 0:
+        tmp = line.split("-")
+        if len(tmp) > 0:
+            return tmp[len(tmp) - 1]
+    elif line.find(":") > 0:
+        tmp = line.split(":")
+        if len(tmp) > 0:
+            return tmp[len(tmp) - 1]
+    else:
+        # return tmp[len(tmp) - 1]
         return line
-    base = tmp[len(tmp) - 1]
-    return base
 
 class OutSupport(object):
     def __init__(self,
@@ -92,8 +98,11 @@ class OutSupport(object):
             feature (dict): The OSM feature to write to
         """
         out = ""
-        if "id" in feature["tags"]:
-            feature["id"] = feature["tags"]["id"]
+        if "tags" in feature:
+            if "id" in feature["tags"]:
+                feature["id"] = feature["tags"]["id"]
+        else:
+            return True
         if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
             return None
         if "refs" not in feature:
