@@ -22,26 +22,20 @@ import argparse
 import csv
 import logging
 import os
-import re
 import sys
 from datetime import datetime
 
-import pandas as pd
-from geojson import Feature, FeatureCollection, Point, dump
-
 from osm_fieldwork.convert import Convert
-from osm_fieldwork.osmfile import OsmFile
-from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.support import basename
+from osm_fieldwork.xlsforms import xlsforms_path
 
 # Instantiate logger
 log = logging.getLogger(__name__)
 
 
 class CSVDump(Convert):
-    """
-    A class to parse the CSV files from ODK Central.
-    """
+    """A class to parse the CSV files from ODK Central."""
+
     def __init__(
         self,
         yaml: str = None,
@@ -68,8 +62,7 @@ class CSVDump(Convert):
         filespec: str,
         data: str = None,
     ) -> list:
-        """
-        Parse the CSV file from ODK Central and convert it to a data structure.
+        """Parse the CSV file from ODK Central and convert it to a data structure.
 
         Args:
             filespec (str): The file to parse.
@@ -139,6 +132,7 @@ class CSVDump(Convert):
             all_tags.append(tags)
         return all_tags
 
+
 def main():
     """Run conversion directly from the terminal."""
     parser = argparse.ArgumentParser(description="convert CSV from ODK Central to OSM XML")
@@ -207,6 +201,7 @@ def main():
     csvin.finishGeoJson()
     log.info("Wrote OSM XML file: %r" % osmoutfile)
     log.info("Wrote GeoJson file: %r" % jsonoutfile)
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

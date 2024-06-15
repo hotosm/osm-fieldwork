@@ -21,7 +21,6 @@
 import argparse
 import logging
 import os
-import logging
 import sys
 
 from osm_fieldwork.convert import Convert

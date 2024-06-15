@@ -18,17 +18,18 @@
 #
 
 import argparse
+import json
 import logging
 import os
 import re
 import sys
+
 import flatdict
-import json
-from collections import OrderedDict
 import xmltodict
 
 # Instantiate logger
 log = logging.getLogger(__name__)
+
 
 class ODKInstance(object):
     def __init__(
@@ -36,8 +37,7 @@ class ODKInstance(object):
         filespec: str = None,
         data: str = None,
     ):
-        """
-        This class imports a ODK Instance file, which is in XML into a
+        """This class imports a ODK Instance file, which is in XML into a
         data structure.
 
         Args:
@@ -60,8 +60,7 @@ class ODKInstance(object):
         filespec: str,
         data: str = None,
     ) -> dict:
-        """
-        Import an ODK XML Instance file ito a data structure. The input is
+        """Import an ODK XML Instance file ito a data structure. The input is
         either a filespec to the Instance file copied off your phone, or
         the XML that has been read in elsewhere.
 
@@ -89,7 +88,7 @@ class ODKInstance(object):
         rows = list()
         pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
         for key, value in flattened.items():
-            if key[0] == '@' or value is None:
+            if key[0] == "@" or value is None:
                 continue
             if re.search(pat, value):
                 gps = value.split(" ")
@@ -98,12 +97,13 @@ class ODKInstance(object):
                 continue
 
             # print(key, value)
-            tmp = key.split(':')
+            tmp = key.split(":")
             if tmp[len(tmp) - 1] in self.ignore:
                 continue
             row[tmp[len(tmp) - 1]] = value
 
         return row
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

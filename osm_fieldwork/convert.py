@@ -22,8 +22,6 @@ import argparse
 import logging
 import re
 import sys
-import pandas as pd
-import re
 
 import pandas as pd
 
@@ -33,9 +31,9 @@ from osm_fieldwork.yamlfile import YamlFile
 # Instantiate logger
 log = logging.getLogger(__name__)
 
+
 def escape(value: str) -> str:
-    """
-    Escape characters like embedded quotes in text fields.
+    """Escape characters like embedded quotes in text fields.
 
     Args:
         value (str):The string to modify
@@ -47,9 +45,9 @@ def escape(value: str) -> str:
     tmp = value.replace("&", " and ")
     return tmp.replace("'", "&apos;")
 
+
 class Convert(YamlFile):
-    """
-    A class to apply a YAML config file and convert ODK to OSM.
+    """A class to apply a YAML config file and convert ODK to OSM.
 
     Returns:
         (Convert): An instance of this object
@@ -102,8 +100,7 @@ class Convert(YamlFile):
         self,
         keyword: str,
     ) -> bool:
-        """
-        Search the private data category for a keyword.
+        """Search the private data category for a keyword.
 
         Args:
             keyword (str): The keyword to search for
@@ -117,8 +114,7 @@ class Convert(YamlFile):
         self,
         keyword: str,
     ) -> bool:
-        """
-        Search the convert data category for a keyword.
+        """Search the convert data category for a keyword.
 
         Args:
             keyword (str): The keyword to search for
@@ -132,8 +128,7 @@ class Convert(YamlFile):
         self,
         keyword: str,
     ) -> bool:
-        """
-        Search the convert data category for a ketyword.
+        """Search the convert data category for a ketyword.
 
         Args:
             keyword (str): The keyword to search for
@@ -147,8 +142,7 @@ class Convert(YamlFile):
         self,
         value: str,
     ) -> str:
-        """
-        Get the keyword for a value from the yaml file.
+        """Get the keyword for a value from the yaml file.
 
         Args:
             value (str): The value to find the keyword for
@@ -167,8 +161,7 @@ class Convert(YamlFile):
         self,
         keyword: str = None,
     ) -> str:
-        """
-        Get the values for a primary key.
+        """Get the values for a primary key.
 
         Args:
             keyword (str): The keyword to get the value of
@@ -187,8 +180,7 @@ class Convert(YamlFile):
         tag: str,
         value: str,
     ) -> list:
-        """
-        Convert a tag and value from the ODK represention to an OSM one.
+        """Convert a tag and value from the ODK represention to an OSM one.
 
         Args:
             tag (str): The tag from the ODK XML file
@@ -215,7 +207,7 @@ class Convert(YamlFile):
         # If the tag is in the config file, convert it.
         if self.convertData(newtag):
             newtag = self.convertTag(newtag)
-            #if newtag != tag:
+            # if newtag != tag:
             #    logging.debug(f"Converted Tag for entry {tag} to {newtag}")
 
         # Truncate the elevation, as it's really long
@@ -240,8 +232,7 @@ class Convert(YamlFile):
         tag: str,
         value: str,
     ) -> list:
-        """
-        Convert a single tag value.
+        """Convert a single tag value.
 
         Args:
             tag (str): The tag from the ODK XML file
@@ -284,8 +275,7 @@ class Convert(YamlFile):
         self,
         tag: str,
     ) -> str:
-        """
-        Convert a single tag.
+        """Convert a single tag.
 
         Args:
             tag (str): The tag from the ODK XML file
@@ -317,8 +307,7 @@ class Convert(YamlFile):
         self,
         value: str,
     ) -> list:
-        """
-        Convert a multiple tags from a select_multiple question..
+        """Convert a multiple tags from a select_multiple question..
 
         Args:
             value (str): The tags from the ODK XML file
@@ -327,12 +316,12 @@ class Convert(YamlFile):
             (list): The new tags
         """
         tags = dict()
-        for tag in value.split(' '):
+        for tag in value.split(" "):
             low = tag.lower()
             if self.convertData(low):
                 newtag = self.convert[low]
-                if newtag.find('=') > 0:
-                    tmp = newtag.split('=')
+                if newtag.find("=") > 0:
+                    tmp = newtag.split("=")
                     if tmp[0] in tags:
                         tags[tmp[0]] = f"{tags[tmp[0]]};{tmp[1]}"
                     else:
@@ -354,10 +343,10 @@ class Convert(YamlFile):
             defaults = self.entries["default"]
             i = 0
             while i < len(self.entries):
-                if type(self.entries['type'][i]) == float:
-                    self.types[self.entries['name'][i]] = None
+                if type(self.entries["type"][i]) == float:
+                    self.types[self.entries["name"][i]] = None
                 else:
-                    self.types[self.entries['name'][i]] = self.entries['type'][i].split(' ')[0]
+                    self.types[self.entries["name"][i]] = self.entries["type"][i].split(" ")[0]
                 i += 1
             total = len(names)
             i = 0
@@ -377,8 +366,7 @@ class Convert(YamlFile):
         self,
         entry: dict,
     ) -> dict:
-        """
-        Create the feature data structure.
+        """Create the feature data structure.
 
         Args:
             entry (dict): The feature data
@@ -429,8 +417,8 @@ class Convert(YamlFile):
                 # log.debug("Adding attribute %s with value %s" % (key, value))
                 continue
             if value is not None and value != "no" and value != "unknown":
-                if key == 'username':
-                    tags['user'] = value
+                if key == "username":
+                    tags["user"] = value
                     continue
                 items = self.convertEntry(key, value)
                 if key in self.types:
@@ -466,9 +454,7 @@ class Convert(YamlFile):
         return feature
 
     def dump(self):
-        """
-        Dump internal data structures, for debugging purposes only.
-        """
+        """Dump internal data structures, for debugging purposes only."""
         print("YAML file: %s" % self.filespec)
         print("Convert section")
         for key, val in self.convert.items():
@@ -489,9 +475,7 @@ class Convert(YamlFile):
 # this way than using pytest,
 #
 def main():
-    """
-    This main function lets this class be run standalone by a bash script.
-    """
+    """This main function lets this class be run standalone by a bash script."""
     parser = argparse.ArgumentParser(description="Read and parse a YAML file")
 
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
@@ -552,6 +536,7 @@ def main():
     entry = convert.convertEntry("power", "solar")
     for i in entry:
         print("XX: %r" % i)
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

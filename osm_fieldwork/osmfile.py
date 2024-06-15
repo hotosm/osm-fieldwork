@@ -112,7 +112,7 @@ class OsmFile(object):
 
     def write(
         self,
-        data = None,
+        data=None,
     ):
         """Write the data to the OSM XML file."""
         if type(data) == list:

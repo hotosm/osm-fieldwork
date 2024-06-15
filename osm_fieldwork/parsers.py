@@ -18,34 +18,27 @@
 #     along with OSM-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
 
-import argparse
 import csv
+import json
 import logging
 import os
 import re
-import sys
-import json
-import flatdict
-
-from datetime import datetime
-from collections import OrderedDict
 from pathlib import Path
+
+import flatdict
 import xmltodict
-from geojson import Feature, FeatureCollection, dump
+
 from osm_fieldwork.convert import Convert
-from osm_fieldwork.osmfile import OsmFile
-from osm_fieldwork.xlsforms import xlsforms_path
-from osm_fieldwork.ODKInstance import ODKInstance
 from osm_fieldwork.support import basename
+from osm_fieldwork.xlsforms import xlsforms_path
 
 # Instantiate logger
 log = logging.getLogger(__name__)
 
 
 class ODKParsers(Convert):
-    """
-    A class to parse the CSV files from ODK Central.
-    """
+    """A class to parse the CSV files from ODK Central."""
+
     def __init__(
         self,
         yaml: str = None,
@@ -72,8 +65,7 @@ class ODKParsers(Convert):
         filespec: str,
         data: str = None,
     ) -> list:
-        """
-        Parse the CSV file from ODK Central and convert it to a data structure.
+        """Parse the CSV file from ODK Central and convert it to a data structure.
 
         Args:
             filespec (str): The file to parse.
@@ -145,8 +137,7 @@ class ODKParsers(Convert):
         filespec: str = None,
         data: str = None,
     ) -> list:
-        """
-        Parse the JSON file from ODK Central and convert it to a data structure.
+        """Parse the JSON file from ODK Central and convert it to a data structure.
         The input is either a filespec to open, or the data itself.
 
         Args:
@@ -241,8 +232,7 @@ class ODKParsers(Convert):
         filespec: str,
         data: str = None,
     ) -> list:
-        """
-        Import an ODK XML Instance file ito a data structure. The input is
+        """Import an ODK XML Instance file ito a data structure. The input is
         either a filespec to the Instance file copied off your phone, or
         the XML that has been read in elsewhere.
 
@@ -271,7 +261,7 @@ class ODKParsers(Convert):
         # log.debug(f"FLAT: {flattened}")
         pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
         for key, value in flattened.items():
-            if key[0] == '@' or value is None:
+            if key[0] == "@" or value is None:
                 continue
             # Get the last element deliminated by a dash
             # for CSV & JSON, or a colon for ODK XML.

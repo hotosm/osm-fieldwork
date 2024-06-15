@@ -20,19 +20,20 @@
 
 import logging
 from datetime import datetime
-from geojson import Feature, FeatureCollection, Point, dump
-from osm_fieldwork.osmfile import OsmFile
-from osm_fieldwork.xlsforms import xlsforms_path
 from pathlib import Path
+
+from geojson import Feature, FeatureCollection, Point, dump
+
+from osm_fieldwork.osmfile import OsmFile
 
 # Instantiate logger
 log = logging.getLogger(__name__)
 
+
 def basename(
     line: str,
 ) -> str:
-    """
-    Extract the basename of a path after the last -.
+    """Extract the basename of a path after the last -.
 
     Args:
         line (str): The path from the json file entry
@@ -52,10 +53,12 @@ def basename(
         # return tmp[len(tmp) - 1]
         return line
 
+
 class OutSupport(object):
-    def __init__(self,
-               filespec: str = None,
-               ):
+    def __init__(
+        self,
+        filespec: str = None,
+    ):
         self.osm = None
         self.filespec = filespec
         self.features = list()
@@ -72,8 +75,7 @@ class OutSupport(object):
         self,
         filespec: str = None,
     ) -> bool:
-        """
-        Create an OSM XML output files.
+        """Create an OSM XML output files.
 
         Args:
             filespec (str): The output file name
@@ -91,8 +93,7 @@ class OutSupport(object):
         self,
         feature: dict,
     ) -> bool:
-        """
-        Write a feature to an OSM XML output file.
+        """Write a feature to an OSM XML output file.
 
         Args:
             feature (dict): The OSM feature to write to
@@ -122,8 +123,7 @@ class OutSupport(object):
         self,
         filespec: str = "tmp.geojson",
     ) -> bool:
-        """
-        Create a GeoJson output file.
+        """Create a GeoJson output file.
 
         Args:
             filespec (str): The output file name
@@ -137,8 +137,7 @@ class OutSupport(object):
         self,
         feature: dict,
     ) -> bool:
-        """
-        Write a feature to a GeoJson output file.
+        """Write a feature to a GeoJson output file.
 
         Args:
             feature (dict): The OSM feature to write to
@@ -151,9 +150,7 @@ class OutSupport(object):
         return True
 
     def finishGeoJson(self):
-        """
-        Write the GeoJson FeatureCollection to the output file and close it.
-        """
+        """Write the GeoJson FeatureCollection to the output file and close it."""
         features = list()
         for item in self.features:
             if len(item["attrs"]["lon"]) == 0 or len(item["attrs"]["lat"]) == 0:
@@ -168,13 +165,12 @@ class OutSupport(object):
         collection = FeatureCollection(features)
         dump(collection, self.json)
 
-
-    def WriteData(self,
-                  base: str,
-                  data: dict(),
-                  ) -> bool:
-        """
-        Write the data to the output files.
+    def WriteData(
+        self,
+        base: str,
+        data: dict(),
+    ) -> bool:
+        """Write the data to the output files.
 
         Args:
             base (str): The base of the input file name
@@ -201,7 +197,10 @@ class OutSupport(object):
                     if len(ref) == 0:
                         continue
                     coords = ref.split(" ")
-                    node = {"attrs": {"id": nodeid, "version": 1, "timestamp": now, "lat": coords[0], "lon": coords[1]}, "tags": dict()}
+                    node = {
+                        "attrs": {"id": nodeid, "version": 1, "timestamp": now, "lat": coords[0], "lon": coords[1]},
+                        "tags": dict(),
+                    }
                     self.writeOSM(node)
                     self.writeGeoJson(node)
                     refs.append(nodeid)
