@@ -20,9 +20,12 @@
 
 import argparse
 import logging
+import re
 import sys
 import pandas as pd
 import re
+
+import pandas as pd
 
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.yamlfile import YamlFile
@@ -100,7 +103,7 @@ class Convert(YamlFile):
         keyword: str,
     ) -> bool:
         """
-        Search he private data category for a keyword.
+        Search the private data category for a keyword.
 
         Args:
             keyword (str): The keyword to search for

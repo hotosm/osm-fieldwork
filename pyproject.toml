@@ -59,7 +59,7 @@ asyncio_mode="auto"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.10.2"
+version = "0.11.2"
 version_files = [
     "pyproject.toml:version",
     "osm_fieldwork/__version__.py",
@@ -75,7 +75,6 @@ source-includes = ["LICENSE.md", "README.md"]
 excludes = ["osm_fieldwork/*.db", "osm_fieldwork/*.sql"]
 [tool.pdm.dev-dependencies]
 dev = [
-    "black>=23.7.0",
     "commitizen>=3.6.0",
     "pre-commit>=3.3.3",
 ]
@@ -103,16 +102,10 @@ ui = [
     "androidstorage4kivy>=0.1.1",
 ]
 
-[tool.black]
-line-length = 132
-target-versions = ["py310", "py311"]
-
 [tool.ruff]
 fix = true
 line-length = 132
 target-version = "py310"
-select = ["I", "E", "W", "D", "B", "F", "N", "Q"]
-ignore = ["N805", "B008"]
 exclude = [
     ".git",
     ".ruff_cache",
@@ -122,10 +115,13 @@ exclude = [
     "dist",
     "osm_fieldwork/__version__.py",
 ]
-[tool.ruff.pydocstyle]
-convention = "google"
+[tool.ruff.lint]
+select = ["I", "E", "W", "D", "B", "F", "N", "Q"]
+ignore = ["N805", "B008"]
 [tool.ruff.per-file-ignores]
 "osm_fieldwork/basemapper.py" = ["N802"]
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [project.scripts]
 basemapper = "osm_fieldwork.basemapper:main"

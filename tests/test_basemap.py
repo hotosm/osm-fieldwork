@@ -22,8 +22,10 @@
 import logging
 import os
 import shutil
+from io import BytesIO
 from pathlib import Path
 
+import pytest
 from pmtiles.reader import MemorySource
 from pmtiles.reader import Reader as PMTileReader
 
@@ -33,7 +35,10 @@ from osm_fieldwork.sqlite import DataFile
 log = logging.getLogger(__name__)
 
 rootdir = os.path.dirname(os.path.abspath(__file__))
-boundary = f"{rootdir}/testdata/Rollinsville.geojson"
+string_boundary = "-105.642662 39.917580 -105.631343 39.929250"
+with open(Path(f"{rootdir}/testdata/Rollinsville.geojson"), "rb") as geojson_file:
+    boundary = geojson_file.read()
+    object_boundary = BytesIO(boundary)
 outfile = f"{rootdir}/testdata/rollinsville.mbtiles"
 base = "./tiles"
 # boundary = open(infile, "r")
@@ -46,7 +51,8 @@ base = "./tiles"
 #    geometry = shape(poly)
 
 
-def test_create():
+@pytest.mark.parametrize("boundary", [string_boundary, object_boundary])
+def test_create(boundary):
     """See if the file got loaded."""
     hits = 0
     basemap = BaseMapper(boundary, base, "topo", False)

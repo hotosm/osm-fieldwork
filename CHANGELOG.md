@@ -1,3 +1,27 @@
+## 0.11.2 (2024-06-10)
+
+### Fix
+
+- make digitization_correct question mandatory
+
+## 0.11.1 (2024-06-07)
+
+### Fix
+
+- rename healthcare.xls form to health.xls (osm tag = healthcare)
+- bug in CSVDump where parsing fails if value is None
+
+## 0.11.0 (2024-06-05)
+
+### Feat
+
+- update buildings xlsform & add healthcare entity form
+- add support for select_multiple in XLSForms (#257)
+
+### Fix
+
+- improve Amenities XLSForm & data model (#256)
+
 ## 0.10.2 (2024-05-24)
 
 ### Fix

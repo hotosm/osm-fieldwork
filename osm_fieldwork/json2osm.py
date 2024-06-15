@@ -23,13 +23,11 @@ import json
 import logging
 
 # import pandas as pd
-import re
 import sys
 from pathlib import Path
 
 import flatdict
 import geojson
-import shapely
 from geojson import Feature, FeatureCollection, Point, dump
 
 from osm_fieldwork.convert import Convert
@@ -66,6 +64,184 @@ class JsonDump(Convert):
         self.defaults = dict()
         self.entries = dict()
         self.types = dict()
+
+    def createOSM(
+        self,
+        filespec: str = "tmp.osm",
+    ):
+        """Create an OSM XML output files.
+
+        Args:
+            filespec (str): The filespec for the output OSM XML file
+
+        Returns:
+            (OsmFile): An instance of the OSM XML output file
+        """
+        log.debug(f"Creating OSM XML file: {filespec}")
+        self.osm = OsmFile(filespec)
+        return self.osm
+
+    def writeOSM(
+        self,
+        feature: dict,
+    ):
+        """Write a feature to an OSM XML output file.
+
+        Args:
+            feature (dict): The feature to write to the OSM XML output file
+        """
+        out = ""
+        if "id" in feature["tags"]:
+            feature["id"] = feature["tags"]["id"]
+        if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
+            return None
+        if "user" in feature["tags"] and "user" not in feature["attrs"]:
+            feature["attrs"]["user"] = feature["tags"]["user"]
+            del feature["tags"]["user"]
+        if "uid" in feature["tags"] and "uid" not in ["attrs"]:
+            feature["attrs"]["uid"] = feature["tags"]["uid"]
+            del feature["tags"]["uid"]
+        if "refs" not in feature:
+            out += self.osm.createNode(feature, True)
+        else:
+            out += self.osm.createWay(feature, True)
+        self.osm.write(out)
+
+    def finishOSM(self):
+        """Write the OSM XML file footer and close it. The destructor in the
+        OsmFile class should do this, but this is the manual way.
+        """
+        self.osm.footer()
+
+    def createGeoJson(
+        self,
+        file="tmp.geojson",
+    ):
+        """Create a GeoJson output file.
+
+        Args:
+                file (str): The filespec of the output GeoJson file
+        """
+        log.debug("Creating GeoJson file: %s" % file)
+        self.json = open(file, "w")
+
+    def writeGeoJson(
+        self,
+        feature: dict,
+    ):
+        """Write a feature to a GeoJson output file.
+
+        Args:
+            feature (dict): The feature to write to the GeoJson output file
+        """
+        # These get written later when finishing , since we have to create a FeatureCollection
+        if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
+            return None
+        self.features.append(feature)
+
+    def finishGeoJson(self):
+        """Write the GeoJson FeatureCollection to the output file and close it."""
+        features = list()
+        for item in self.features:
+            # poi = Point()
+            poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
+            if "private" in item:
+                props = {**item["tags"], **item["private"]}
+            else:
+                props = item["tags"]
+            features.append(Feature(geometry=poi, properties=props))
+        collection = FeatureCollection(features)
+        dump(collection, self.json)
+=======
+
+    def createOSM(
+        self,
+        filespec: str = "tmp.osm",
+    ) -> OsmFile:
+        """Create an OSM XML output files.
+
+        Args:
+            filespec (str): The filespec for the output OSM XML file
+
+        Returns:
+            (OsmFile): An instance of the OSM XML output file
+        """
+        log.debug(f"Creating OSM XML file: {filespec}")
+        self.osm = OsmFile(filespec)
+        return self.osm
+
+    def writeOSM(
+        self,
+        feature: dict,
+    ):
+        """Write a feature to an OSM XML output file.
+
+        Args:
+            feature (dict): The feature to write to the OSM XML output file
+        """
+        out = ""
+        if "id" in feature["tags"]:
+            feature["id"] = feature["tags"]["id"]
+        if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
+            return None
+        if "user" in feature["tags"] and "user" not in feature["attrs"]:
+            feature["attrs"]["user"] = feature["tags"]["user"]
+            del feature["tags"]["user"]
+        if "uid" in feature["tags"] and "uid" not in ["attrs"]:
+            feature["attrs"]["uid"] = feature["tags"]["uid"]
+            del feature["tags"]["uid"]
+        if "refs" not in feature:
+            out += self.osm.createNode(feature, True)
+        else:
+            out += self.osm.createWay(feature, True)
+        self.osm.write(out)
+
+    def finishOSM(self):
+        """Write the OSM XML file footer and close it. The destructor in the
+        OsmFile class should do this, but this is the manual way.
+        """
+        self.osm.footer()
+
+    def createGeoJson(
+        self,
+        file="tmp.geojson",
+    ):
+        """Create a GeoJson output file.
+
+        Args:
+            file (str): The filespec of the output GeoJson file
+        """
+        log.debug("Creating GeoJson file: %s" % file)
+        self.json = open(file, "w")
+
+    def writeGeoJson(
+        self,
+        feature: dict,
+    ):
+        """Write a feature to a GeoJson output file.
+
+        Args:
+            feature (dict): The feature to write to the GeoJson output file
+        """
+        # These get written later when finishing , since we have to create a FeatureCollection
+        if "lat" not in feature["attrs"] or "lon" not in feature["attrs"]:
+            return None
+        self.features.append(feature)
+
+    def finishGeoJson(self):
+        """Write the GeoJson FeatureCollection to the output file and close it."""
+        features = list()
+        for item in self.features:
+            # poi = Point()
+            poi = Point((float(item["attrs"]["lon"]), float(item["attrs"]["lat"])))
+            if "private" in item:
+                props = {**item["tags"], **item["private"]}
+            else:
+                props = item["tags"]
+            features.append(Feature(geometry=poi, properties=props))
+        collection = FeatureCollection(features)
+        dump(collection, self.json)
+>>>>>>> main
 
     def parse(
         self,
@@ -185,6 +361,123 @@ class JsonDump(Convert):
         # log.debug(f"Finished parsing JSON file {filespec}")
         return total
 
+def json2osm(input_file, yaml_file=None):
+    """Process the JSON file from ODK Central or the GeoJSON file to OSM XML format.
+
+    Args:
+        input_file (str): The path to the input JSON or GeoJSON file.
+        yaml_file (str): The path to the YAML config file (optional).
+
+    Returns:
+        osmoutfile (str): Path to the converted OSM XML file.
+    """
+    log.info(f"Converting JSON file to OSM: {input_file}")
+    if yaml_file:
+        jsonin = JsonDump(yaml_file)
+    else:
+        jsonin = JsonDump()
+
+    # jsonin.parseXLS(args.xlsfile)
+
+    # Modify the input file name for the 2 output files, which will get written
+    # to the current directory.
+
+    base = Path(input_file).stem
+    osmoutfile = f"{base}-out.osm"
+    jsonin.createOSM(osmoutfile)
+
+    data = jsonin.parse(input_file)
+    # This OSM XML file only has OSM appropriate tags and values
+
+    for entry in data:
+        feature = jsonin.createEntry(entry)
+
+        # Sometimes bad entries, usually from debugging XForm design, sneak in
+        if len(feature) == 0:
+            continue
+
+        if len(feature) > 0:
+            if "lat" not in feature["attrs"]:
+                if "geometry" in feature["tags"]:
+                    if isinstance(feature["tags"]["geometry"], str):
+                        coords = list(feature["tags"]["geometry"])
+                        # del feature['tags']['geometry']
+                elif "coordinates" in feature["tags"]:
+                    coords = feature["tags"]["coordinates"]
+                    feature["attrs"] = {"lat": coords[1], "lon": coords[0]}
+                else:
+                    log.warning(f"Bad record! {feature}")
+                    continue  # Skip bad records
+
+            jsonin.writeOSM(feature)
+    # log.debug("Writing final OSM XML file...")
+
+    # jsonin.finishOSM()
+    log.info(f"Wrote OSM XML file: {osmoutfile}")
+
+    return osmoutfile
+
+
+=======
+
+# def json2osm(
+#         cmdln: dict,
+# ) -> str:
+#     """
+#     Process the JSON file from ODK Central or the GeoJSON file to OSM XML format.
+
+#     Args:
+#         cmdln (dict): The data from the command line
+
+#     Returns:
+#         osmoutfile (str): Path to the converted OSM XML file.
+#     """
+#     log.info(f"Converting JSON file to OSM: {cmdln['infile']}")
+#     if yaml_file:
+#         jsonin = JsonDump({cmd['yaml']})
+#     else:
+#         jsonin = JsonDump()
+
+#     # Modify the input file name for the 2 output files, which will get written
+#     # to the current directory.
+
+#     base = Path(input_file).stem
+#     osmoutfile = f"{base}-out.osm"
+#     jsonin.createOSM(osmoutfile)
+
+#     data = jsonin.parse(input_file)
+#     # This OSM XML file only has OSM appropriate tags and values
+
+#     for entry in data:
+#         feature = jsonin.createEntry(entry)
+
+#         # Sometimes bad entries, usually from debugging XForm design, sneak in
+#         if len(feature) == 0:
+#             continue
+
+#         if len(feature) > 0:
+#             if "lat" not in feature["attrs"]:
+#                 if "geometry" in feature["tags"]:
+#                     if isinstance(feature["tags"]["geometry"], str):
+#                         coords = list(feature["tags"]["geometry"])
+#                         # del feature['tags']['geometry']
+#                 elif "coordinates" in feature["tags"]:
+#                     coords = feature["tags"]["coordinates"]
+#                     feature["attrs"] = {"lat": coords[1], "lon": coords[0]}
+#                 else:
+#                     log.warning(f"Bad record! {feature}")
+#                     continue  # Skip bad records
+
+#             jsonin.writeOSM(feature)
+#     # log.debug("Writing final OSM XML file...")
+
+#     # jsonin.finishOSM()
+#     log.info(f"Wrote OSM XML file: {osmoutfile}")
+
+#     return osmoutfile
+
+
+>>>>>>> main
 def main():
     """Run conversion directly from the terminal."""
     parser = argparse.ArgumentParser(description="convert JSON from ODK Central to OSM XML")
@@ -208,6 +501,54 @@ def main():
         jsonvin = JsonDump(args.yaml)
     else:
         jsonin = JsonDump()
+
+    jsonin.parseXLS(args.xlsfile)
+
+    base = Path(args.infile).stem
+    osmoutfile = f"{base}.osm"
+    jsonin.createOSM(osmoutfile)
+
+    jsonoutfile = f"{base}.geojson"
+    jsonin.createGeoJson(jsonoutfile)
+
+    log.debug("Parsing json files %r" % args.infile)
+    data = jsonin.parse(args.infile)
+    # This OSM XML file only has OSM appropriate tags and values
+    nodeid = -1000
+    for entry in data:
+        feature = jsonin.createEntry(entry)
+        if len(feature) == 0:
+            continue
+        if "refs" in feature:
+            refs = list()
+            for ref in feature["refs"]:
+                now = datetime.now().strftime("%Y-%m-%dT%TZ")
+                if len(ref) == 0:
+                    continue
+                coords = ref.split(" ")
+                print(coords)
+                node = {"attrs": {"id": nodeid, "version": 1, "timestamp": now, "lat": coords[0], "lon": coords[1]}, "tags": dict()}
+                jsonin.writeOSM(node)
+                refs.append(nodeid)
+                nodeid -= 1
+
+            feature["refs"] = refs
+            jsonin.writeOSM(feature)
+        else:
+            # Sometimes bad entries, usually from debugging XForm design, sneak in
+            if "lat" not in feature["attrs"]:
+                log.warning("Bad record! %r" % feature)
+                continue
+            jsonin.writeOSM(feature)
+            # This GeoJson file has all the data values
+            jsonin.writeGeoJson(feature)
+            # print("TAGS: %r" % feature['tags'])
+
+    jsonin.finishOSM()
+    jsonin.finishGeoJson()
+    log.info("Wrote OSM XML file: %r" % osmoutfile)
+    log.info("Wrote GeoJson file: %r" % jsonoutfile)
+>>>>>>> main
 
     jsonin.parseXLS(args.xlsfile)
 
