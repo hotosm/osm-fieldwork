@@ -81,8 +81,8 @@ def test_multiple_value():
     """Test tag value conversion."""
     hits = 0
     vals = csv.convertMultiple("picnic_table fire_pit parking")
-    print(vals)
-    if len(vals) > 0 and vals[0]["leisure"] == "picnic_table" and vals[1]["leisure"] == "firepit":
+    # print(vals)
+    if len(vals) > 0 and vals["leisure"] == "picnic_table;firepit":
         hits += 1
     assert hits == 1
 
