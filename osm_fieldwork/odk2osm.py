@@ -18,27 +18,21 @@
 #
 
 import argparse
-import csv
+import glob
 import logging
 import os
-import re
 import sys
-from collections import OrderedDict
-from datetime import datetime
 from pathlib import Path
-import xmltodict
-import glob
-from osm_fieldwork.convert import Convert
-from osm_fieldwork.ODKInstance import ODKInstance
-from osm_fieldwork.support import OutSupport
+
 from osm_fieldwork.parsers import ODKParsers
+from osm_fieldwork.support import OutSupport
 
 # Instantiate logger
 log = logging.getLogger(__name__)
 
+
 def main():
-    """
-    This is a program that reads in the ODK Instance file, which is in XML,
+    """This is a program that reads in the ODK Instance file, which is in XML,
     and converts it to an OSM XML file so it can be viewed in an editor.
     """
     parser = argparse.ArgumentParser(description="Convert ODK XML instance file to OSM XML format")
@@ -76,7 +70,7 @@ def main():
             tmp = odk.XMLparser(infile)
             entry = odk.createEntry(tmp[0])
             data.append(entry)
-    elif toplevel.suffix == '.xml':
+    elif toplevel.suffix == ".xml":
         # It's an instance file from ODK Collect
         log.debug(f"Parsing ODK XML files {args.infile}")
         # There is always only one XML file per infile
@@ -97,6 +91,7 @@ def main():
 
     # Write the data
     out.WriteData(toplevel.stem, data)
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""

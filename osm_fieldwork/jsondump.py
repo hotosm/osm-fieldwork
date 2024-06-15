@@ -23,17 +23,13 @@ import json
 import logging
 
 # import pandas as pd
-import re
 import sys
 from pathlib import Path
 
 import flatdict
 import geojson
-import shapely
-from geojson import Feature, FeatureCollection, Point, dump
 
 from osm_fieldwork.convert import Convert
-from osm_fieldwork.osmfile import OsmFile
 
 log = logging.getLogger(__name__)
 
@@ -45,8 +41,7 @@ class JsonDump(Convert):
         self,
         yaml: str = None,
     ):
-        """
-        A class to convert the JSON file from ODK Central, or the GeoJson
+        """A class to convert the JSON file from ODK Central, or the GeoJson
         file created by the odk2geojson utility.
 
         Args:
@@ -68,8 +63,7 @@ class JsonDump(Convert):
         filespec: str = None,
         data: str = None,
     ) -> list:
-        """
-        Parse the JSON file from ODK Central and convert it to a data structure.
+        """Parse the JSON file from ODK Central and convert it to a data structure.
         The input is either a filespec to open, or the data itself.
 
         Args:
@@ -181,6 +175,7 @@ class JsonDump(Convert):
         # log.debug(f"Finished parsing JSON file {filespec}")
         return total
 
+
 def main():
     """Run conversion directly from the terminal."""
     parser = argparse.ArgumentParser(description="convert JSON from ODK Central to OSM XML")
@@ -251,6 +246,7 @@ def main():
     jsonin.finishGeoJson()
     log.info("Wrote OSM XML file: %r" % osmoutfile)
     log.info("Wrote GeoJson file: %r" % jsonoutfile)
+
 
 if __name__ == "__main__":
     """This is just a hook so this file can be run standlone during development."""
