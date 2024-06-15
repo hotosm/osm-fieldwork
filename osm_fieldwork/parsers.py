@@ -24,11 +24,15 @@ import logging
 import os
 import re
 import sys
+import json
+import flatdict
+
 from datetime import datetime
 from collections import OrderedDict
 from pathlib import Path
 import xmltodict
 from geojson import Feature, FeatureCollection, dump
+from osm_fieldwork.convert import Convert
 from osm_fieldwork.osmfile import OsmFile
 from osm_fieldwork.xlsforms import xlsforms_path
 from osm_fieldwork.ODKInstance import ODKInstance
@@ -100,9 +104,7 @@ class ODKParsers(Convert):
                         if self.types[base] == "select_multiple":
                             vals = self.convertMultiple(value)
                             if len(vals) > 0:
-                                for tag in vals:
-                                    tags.update(tag)
-                                # print(f"BASE {tags}")
+                                tags.update(vals)
                             continue
                     # When using geopoint warmup, once the display changes to the map
 
@@ -134,8 +136,7 @@ class ODKParsers(Convert):
                             tags[k] = v
                     else:
                         tags[base] = value
-
-                # log.debug(f"\tFIXME1: {tags}")
+            # log.debug(f"\tFIXME1: {tags}")
             all_tags.append(tags)
         return all_tags
 
@@ -183,28 +184,6 @@ class ODKParsers(Convert):
         for row in data:
             # log.debug(f"ROW: {row}\n")
             tags = dict()
-            # Extract the location regardless of what the tag is
-            # called.
-            # pat = re.compile("[-0-9.]*, [0-9.-]*, [0-9.]*")
-            # gps = re.findall(pat, str(row))
-            # tmp = list()
-            # if len(gps) == 0:
-            #     log.error(f"No location data in: {row}")
-            #     continue
-            # elif len(gps) == 1:
-            #     # Only the warmup has any coordinates.
-            #     tmp = gps[0].split(" ")
-            # elif len(gps) == 2:
-            #     # both the warmup and the coordinates have values
-            #     tmp = gps[1].split(" ")
-
-            # if len(tmp) > 0:
-            #     lat = float(tmp[0][:-1])
-            #     lon = float(tmp[1][:-1])
-            #     geom = Point([lon, lat])
-            #     row["geometry"] = geom
-            #     # tags["geometry"] = row["geometry"]
-
             if "properties" in row:
                 row["properties"]  # A GeoJson formatted file
             else:
@@ -212,6 +191,7 @@ class ODKParsers(Convert):
 
             # flatten all the groups into a sodk2geojson.pyingle data structure
             flattened = flatdict.FlatDict(row)
+            # log.debug(f"FLAT: {flattened}\n")
             for k, v in flattened.items():
                 last = k.rfind(":") + 1
                 key = k[last:]
@@ -219,7 +199,7 @@ class ODKParsers(Convert):
                 # the keyword
                 if key is None or key in self.ignore or v is None:
                     continue
-                log.debug(f"Processing tag {key} = {v}")
+                # log.debug(f"Processing tag {key} = {v}")
                 if key == "coordinates":
                     if isinstance(v, list):
                         tags["lat"] = v[1]
@@ -235,21 +215,20 @@ class ODKParsers(Convert):
                             continue
                         vals = self.convertMultiple(v)
                         if len(vals) > 0:
-                            for tag in vals:
-                                tags.update(tag)
-                            # print(f"BASE {tags}")
+                            tags.update(vals)
                         continue
-
                 items = self.convertEntry(key, v)
                 if items is None or len(items) == 0:
                     continue
 
                 if type(items) == str:
                     log.debug(f"string Item {items}")
-                else:
-                    log.debug(f"dict Item {items}")
-                    if len(items) == 0:
-                        tags.update(items[0])
+                elif type(items) == list:
+                    # log.debug(f"list Item {items}")
+                    tags.update(items[0])
+                elif type(items) == dict:
+                    # log.debug(f"dict Item {items}")
+                    tags.update(items)
             # log.debug(f"TAGS: {tags}")
             if len(tags) > 0:
                 total.append(tags)
@@ -257,5 +236,74 @@ class ODKParsers(Convert):
         # log.debug(f"Finished parsing JSON file {filespec}")
         return total
 
-from osm_fieldwork.ODKInstance import ODKInstance
-from osm_fieldwork.ODKInstance import ODKInstance
+    def XMLparser(
+        self,
+        filespec: str,
+        data: str = None,
+    ) -> list:
+        """
+        Import an ODK XML Instance file ito a data structure. The input is
+        either a filespec to the Instance file copied off your phone, or
+        the XML that has been read in elsewhere.
+
+        Args:
+            filespec (str): The filespec to the ODK XML Instance file
+            data (str): The XML data
+
+        Returns:
+            (list): All the entries in the OSM XML Instance file
+        """
+        row = dict()
+        if filespec:
+            logging.info("Processing instance file: %s" % filespec)
+            file = open(filespec, "rb")
+            # Instances are small, read the whole file
+            xml = file.read(os.path.getsize(filespec))
+        elif data:
+            xml = data
+        doc = xmltodict.parse(xml)
+
+        json.dumps(doc)
+        tags = dict()
+        data = doc["data"]
+        flattened = flatdict.FlatDict(data)
+        # total = list()
+        # log.debug(f"FLAT: {flattened}")
+        pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
+        for key, value in flattened.items():
+            if key[0] == '@' or value is None:
+                continue
+            # Get the last element deliminated by a dash
+            # for CSV & JSON, or a colon for ODK XML.
+            base = basename(key)
+            log.debug(f"FLAT: {base} = {value}")
+            if base in self.ignore:
+                continue
+            if re.search(pat, value):
+                gps = value.split(" ")
+                row["lat"] = gps[0]
+                row["lon"] = gps[1]
+                continue
+
+            if base in self.types:
+                if self.types[base] == "select_multiple":
+                    # log.debug(f"Found key '{self.types[base]}'")
+                    vals = self.convertMultiple(value)
+                    if len(vals) > 0:
+                        tags.update(vals)
+                    continue
+                else:
+                    item = self.convertEntry(base, value)
+                    if item is None or len(item) == 0:
+                        continue
+                    if len(tags) == 0:
+                        tags = item[0]
+                    else:
+                        if type(item) == list:
+                            # log.debug(f"list Item {item}")
+                            tags.update(item[0])
+                        elif type(item) == dict:
+                            # log.debug(f"dict Item {item}")
+                            tags.update(item)
+        row.update(tags)
+        return [row]
