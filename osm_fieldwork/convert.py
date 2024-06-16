@@ -100,7 +100,7 @@ class Convert(YamlFile):
         self,
         keyword: str,
     ) -> bool:
-        """Search he private data category for a keyword.
+        """Search the private data category for a keyword.
 
         Args:
             keyword (str): The keyword to search for
@@ -207,14 +207,14 @@ class Convert(YamlFile):
         # If the tag is in the config file, convert it.
         if self.convertData(newtag):
             newtag = self.convertTag(newtag)
-            if newtag != tag:
-                logging.debug(f"Converted Tag for entry {tag} to {newtag}")
+            # if newtag != tag:
+            #    logging.debug(f"Converted Tag for entry {tag} to {newtag}")
 
         # Truncate the elevation, as it's really long
         if newtag == "ele":
             value = value[:7]
         newval = self.convertValue(newtag, value)
-        logging.debug("Converted Value for entry '%s' to '%s'" % (value, newval))
+        # logging.debug("Converted Value for entry '%s' to '%s'" % (value, newval))
         # there can be multiple new tag/value pairs for some values from ODK
         if type(newval) == str:
             all.append({newtag: newval})
@@ -287,7 +287,7 @@ class Convert(YamlFile):
         if low in self.convert:
             newtag = self.convert[low]
             if type(newtag) is str:
-                logging.debug("\tTag '%s' converted tag to '%s'" % (tag, newtag))
+                # logging.debug("\tTag '%s' converted tag to '%s'" % (tag, newtag))
                 tmp = newtag.split("=")
                 if len(tmp) > 1:
                     newtag = tmp[0]
@@ -315,18 +315,20 @@ class Convert(YamlFile):
         Returns:
             (list): The new tags
         """
-        tags = list()
+        tags = dict()
         for tag in value.split(" "):
             low = tag.lower()
             if self.convertData(low):
                 newtag = self.convert[low]
-                # tags.append({newtag}: {value})
                 if newtag.find("=") > 0:
                     tmp = newtag.split("=")
-                    tags.append({tmp[0]: tmp[1]})
+                    if tmp[0] in tags:
+                        tags[tmp[0]] = f"{tags[tmp[0]]};{tmp[1]}"
+                    else:
+                        tags.update({tmp[0]: tmp[1]})
             else:
-                tags.append({low: "yes"})
-        logging.debug(f"\tConverted multiple to {tags}")
+                tags.update({low: "yes"})
+        # logging.debug(f"\tConverted multiple to {tags}")
         return tags
 
     def parseXLS(
@@ -396,6 +398,8 @@ class Convert(YamlFile):
                 "action",
             )
 
+            if key in self.ignore:
+                continue
             # When using existing OSM data, there's a special geometry field.
             # Otherwise use the GPS coordinates where you are.
             if key == "geometry" and len(value) > 0:
@@ -412,8 +416,18 @@ class Convert(YamlFile):
                 attrs[key] = value
                 # log.debug("Adding attribute %s with value %s" % (key, value))
                 continue
-
             if value is not None and value != "no" and value != "unknown":
+                if key == "username":
+                    tags["user"] = value
+                    continue
+                items = self.convertEntry(key, value)
+                if key in self.types:
+                    if self.types[key] == "select_multiple":
+                        vals = self.convertMultiple(value)
+                        if len(vals) > 0:
+                            for tag in vals:
+                                tags.update(tag)
+                        continue
                 if key == "track" or key == "geoline":
                     # refs.append(tags)
                     # log.debug("Adding reference %s" % tags)

@@ -21,7 +21,8 @@
 import argparse
 import os
 
-from osm_fieldwork.CSVDump import CSVDump
+from osm_fieldwork.parsers import ODKParsers
+from osm_fieldwork.support import OutSupport
 
 # find the path of root tests dir
 rootdir = os.path.dirname(os.path.abspath(__file__))
@@ -30,20 +31,21 @@ rootdir = os.path.dirname(os.path.abspath(__file__))
 def test_csv():
     """Make sure the CSV file got loaded and parsed."""
     # FIXME use fixture
-    csv = CSVDump()
-    data = csv.parse(f"{rootdir}/testdata/test.csv")
+    csv = ODKParsers()
+    data = csv.CSVparser(f"{rootdir}/testdata/test.csv")
     assert len(data) > 0
 
 
 def test_init():
     """Make sure the YAML file got loaded."""
-    csv = CSVDump()
+    csv = ODKParsers()
     assert len(csv.yaml.yaml) > 0
 
 
 def test_osm_entry(infile=f"{rootdir}/testdata/test.csv"):
-    csv = CSVDump()
-    csv.createOSM(infile)
+    csv = ODKParsers()
+    out = OutSupport()
+    out.createOSM(infile)
     line = {
         "timestamp": "2021-09-25T14:27:43.862Z",
         "end": "2021-09-24T17:55:26.194-06:00",

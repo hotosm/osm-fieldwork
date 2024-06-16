@@ -18,14 +18,13 @@
 #
 
 import argparse
+import json
 import logging
 import os
 import re
 import sys
 
-# from shapely.geometry import Point, LineString, Polygon
-from collections import OrderedDict
-
+import flatdict
 import xmltodict
 
 # Instantiate logger
@@ -38,8 +37,8 @@ class ODKInstance(object):
         filespec: str = None,
         data: str = None,
     ):
-        """This class imports a ODK Instance file, which is in XML into a data
-        structure.
+        """This class imports a ODK Instance file, which is in XML into a
+        data structure.
 
         Args:
             filespec (str): The filespec to the ODK XML Instance file
@@ -50,6 +49,7 @@ class ODKInstance(object):
         """
         self.data = data
         self.filespec = filespec
+        self.ignore = ["today", "start", "deviceid", "nodel", "instanceID"]
         if filespec:
             self.data = self.parse(filespec=filespec)
         elif data:
@@ -59,7 +59,7 @@ class ODKInstance(object):
         self,
         filespec: str,
         data: str = None,
-    ):
+    ) -> dict:
         """Import an ODK XML Instance file ito a data structure. The input is
         either a filespec to the Instance file copied off your phone, or
         the XML that has been read in elsewhere.
@@ -69,9 +69,9 @@ class ODKInstance(object):
             data (str): The XML data
 
         Returns:
-            (list): All the entries in the IOPDK XML Instance file
+            (dict): All the entries in the OSM XML Instance file
         """
-        rows = list()
+        row = dict()
         if filespec:
             logging.info("Processing instance file: %s" % filespec)
             file = open(filespec, "rb")
@@ -80,47 +80,29 @@ class ODKInstance(object):
         elif data:
             xml = data
         doc = xmltodict.parse(xml)
-        import json
 
         json.dumps(doc)
         tags = dict()
         data = doc["data"]
-        for i, j in data.items():
-            if j is None or i == "meta":
+        flattened = flatdict.FlatDict(data)
+        rows = list()
+        pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
+        for key, value in flattened.items():
+            if key[0] == "@" or value is None:
                 continue
-            print(f"tag: {i} == {j}")
-            pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
-            if pat.match(str(j)):
-                if i == "warmup":
-                    continue
-                gps = j.split(" ")
-                tags["lat"] = gps[0]
-                tags["lon"] = gps[1]
+            if re.search(pat, value):
+                gps = value.split(" ")
+                row["lat"] = gps[0]
+                row["lon"] = gps[1]
                 continue
-            if type(j) == OrderedDict or type(j) == dict:
-                for ii, jj in j.items():
-                    pat = re.compile("[0-9.]* [0-9.-]* [0-9.]* [0-9.]*")
-                    if pat.match(str(jj)):
-                        gps = jj.split(" ")
-                        tags["lat"] = gps[0]
-                        tags["lon"] = gps[1]
-                        continue
-                    if jj is None:
-                        continue
-                    print(f"tag: {i} == {j}")
-                    if type(jj) == OrderedDict or type(jj) == dict:
-                        for iii, jjj in jj.items():
-                            if jjj is not None:
-                                tags[iii] = jjj
-                                # print(iii, jjj)
-                            else:
-                                print(ii, jj)
-                                tags[ii] = jj
-                    else:
-                        if i[0:1] != "@":
-                            tags[i] = j
-            rows.append(tags)
-        return rows
+
+            # print(key, value)
+            tmp = key.split(":")
+            if tmp[len(tmp) - 1] in self.ignore:
+                continue
+            row[tmp[len(tmp) - 1]] = value
+
+        return row
 
 
 if __name__ == "__main__":
@@ -147,3 +129,4 @@ if __name__ == "__main__":
 
     inst = ODKInstance(args.infile)
     data = inst.parse(args.infile)
+    # print(data)

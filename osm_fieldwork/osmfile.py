@@ -81,7 +81,7 @@ class OsmFile(object):
 
     def __del__(self):
         """Close the OSM XML file automatically."""
-        log.debug("Closing output file")
+        # log.debug("Closing output file")
         self.footer()
 
     def isclosed(self):
