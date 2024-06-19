@@ -1,3 +1,13 @@
+## 0.12.0 (2024-06-19)
+
+### Feat
+
+- in memory BytesIO GeoJSON for boundary param basemapper (#261)
+
+### Fix
+
+- remove groups from xlsforms (essential, verification), entity breakage
+
 ## 0.11.2 (2024-06-10)
 
 ### Fix
