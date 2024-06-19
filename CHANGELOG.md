@@ -1,3 +1,10 @@
+## 0.12.1 (2024-06-19)
+
+### Fix
+
+- update entity xlsforms with working save_to field for status
+- json2osm invalid merge, fix syntax
+
 ## 0.12.0 (2024-06-19)
 
 ### Feat
