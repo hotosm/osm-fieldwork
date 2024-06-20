@@ -1,3 +1,9 @@
+## 0.12.2 (2024-06-20)
+
+### Fix
+
+- xlsform separate task_filter and task_id fields
+
 ## 0.12.1 (2024-06-19)
 
 ### Fix
