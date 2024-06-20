@@ -1,3 +1,9 @@
+## 0.12.4 (2024-06-20)
+
+### Fix
+
+- final fix to xlsforms, remove 'essential' group for entity by intent
+
 ## 0.12.3 (2024-06-20)
 
 ### Fix
