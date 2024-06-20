@@ -1,0 +1,24 @@
+digraph "osm_fieldwork.parsers.ODKParsers.CSVparser"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="osm_fieldwork.parsers.ODKParsers.\lCSVparser",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="osm_fieldwork.convert.Convert.convert\lEntry",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1convert_1_1Convert.html#a52bdf8707472b22b89e2b17768280655",tooltip=" "];
+  Node2 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="osm_fieldwork.convert.Convert.convertData",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1convert_1_1Convert.html#a7077078b20034675974d6b8894896748",tooltip=" "];
+  Node2 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="osm_fieldwork.yamlfile.Yaml\lFile.convertData",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1yamlfile_1_1YamlFile.html#aa694fa1169f047d55029e7a80b9b8f50",tooltip=" "];
+  Node2 -> Node5 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="osm_fieldwork.convert.Convert.convertTag",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1convert_1_1Convert.html#a125f2dc0b15143a0f157c445c47dc6f5",tooltip=" "];
+  Node2 -> Node6 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="osm_fieldwork.convert.Convert.convert\lValue",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1convert_1_1Convert.html#a2f6f1798c866000e35438a8aa7217885",tooltip=" "];
+  Node6 -> Node7 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="osm_fieldwork.convert.Convert.get\lValues",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1convert_1_1Convert.html#a6c89dfe9a4e7bb8a6913ad9bb3510fae",tooltip=" "];
+  Node1 -> Node8 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="osm_fieldwork.convert.Convert.convert\lMultiple",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1convert_1_1Convert.html#a62ee0789c890fed2f2390484ce6e7bfe",tooltip=" "];
+  Node8 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+}

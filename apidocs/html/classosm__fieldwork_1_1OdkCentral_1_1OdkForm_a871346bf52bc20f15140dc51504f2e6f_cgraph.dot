@@ -1,0 +1,14 @@
+digraph "osm_fieldwork.OdkCentral.OdkForm.uploadMedia"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="osm_fieldwork.OdkCentral.\lOdkForm.uploadMedia",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="osm_fieldwork.OdkCentral.\lOdkForm.addMedia",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1OdkCentral_1_1OdkForm.html#aeae6be6da93bbe89b4f575bb206b3c80",tooltip=" "];
+  Node1 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="osm_fieldwork.OdkCentral.\lOdkForm.publishForm",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1OdkCentral_1_1OdkForm.html#a702cabc9d96e1af903bc2d8dab8eb5b7",tooltip=" "];
+  Node1 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="osm_fieldwork.OdkCentral.\lOdkForm.validateMedia",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1OdkCentral_1_1OdkForm.html#a37449c604397156980084fa5f14c6800",tooltip=" "];
+}

@@ -1,0 +1,30 @@
+digraph "osm_fieldwork.convert.Convert.convertMultiple"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="RL";
+  Node1 [label="osm_fieldwork.convert.Convert.convert\lMultiple",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="osm_fieldwork.convert.Convert.create\lEntry",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1convert_1_1Convert.html#a72dc189b5cf147a818d6e340e9be3528",tooltip=" "];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="osm_fieldwork.parsers.ODKParsers.\lCSVparser",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1parsers_1_1ODKParsers.html#a806fb3fda7ee276240ab26ca0355a818",tooltip=" "];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="osm_fieldwork.parsers.ODKParsers.\lJSONparser",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1parsers_1_1ODKParsers.html#ad0467157580fce06bcfae37ba5ea9929",tooltip=" "];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="osm_fieldwork.csvdump.CSVDump.parse",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1csvdump_1_1CSVDump.html#a9a1575ba3dfc6eec23249e60487d704d",tooltip=" "];
+  Node5 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="osm_fieldwork.filter\l_data.FilterData.__init__",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1filter__data_1_1FilterData.html#a59d5f388e7b36959d612b4a1bc4beb45",tooltip=" "];
+  Node5 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="osm_fieldwork.ODKInstance.\lODKInstance.__init__",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1ODKInstance_1_1ODKInstance.html#a3b91dca65b4260abd94579f2f46725f6",tooltip=" "];
+  Node1 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="osm_fieldwork.json2osm.Json\lDump.parse",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1json2osm_1_1JsonDump.html#a554193e6b29a9231a77381759a7d1999",tooltip=" "];
+  Node8 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="osm_fieldwork.jsondump.Json\lDump.parse",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1jsondump_1_1JsonDump.html#a19a153bebf7a9e7cea768dc8595b45af",tooltip=" "];
+  Node9 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 -> Node10 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="osm_fieldwork.parsers.ODKParsers.\lXMLparser",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classosm__fieldwork_1_1parsers_1_1ODKParsers.html#a75b8e90709860ac93138807bb0e4e4a5",tooltip=" "];
+}
