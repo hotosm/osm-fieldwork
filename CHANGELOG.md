@@ -1,3 +1,9 @@
+## 0.12.3 (2024-06-20)
+
+### Fix
+
+- bug where task_id filter did not work on xlsforms
+
 ## 0.12.2 (2024-06-20)
 
 ### Fix
