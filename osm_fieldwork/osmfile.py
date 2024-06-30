@@ -77,7 +77,7 @@ class OsmFile(object):
         self.start = -1
         # path = xlsforms_path.replace("xlsforms", "")
         self.convert = Convert()
-        self.data = dict()
+        self.data = list()
 
     def __del__(self):
         """Close the OSM XML file automatically."""
@@ -154,7 +154,7 @@ class OsmFile(object):
         if "version" not in way["attrs"]:
             attrs["version"] = 1
         else:
-            attrs["version"] = way["attrs"]["version"] + 1
+            attrs["version"] = way["attrs"]["version"]
         attrs["timestamp"] = datetime.now().strftime("%Y-%m-%dT%TZ")
         # If the resulting file is publicly accessible without authentication, The GDPR applies
         # and the identifying fields should not be included
@@ -399,7 +399,7 @@ class OsmFile(object):
                             tags[node["tag"]["@k"]] = node["tag"]["@v"].strip()
                             # continue
                     node = {"attrs": attrs, "tags": tags}
-                    self.data[node["attrs"]["id"]] = node
+                    self.data.append(node)
         return self.data
 
     def dump(self):
