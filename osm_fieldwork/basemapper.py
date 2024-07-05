@@ -582,6 +582,7 @@ def create_basemap_file(
         outf = DataFile(outfile, basemap.getFormat(), append)
         if suffix == ".mbtiles":
             outf.addBounds(basemap.bbox)
+            outf.addZoomLevels(zoom_levels)
         # Create output database and specify image format, png, jpg, or tif
         outf.writeTiles(tiles, tiledir)
 
