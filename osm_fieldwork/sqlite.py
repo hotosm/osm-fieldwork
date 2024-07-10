@@ -139,8 +139,20 @@ class DataFile(object):
         entry = str(bounds)
         entry = entry[1 : len(entry) - 1].replace(" ", "")
         self.cursor.execute(f"INSERT OR IGNORE INTO metadata (name, value) VALUES('bounds', '{entry}') ")
-        # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('minzoom', '9')")
-        # self.cursor.execute(f"INSERT INTO metadata (name, value) VALUES('maxzoom', '15')")
+
+    def addZoomLevels(
+        self,
+        zoom_levels: list[int],
+    ):
+        """Mbtiles has a maxzoom and minzoom fields, Osmand doesn't.
+
+        Args:
+            bounds (int): The bounds value for ODK Collect mbtiles
+        """
+        min_zoom = min(zoom_levels)
+        max_zoom = max(zoom_levels)
+        self.cursor.execute(f"INSERT OR IGNORE INTO metadata (name, value) VALUES('minzoom', '{min_zoom}') ")
+        self.cursor.execute(f"INSERT OR IGNORE INTO metadata (name, value) VALUES('maxzoom', '{max_zoom}') ")
 
     def createDB(
         self,

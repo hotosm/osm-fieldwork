@@ -452,7 +452,7 @@ def tile_dir_to_pmtiles(
         writer = PMTileWriter(pmtile_file)
 
         for tile_path in tile_dir.rglob("*"):
-            if tile_path.is_file():
+            if tile_path.is_file() and tile_path.suffix in [".jpg", ".jpeg"]:
                 tile_id = tileid_from_xyz_dir_path(tile_path, is_xy)
 
                 with open(tile_path, "rb") as tile:
@@ -582,6 +582,7 @@ def create_basemap_file(
         outf = DataFile(outfile, basemap.getFormat(), append)
         if suffix == ".mbtiles":
             outf.addBounds(basemap.bbox)
+            outf.addZoomLevels(zoom_levels)
         # Create output database and specify image format, png, jpg, or tif
         outf.writeTiles(tiles, tiledir)
 
