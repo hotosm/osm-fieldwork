@@ -27,11 +27,11 @@ for users who want to work with OpenStreetMap data and want to convert
 ODK Central data into a compatible format. There is more detailed information on
 the program for converting ODK to OSM [here](CSVDump.md)
 
-## odk_merge.py
+## parsers.py
 
-odk_merge.py is a program for conflating the OSM XML file produced
+parsers.py is a program for conflating the OSM XML file produced
 from CSVDump.py into with the data extract. This merges tags that have
-been added or change by ODK Collect with exiting OSM data, The result
+been added or changed by ODK Collect with exiting OSM data, The result
 can be loaded into JOSM and after validation, uploaded to OSM.
 
 # OSM Fieldwork Modules

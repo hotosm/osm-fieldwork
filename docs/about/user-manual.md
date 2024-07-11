@@ -74,7 +74,7 @@ website frontend is the actual GUI.
   - Convert the ODK Instance to CSV
 - odk2geojson
   - Convert the ODK Instance to GeoJson
-- odk_merge
+- parsers
   - Conflate POIs from Collect with existing OSM data
 - odk_client
   - Remotely control an ODK Central server

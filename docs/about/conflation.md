@@ -47,9 +47,10 @@ schema is much more compact, as everything is in a single column.
 
 ## Using Postgres
 
-If you use the [odk_merge](https://hotosm.github.io/osm-fieldwork/about/odk_merge/)
-program, you don't have to deal
-with accessing the database directly, but here's how if you want to.
+If you use the
+[OdkParsers](https://hotosm.github.io/osm-fieldwork/api/parsers/)
+program, you don't have to deal with accessing the database directly,
+but here's how if you want to.
 
 This would find all of the tags for a hotel:
 

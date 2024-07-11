@@ -227,12 +227,6 @@ format used for submissions downloaded from [ODK
 Central](https://docs.getodk.org/central-intro/), or the JSON format
 also from Central.
 
-### odk_merge.py
-
-This program conflates the data collected by ODK Collect with the
-existing OSM data. The output of this file can be loaded into JOSM
-for validation and uploading to OpenStreetMap.
-
 ### odk_client.py
 
 This program is a simple command line client to an ODK Central
