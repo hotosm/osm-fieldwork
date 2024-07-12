@@ -1,3 +1,16 @@
+## 0.13.0 (2024-07-12)
+
+### Fix
+
+- update xlsforms to hide required choices tab values
+- add minzoom and maxzoom params to basemapper to allow view past zoom 18 (#267)
+- self.data is now a list to be consistent with the other parsers (#264)
+
+### Refactor
+
+- delete unused scripts and update the docs (#269)
+- remove test_conflation prior to odk_merge drop
+
 ## 0.12.4 (2024-06-20)
 
 ### Fix
