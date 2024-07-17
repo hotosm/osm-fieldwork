@@ -25,6 +25,7 @@ import logging
 import queue
 import re
 import sys
+import os
 import threading
 from io import BytesIO
 from pathlib import Path
@@ -40,6 +41,7 @@ from pmtiles.writer import Writer as PMTileWriter
 from pySmartDL import SmartDL
 from shapely.geometry import shape
 from shapely.ops import unary_union
+import shutil
 
 from osm_fieldwork.sqlite import DataFile, MapTile
 from osm_fieldwork.xlsforms import xlsforms_path
@@ -340,7 +342,7 @@ class BaseMapper(object):
         log.info("%d threads, %d tiles" % (cores, total))
 
         mirrors = [self.sources[self.source]]
-        # epdb.st()
+
         if len(self.tiles) < chunk or chunk == 0:
             dlthread(self.base, mirrors, self.tiles, self.xy)
         else:
@@ -378,7 +380,6 @@ class BaseMapper(object):
         else:
             log.debug("%s doesn't exists" % filespec)
             return False
-
 
 def tileid_from_xyz_dir_path(filepath: Union[Path, str], is_xy: bool = False) -> int:
     """Helper function to get the tile id from a tile in xyz directory structure.
@@ -595,6 +596,51 @@ def create_basemap_file(
         raise ValueError(msg) from None
     log.info(f"Wrote {outfile}")
 
+def move_tiles(
+    boundary=None,
+    indir=None,
+    outdir=None,
+) -> None:
+    """
+    Move tiles within a boundary to another directory. Used for managing the
+    map tile cache.
+
+    Args:
+        boundary (str | BytesIO, optional): The boundary for the area you want.
+        indir (str, optional): Top level directory for existing tile cache.
+        outdir (str, optional): Output directory name for the new tile cache.
+
+    Returns:
+        None
+    """
+    bbox_factory = BoundaryHandlerFactory(boundary)
+    bbox = bbox_factory.get_bounding_box()
+    zooms = os.listdir(indir)
+
+    if not Path(outdir).exists():
+        log.info(f"Making {outdir}...")
+
+    for level in zooms:
+        tiles = list(mercantile.tiles(bbox[0], bbox[1], bbox[2], bbox[3], int(level)))
+        total = len(tiles)
+        log.info("%d tiles for zoom level %r" % (total, level))
+
+        for tile in tiles:
+            base = f"{tile.z}/{tile.y}/{tile.x}.jpg"
+            inspec = f"{indir}/{base}"
+            if Path(inspec).exists():
+                # log.debug("Input tile %s exists" % inspec)
+                root = os.path.basename(indir)
+                outspec = f"{outdir}/{root}/{tile.z}/{tile.y}"
+                if not Path(outspec).exists():
+                    os.makedirs(outspec)
+                outspec += f"/{tile.x}.jpg"
+                # print(f"Move {inspec} to {outspec}")
+                shutil.move(inspec, outspec)
+            else:
+                # log.debug("Input tile %s doesn't exist" % inspec)
+                continue
+
 
 def main():
     """This main function lets this class be run standalone by a bash script."""
@@ -615,7 +661,8 @@ def main():
         "-o", "--outfile", required=False, help="Output file name, allowed extensions [.mbtiles/.sqlitedb/.pmtiles]"
     )
     parser.add_argument("-z", "--zooms", default="12-17", help="The Zoom levels")
-    parser.add_argument("-d", "--outdir", help="Output directory name for tile cache")
+    parser.add_argument("-d", "--outdir", help="Output directory name for new tile cache")
+    parser.add_argument("-m", "--move", help="Move tiles to different directory")
     parser.add_argument("-a", "--append", action="store_true", default=False, help="Append to an existing database file")
     parser.add_argument(
         "-s",
@@ -630,6 +677,11 @@ def main():
         log.error("You need to specify a boundary! (file or bbox)")
         parser.print_help()
         quit()
+
+    if args.move and args.outfile is not None:
+        log.error("You can't move files to the same directory!")
+        parser.print_help()
+        # quit()
 
     if not args.source:
         log.error("You need to specify a source!")
@@ -663,6 +715,14 @@ def main():
             datefmt="%y-%m-%d %H:%M:%S",
             stream=sys.stdout,
         )
+
+    if args.move is not None and args.outdir is None:
+        log.error(f"You need to specify the new tile cache directory!")
+        parser.print_help()
+        quit()
+    else:
+         move_tiles(boundary_parsed, args.move, args.outdir)
+         return
 
     create_basemap_file(
         boundary=boundary_parsed,
