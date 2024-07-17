@@ -720,7 +720,7 @@ def main():
         log.error(f"You need to specify the new tile cache directory!")
         parser.print_help()
         quit()
-    else:
+    elif args.move is not None and args.outdir is not None:
          move_tiles(boundary_parsed, args.move, args.outdir)
          return
 
