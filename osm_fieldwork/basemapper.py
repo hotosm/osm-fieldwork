@@ -22,10 +22,11 @@
 import argparse
 import concurrent.futures
 import logging
+import os
 import queue
 import re
+import shutil
 import sys
-import os
 import threading
 from io import BytesIO
 from pathlib import Path
@@ -41,7 +42,6 @@ from pmtiles.writer import Writer as PMTileWriter
 from pySmartDL import SmartDL
 from shapely.geometry import shape
 from shapely.ops import unary_union
-import shutil
 
 from osm_fieldwork.sqlite import DataFile, MapTile
 from osm_fieldwork.xlsforms import xlsforms_path
@@ -381,6 +381,7 @@ class BaseMapper(object):
             log.debug("%s doesn't exists" % filespec)
             return False
 
+
 def tileid_from_xyz_dir_path(filepath: Union[Path, str], is_xy: bool = False) -> int:
     """Helper function to get the tile id from a tile in xyz directory structure.
 
@@ -596,13 +597,13 @@ def create_basemap_file(
         raise ValueError(msg) from None
     log.info(f"Wrote {outfile}")
 
+
 def move_tiles(
     boundary=None,
     indir=None,
     outdir=None,
 ) -> None:
-    """
-    Move tiles within a boundary to another directory. Used for managing the
+    """Move tiles within a boundary to another directory. Used for managing the
     map tile cache.
 
     Args:
@@ -717,12 +718,12 @@ def main():
         )
 
     if args.move is not None and args.outdir is None:
-        log.error(f"You need to specify the new tile cache directory!")
+        log.error("You need to specify the new tile cache directory!")
         parser.print_help()
         quit()
     else:
-         move_tiles(boundary_parsed, args.move, args.outdir)
-         return
+        move_tiles(boundary_parsed, args.move, args.outdir)
+        return
 
     create_basemap_file(
         boundary=boundary_parsed,
