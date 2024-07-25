@@ -3,6 +3,7 @@ select:
   - version
 from:
   - ways_line
+  - relations
 where:
   tags:
     - highway: not null
@@ -14,4 +15,4 @@ keep:
   - tracktype
   - width
   - ref
-  - ref:usgs
+  - ref:usfs
