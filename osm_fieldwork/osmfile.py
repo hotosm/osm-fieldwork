@@ -392,7 +392,7 @@ class OsmFile(object):
             if len(way["nd"]) > 0:
                 for ref in way["nd"]:
                     refs.append(int(ref["@ref"]))
-                    
+
             if "@timestamp" in node:
                 attrs["timestamp"] = node["@timestamp"]
 
