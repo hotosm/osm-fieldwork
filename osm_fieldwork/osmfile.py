@@ -353,53 +353,61 @@ class OsmFile(object):
         """
         size = os.path.getsize(osmfile)
         with open(osmfile, "r") as file:
-            xml = file.read(size)  # Instances are small, read the whole file
+            xml = file.read(size)
             doc = xmltodict.parse(xml)
             if "osm" not in doc:
                 logging.warning("No data in this instance")
                 return False
-            field = doc["osm"]
-
-            if "node" not in field:
+            data = doc["osm"]
+            if "node" not in data:
                 logging.warning("No nodes in this instance")
                 return False
 
-        if type(field["node"]) == dict:
-            attrs = dict()
+        for node in data["node"]:
+            attrs = {
+                "id": int(node["@id"]),
+                "lat": node["@lat"][:10],
+                "lon": node["@lon"][:10],
+            }
+            if "@timestamp" in node:
+                attrs["timestamp"] = node["@timestamp"]
+
             tags = dict()
-            for k, v in field["node"].items():
-                if k[0] == "@":
-                    attrs[k[1:]] = v
-                else:
-                    if type(field["node"]["tag"]) == dict:
-                        tags[field["node"]["tag"]["@k"]] = field["node"]["tag"]["@v"].strip()
+            if "tag" in node:
+                for tag in node["tag"]:
+                    if type(tag) == dict:
+                        tags[tag["@k"]] = tag["@v"].strip()
+                        # continue
                     else:
-                        for pair in field["node"]["tag"]:
-                            tags[pair["@k"]] = pair["@v"]
-
+                        tags[node["tag"]["@k"]] = node["tag"]["@v"].strip()
+                    # continue
             node = {"attrs": attrs, "tags": tags}
-            self.data[node["attrs"]["id"]] = node
-        else:
-            for node in field["node"]:
-                attrs = {
-                    "id": int(node["@id"]),
-                    "lat": node["@lat"][:10],
-                    "lon": node["@lon"][:10],
-                }
-                if "@timestamp" in node:
-                    attrs["timestamp"] = node["@timestamp"]
+            self.data.append(node)
 
-                tags = dict()
-                if "tag" in node:
-                    for tag in node["tag"]:
-                        if type(tag) == dict:
-                            tags[tag["@k"]] = tag["@v"].strip()
-                            # continue
-                        else:
-                            tags[node["tag"]["@k"]] = node["tag"]["@v"].strip()
-                            # continue
-                    node = {"attrs": attrs, "tags": tags}
-                    self.data.append(node)
+        for way in data["way"]:
+            attrs = {
+                "id": int(way["@id"]),
+            }
+            refs = list()
+            if len(way["nd"]) > 0:
+                for ref in way["nd"]:
+                    refs.append(int(ref["@ref"]))
+
+            if "@timestamp" in node:
+                attrs["timestamp"] = node["@timestamp"]
+
+            tags = dict()
+            if "tag" in way:
+                for tag in way["tag"]:
+                    if type(tag) == dict:
+                        tags[tag["@k"]] = tag["@v"].strip()
+                        # continue
+                    else:
+                        tags[node["tag"]["@k"]] = node["tag"]["@v"].strip()
+                    # continue
+            way = {"attrs": attrs, "refs": refs, "tags": tags}
+            self.data.append(way)
+
         return self.data
 
     def dump(self):
