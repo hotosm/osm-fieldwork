@@ -117,7 +117,7 @@ exclude = [
 [tool.ruff.lint]
 select = ["I", "E", "W", "D", "B", "F", "N", "Q"]
 ignore = ["N805", "B008"]
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "osm_fieldwork/basemapper.py" = ["N802"]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
