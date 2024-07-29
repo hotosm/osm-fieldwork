@@ -18,6 +18,7 @@
 """Test functionalty of OdkCentral.py Entities methods."""
 
 from datetime import datetime, timezone
+from uuid import uuid4
 
 import pytest
 from aiohttp.client_exceptions import ClientError
@@ -25,14 +26,14 @@ from aiohttp.client_exceptions import ClientError
 
 async def test_entity_modify(odk_dataset_cleanup):
     """Test modifying an entity."""
-    odk_id, dataset_name, entity_uuid, entity = odk_dataset_cleanup
+    odk_id, dataset_name, entity_uuid, dataset = odk_dataset_cleanup
     print(dataset_name)
-    async with entity:
-        updated_entity = await entity.updateEntity(odk_id, dataset_name, entity_uuid, label="new label")
+    async with dataset:
+        updated_entity = await dataset.updateEntity(odk_id, dataset_name, entity_uuid, label="new label")
     assert updated_entity.get("currentVersion").get("label") == "new label"
 
-    async with entity:
-        updated_entity = await entity.updateEntity(
+    async with dataset:
+        updated_entity = await dataset.updateEntity(
             odk_id, dataset_name, entity_uuid, data={"status": "complete", "project_id": "100"}
         )
     new_data = updated_entity.get("currentVersion").get("data", {})
@@ -42,19 +43,19 @@ async def test_entity_modify(odk_dataset_cleanup):
 
 async def test_create_invalid_entities(odk_dataset_cleanup):
     """Test uploading invalid data to an entity (HTTP 400)."""
-    odk_id, dataset_name, entity_uuid, entity = odk_dataset_cleanup
-    async with entity:
+    odk_id, dataset_name, entity_uuid, dataset = odk_dataset_cleanup
+    async with dataset:
         # NOTE entity must have a geometry data field
         with pytest.raises(ValueError):
-            await entity.createEntity(odk_id, dataset_name, label="test", data={"status": 0})
+            await dataset.createEntity(odk_id, dataset_name, label="test", data={"status": 0})
 
         # NOTE data fields cannot be integer, this should raise error
         with pytest.raises(ClientError):
-            await entity.createEntity(odk_id, dataset_name, label="test", data={"geometry": "", "status": 0})
+            await dataset.createEntity(odk_id, dataset_name, label="test", data={"geometry": "", "status": 0})
 
         # Also test bulk entity create using integer data
         with pytest.raises(ClientError):
-            await entity.createEntities(
+            await dataset.createEntities(
                 odk_id,
                 dataset_name,
                 [
@@ -65,18 +66,30 @@ async def test_create_invalid_entities(odk_dataset_cleanup):
 
         # Bulk Entity creation, not a list
         with pytest.raises(ValueError):
-            await entity.createEntities(
+            await dataset.createEntities(
                 odk_id,
                 dataset_name,
                 {"label": "test", "data": {}},
             )
 
 
+async def test_create_invalid_dataset(odk_dataset):
+    """Test creating invalid dataset."""
+    odk_id, dataset = odk_dataset
+
+    dataset_name = f"new_dataset_{uuid4()}"
+    async with dataset:
+        with pytest.raises(ValueError):
+            await dataset.createDataset(odk_id, dataset_name, properties="string")
+
+        with pytest.raises(ValueError):
+            await dataset.createDataset(odk_id, dataset_name, properties=[1, 2])
+
 async def test_bulk_create_entity_count(odk_dataset_cleanup):
     """Test bulk creation of Entities."""
-    odk_id, dataset_name, entity_uuid, entity = odk_dataset_cleanup
-    async with entity:
-        await entity.createEntities(
+    odk_id, dataset_name, entity_uuid, dataset = odk_dataset_cleanup
+    async with dataset:
+        await dataset.createEntities(
             odk_id,
             dataset_name,
             [
@@ -85,7 +98,7 @@ async def test_bulk_create_entity_count(odk_dataset_cleanup):
                 {"label": "test entity 3", "data": {"osm_id": "66", "geometry": "test"}},
             ],
         )
-        entity_count = await entity.getEntityCount(odk_id, dataset_name)
+        entity_count = await dataset.getEntityCount(odk_id, dataset_name)
 
     # NOTE this may be cumulative from the session... either 4 or 5
     assert entity_count >= 4
@@ -93,9 +106,9 @@ async def test_bulk_create_entity_count(odk_dataset_cleanup):
 
 async def test_get_entity_data(odk_dataset_cleanup):
     """Test getting entity data, inluding via a OData filter."""
-    odk_id, dataset_name, entity_uuid, entity = odk_dataset_cleanup
-    async with entity:
-        await entity.createEntities(
+    odk_id, dataset_name, entity_uuid, dataset = odk_dataset_cleanup
+    async with dataset:
+        await dataset.createEntities(
             odk_id,
             dataset_name,
             [
@@ -110,16 +123,16 @@ async def test_get_entity_data(odk_dataset_cleanup):
             ],
         )
 
-        all_entities = await entity.getEntityData(odk_id, dataset_name)
+        all_entities = await dataset.getEntityData(odk_id, dataset_name)
         # NOTE this may be cumulative from the session... either 9 or 12
         assert len(all_entities) >= 9
 
-        entities_with_metadata = await entity.getEntityData(odk_id, dataset_name, include_metadata=True)
+        entities_with_metadata = await dataset.getEntityData(odk_id, dataset_name, include_metadata=True)
         assert len(entities_with_metadata.get("value")) >= 9
         assert entities_with_metadata.get("@odata.context").endswith("$metadata#Entities")
 
         # Paginate, 5 per page
-        filtered_entities = await entity.getEntityData(odk_id, dataset_name, url_params="$top=5&$count=true")
+        filtered_entities = await dataset.getEntityData(odk_id, dataset_name, url_params="$top=5&$count=true")
         assert filtered_entities.get("@odata.count") >= 9
         assert "@odata.nextLink" in filtered_entities.keys()
 
@@ -129,9 +142,9 @@ async def test_get_entity_data(odk_dataset_cleanup):
         # Update first 5 entities prior to filter
         entity_uuids = [_entity.get("__id") for _entity in all_entities]
         for uuid in sorted(entity_uuids[:5]):
-            await entity.updateEntity(odk_id, dataset_name, uuid, data={"status": "LOCKED_FOR_MAPPING"})
+            await dataset.updateEntity(odk_id, dataset_name, uuid, data={"status": "LOCKED_FOR_MAPPING"})
 
-        filter_updated = await entity.getEntityData(
+        filter_updated = await dataset.getEntityData(
             odk_id,
             dataset_name,
             url_params=f"$filter=__system/updatedAt gt {time_now}",
@@ -143,9 +156,9 @@ async def test_get_entity_data(odk_dataset_cleanup):
 
 async def test_get_entity_data_select_params(odk_dataset_cleanup):
     """Test selecting specific param for an Entity."""
-    odk_id, dataset_name, entity_uuid, entity = odk_dataset_cleanup
-    async with entity:
-        entities_select_params = await entity.getEntityData(
+    odk_id, dataset_name, entity_uuid, dataset = odk_dataset_cleanup
+    async with dataset:
+        entities_select_params = await dataset.getEntityData(
             odk_id,
             dataset_name,
             url_params="$select=__id, __system/updatedAt, geometry",
@@ -160,9 +173,9 @@ async def test_get_entity_data_select_params(odk_dataset_cleanup):
 
 async def test_get_single_entity(odk_dataset_cleanup):
     """Test getting specific Entity by UUID."""
-    odk_id, dataset_name, entity_uuid, entity = odk_dataset_cleanup
-    async with entity:
-        single_entity = await entity.getEntity(
+    odk_id, dataset_name, entity_uuid, dataset = odk_dataset_cleanup
+    async with dataset:
+        single_entity = await dataset.getEntity(
             odk_id,
             dataset_name,
             entity_uuid,
