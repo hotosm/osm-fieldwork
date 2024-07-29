@@ -20,7 +20,7 @@
 import logging
 import os
 from asyncio import gather
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 from uuid import uuid4
 
 import aiohttp
@@ -343,14 +343,13 @@ class OdkEntity(OdkCentral):
         except aiohttp.ClientError as e:
             log.error(f"Error fetching entity: {e}")
             return {}
-        
+
     async def createDataset(
-            self,
-            projectId: int,
-            datasetName: str,
+        self,
+        projectId: int,
+        datasetName: str,
     ):
-        """
-        Creates a dataset for a given project.
+        """Creates a dataset for a given project.
 
         Args:
             projectId (int): The ID of the project to create the dataset for.
@@ -362,11 +361,8 @@ class OdkEntity(OdkCentral):
         Raises:
             aiohttp.ClientError: If an error occurs during the dataset creation process.
         """
-
         url = f"{self.base}projects/{projectId}/datasets"
-        payload = {
-            "name": "features"
-        }
+        payload = {"name": "features"}
         try:
             log.info(f"creating datasets {datasetName} for project {projectId}")
             async with self.session.post(
@@ -382,10 +378,9 @@ class OdkEntity(OdkCentral):
         except aiohttp.ClientError as e:
             log.error(f"Failed to create Entity: {e}")
             return {}
-        
+
     async def createProperty(self, projectId: int, datasetName: str, field: dict):
-        """
-        Create a property for a dataset.
+        """Create a property for a dataset.
 
         Args:
             projectId (int): The ID of the project.
@@ -416,8 +411,7 @@ class OdkEntity(OdkCentral):
             return {}
 
     async def createProperties(self, projectId: int, datasetName: str, properties: List[dict]):
-        """
-        Create a property for a dataset.
+        """Create a property for a dataset.
 
         Args:
             projectId (int): The ID of the project.
@@ -430,11 +424,10 @@ class OdkEntity(OdkCentral):
         Raises:
             aiohttp.ClientError: If an error occurs during the API request.
         """
-
         try:
             log.info(f"bulk uploading properties of dataset {datasetName}")
             properties_tasks = [self.createProperty(projectId, datasetName, field) for field in properties]
-            properties = await gather(*properties_tasks, return_exceptions=True) # type: ignore
+            properties = await gather(*properties_tasks, return_exceptions=True)  # type: ignore
             if not properties:
                 log.warning(f"No properties were uploaded for ODK project ({projectId}) dataset name ({datasetName})")
             log.info(f"Successfully created properties for dataset {datasetName}")
@@ -442,8 +435,8 @@ class OdkEntity(OdkCentral):
         except aiohttp.ClientError as e:
             log.error(f"Failed to create properties: {e}")
             return {}
-    
-    #TODO: not required anymore, only if required to upload single entity
+
+    # TODO: not required anymore, only if required to upload single entity
     async def createEntity(
         self,
         projectId: int,
@@ -548,20 +541,13 @@ class OdkEntity(OdkCentral):
         """
         log.info(f"Bulk uploading Entities for project ({projectId}) dataset ({datasetName})")
         url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities"
-        payload = {
-            "entities": entities,
-            "source": {"name": "features.csv", "size": len(entities)}
-        }
+        payload = {"entities": entities, "source": {"name": "features.csv", "size": len(entities)}}
         try:
             log.info(f"Creating ({len(entities)}) entities for project " f"({projectId}) dataset ({datasetName})")
-            async with self.session.post(
-                    url,
-                    ssl=self.verify,
-                    json=payload
-                ) as response:
-                    response.raise_for_status()
-                    log.info(f"Successfully created entities for project {projectId} in dataset {datasetName}")
-                    return await response.json()
+            async with self.session.post(url, ssl=self.verify, json=payload) as response:
+                response.raise_for_status()
+                log.info(f"Successfully created entities for project {projectId} in dataset {datasetName}")
+                return await response.json()
         except aiohttp.ClientError as e:
             log.error(f"Failed to create Entity: {e}")
             return {}
