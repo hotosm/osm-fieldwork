@@ -68,7 +68,7 @@ services:
     restart: "unless-stopped"
 
   central:
-    image: "ghcr.io/hotosm/fmtm/odkcentral:v2023.5.0"
+    image: "ghcr.io/hotosm/fmtm/odkcentral:v2024.1.0"
     depends_on:
       central-db:
         condition: service_healthy
