@@ -33,6 +33,9 @@ use the Entities to achieve the above goals.
 
 ### Workflow Using Entities
 
+> **UPDATE 29/07/2023** ODK Central now supports creating the Entity List
+> / Dataset via API instead of registration form.
+
 The basic workflow would probably resemble:
 
 - Create an Entity registration form.
