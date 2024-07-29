@@ -1358,7 +1358,7 @@ class OdkAppUser(OdkCentral):
         return self.qrcode
 
 
-class OdkEntity(OdkCentral):
+class OdkDataset(OdkCentral):
     """Class to manipulate a Entity on an ODK Central server."""
 
     def __init__(
@@ -1373,7 +1373,7 @@ class OdkEntity(OdkCentral):
             passwd (str):  The user's account password on ODK Central.
 
         Returns:
-            (OdkEntity): An instance of this object.
+            (OdkDataset): An instance of this object.
         """
         super().__init__(url, user, passwd)
         self.name = None
@@ -1403,6 +1403,8 @@ class OdkEntity(OdkCentral):
         url = f"{self.base}projects/{projectId}/datasets/"
         result = self.session.get(url, verify=self.verify)
         return result.json()
+
+    # TODO add createDataset
 
     def listEntities(
         self,

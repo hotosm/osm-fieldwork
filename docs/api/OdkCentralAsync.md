@@ -10,7 +10,7 @@ options:
 show_source: false
 heading_level: 3
 
-::: osm_fieldwork.OdkCentralAsync.OdkEntity
+::: osm_fieldwork.OdkCentralAsync.OdkDataset
 options:
 show_source: false
 heading_level: 3

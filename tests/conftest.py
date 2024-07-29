@@ -25,7 +25,7 @@ from pathlib import Path
 import pytest
 
 from osm_fieldwork.OdkCentral import OdkAppUser, OdkForm, OdkProject
-from osm_fieldwork.OdkCentralAsync import OdkEntity
+from osm_fieldwork.OdkCentralAsync import OdkDataset
 from osm_fieldwork.xlsforms import entities_registration_xml
 
 logging.basicConfig(
@@ -160,7 +160,7 @@ def odk_form_cleanup(odk_form):
 def odk_entity(project_details) -> tuple:
     """Get entity for a project."""
     odk_id = project_details.get("id")
-    entity = OdkEntity(
+    entity = OdkDataset(
         url="https://proxy",
         user="test@hotosm.org",
         passwd="Password1234",
