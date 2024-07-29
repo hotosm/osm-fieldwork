@@ -277,6 +277,12 @@ class OdkDataset(OdkCentral):
         Raises:
             aiohttp.ClientError: If an error occurs during the dataset creation process.
         """
+        # Validation of properties param
+        if properties and (not isinstance(properties, list) or not isinstance(properties[-1], str)):
+            msg = "The properties must be a list of string values to create a dataset"
+            log.error(msg)
+            raise ValueError(msg)
+
         # Create the dataset
         url = f"{self.base}projects/{projectId}/datasets"
         payload = {"name": datasetName}
