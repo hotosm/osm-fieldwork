@@ -1,3 +1,15 @@
+## 0.14.0 (2024-07-29)
+
+### Feat
+
+- endpoint to create dataset and bulk upload entities (#276)
+- add support for moving tiles (#272)
+
+### Fix
+
+- Add support for ways when importing an OSM XML file (#275)
+- Fix typo, usfs not usgs, add quering the relations table (#274)
+
 ## 0.13.0 (2024-07-12)
 
 ### Fix
