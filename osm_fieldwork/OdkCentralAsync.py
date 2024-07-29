@@ -281,7 +281,7 @@ class OdkDataset(OdkCentral):
         url = f"{self.base}projects/{projectId}/datasets"
         payload = {"name": datasetName}
         try:
-            log.info(f"Creating dataset ({datasetName}) for project ({projectId})")
+            log.info(f"Creating dataset ({datasetName}) for ODK project ({projectId})")
             async with self.session.post(
                 url,
                 ssl=self.verify,
@@ -565,14 +565,14 @@ class OdkDataset(OdkCentral):
         if not isinstance(entities, list):
             raise ValueError("Entities must be a list")
 
-        log.info(f"Bulk uploading ({len(entities)}) Entities for project ({projectId}) dataset ({datasetName})")
+        log.info(f"Bulk uploading ({len(entities)}) Entities for ODK project ({projectId}) dataset ({datasetName})")
         url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities"
         payload = {"entities": entities, "source": {"name": "features.csv"}}
 
         try:
             async with self.session.post(url, ssl=self.verify, json=payload) as response:
                 response.raise_for_status()
-                log.info(f"Successfully created entities for project ({projectId}) in dataset ({datasetName})")
+                log.info(f"Successfully created entities for ODK project ({projectId}) in dataset ({datasetName})")
                 return await response.json()
         except aiohttp.ClientError as e:
             msg = f"Failed to create Entities: {e}"
@@ -660,7 +660,7 @@ class OdkDataset(OdkCentral):
 
         try:
             log.info(
-                f"Updating Entity ({entityUuid}) for project ({projectId}) "
+                f"Updating Entity ({entityUuid}) for ODK project ({projectId}) "
                 f"with params: label={label} data={data} newVersion={newVersion}"
             )
             async with self.session.patch(
@@ -695,7 +695,7 @@ class OdkDataset(OdkCentral):
         url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities/{entityUuid}"
         log.debug(f"Deleting dataset ({datasetName}) entity UUID ({entityUuid})")
         try:
-            log.info(f"Deleting Entity ({entityUuid}) for project ({projectId}) " f"and dataset ({datasetName})")
+            log.info(f"Deleting Entity ({entityUuid}) for ODK project ({projectId}) " f"and dataset ({datasetName})")
             async with self.session.delete(url, ssl=self.verify) as response:
                 success = (response_msg := await response.json()).get("success", False)
                 if not success:
@@ -726,7 +726,7 @@ class OdkDataset(OdkCentral):
             async with self.session.get(url, ssl=self.verify) as response:
                 count = (await response.json()).get("@odata.count", None)
         except aiohttp.ClientError as e:
-            msg = f"Failed to get Entity count for project ({projectId}): {e}"
+            msg = f"Failed to get Entity count for ODK project ({projectId}): {e}"
             log.error(msg)
             raise aiohttp.ClientError(msg) from e
 
@@ -834,6 +834,6 @@ class OdkDataset(OdkCentral):
                     return response_json.get("value", [])
                 return response_json
         except aiohttp.ClientError as e:
-            msg = f"Failed to get Entity data for project ({projectId}): {e}"
+            msg = f"Failed to get Entity data for ODK project ({projectId}): {e}"
             log.error(msg)
             raise aiohttp.ClientError(msg) from e
