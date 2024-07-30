@@ -18,7 +18,8 @@ sources:
       - xy: False
 
   - oam:
-      - name: OpenArialMap
+      - name: OpenAerialMap
+        # Note this is an example URL! It will change per project
       - url: https://tiles.openaerialmap.org/63962d0d9f665400075759be/0/63962d0d9f665400075759bf/%s
       - suffix: png
       - xy: True
