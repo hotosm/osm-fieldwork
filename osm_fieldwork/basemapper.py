@@ -597,9 +597,9 @@ def create_basemap_file(
 
     # Args parsed, main code:
     tiles = list()
-    for level in zoom_levels:
+    for zoom_level in zoom_levels:
         # Download the tile directory
-        basemap.getTiles(level)
+        basemap.getTiles(zoom_level)
         tiles += basemap.tiles
 
     if not outfile:
@@ -607,7 +607,8 @@ def create_basemap_file(
         return
 
     suffix = Path(outfile).suffix.lower()
-    log.debug(f"Basemap output format: {suffix}")
+    image_format = basemap.sources[source].get("suffix", "jpg")
+    log.debug(f"Basemap output format: {suffix} | Image format: {image_format}")
 
     if any(substring in suffix for substring in ["sqlite", "mbtiles"]):
         outf = DataFile(outfile, basemap.getFormat(), append)
@@ -615,7 +616,7 @@ def create_basemap_file(
             outf.addBounds(basemap.bbox)
             outf.addZoomLevels(zoom_levels)
         # Create output database and specify image format, png, jpg, or tif
-        outf.writeTiles(tiles, tiledir)
+        outf.writeTiles(tiles, tiledir, image_format)
 
     elif suffix == ".pmtiles":
         tile_dir_to_pmtiles(outfile, tiledir, basemap.bbox, image_format, zoom_levels, source)

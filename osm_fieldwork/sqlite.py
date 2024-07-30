@@ -207,6 +207,7 @@ class DataFile(object):
         self,
         tiles: list,
         base: str = "./",
+        image_format: str = "jpg"
     ):
         """Write map tiles into the to the map tile cache.
 
@@ -215,7 +216,7 @@ class DataFile(object):
             base (str): The default local to write tiles to disk
         """
         for tile in tiles:
-            xyz = MapTile(tile=tile)
+            xyz = MapTile(tile=tile, suffix=image_format)
             xyz.readImage(base)
             # xyz.dump()
             self.writeTile(xyz)
