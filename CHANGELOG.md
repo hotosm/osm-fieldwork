@@ -1,3 +1,14 @@
+## 0.14.1 (2024-07-30)
+
+### Fix
+
+- generating pmtiles with different file extensions, update XLSForm ordering (#278)
+- improve validation for OdkDataset.createDataset properties
+
+### Refactor
+
+- clarify in logs the projectId is for ODK
+
 ## 0.14.0 (2024-07-29)
 
 ### Feat
