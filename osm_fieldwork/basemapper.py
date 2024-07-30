@@ -285,7 +285,7 @@ class BaseMapper(object):
                         src[k1] = v1
                 self.sources[k] = src
 
-    def customTMS(self, url: str, name: str = "custom", source: str = "custom", suffix: str = "jpg"):
+    def customTMS(self, url: str, name: str = "custom"):
         """Add a custom TMS URL to the list of sources.
 
         The url must end in %s to be replaced with the tile xyz values.
@@ -300,27 +300,29 @@ class BaseMapper(object):
         Args:
             name (str): The name to display
             url (str): The URL string
-            suffix (str): The suffix, png or jpg
-            source (str): The source value to use as an index
         """
         # Remove any file extensions if present and update the 'suffix' parameter
+        # NOTE the file extension gets added again later for the download URL
         if url.endswith(".jpg"):
-            source = "jpg"
             suffix = "jpg"
             url = url[:-4]  # Remove the last 4 characters (".jpg")
         elif url.endswith(".png"):
-            source = "png"
             suffix = "png"
             url = url[:-4]  # Remove the last 4 characters (".png")
+        else:
+            # FIXME handle other types
+            suffix = 'jpg'
 
         # Replace "{z}/{x}/{y}" with "%s"
         url = re.sub(r"/{[xyz]+\}", "", url)
         url = url + r"/%s"
 
+        source = "custom"
         tms_params = {"name": name, "url": url, "suffix": suffix, "source": source}
         log.debug(f"Setting custom TMS with params: {tms_params}")
-        self.sources["custom"] = tms_params
-        self.source = "custom"
+        self.sources[source] = tms_params
+        self.source = source
+
 
     def getFormat(self):
         """Get the image format of the map tiles.
