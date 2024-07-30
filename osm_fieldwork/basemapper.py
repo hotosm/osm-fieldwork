@@ -163,82 +163,96 @@ class StringBoundaryHandler(BoundaryHandler):
             raise ValueError(msg) from None
 
 
-def dlthread(
-    dest: str,
-    mirrors: list,
-    tiles: list,
-    xy: bool,
-):
-    """Thread to handle downloads for Queue.
+def format_url(site: dict, tile: tuple) -> Optional[str]:
+    """
+    Format the URL for the given site and tile.
 
     Args:
-        dest (str): The filespec of the tile cache
-        mirrors (list): The list of mirrors to get imagery
-        tiles (list): The list of tiles to download
-        xy (bool): Whether to swap the X & Y fields in the TMS URL
+        site (dict): The site configuration with URL and source type.
+        tile (tuple): The tile coordinates (x, y, z).
+
+    Returns:
+        str: The formatted URL or None if the source is unsupported.
+    """
+    source_url = site["url"]
+    if site.get("xy"):
+        # z/x/y format download, move to z/y/x structure on disk
+        url_path = f"{tile[2]}/{tile[0]}/{tile[1]}"
+    else:
+        # z/y/x format download, keep the same on disk
+        url_path = f"{tile[2]}/{tile[1]}/{tile[0]}"
+
+    match site["source"]:
+        # NOTE we use % syntax to replace the placeholder %s
+        case "esri":
+            return source_url % url_path
+        case "bing":
+            bingkey = mercantile.quadkey(tile)
+            return source_url % bingkey
+        case "topo":
+            # FIXME does this work an intended?
+            return source_url % f"{tile[2]}/{tile[1]}/{tile[0]}"
+        case "google":
+            return source_url % f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
+        case "oam":
+            return source_url % url_path
+        case "custom":
+            return source_url % url_path
+        case _:
+            log.error(f"Unsupported source: {site['source']}")
+            return None
+
+
+def download_tile(dest: str, tile: tuple, mirrors: list[dict]) -> None:
+    """
+    Download a single tile from the given list of mirrors.
+
+    Args:
+        dest (str): The destination directory.
+        tile (tuple): The tile coordinates (x, y, z).
+        mirrors (list): The list of mirrors to get imagery.
+    """
+    for site in mirrors:
+        download_url = format_url(site, tile)
+        if download_url:
+            filespec = f"{tile[2]}/{tile[1]}/{tile[0]}.{site['suffix']}"
+            outfile = Path(dest) / filespec
+            if not outfile.exists():
+                try:
+                    log.debug(f"Attempting URL download: {download_url}")
+                    dl = SmartDL(download_url, dest=str(outfile), connect_default_logger=False)
+                    dl.start()
+                    return
+                except Exception as e:
+                    log.error(e)
+                    log.error(f"Couldn't download file for {filespec}")
+            else:
+                log.debug(f"{outfile} exists!")
+        else:
+            continue
+
+
+def dlthread(dest: str, mirrors: list[dict], tiles: list[tuple]) -> None:
+    """
+    Thread to handle downloads for Queue.
+
+    Args:
+        dest (str): The filespec of the tile cache.
+        mirrors (list): The list of mirrors to get imagery.
+        tiles (list): The list of tiles to download.
     """
     if len(tiles) == 0:
         # epdb.st()
         return
-    # counter = -1
 
-    # start = datetime.now()
+    # Create the subdirectories as pySmartDL doesn't do it for us
+    Path(dest).mkdir(parents=True, exist_ok=True)
 
-    # totaltime = 0.0
-    log.info("Downloading %d tiles in thread %d to %s" % (len(tiles), threading.get_ident(), dest))
+    log.info(f"Downloading {len(tiles)} tiles in thread {threading.get_ident()} to {dest}")
 
-    for tile in tiles:
-        # NOTE on disk, we always keep a consistent z/y/x format
-        filespec = f"{tile[2]}/{tile[1]}/{tile[0]}"
-        for site in mirrors:
-            url = site["url"]
-            url_path = None
-
-            match site["source"]:
-                case "bing":
-                    bingkey = mercantile.quadkey(tile)
-                    remote = url % bingkey
-                case "google":
-                    url_path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
-                    remote = url % url_path
-                case "oam":
-                    # NOTE OAM uses z/y/x format
-                    url_path = f"{tile[2]}/{tile[1]}/{tile[0]}"
-                    remote = url % url_path
-                case "custom":
-                    if not xy:
-                        # z/y/x format download, keep the same on disk
-                        url_path = f"{tile[2]}/{tile[1]}/{tile[0]}"
-                    else:
-                        # z/x/y format download, move to z/y/x structure on disk
-                        url_path = f"{tile[2]}/{tile[0]}/{tile[1]}"
-                    remote = url % url_path
-                case _:
-                    if site["source"] != "topo":
-                        filespec += f".{site['suffix']}"
-                    remote = url % filespec
-
-            print(f"Getting file from: {remote}")
-
-            # Create the subdirectories as pySmartDL doesn't do it for us
-            Path(dest).mkdir(parents=True, exist_ok=True)
-
-        dl = None
-        try:
-            if site["source"] == "topo":
-                filespec += "." + site["suffix"]
-            outfile = dest + "/" + filespec
-            if not Path(outfile).exists():
-                dl = SmartDL(remote, dest=outfile, connect_default_logger=False)
-                dl.start()
-            else:
-                log.debug("%s exists!" % (outfile))
-        except Exception as e:
-            log.error(e)
-            if dl:
-                log.error(f"Couldn't download {filespec}: {dl.get_errors()}")
-            else:
-                log.error(f"Couldn't download {filespec}")
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(download_tile, dest, tile, mirrors) for tile in tiles]
+        concurrent.futures.wait(futures)
 
 
 class BaseMapper(object):
@@ -332,47 +346,38 @@ class BaseMapper(object):
         """
         return self.sources[self.source]["suffix"]
 
-    def getTiles(
-        self,
-        zoom: int = None,
-    ):
-        """Get a list of tiles for the specifed zoom level.
+    def getTiles(self, zoom: int) -> int:
+        """
+        Get a list of tiles for the specified zoom level.
 
         Args:
-            zoom (int): The Zoom level of the desired map tiles
+            zoom (int): The Zoom level of the desired map tiles.
 
         Returns:
-            (int): The total number of map tiles downloaded
+            int: The total number of map tiles downloaded.
         """
         info = get_cpu_info()
         cores = info["count"]
 
         self.tiles = list(mercantile.tiles(self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], zoom))
         total = len(self.tiles)
-        log.info("%d tiles for zoom level %d" % (len(self.tiles), zoom))
-        chunk = round(len(self.tiles) / cores)
-        queue.Queue(maxsize=cores)
-        log.info("%d threads, %d tiles" % (cores, total))
+        log.info(f"{total} tiles for zoom level {zoom}")
 
         mirrors = [self.sources[self.source]]
+        chunk_size = max(1, round(total / cores))
 
-        if len(self.tiles) < chunk or chunk == 0:
-            dlthread(self.base, mirrors, self.tiles, self.xy)
+        if total < chunk_size or chunk_size == 0:
+            dlthread(self.base, mirrors, self.tiles)
         else:
             with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
-                # results = []
-                block = 0
-                while block <= len(self.tiles):
-                    executor.submit(dlthread, self.base, mirrors, self.tiles[block : block + chunk], self.xy)
-                    # result = executor.submit(dlthread, self.base, mirrors, self.tiles[block : block + chunk], self.xy)
-                    # results.append(result)
-                    log.debug("Dispatching Block %d:%d" % (block, block + chunk))
-                    block += chunk
-                executor.shutdown()
-            # log.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), Path(self.base).name))
-            # for result in results:
-            #     print(result.result())
-        return len(self.tiles)
+                futures = []
+                for i in range(0, total, chunk_size):
+                    chunk = self.tiles[i:i + chunk_size]
+                    futures.append(executor.submit(dlthread, self.base, mirrors, chunk))
+                    log.debug(f"Dispatching Block {i}:{i + chunk_size}")
+                concurrent.futures.wait(futures)
+
+        return total
 
     def tileExists(
         self,
