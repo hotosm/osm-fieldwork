@@ -30,7 +30,7 @@ import sys
 import threading
 from io import BytesIO
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 import geojson
 import mercantile
@@ -263,7 +263,6 @@ class BaseMapper(object):
         boundary: Union[str, BytesIO],
         base: str,
         source: str,
-        xy: bool,
     ):
         """Create an tile basemap for ODK Collect.
 
@@ -272,7 +271,6 @@ class BaseMapper(object):
                 The GeoJSON can contain multiple geometries.
             base (str): The base directory to cache map tile in
             source (str): The upstream data source for map tiles
-            xy (bool): Whether to swap the X & Y fields in the TMS URL
 
         Returns:
             (BaseMapper): An instance of this class
@@ -284,7 +282,6 @@ class BaseMapper(object):
         # sources for imagery
         self.source = source
         self.sources = dict()
-        self.xy = xy
 
         path = xlsforms_path.replace("xlsforms", "imagery.yaml")
         self.yaml = YamlFile(path)
@@ -299,7 +296,7 @@ class BaseMapper(object):
                         src[k1] = v1
                 self.sources[k] = src
 
-    def customTMS(self, url: str, name: str = "custom"):
+    def customTMS(self, url: str, is_oam: bool = False, is_xy: bool = False):
         """Add a custom TMS URL to the list of sources.
 
         The url must end in %s to be replaced with the tile xyz values.
@@ -312,8 +309,9 @@ class BaseMapper(object):
         The method will replace {z}/{x}/{y}.jpg with %s
 
         Args:
-            name (str): The name to display
             url (str): The URL string
+            source (str): The provier source, for setting attribution
+            is_xy (bool): Swap the x and y for the provider --> 'zxy'
         """
         # Remove any file extensions if present and update the 'suffix' parameter
         # NOTE the file extension gets added again later for the download URL
@@ -324,19 +322,25 @@ class BaseMapper(object):
             suffix = "png"
             url = url[:-4]  # Remove the last 4 characters (".png")
         else:
-            # FIXME handle other types
-            suffix = 'jpg'
+            # FIXME handle other formats for custom TMS
+            suffix = "jpg"
 
         # Replace "{z}/{x}/{y}" with "%s"
         url = re.sub(r"/{[xyz]+\}", "", url)
         url = url + r"/%s"
 
-        source = "custom"
-        tms_params = {"name": name, "url": url, "suffix": suffix, "source": source}
-        log.debug(f"Setting custom TMS with params: {tms_params}")
-        self.sources[source] = tms_params
+        if is_oam:
+            # Override dummy OAM URL
+            source = "oam"
+            self.sources[source]["url"] = url
+        else:
+            source = "custom"
+            tms_params = {"name": source, "url": url, "suffix": suffix, "source": source, "xy": is_xy}
+            log.debug(f"Setting custom TMS with params: {tms_params}")
+            self.sources[source] = tms_params
+        
+        # Select the source
         self.source = source
-
 
     def getFormat(self):
         """Get the image format of the map tiles.
@@ -566,23 +570,30 @@ def create_basemap_file(
     else:
         base = Path(outdir).absolute()
 
-    source = "custom" if tms else source
+    # Source / TMS validation
+    if not source and not tms:
+        err = "You need to specify a source!"
+        log.error(err)
+        raise ValueError(err)
+    if source == "oam" and not tms:
+        err = "A TMS URL must be provided for OpenAerialMap!"
+        log.error(err)
+        raise ValueError(err)
+    # A custom TMS provider
+    if source != "oam" and tms:
+        source = "custom"
+
     tiledir = base / f"{source}tiles"
     # Make tile download directory
     tiledir.mkdir(parents=True, exist_ok=True)
     # Convert to string for other methods
     tiledir = str(tiledir)
 
-    if not source and not tms:
-        err = "You need to specify a source!"
-        log.error(err)
-        raise ValueError(err)
-
-    basemap = BaseMapper(boundary, tiledir, source, xy)
+    basemap = BaseMapper(boundary, tiledir, source)
 
     if tms:
         # Add TMS URL to sources for download
-        basemap.customTMS(tms)
+        basemap.customTMS(tms, True if source == "oam" else False, xy)
 
     # Args parsed, main code:
     tiles = list()
