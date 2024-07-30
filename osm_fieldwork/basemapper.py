@@ -400,15 +400,15 @@ class BaseMapper(object):
             return False
 
 
-def tileid_from_xyz_dir_path(filepath: Union[Path, str], is_xy: bool = False) -> int:
-    """Helper function to get the tile id from a tile in xyz directory structure.
+def tileid_from_zyx_dir_path(filepath: Union[Path, str]) -> int:
+    """Helper function to get the tile id from a tile in xyz (zyx) directory structure.
 
     TMS typically has structure z/y/x.png
-    If the --xy flag is used during creation, then z/x/y is used.
+    If the --xy flag was used previously, the TMS was downloaed into
+    directories of z/y/x structure from their z/x/y URL.
 
     Args:
         filepath (Union[Path, str]): The path to tile image within the xyz directory.
-        is_xy (bool): If the X/Y are swapped in the xyz URL.
 
     Returns:
         int: The globally defined tile id from the xyz definition.
@@ -537,7 +537,6 @@ def create_basemap_file(
         f"zooms={zooms} | "
         f"outdir={outdir} | "
         f"source={source} | "
-        f"xy={xy} | "
         f"tms={tms}"
     )
 
