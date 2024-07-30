@@ -85,6 +85,7 @@ async def test_create_invalid_dataset(odk_dataset):
         with pytest.raises(ValueError):
             await dataset.createDataset(odk_id, dataset_name, properties=[1, 2])
 
+
 async def test_bulk_create_entity_count(odk_dataset_cleanup):
     """Test bulk creation of Entities."""
     odk_id, dataset_name, entity_uuid, dataset = odk_dataset_cleanup

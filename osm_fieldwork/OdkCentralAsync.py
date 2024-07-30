@@ -315,7 +315,6 @@ class OdkDataset(OdkCentral):
             success = await gather(*properties_tasks, return_exceptions=True)  # type: ignore
             if not success:
                 log.warning(f"No properties were uploaded for ODK project ({projectId}) dataset name ({datasetName})")
-            log.info(f"Successfully created properties for dataset ({datasetName})")
         except aiohttp.ClientError as e:
             msg = f"Failed to create properties: {e}"
             log.error(msg)
@@ -350,12 +349,12 @@ class OdkDataset(OdkCentral):
         }
 
         try:
-            log.debug(f"Creating property of dataset {datasetName}")
+            log.debug(f"Creating property ({field_name}) for dataset {datasetName}")
             async with self.session.post(url, ssl=self.verify, json=payload) as response:
                 response_data = await response.json()
                 if response.status not in (200, 201):
-                    log.debug(f"Failed to create properties: {response.status}, message='{response_data}'")
-                log.debug(f"Successfully created properties for dataset {datasetName}")
+                    log.warning(f"Failed to create properties: {response.status}, message='{response_data}'")
+                log.debug(f"Successfully created property ({field_name}) for dataset {datasetName}")
                 return response_data
         except aiohttp.ClientError as e:
             msg = f"Failed to create properties: {e}"

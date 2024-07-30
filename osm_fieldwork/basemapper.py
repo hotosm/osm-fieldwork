@@ -23,14 +23,13 @@ import argparse
 import concurrent.futures
 import logging
 import os
-import queue
 import re
 import shutil
 import sys
 import threading
 from io import BytesIO
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 import geojson
 import mercantile
@@ -163,71 +162,93 @@ class StringBoundaryHandler(BoundaryHandler):
             raise ValueError(msg) from None
 
 
-def dlthread(
-    dest: str,
-    mirrors: list,
-    tiles: list,
-    xy: bool,
-):
+def format_url(site: dict, tile: tuple) -> Optional[str]:
+    """Format the URL for the given site and tile.
+
+    Args:
+        site (dict): The site configuration with URL and source type.
+        tile (tuple): The tile coordinates (x, y, z).
+
+    Returns:
+        str: The formatted URL or None if the source is unsupported.
+    """
+    source_url = site["url"]
+    if site.get("xy"):
+        # z/x/y format download, move to z/y/x structure on disk
+        url_path = f"{tile[2]}/{tile[0]}/{tile[1]}"
+    else:
+        # z/y/x format download, keep the same on disk
+        url_path = f"{tile[2]}/{tile[1]}/{tile[0]}"
+
+    match site["source"]:
+        # NOTE we use % syntax to replace the placeholder %s
+        case "esri":
+            return source_url % url_path
+        case "bing":
+            bingkey = mercantile.quadkey(tile)
+            return source_url % bingkey
+        case "topo":
+            # FIXME does this work an intended?
+            return source_url % f"{tile[2]}/{tile[1]}/{tile[0]}"
+        case "google":
+            return source_url % f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
+        case "oam":
+            return source_url % url_path
+        case "custom":
+            return source_url % url_path
+        case _:
+            log.error(f"Unsupported source: {site['source']}")
+            return None
+
+
+def download_tile(dest: str, tile: tuple, mirrors: list[dict]) -> None:
+    """Download a single tile from the given list of mirrors.
+
+    Args:
+        dest (str): The destination directory.
+        tile (tuple): The tile coordinates (x, y, z).
+        mirrors (list): The list of mirrors to get imagery.
+    """
+    for site in mirrors:
+        download_url = format_url(site, tile)
+        if download_url:
+            filespec = f"{tile[2]}/{tile[1]}/{tile[0]}.{site['suffix']}"
+            outfile = Path(dest) / filespec
+            if not outfile.exists():
+                try:
+                    log.debug(f"Attempting URL download: {download_url}")
+                    dl = SmartDL(download_url, dest=str(outfile), connect_default_logger=False)
+                    dl.start()
+                    return
+                except Exception as e:
+                    log.error(e)
+                    log.error(f"Couldn't download file for {filespec}")
+            else:
+                log.debug(f"{outfile} exists!")
+        else:
+            continue
+
+
+def dlthread(dest: str, mirrors: list[dict], tiles: list[tuple]) -> None:
     """Thread to handle downloads for Queue.
 
     Args:
-        dest (str): The filespec of the tile cache
-        mirrors (list): The list of mirrors to get imagery
-        tiles (list): The list of tiles to download
-        xy (bool): Whether to swap the X & Y fields in the TMS URL
+        dest (str): The filespec of the tile cache.
+        mirrors (list): The list of mirrors to get imagery.
+        tiles (list): The list of tiles to download.
     """
     if len(tiles) == 0:
         # epdb.st()
         return
-    # counter = -1
 
-    # start = datetime.now()
+    # Create the subdirectories as pySmartDL doesn't do it for us
+    Path(dest).mkdir(parents=True, exist_ok=True)
 
-    # totaltime = 0.0
-    log.info("Downloading %d tiles in thread %d to %s" % (len(tiles), threading.get_ident(), dest))
-    for tile in tiles:
-        filespec = f"{tile[2]}/{tile[1]}/{tile[0]}"
-        for site in mirrors:
-            if site["source"] != "topo":
-                filespec += "." + site["suffix"]
-            url = site["url"]
-            if site["source"] == "bing":
-                bingkey = mercantile.quadkey(tile)
-                remote = url % bingkey
-            elif site["source"] == "google":
-                path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
-                remote = url % path
-            elif site["source"] == "custom":
-                if not xy:
-                    # z/y/x format
-                    path = f"{tile[2]}/{tile[1]}/{tile[0]}"
-                else:
-                    # z/x/y format
-                    path = f"{tile[2]}/{tile[0]}/{tile[1]}"
-                remote = url % path
-            else:
-                remote = url % filespec
-            print("Getting file from: %s" % remote)
-            # Create the subdirectories as pySmartDL doesn't do it for us
-            Path(dest).mkdir(parents=True, exist_ok=True)
+    log.info(f"Downloading {len(tiles)} tiles in thread {threading.get_ident()} to {dest}")
 
-        dl = None
-        try:
-            if site["source"] == "topo":
-                filespec += "." + site["suffix"]
-            outfile = dest + "/" + filespec
-            if not Path(outfile).exists():
-                dl = SmartDL(remote, dest=outfile, connect_default_logger=False)
-                dl.start()
-            else:
-                log.debug("%s exists!" % (outfile))
-        except Exception as e:
-            log.error(e)
-            if dl:
-                log.error(f"Couldn't download {filespec}: {dl.get_errors()}")
-            else:
-                log.error(f"Couldn't download {filespec}")
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(download_tile, dest, tile, mirrors) for tile in tiles]
+        concurrent.futures.wait(futures)
 
 
 class BaseMapper(object):
@@ -238,7 +259,6 @@ class BaseMapper(object):
         boundary: Union[str, BytesIO],
         base: str,
         source: str,
-        xy: bool,
     ):
         """Create an tile basemap for ODK Collect.
 
@@ -247,7 +267,6 @@ class BaseMapper(object):
                 The GeoJSON can contain multiple geometries.
             base (str): The base directory to cache map tile in
             source (str): The upstream data source for map tiles
-            xy (bool): Whether to swap the X & Y fields in the TMS URL
 
         Returns:
             (BaseMapper): An instance of this class
@@ -259,7 +278,6 @@ class BaseMapper(object):
         # sources for imagery
         self.source = source
         self.sources = dict()
-        self.xy = xy
 
         path = xlsforms_path.replace("xlsforms", "imagery.yaml")
         self.yaml = YamlFile(path)
@@ -274,7 +292,7 @@ class BaseMapper(object):
                         src[k1] = v1
                 self.sources[k] = src
 
-    def customTMS(self, url: str, name: str = "custom", source: str = "custom", suffix: str = "jpg"):
+    def customTMS(self, url: str, is_oam: bool = False, is_xy: bool = False):
         """Add a custom TMS URL to the list of sources.
 
         The url must end in %s to be replaced with the tile xyz values.
@@ -287,29 +305,38 @@ class BaseMapper(object):
         The method will replace {z}/{x}/{y}.jpg with %s
 
         Args:
-            name (str): The name to display
             url (str): The URL string
-            suffix (str): The suffix, png or jpg
-            source (str): The source value to use as an index
+            source (str): The provier source, for setting attribution
+            is_xy (bool): Swap the x and y for the provider --> 'zxy'
         """
         # Remove any file extensions if present and update the 'suffix' parameter
+        # NOTE the file extension gets added again later for the download URL
         if url.endswith(".jpg"):
-            source = "jpg"
             suffix = "jpg"
             url = url[:-4]  # Remove the last 4 characters (".jpg")
         elif url.endswith(".png"):
-            source = "png"
             suffix = "png"
             url = url[:-4]  # Remove the last 4 characters (".png")
+        else:
+            # FIXME handle other formats for custom TMS
+            suffix = "jpg"
 
         # Replace "{z}/{x}/{y}" with "%s"
         url = re.sub(r"/{[xyz]+\}", "", url)
         url = url + r"/%s"
 
-        tms_params = {"name": name, "url": url, "suffix": suffix, "source": source}
-        log.debug(f"Setting custom TMS with params: {tms_params}")
-        self.sources["custom"] = tms_params
-        self.source = "custom"
+        if is_oam:
+            # Override dummy OAM URL
+            source = "oam"
+            self.sources[source]["url"] = url
+        else:
+            source = "custom"
+            tms_params = {"name": source, "url": url, "suffix": suffix, "source": source, "xy": is_xy}
+            log.debug(f"Setting custom TMS with params: {tms_params}")
+            self.sources[source] = tms_params
+
+        # Select the source
+        self.source = source
 
     def getFormat(self):
         """Get the image format of the map tiles.
@@ -319,47 +346,37 @@ class BaseMapper(object):
         """
         return self.sources[self.source]["suffix"]
 
-    def getTiles(
-        self,
-        zoom: int = None,
-    ):
-        """Get a list of tiles for the specifed zoom level.
+    def getTiles(self, zoom: int) -> int:
+        """Get a list of tiles for the specified zoom level.
 
         Args:
-            zoom (int): The Zoom level of the desired map tiles
+            zoom (int): The Zoom level of the desired map tiles.
 
         Returns:
-            (int): The total number of map tiles downloaded
+            int: The total number of map tiles downloaded.
         """
         info = get_cpu_info()
         cores = info["count"]
 
         self.tiles = list(mercantile.tiles(self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3], zoom))
         total = len(self.tiles)
-        log.info("%d tiles for zoom level %d" % (len(self.tiles), zoom))
-        chunk = round(len(self.tiles) / cores)
-        queue.Queue(maxsize=cores)
-        log.info("%d threads, %d tiles" % (cores, total))
+        log.info(f"{total} tiles for zoom level {zoom}")
 
         mirrors = [self.sources[self.source]]
+        chunk_size = max(1, round(total / cores))
 
-        if len(self.tiles) < chunk or chunk == 0:
-            dlthread(self.base, mirrors, self.tiles, self.xy)
+        if total < chunk_size or chunk_size == 0:
+            dlthread(self.base, mirrors, self.tiles)
         else:
             with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
-                # results = []
-                block = 0
-                while block <= len(self.tiles):
-                    executor.submit(dlthread, self.base, mirrors, self.tiles[block : block + chunk], self.xy)
-                    # result = executor.submit(dlthread, self.base, mirrors, self.tiles[block : block + chunk], self.xy)
-                    # results.append(result)
-                    log.debug("Dispatching Block %d:%d" % (block, block + chunk))
-                    block += chunk
-                executor.shutdown()
-            # log.info("Had %r errors downloading %d tiles for data for %r" % (self.errors, len(tiles), Path(self.base).name))
-            # for result in results:
-            #     print(result.result())
-        return len(self.tiles)
+                futures = []
+                for i in range(0, total, chunk_size):
+                    chunk = self.tiles[i : i + chunk_size]
+                    futures.append(executor.submit(dlthread, self.base, mirrors, chunk))
+                    log.debug(f"Dispatching Block {i}:{i + chunk_size}")
+                concurrent.futures.wait(futures)
+
+        return total
 
     def tileExists(
         self,
@@ -382,15 +399,15 @@ class BaseMapper(object):
             return False
 
 
-def tileid_from_xyz_dir_path(filepath: Union[Path, str], is_xy: bool = False) -> int:
-    """Helper function to get the tile id from a tile in xyz directory structure.
+def tileid_from_zyx_dir_path(filepath: Union[Path, str]) -> int:
+    """Helper function to get the tile id from a tile in xyz (zyx) directory structure.
 
     TMS typically has structure z/y/x.png
-    If the --xy flag is used during creation, then z/x/y is used.
+    If the --xy flag was used previously, the TMS was downloaed into
+    directories of z/y/x structure from their z/x/y URL.
 
     Args:
         filepath (Union[Path, str]): The path to tile image within the xyz directory.
-        is_xy (bool): If the X/Y are swapped in the xyz URL.
 
     Returns:
         int: The globally defined tile id from the xyz definition.
@@ -405,12 +422,8 @@ def tileid_from_xyz_dir_path(filepath: Union[Path, str], is_xy: bool = False) ->
         log.error(msg)
         raise ValueError(msg) from e
 
-    if is_xy:
-        y = final_tile
-        z, x = map(int, tile_image_path[:-1])
-    else:
-        x = final_tile
-        z, y = map(int, tile_image_path[:-1])
+    x = final_tile
+    z, y = map(int, tile_image_path[:-1])
 
     return zxy_to_tileid(z, x, y)
 
@@ -419,8 +432,9 @@ def tile_dir_to_pmtiles(
     outfile: str,
     tile_dir: str | Path,
     bbox: tuple,
+    image_format: str,
+    zoom_levels: list[int],
     attribution: str,
-    is_xy=False,
 ):
     """Write PMTiles archive from tiles in the specified directory.
 
@@ -429,44 +443,48 @@ def tile_dir_to_pmtiles(
         tile_dir (str | Path): The directory containing the tile images.
         bbox (tuple): Bounding box in format (min_lon, min_lat, max_lon, max_lat).
         attribution (str): Attribution string to include in PMTile archive.
-        is_xy (bool): If the X/Y are swapped in the xyz URL.
 
     Returns:
         None
     """
     tile_dir = Path(tile_dir)
 
-    # Get tile image format from the first file encountered
+    # Abort if no files are present
     first_file = next((file for file in tile_dir.rglob("*.*") if file.is_file()), None)
-
     if not first_file:
         err = "No tile files found in the specified directory. Aborting PMTile creation."
         log.error(err)
         raise ValueError(err)
 
-    # FIXME passing as PMTileType[tile_format] does not work
-    # tile_format = first_file.suffix.upper()
-
-    # Get zoom levels from dirs
-    zoom_levels = sorted([int(x.stem) for x in tile_dir.glob("*") if x.is_dir()])
+    tile_format = image_format.upper()
+    # NOTE JPEG exception / flexible extension (.jpg, .jpeg)
+    if tile_format == "JPG":
+        tile_format = "JPEG"
+    log.debug(f"PMTile determind internal file format: {tile_format}")
+    possible_tile_formats = [f".{e.name.lower()}" for e in PMTileType]
+    possible_tile_formats.append(".jpg")
+    possible_tile_formats.remove(".unknown")
 
     with open(outfile, "wb") as pmtile_file:
         writer = PMTileWriter(pmtile_file)
 
         for tile_path in tile_dir.rglob("*"):
-            if tile_path.is_file() and tile_path.suffix in [".jpg", ".jpeg"]:
-                tile_id = tileid_from_xyz_dir_path(tile_path, is_xy)
+            if tile_path.is_file() and tile_path.suffix.lower() in possible_tile_formats:
+                tile_id = tileid_from_zyx_dir_path(tile_path)
 
                 with open(tile_path, "rb") as tile:
                     writer.write_tile(tile_id, tile.read())
 
         min_lon, min_lat, max_lon, max_lat = bbox
+        log.debug(
+            f"Writing PMTiles file with min_zoom ({zoom_levels[0]}) "
+            f"max_zoom ({zoom_levels[-1]}) bbox ({bbox}) tile_compression None"
+        )
 
         # Write PMTile metadata
         writer.finalize(
             header={
-                # "tile_type": TileType[tile_format.lstrip(".")],
-                "tile_type": PMTileType.PNG,
+                "tile_type": PMTileType[tile_format],
                 "tile_compression": PMTileCompression.NONE,
                 "min_zoom": zoom_levels[0],
                 "max_zoom": zoom_levels[-1],
@@ -504,7 +522,7 @@ def create_basemap_file(
             (e.g., "12-17") or comma-separated levels (e.g., "12,13,14").
         outdir (str, optional): Output directory name for tile cache.
         source (str, optional): Imagery source, one of
-            ["esri", "bing", "topo", "google", "oam"] (default is "esri").
+            ["esri", "bing", "topo", "google", "oam", "custom"] (default is "esri").
         append (bool, optional): Whether to append to an existing file
 
     Returns:
@@ -517,7 +535,6 @@ def create_basemap_file(
         f"zooms={zooms} | "
         f"outdir={outdir} | "
         f"source={source} | "
-        f"xy={xy} | "
         f"tms={tms}"
     )
 
@@ -548,29 +565,36 @@ def create_basemap_file(
     else:
         base = Path(outdir).absolute()
 
-    source = "custom" if tms else source
+    # Source / TMS validation
+    if not source and not tms:
+        err = "You need to specify a source!"
+        log.error(err)
+        raise ValueError(err)
+    if source == "oam" and not tms:
+        err = "A TMS URL must be provided for OpenAerialMap!"
+        log.error(err)
+        raise ValueError(err)
+    # A custom TMS provider
+    if source != "oam" and tms:
+        source = "custom"
+
     tiledir = base / f"{source}tiles"
     # Make tile download directory
     tiledir.mkdir(parents=True, exist_ok=True)
     # Convert to string for other methods
     tiledir = str(tiledir)
 
-    if not source and not tms:
-        err = "You need to specify a source!"
-        log.error(err)
-        raise ValueError(err)
-
-    basemap = BaseMapper(boundary, tiledir, source, xy)
+    basemap = BaseMapper(boundary, tiledir, source)
 
     if tms:
         # Add TMS URL to sources for download
-        basemap.customTMS(tms)
+        basemap.customTMS(tms, True if source == "oam" else False, xy)
 
     # Args parsed, main code:
     tiles = list()
-    for level in zoom_levels:
+    for zoom_level in zoom_levels:
         # Download the tile directory
-        basemap.getTiles(level)
+        basemap.getTiles(zoom_level)
         tiles += basemap.tiles
 
     if not outfile:
@@ -578,7 +602,8 @@ def create_basemap_file(
         return
 
     suffix = Path(outfile).suffix.lower()
-    log.debug(f"Basemap output format: {suffix}")
+    image_format = basemap.sources[source].get("suffix", "jpg")
+    log.debug(f"Basemap output format: {suffix} | Image format: {image_format}")
 
     if any(substring in suffix for substring in ["sqlite", "mbtiles"]):
         outf = DataFile(outfile, basemap.getFormat(), append)
@@ -586,10 +611,10 @@ def create_basemap_file(
             outf.addBounds(basemap.bbox)
             outf.addZoomLevels(zoom_levels)
         # Create output database and specify image format, png, jpg, or tif
-        outf.writeTiles(tiles, tiledir)
+        outf.writeTiles(tiles, tiledir, image_format)
 
     elif suffix == ".pmtiles":
-        tile_dir_to_pmtiles(outfile, tiledir, basemap.bbox, source, xy)
+        tile_dir_to_pmtiles(outfile, tiledir, basemap.bbox, image_format, zoom_levels, source)
 
     else:
         msg = f"Format {suffix} not supported"
