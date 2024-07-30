@@ -186,29 +186,40 @@ def dlthread(
 
     # totaltime = 0.0
     log.info("Downloading %d tiles in thread %d to %s" % (len(tiles), threading.get_ident(), dest))
+
     for tile in tiles:
+        # NOTE on disk, we always keep a consistent z/y/x format
         filespec = f"{tile[2]}/{tile[1]}/{tile[0]}"
         for site in mirrors:
-            if site["source"] != "topo":
-                filespec += "." + site["suffix"]
             url = site["url"]
-            if site["source"] == "bing":
-                bingkey = mercantile.quadkey(tile)
-                remote = url % bingkey
-            elif site["source"] == "google":
-                path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
-                remote = url % path
-            elif site["source"] == "custom":
-                if not xy:
-                    # z/y/x format
-                    path = f"{tile[2]}/{tile[1]}/{tile[0]}"
-                else:
-                    # z/x/y format
-                    path = f"{tile[2]}/{tile[0]}/{tile[1]}"
-                remote = url % path
-            else:
-                remote = url % filespec
-            print("Getting file from: %s" % remote)
+            url_path = None
+
+            match site["source"]:
+                case "bing":
+                    bingkey = mercantile.quadkey(tile)
+                    remote = url % bingkey
+                case "google":
+                    url_path = f"x={tile[0]}&s=&y={tile[1]}&z={tile[2]}"
+                    remote = url % url_path
+                case "oam":
+                    # NOTE OAM uses z/y/x format
+                    url_path = f"{tile[2]}/{tile[1]}/{tile[0]}"
+                    remote = url % url_path
+                case "custom":
+                    if not xy:
+                        # z/y/x format download, keep the same on disk
+                        url_path = f"{tile[2]}/{tile[1]}/{tile[0]}"
+                    else:
+                        # z/x/y format download, move to z/y/x structure on disk
+                        url_path = f"{tile[2]}/{tile[0]}/{tile[1]}"
+                    remote = url % url_path
+                case _:
+                    if site["source"] != "topo":
+                        filespec += f".{site['suffix']}"
+                    remote = url % filespec
+
+            print(f"Getting file from: {remote}")
+
             # Create the subdirectories as pySmartDL doesn't do it for us
             Path(dest).mkdir(parents=True, exist_ok=True)
 
