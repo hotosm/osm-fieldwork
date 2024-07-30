@@ -23,14 +23,13 @@ import argparse
 import concurrent.futures
 import logging
 import os
-import queue
 import re
 import shutil
 import sys
 import threading
 from io import BytesIO
 from pathlib import Path
-from typing import Tuple, Union, Optional
+from typing import Optional, Tuple, Union
 
 import geojson
 import mercantile
@@ -164,8 +163,7 @@ class StringBoundaryHandler(BoundaryHandler):
 
 
 def format_url(site: dict, tile: tuple) -> Optional[str]:
-    """
-    Format the URL for the given site and tile.
+    """Format the URL for the given site and tile.
 
     Args:
         site (dict): The site configuration with URL and source type.
@@ -204,8 +202,7 @@ def format_url(site: dict, tile: tuple) -> Optional[str]:
 
 
 def download_tile(dest: str, tile: tuple, mirrors: list[dict]) -> None:
-    """
-    Download a single tile from the given list of mirrors.
+    """Download a single tile from the given list of mirrors.
 
     Args:
         dest (str): The destination directory.
@@ -233,8 +230,7 @@ def download_tile(dest: str, tile: tuple, mirrors: list[dict]) -> None:
 
 
 def dlthread(dest: str, mirrors: list[dict], tiles: list[tuple]) -> None:
-    """
-    Thread to handle downloads for Queue.
+    """Thread to handle downloads for Queue.
 
     Args:
         dest (str): The filespec of the tile cache.
@@ -338,7 +334,7 @@ class BaseMapper(object):
             tms_params = {"name": source, "url": url, "suffix": suffix, "source": source, "xy": is_xy}
             log.debug(f"Setting custom TMS with params: {tms_params}")
             self.sources[source] = tms_params
-        
+
         # Select the source
         self.source = source
 
@@ -351,8 +347,7 @@ class BaseMapper(object):
         return self.sources[self.source]["suffix"]
 
     def getTiles(self, zoom: int) -> int:
-        """
-        Get a list of tiles for the specified zoom level.
+        """Get a list of tiles for the specified zoom level.
 
         Args:
             zoom (int): The Zoom level of the desired map tiles.
@@ -376,7 +371,7 @@ class BaseMapper(object):
             with concurrent.futures.ThreadPoolExecutor(max_workers=cores) as executor:
                 futures = []
                 for i in range(0, total, chunk_size):
-                    chunk = self.tiles[i:i + chunk_size]
+                    chunk = self.tiles[i : i + chunk_size]
                     futures.append(executor.submit(dlthread, self.base, mirrors, chunk))
                     log.debug(f"Dispatching Block {i}:{i + chunk_size}")
                 concurrent.futures.wait(futures)

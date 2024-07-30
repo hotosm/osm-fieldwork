@@ -203,12 +203,7 @@ class DataFile(object):
         self.db.commit()
         logging.info("Created database file %s" % dbname)
 
-    def writeTiles(
-        self,
-        tiles: list,
-        base: str = "./",
-        image_format: str = "jpg"
-    ):
+    def writeTiles(self, tiles: list, base: str = "./", image_format: str = "jpg"):
         """Write map tiles into the to the map tile cache.
 
         Args:
