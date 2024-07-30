@@ -423,12 +423,8 @@ def tileid_from_zyx_dir_path(filepath: Union[Path, str]) -> int:
         log.error(msg)
         raise ValueError(msg) from e
 
-    if is_xy:
-        y = final_tile
-        z, x = map(int, tile_image_path[:-1])
-    else:
-        x = final_tile
-        z, y = map(int, tile_image_path[:-1])
+    x = final_tile
+    z, y = map(int, tile_image_path[:-1])
 
     return zxy_to_tileid(z, x, y)
 
@@ -437,8 +433,9 @@ def tile_dir_to_pmtiles(
     outfile: str,
     tile_dir: str | Path,
     bbox: tuple,
+    image_format: str,
+    zoom_levels: list[int],
     attribution: str,
-    is_xy=False,
 ):
     """Write PMTiles archive from tiles in the specified directory.
 
@@ -447,41 +444,43 @@ def tile_dir_to_pmtiles(
         tile_dir (str | Path): The directory containing the tile images.
         bbox (tuple): Bounding box in format (min_lon, min_lat, max_lon, max_lat).
         attribution (str): Attribution string to include in PMTile archive.
-        is_xy (bool): If the X/Y are swapped in the xyz URL.
 
     Returns:
         None
     """
     tile_dir = Path(tile_dir)
 
-    # Get tile image format from the first file encountered
+    # Abort if no files are present
     first_file = next((file for file in tile_dir.rglob("*.*") if file.is_file()), None)
     if not first_file:
         err = "No tile files found in the specified directory. Aborting PMTile creation."
         log.error(err)
         raise ValueError(err)
 
-    tile_format = first_file.suffix.upper().lstrip(".")
+    tile_format = image_format.upper()
     # NOTE JPEG exception / flexible extension (.jpg, .jpeg)
     if tile_format == "JPG":
         tile_format = "JPEG"
+    log.debug(f"PMTile determind internal file format: {tile_format}")
     possible_tile_formats = [f".{e.name.lower()}" for e in PMTileType]
-    possible_tile_formats.extend(".jpg")
-
-    # Get zoom levels from dirs
-    zoom_levels = sorted([int(x.stem) for x in tile_dir.iterdir() if x.is_dir()])
+    possible_tile_formats.append(".jpg")
+    possible_tile_formats.remove(".unknown")
 
     with open(outfile, "wb") as pmtile_file:
         writer = PMTileWriter(pmtile_file)
 
         for tile_path in tile_dir.rglob("*"):
             if tile_path.is_file() and tile_path.suffix.lower() in possible_tile_formats:
-                tile_id = tileid_from_xyz_dir_path(tile_path, is_xy)
+                tile_id = tileid_from_zyx_dir_path(tile_path)
 
                 with open(tile_path, "rb") as tile:
                     writer.write_tile(tile_id, tile.read())
 
         min_lon, min_lat, max_lon, max_lat = bbox
+        log.debug(
+            f"Writing PMTiles file with min_zoom ({zoom_levels[0]}) "
+            f"max_zoom ({zoom_levels[-1]}) bbox ({bbox}) tile_compression None"
+        )
 
         # Write PMTile metadata
         writer.finalize(
@@ -608,7 +607,7 @@ def create_basemap_file(
         outf.writeTiles(tiles, tiledir)
 
     elif suffix == ".pmtiles":
-        tile_dir_to_pmtiles(outfile, tiledir, basemap.bbox, source, xy)
+        tile_dir_to_pmtiles(outfile, tiledir, basemap.bbox, image_format, zoom_levels, source)
 
     else:
         msg = f"Format {suffix} not supported"
