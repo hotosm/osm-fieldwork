@@ -438,23 +438,26 @@ def tile_dir_to_pmtiles(
 
     # Get tile image format from the first file encountered
     first_file = next((file for file in tile_dir.rglob("*.*") if file.is_file()), None)
-
     if not first_file:
         err = "No tile files found in the specified directory. Aborting PMTile creation."
         log.error(err)
         raise ValueError(err)
 
-    # FIXME passing as PMTileType[tile_format] does not work
-    # tile_format = first_file.suffix.upper()
+    tile_format = first_file.suffix.upper().lstrip(".")
+    # NOTE JPEG exception / flexible extension (.jpg, .jpeg)
+    if tile_format == "JPG":
+        tile_format = "JPEG"
+    possible_tile_formats = [f".{e.name.lower()}" for e in PMTileType]
+    possible_tile_formats.extend(".jpg")
 
     # Get zoom levels from dirs
-    zoom_levels = sorted([int(x.stem) for x in tile_dir.glob("*") if x.is_dir()])
+    zoom_levels = sorted([int(x.stem) for x in tile_dir.iterdir() if x.is_dir()])
 
     with open(outfile, "wb") as pmtile_file:
         writer = PMTileWriter(pmtile_file)
 
         for tile_path in tile_dir.rglob("*"):
-            if tile_path.is_file() and tile_path.suffix in [".jpg", ".jpeg"]:
+            if tile_path.is_file() and tile_path.suffix.lower() in possible_tile_formats:
                 tile_id = tileid_from_xyz_dir_path(tile_path, is_xy)
 
                 with open(tile_path, "rb") as tile:
@@ -465,8 +468,7 @@ def tile_dir_to_pmtiles(
         # Write PMTile metadata
         writer.finalize(
             header={
-                # "tile_type": TileType[tile_format.lstrip(".")],
-                "tile_type": PMTileType.PNG,
+                "tile_type": PMTileType[tile_format],
                 "tile_compression": PMTileCompression.NONE,
                 "min_zoom": zoom_levels[0],
                 "max_zoom": zoom_levels[-1],
@@ -504,7 +506,7 @@ def create_basemap_file(
             (e.g., "12-17") or comma-separated levels (e.g., "12,13,14").
         outdir (str, optional): Output directory name for tile cache.
         source (str, optional): Imagery source, one of
-            ["esri", "bing", "topo", "google", "oam"] (default is "esri").
+            ["esri", "bing", "topo", "google", "oam", "custom"] (default is "esri").
         append (bool, optional): Whether to append to an existing file
 
     Returns:
