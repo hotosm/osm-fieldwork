@@ -55,7 +55,7 @@ base = "./tiles"
 def test_create(boundary):
     """See if the file got loaded."""
     hits = 0
-    basemap = BaseMapper(boundary, base, "topo", False)
+    basemap = BaseMapper(boundary, base, "topo")
     tiles = list()
     for level in [8, 9, 10, 11, 12]:
         basemap.getTiles(level)
