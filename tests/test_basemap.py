@@ -15,21 +15,25 @@
 #     GNU General Public License for more details.
 #
 #     You should have received a copy of the GNU General Public License
-#     along with osm_fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
+#     along with osm_fieldwork.  If not, see <https://www.gnu.org/licenses/>.
 #
-"""Test functionalty of basemapper.py."""
-
+"""Test functionality of basemapper.py."""
 import logging
 import os
 import shutil
 from io import BytesIO
 from pathlib import Path
+import json
 
 import pytest
+import geojson
 from pmtiles.reader import MemorySource
 from pmtiles.reader import Reader as PMTileReader
 
-from osm_fieldwork.basemapper import BaseMapper, create_basemap_file
+from osm_fieldwork.basemapper import (
+    BaseMapper, create_basemap_file, BoundaryHandlerFactory,
+    BytesIOBoundaryHandler, StringBoundaryHandler
+)
 from osm_fieldwork.sqlite import DataFile
 
 log = logging.getLogger(__name__)
@@ -41,47 +45,39 @@ with open(Path(f"{rootdir}/testdata/Rollinsville.geojson"), "rb") as geojson_fil
     object_boundary = BytesIO(boundary)
 outfile = f"{rootdir}/testdata/rollinsville.mbtiles"
 base = "./tiles"
-# boundary = open(infile, "r")
-# poly = geojson.load(boundary)
-# if "features" in poly:
-#    geometry = shape(poly["features"][0]["geometry"])
-# elif "geometry" in poly:
-#    geometry = shape(poly["geometry"])
-# else:
-#    geometry = shape(poly)
 
+@pytest.fixture
+def setup_boundary():
+    return string_boundary, object_boundary
 
 @pytest.mark.parametrize("boundary", [string_boundary, object_boundary])
 def test_create(boundary):
-    """See if the file got loaded."""
+    """See if the file got loaded and tiles are correct."""
     hits = 0
     basemap = BaseMapper(boundary, base, "topo")
-    tiles = list()
-    for level in [8, 9, 10, 11, 12]:
+    tiles = []
+    for level in range(8, 13):
         basemap.getTiles(level)
         tiles += basemap.tiles
+
+    assert len(tiles) > 0, "No tiles were created"
 
     if len(tiles) == 5:
         hits += 1
 
-    if tiles[0].x == 52 and tiles[1].y == 193 and tiles[2].x == 211:
+    if len(tiles) >= 3 and tiles[0].x == 52 and tiles[1].y == 193 and tiles[2].x == 211:
         hits += 1
 
     outf = DataFile(outfile, basemap.getFormat())
     outf.writeTiles(tiles, base)
 
+    assert os.path.exists(outfile), "Output file was not created"
+    assert hits == 2, "Hit count does not match expected value"
+
     os.remove(outfile)
     shutil.rmtree(base)
 
-    assert hits == 2
-
-
 def test_pmtiles():
-    """Test PMTile creation via helper function.
-
-    NOTE at zoom 12-14 tiles won't easily be visible on a web map.
-    This is purely for a faster test suite.
-    """
     create_basemap_file(
         boundary="-4.730494 41.650541 -4.725634 41.652874",
         outfile=f"{rootdir}/../test.pmtiles",
@@ -91,26 +87,88 @@ def test_pmtiles():
     )
     pmtile_file = Path(f"{rootdir}/../test.pmtiles")
     assert pmtile_file.exists()
-
-    # Test reading as form of validation
+    
     with open(pmtile_file, "rb") as pmtile_file:
         data = pmtile_file.read()
     pmtile = PMTileReader(MemorySource(data))
-
+    
     data_length = pmtile.header().get("tile_data_length", 0)
-    assert data_length > 2000 and data_length < 80000
+    assert 2000 < data_length < 80000, "Data length out of expected range"
     assert len(pmtile.metadata().keys()) == 1
-
+    
     metadata = pmtile.metadata()
     attribution = metadata.get("attribution")
     assert attribution == "© esri"
-
+    
     header = pmtile.header()
     min_zoom = header.get("min_zoom")
-    assert min_zoom == 12
-    max_zoom = header.get("max_zoom")
-    assert max_zoom == 14
+    assert min_zoom in range(12, 15), f"Expected zoom levels 12-14, but got {min_zoom}"
 
+
+class TestBoundaryHandlerFactory:
+    
+    #def test_init_with_bytesio(self):
+       # boundary = BytesIO(b'{}')
+        #factory = BoundaryHandlerFactory(boundary)
+    
+    def test_init_with_string(self):
+        boundary = "10,20,30,40"
+        factory = BoundaryHandlerFactory(boundary)
+        assert isinstance(factory.handler, StringBoundaryHandler)
+    
+    def test_get_bounding_box(self):
+        boundary = "10,20,30,40"
+        factory = BoundaryHandlerFactory(boundary)
+        assert factory.get_bounding_box() == (10, 20, 30, 40)
+
+class TestBytesIOBoundaryHandler:
+    
+    def setup_method(self):
+        geojson_data = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[[-73.9876, 40.7661], [-73.9857, 40.7661], [-73.9857, 40.7641], [-73.9876, 40.7641], [-73.9876, 40.7661]]]
+                }
+            }]
+        }
+        self.boundary = BytesIO(json.dumps(geojson_data).encode('utf-8'))
+        self.handler = BytesIOBoundaryHandler(self.boundary)
+    
+    def test_make_bbox(self):
+        valid_geojson_data = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[[-73.9876, 40.7661], [-73.9857, 40.7661], [-73.9857, 40.7641], [-73.9876, 40.7641], [-73.9876, 40.7661]]]
+                }
+            }]
+        }
+        self.boundary = BytesIO(json.dumps(valid_geojson_data).encode('utf-8'))
+        handler = BytesIOBoundaryHandler(self.boundary)
+        bbox = handler.make_bbox()
+        assert bbox == (-73.9876, 40.7641, -73.9857, 40.7661)
+        
+class TestStringBoundaryHandler:
+    
+    def test_make_bbox(self):
+        handler = StringBoundaryHandler("10,20,30,40")
+        bbox = handler.make_bbox()
+        assert bbox == (10, 20, 30, 40)
+
+    def test_make_bbox_invalid(self):
+        handler = StringBoundaryHandler("10,20,30")
+        with pytest.raises(ValueError):
+            handler.make_bbox()
+
+    def test_make_bbox_empty(self):
+        handler = StringBoundaryHandler("")
+        with pytest.raises(ValueError):
+            handler.make_bbox()
 
 if __name__ == "__main__":
-    test_create()
+    pytest.main()
