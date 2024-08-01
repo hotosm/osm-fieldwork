@@ -1,0 +1,7 @@
+{
+    "python.testing.pytestArgs": [
+        "osm_fieldwork"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
