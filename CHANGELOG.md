@@ -1,3 +1,9 @@
+## 0.14.2 (2024-08-05)
+
+### Refactor
+
+- check if place holders in custom tms url contains any space within (#281)
+
 ## 0.14.1 (2024-07-30)
 
 ### Fix
