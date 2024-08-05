@@ -1,14 +1,28 @@
-"devops":
-  - ".github/**/*"
-  - "Dockerfile"
-  - "*entrypoint.sh"
-  - "Makefile"
-"dependency":
-  - "pyproject.toml"
-  - "pdm.lock"
-"documentation":
-  - "docs/**/*"
-  - "mkdocs.yml"
-  - "README.md"
-"version":
-  - "osm_fieldwork/__version__.py"
+bug:
+  # Branch starts with `fix` or has a `fix` in the name
+  - head-branch: ["^fix", "fix"]
+enhancement:
+  - head-branch:
+      ["^feature", "feature", "^feat", "feat", "^refactor", "refactor"]
+devops:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**
+          - Dockerfile
+          - ./*entrypoint.sh
+          - Makefile
+dependency:
+  - changed-files:
+      - any-glob-to-any-file:
+          - pyproject.toml
+          - pdm.lock
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/**
+          - mkdocs.yml
+          - ./*entrypoint.sh
+          - README.md
+version:
+  - changed-files:
+      - any-glob-to-any-file: osm_fieldwork/__version__.py
