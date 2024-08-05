@@ -12,12 +12,12 @@ on:
 
 jobs:
   build_doxygen:
-    uses: hotosm/gh-workflows/.github/workflows/doxygen_build.yml@1.2.4
+    uses: hotosm/gh-workflows/.github/workflows/doxygen_build.yml@2.0.5
     with:
       output_path: docs/apidocs
 
   publish_docs:
-    uses: hotosm/gh-workflows/.github/workflows/mkdocs_build.yml@1.2.4
+    uses: hotosm/gh-workflows/.github/workflows/mkdocs_build.yml@2.0.5
     needs: [build_doxygen]
     with:
       doxygen: true
