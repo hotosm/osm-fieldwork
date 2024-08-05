@@ -321,8 +321,16 @@ class BaseMapper(object):
             # FIXME handle other formats for custom TMS
             suffix = "jpg"
 
-        # Replace "{z}/{x}/{y}" with "%s"
+        # If placeholders present, validate they have no additional spaces
+        pattern = re.compile(r"\{\s*[xyz]+\s*\}")
+        if bool(pattern.search(url)):
+            msg = "Invalid TMS URL format. Please check the URL placeholders {z}/{x}/{y}."
+            log.error(msg)
+            raise ValueError(msg)
+
+        # Remove "{z}/{x}/{y}" placeholders if they are present
         url = re.sub(r"/{[xyz]+\}", "", url)
+        # Append "%s" to the end of the URL to later add the tile path
         url = url + r"/%s"
 
         if is_oam:
