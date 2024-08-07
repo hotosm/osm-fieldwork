@@ -322,11 +322,12 @@ class BaseMapper(object):
             suffix = "jpg"
 
         # If placeholders present, validate they have no additional spaces
-        pattern = re.compile(r"\{\s*[xyz]+\s*\}")
-        if bool(pattern.search(url)):
-            msg = "Invalid TMS URL format. Please check the URL placeholders {z}/{x}/{y}."
-            log.error(msg)
-            raise ValueError(msg)
+        if "{" in url and "}" in url:
+            pattern = r".*/\{[zxy]\}/\{[zxy]\}/\{[zxy]\}(?:/|/?)"
+            if not bool(re.search(pattern, url)):
+                msg = "Invalid TMS URL format. Please check the URL placeholders {z}/{x}/{y}."
+                log.error(msg)
+                raise ValueError(msg)
 
         # Remove "{z}/{x}/{y}" placeholders if they are present
         url = re.sub(r"/{[xyz]+\}", "", url)
