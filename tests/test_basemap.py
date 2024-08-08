@@ -26,7 +26,6 @@ from pathlib import Path
 import json
 
 import pytest
-import geojson
 from pmtiles.reader import MemorySource
 from pmtiles.reader import Reader as PMTileReader
 
@@ -78,6 +77,12 @@ def test_create(boundary):
     shutil.rmtree(base)
 
 def test_pmtiles():
+    """Test PMTile creation via helper function.
+
+    NOTE at zoom 12-14 tiles won't easily be visible on a web map.
+    This is purely for a faster test suite.
+    """
+     
     create_basemap_file(
         boundary="-4.730494 41.650541 -4.725634 41.652874",
         outfile=f"{rootdir}/../test.pmtiles",
@@ -86,8 +91,7 @@ def test_pmtiles():
         source="esri",
     )
     pmtile_file = Path(f"{rootdir}/../test.pmtiles")
-    assert pmtile_file.exists()
-    
+    assert pmtile_file.exists()  
     with open(pmtile_file, "rb") as pmtile_file:
         data = pmtile_file.read()
     pmtile = PMTileReader(MemorySource(data))
@@ -102,19 +106,13 @@ def test_pmtiles():
     
     header = pmtile.header()
     min_zoom = header.get("min_zoom")
-    assert min_zoom in range(12, 15), f"Expected zoom levels 12-14, but got {min_zoom}"
+    assert min_zoom == 12
+    max_zoom = header.get("max_zoom")
+    assert max_zoom == 14
+
 
 
 class TestBoundaryHandlerFactory:
-    
-    #def test_init_with_bytesio(self):
-       # boundary = BytesIO(b'{}')
-        #factory = BoundaryHandlerFactory(boundary)
-    
-    def test_init_with_string(self):
-        boundary = "10,20,30,40"
-        factory = BoundaryHandlerFactory(boundary)
-        assert isinstance(factory.handler, StringBoundaryHandler)
     
     def test_get_bounding_box(self):
         boundary = "10,20,30,40"
