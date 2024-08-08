@@ -110,8 +110,6 @@ def test_pmtiles():
     max_zoom = header.get("max_zoom")
     assert max_zoom == 14
 
-
-
 class TestBoundaryHandlerFactory:
     
     def test_get_bounding_box(self):
