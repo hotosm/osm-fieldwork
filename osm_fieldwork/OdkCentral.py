@@ -805,6 +805,33 @@ class OdkForm(OdkCentral):
         url = self.base + f"projects/{projectId}/forms/{xform}/submissions.csv.zip"
         result = self.session.get(url, verify=self.verify)
         return result
+    
+    def getSubmissionPhoto(
+        self,
+        projectId: int,
+        instanceID: str,
+        xform: str,
+        filename: str,
+    ):
+        """Fetch a specific attachment by filename from a submission to a form.
+
+        Args:
+            projectId (int): The ID of the project on ODK Central
+            instanceID(str): The ID of the submission on ODK Central
+            xform (str): The XForm to get the details of from ODK Central
+            filename (str): The name of the attachment for the XForm on ODK Central
+
+        Returns:
+            (bytes): The media data
+        """
+        url = f"{self.base}projects/{projectId}/forms/{xform}/submissions/{instanceID}/attachments/{filename}"
+        result = self.session.get(url, verify=self.verify)
+        if result.status_code == 200:
+            log.debug(f"fetched {filename} from Central")
+        else:
+            status = eval(result._content)
+            log.error(f"Couldn't fetch {filename} from Central: {status['message']}")
+        return result.content
 
     def addMedia(
         self,
