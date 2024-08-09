@@ -805,7 +805,7 @@ class OdkForm(OdkCentral):
         url = self.base + f"projects/{projectId}/forms/{xform}/submissions.csv.zip"
         result = self.session.get(url, verify=self.verify)
         return result
-    
+
     def getSubmissionPhoto(
         self,
         projectId: int,
