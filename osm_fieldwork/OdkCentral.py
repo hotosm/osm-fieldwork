@@ -829,7 +829,7 @@ class OdkForm(OdkCentral):
         if result.status_code == 200:
             log.debug(f"fetched {filename} from Central")
         else:
-            status = eval(result._content)
+            status = json.loads(result.content)
             log.error(f"Couldn't fetch {filename} from Central: {status['message']}")
         return result.content
 
@@ -957,7 +957,7 @@ class OdkForm(OdkCentral):
             url = f"{self.base}projects/{projectId}/forms/{form_name}/draft?ignoreWarnings=true"
             result = self.session.post(url, verify=self.verify)
             if result.status_code != 200:
-                status = eval(result._content)
+                status = json.loads(result.content)
                 log.error(f"Couldn't modify {form_name} to draft: {status['message']}")
                 return None
 
@@ -971,7 +971,7 @@ class OdkForm(OdkCentral):
         if result.status_code == 200:
             log.debug(f"Uploaded {filename} to Central")
         else:
-            status = eval(result._content)
+            status = json.loads(result.content)
             log.error(f"Couldn't upload {filename} to Central: {status['message']}")
             return None
 
@@ -1007,7 +1007,7 @@ class OdkForm(OdkCentral):
         if result.status_code == 200:
             log.debug(f"fetched {filename} from Central")
         else:
-            status = eval(result._content)
+            status = json.loads(result.content)
             log.error(f"Couldn't fetch {filename} from Central: {status['message']}")
         self.addMedia(result.content, filename)
         return self.media
@@ -1166,7 +1166,7 @@ class OdkForm(OdkCentral):
         url = f"{self.base}projects/{projectId}/forms/{xform}/draft/publish?version={version}"
         result = self.session.post(url, verify=self.verify)
         if result.status_code != 200:
-            status = eval(result._content)
+            status = json.loads(result.content)
             log.error(f"Couldn't publish {xform} on Central: {status['message']}")
         else:
             log.info(f"Published {xform} on Central.")
