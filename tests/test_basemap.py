@@ -18,20 +18,24 @@
 #     along with osm_fieldwork.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Test functionality of basemapper.py."""
+
+import json
 import logging
 import os
 import shutil
 from io import BytesIO
 from pathlib import Path
-import json
 
 import pytest
 from pmtiles.reader import MemorySource
 from pmtiles.reader import Reader as PMTileReader
 
 from osm_fieldwork.basemapper import (
-    BaseMapper, create_basemap_file, BoundaryHandlerFactory,
-    BytesIOBoundaryHandler, StringBoundaryHandler
+    BaseMapper,
+    BoundaryHandlerFactory,
+    BytesIOBoundaryHandler,
+    StringBoundaryHandler,
+    create_basemap_file,
 )
 from osm_fieldwork.sqlite import DataFile
 
@@ -45,9 +49,11 @@ with open(Path(f"{rootdir}/testdata/Rollinsville.geojson"), "rb") as geojson_fil
 outfile = f"{rootdir}/testdata/rollinsville.mbtiles"
 base = "./tiles"
 
+
 @pytest.fixture
 def setup_boundary():
     return string_boundary, object_boundary
+
 
 @pytest.mark.parametrize("boundary", [string_boundary, object_boundary])
 def test_create(boundary):
@@ -76,13 +82,13 @@ def test_create(boundary):
     os.remove(outfile)
     shutil.rmtree(base)
 
+
 def test_pmtiles():
     """Test PMTile creation via helper function.
 
     NOTE at zoom 12-14 tiles won't easily be visible on a web map.
     This is purely for a faster test suite.
     """
-     
     create_basemap_file(
         boundary="-4.730494 41.650541 -4.725634 41.652874",
         outfile=f"{rootdir}/../test.pmtiles",
@@ -91,66 +97,86 @@ def test_pmtiles():
         source="esri",
     )
     pmtile_file = Path(f"{rootdir}/../test.pmtiles")
-    assert pmtile_file.exists()  
+    assert pmtile_file.exists()
     with open(pmtile_file, "rb") as pmtile_file:
         data = pmtile_file.read()
     pmtile = PMTileReader(MemorySource(data))
-    
+
     data_length = pmtile.header().get("tile_data_length", 0)
     assert 2000 < data_length < 80000, "Data length out of expected range"
     assert len(pmtile.metadata().keys()) == 1
-    
+
     metadata = pmtile.metadata()
     attribution = metadata.get("attribution")
     assert attribution == "© esri"
-    
+
     header = pmtile.header()
     min_zoom = header.get("min_zoom")
     assert min_zoom == 12
     max_zoom = header.get("max_zoom")
     assert max_zoom == 14
 
+
 class TestBoundaryHandlerFactory:
-    
     def test_get_bounding_box(self):
         boundary = "10,20,30,40"
         factory = BoundaryHandlerFactory(boundary)
         assert factory.get_bounding_box() == (10, 20, 30, 40)
 
+
 class TestBytesIOBoundaryHandler:
-    
     def setup_method(self):
         geojson_data = {
             "type": "FeatureCollection",
-            "features": [{
-                "type": "Feature",
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [[[-73.9876, 40.7661], [-73.9857, 40.7661], [-73.9857, 40.7641], [-73.9876, 40.7641], [-73.9876, 40.7661]]]
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [-73.9876, 40.7661],
+                                [-73.9857, 40.7661],
+                                [-73.9857, 40.7641],
+                                [-73.9876, 40.7641],
+                                [-73.9876, 40.7661],
+                            ]
+                        ],
+                    },
                 }
-            }]
+            ],
         }
-        self.boundary = BytesIO(json.dumps(geojson_data).encode('utf-8'))
+        self.boundary = BytesIO(json.dumps(geojson_data).encode("utf-8"))
         self.handler = BytesIOBoundaryHandler(self.boundary)
-    
+
     def test_make_bbox(self):
         valid_geojson_data = {
             "type": "FeatureCollection",
-            "features": [{
-                "type": "Feature",
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [[[-73.9876, 40.7661], [-73.9857, 40.7661], [-73.9857, 40.7641], [-73.9876, 40.7641], [-73.9876, 40.7661]]]
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [-73.9876, 40.7661],
+                                [-73.9857, 40.7661],
+                                [-73.9857, 40.7641],
+                                [-73.9876, 40.7641],
+                                [-73.9876, 40.7661],
+                            ]
+                        ],
+                    },
                 }
-            }]
+            ],
         }
-        self.boundary = BytesIO(json.dumps(valid_geojson_data).encode('utf-8'))
+        self.boundary = BytesIO(json.dumps(valid_geojson_data).encode("utf-8"))
         handler = BytesIOBoundaryHandler(self.boundary)
         bbox = handler.make_bbox()
         assert bbox == (-73.9876, 40.7641, -73.9857, 40.7661)
-        
+
+
 class TestStringBoundaryHandler:
-    
     def test_make_bbox(self):
         handler = StringBoundaryHandler("10,20,30,40")
         bbox = handler.make_bbox()
@@ -165,6 +191,7 @@ class TestStringBoundaryHandler:
         handler = StringBoundaryHandler("")
         with pytest.raises(ValueError):
             handler.make_bbox()
+
 
 if __name__ == "__main__":
     pytest.main()
