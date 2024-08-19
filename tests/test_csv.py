@@ -42,7 +42,7 @@ def test_init():
     assert len(csv.yaml.yaml) > 0
 
 
-def test_osm_entry(infile=f"{rootdir}/testdata/test.csv"):
+def test_osm_entry(infile=f"{rootdir}/testdata/test-out.xml"):
     csv = ODKParsers()
     out = OutSupport()
     out.createOSM(infile)
@@ -59,12 +59,11 @@ def test_osm_entry(infile=f"{rootdir}/testdata/test.csv"):
         "user": "Foobar",
     }
     csv.createEntry(line)
-    # assert tmp
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Read and parse a CSV file from ODK Central")
-    parser.add_argument("--infile", default=f"{rootdir}/testdata/test.csv", help="The CSV input file")
+    parser.add_argument("--infile", default=f"{rootdir}/testdata/test-out.xml", help="The CSV input file")
     args = parser.parse_args()
 
     test_init()

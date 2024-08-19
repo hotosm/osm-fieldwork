@@ -19,7 +19,6 @@ NEWS
 *.xml
 *.geojson
 *.pbf
-*.xml
 *.pdf
 *.html
 *.mbtiles
