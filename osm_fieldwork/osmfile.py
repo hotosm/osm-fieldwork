@@ -212,8 +212,6 @@ class OsmFile(object):
                     newkey = escape(key)
                     newval = escape(str(value))
                     osm += f"\n    <tag k='{newkey}' v='{newval}'/>"
-            if modified and key != "note":
-                osm += '\n    <tag k="note" v="Do not upload this without validation!"/>'
             osm += "\n"
 
         osm += "  </way>\n"
