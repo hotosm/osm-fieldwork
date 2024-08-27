@@ -1,3 +1,15 @@
+## 0.15.0 (2024-08-27)
+
+### Feat
+
+- function to append mandatory fields into fmtm custom xls form (#289)
+- created a function to get submission photo by its submission id (#284)
+
+### Fix
+
+- Fix writing nodes with no tags, ie... what the way references, and only write the note for ways (#290)
+- don't add the note about duplication, that should be done at a higher level (#287)
+
 ## 0.14.3 (2024-08-08)
 
 ### Fix
