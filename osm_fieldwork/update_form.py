@@ -39,8 +39,8 @@ def merge_sheets(mandatory_df, custom_df, digitisation_df):
 
 def update_xls_form(custom_form: BytesIO):
     custom_sheets = pd.read_excel(custom_form, sheet_name=None, engine="calamine")
-    default_form_path = f"{xlsforms_path}/mandatory_fields.xls"
-    digitisation_form_path = f"{xlsforms_path}/digitisation_fields.xls"
+    default_form_path = f"{xlsforms_path}/fmtm/mandatory_fields.xls"
+    digitisation_form_path = f"{xlsforms_path}/fmtm/digitisation_fields.xls"
     digitisation_sheets = pd.read_excel(digitisation_form_path, sheet_name=None, engine="calamine")
     mandatory_sheets = pd.read_excel(default_form_path, sheet_name=None, engine="calamine")
 
