@@ -806,6 +806,33 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, verify=self.verify)
         return result
 
+    def getSubmissionPhoto(
+        self,
+        projectId: int,
+        instanceID: str,
+        xform: str,
+        filename: str,
+    ):
+        """Fetch a specific attachment by filename from a submission to a form.
+
+        Args:
+            projectId (int): The ID of the project on ODK Central
+            instanceID(str): The ID of the submission on ODK Central
+            xform (str): The XForm to get the details of from ODK Central
+            filename (str): The name of the attachment for the XForm on ODK Central
+
+        Returns:
+            (bytes): The media data
+        """
+        url = f"{self.base}projects/{projectId}/forms/{xform}/submissions/{instanceID}/attachments/{filename}"
+        result = self.session.get(url, verify=self.verify)
+        if result.status_code == 200:
+            log.debug(f"fetched {filename} from Central")
+        else:
+            status = result.json()
+            log.error(f"Couldn't fetch {filename} from Central: {status['message']}")
+        return result.content
+
     def addMedia(
         self,
         media: bytes,
@@ -930,7 +957,7 @@ class OdkForm(OdkCentral):
             url = f"{self.base}projects/{projectId}/forms/{form_name}/draft?ignoreWarnings=true"
             result = self.session.post(url, verify=self.verify)
             if result.status_code != 200:
-                status = eval(result._content)
+                status = result.json()
                 log.error(f"Couldn't modify {form_name} to draft: {status['message']}")
                 return None
 
@@ -944,7 +971,7 @@ class OdkForm(OdkCentral):
         if result.status_code == 200:
             log.debug(f"Uploaded {filename} to Central")
         else:
-            status = eval(result._content)
+            status = result.json()
             log.error(f"Couldn't upload {filename} to Central: {status['message']}")
             return None
 
@@ -980,7 +1007,7 @@ class OdkForm(OdkCentral):
         if result.status_code == 200:
             log.debug(f"fetched {filename} from Central")
         else:
-            status = eval(result._content)
+            status = result.json()
             log.error(f"Couldn't fetch {filename} from Central: {status['message']}")
         self.addMedia(result.content, filename)
         return self.media
@@ -1139,7 +1166,7 @@ class OdkForm(OdkCentral):
         url = f"{self.base}projects/{projectId}/forms/{xform}/draft/publish?version={version}"
         result = self.session.post(url, verify=self.verify)
         if result.status_code != 200:
-            status = eval(result._content)
+            status = result.json()
             log.error(f"Couldn't publish {xform} on Central: {status['message']}")
         else:
             log.info(f"Published {xform} on Central.")
