@@ -29,22 +29,23 @@ def merge_sheets(mandatory_df, custom_df, digitisation_df):
     mandatory_df_filtered = mandatory_df[~mandatory_df["name"].isin(common_fields)]
     digitisation_df_filtered = digitisation_df[~digitisation_df["name"].isin(common_fields)]
 
-    group_row = pd.DataFrame({
-    "type": ["begin group"],
-    "name": ["survey_questions"],
-    "label": ["Survey Form"],
-    "relevant": ["${building_exists} = 'yes'"]  # Add the relevant condition to display this group only if "Yes" is selected
-    })
+    group_row = pd.DataFrame(
+        {
+            "type": ["begin group"],
+            "name": ["survey_questions"],
+            "label": ["Survey Form"],
+            "relevant": [
+                "${building_exists} = 'yes'"
+            ],  # Add the relevant condition to display this group only if "Yes" is selected
+        }
+    )
 
-    end_group_row = pd.DataFrame({
-        "type": ["end group"],
-        "name": ["end_survey_questions"],
-        "label": ["End Survey Form"]
-    })
+    end_group_row = pd.DataFrame({"type": ["end group"], "name": ["end_survey_questions"], "label": ["End Survey Form"]})
 
     # Concatenate: mandatory fields at the top, custom common fields, remaining custom fields, and finally append form fields
     merged_df = pd.concat(
-        [custom_common_df, mandatory_df_filtered, group_row, custom_non_common_df, digitisation_df_filtered, end_group_row], ignore_index=True
+        [custom_common_df, mandatory_df_filtered, group_row, custom_non_common_df, digitisation_df_filtered, end_group_row],
+        ignore_index=True,
     )
 
     return merged_df
