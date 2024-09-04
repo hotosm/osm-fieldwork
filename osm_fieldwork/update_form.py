@@ -1,8 +1,13 @@
 from io import BytesIO
 
 import pandas as pd
+from python_calamine.pandas import pandas_monkeypatch
 
 from osm_fieldwork.xlsforms import xlsforms_path
+
+
+# Monkeypatch pandas to add calamine driver
+pandas_monkeypatch()
 
 
 def merge_sheets(mandatory_df, custom_df, digitisation_df):
