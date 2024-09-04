@@ -5,7 +5,6 @@ from python_calamine.pandas import pandas_monkeypatch
 
 from osm_fieldwork.xlsforms import xlsforms_path
 
-
 # Monkeypatch pandas to add calamine driver
 pandas_monkeypatch()
 
@@ -73,14 +72,9 @@ def update_xls_form(custom_form: BytesIO):
             mandatory_sheets["choices"], custom_sheets["choices"], digitisation_sheets["choices"]
         )
 
-    # Handle the 'entities' sheet: append or create if not present in custom form
+    # Append or overwrite the existing entities sheet
     if "entities" in mandatory_sheets:
-        if "entities" in custom_sheets:
-            custom_sheets["entities"] = pd.concat(
-                [custom_sheets["entities"], mandatory_sheets["entities"]], ignore_index=True
-            ).drop_duplicates()
-        else:
-            custom_sheets["entities"] = mandatory_sheets["entities"]
+        custom_sheets["entities"] = mandatory_sheets["entities"]
 
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
