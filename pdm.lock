@@ -5,7 +5,7 @@
 groups = ["default", "docs", "debug", "test", "dev", "ui"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:ef113cfc5c29922203a6208437c40cf565c2ef75091c069732ea4f810b0b6144"
+content_hash = "sha256:d4eff496eaa365683114276ab884e7548ef934d890596e429a26b355ddb8f0f6"
 
 [[package]]
 name = "aiohttp"
@@ -371,6 +371,16 @@ dependencies = [
 files = [
     {file = "epdb-0.15.1-py2.py3-none-any.whl", hash = "sha256:4208e310f4ed000b92d40e4fafad3ba67a295e6ecdaae0a3d64380c8c8fac629"},
     {file = "epdb-0.15.1.tar.gz", hash = "sha256:f59e9d54866faad6fcbd8fcfc634b85e8fde2b045b13d10f2f8d083f6cbd2668"},
+]
+
+[[package]]
+name = "et-xmlfile"
+version = "1.1.0"
+requires_python = ">=3.6"
+summary = "An implementation of lxml.xmlfile for the standard library"
+files = [
+    {file = "et_xmlfile-1.1.0-py3-none-any.whl", hash = "sha256:a2ba85d1d6a74ef63837eed693bcb89c3f752169b0e3e7ae5b16ca5e1b3deada"},
+    {file = "et_xmlfile-1.1.0.tar.gz", hash = "sha256:8eb9e2bc2f8c97e37a2dc85a09ecdcdec9d8a396530a6d5a33b30b9a92da0c5c"},
 ]
 
 [[package]]
@@ -1255,6 +1265,19 @@ files = [
     {file = "numpy-1.26.2-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:94cc3c222bb9fb5a12e334d0479b97bb2df446fbe622b470928f5284ffca3f8d"},
     {file = "numpy-1.26.2-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:fe6b44fb8fcdf7eda4ef4461b97b3f63c466b27ab151bec2366db8b197387841"},
     {file = "numpy-1.26.2.tar.gz", hash = "sha256:f65738447676ab5777f11e6bbbdb8ce11b785e105f690bc45966574816b6d3ea"},
+]
+
+[[package]]
+name = "openpyxl"
+version = "3.1.5"
+requires_python = ">=3.8"
+summary = "A Python library to read/write Excel 2010 xlsx/xlsm files"
+dependencies = [
+    "et-xmlfile",
+]
+files = [
+    {file = "openpyxl-3.1.5-py2.py3-none-any.whl", hash = "sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2"},
+    {file = "openpyxl-3.1.5.tar.gz", hash = "sha256:cf0e3cf56142039133628b5acffe8ef0c12bc902d2aadd3e0fe5878dc08d1050"},
 ]
 
 [[package]]
@@ -2206,16 +2229,6 @@ summary = "Measures the displayed width of unicode strings in a terminal"
 files = [
     {file = "wcwidth-0.2.12-py2.py3-none-any.whl", hash = "sha256:f26ec43d96c8cbfed76a5075dac87680124fa84e0855195a6184da9c187f133c"},
     {file = "wcwidth-0.2.12.tar.gz", hash = "sha256:f01c104efdf57971bcb756f054dd58ddec5204dd15fa31d6503ea57947d97c02"},
-]
-
-[[package]]
-name = "xlsxwriter"
-version = "3.2.0"
-requires_python = ">=3.6"
-summary = "A Python module for creating Excel XLSX files."
-files = [
-    {file = "XlsxWriter-3.2.0-py3-none-any.whl", hash = "sha256:ecfd5405b3e0e228219bcaf24c2ca0915e012ca9464a14048021d21a995d490e"},
-    {file = "XlsxWriter-3.2.0.tar.gz", hash = "sha256:9977d0c661a72866a61f9f7a809e25ebbb0fb7036baa3b9fe74afcfca6b3cb8c"},
 ]
 
 [[package]]
