@@ -78,7 +78,7 @@ def update_xls_form(custom_form: BytesIO):
             custom_sheets["entities"] = mandatory_sheets["entities"]
 
     output = BytesIO()
-    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
         for sheet_name, df in custom_sheets.items():
             df.to_excel(writer, sheet_name=sheet_name, index=False)
 
