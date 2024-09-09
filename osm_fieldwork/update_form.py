@@ -59,9 +59,7 @@ def merge_sheets(mandatory_df, custom_df, digitisation_df, is_survey_sheet=False
             "type": ["begin group"],
             "name": ["verification"],
             "label": ["Verification Form"],
-            "relevant": [
-                "${building_exists} = 'yes'"
-            ],
+            "relevant": ["${building_exists} = 'yes'"],
         }
     )
     digitisation_end_group = pd.DataFrame({"type": ["end group"], "name": ["end_verification"], "label": ["End Verification Form"]})
@@ -82,7 +80,6 @@ def merge_sheets(mandatory_df, custom_df, digitisation_df, is_survey_sheet=False
     )
 
 
-
 def update_xls_form(custom_form: BytesIO) -> BytesIO:
     custom_sheets = pd.read_excel(custom_form, sheet_name=None, engine="calamine")
     default_form_path = f"{xlsforms_path}/fmtm/mandatory_fields.xls"
@@ -92,7 +89,9 @@ def update_xls_form(custom_form: BytesIO) -> BytesIO:
 
     # Process and merge the 'survey' sheet if present in all forms
     if "survey" in mandatory_sheets and "survey" in digitisation_sheets and "survey" in custom_sheets:
-        custom_sheets["survey"] = merge_sheets(mandatory_sheets["survey"], custom_sheets["survey"], digitisation_sheets["survey"], True)
+        custom_sheets["survey"] = merge_sheets(
+            mandatory_sheets["survey"], custom_sheets["survey"], digitisation_sheets["survey"], True
+        )
 
     # Process and merge the 'choices' sheet if present in all forms
     if "choices" in mandatory_sheets and "choices" in digitisation_sheets and "choices" in custom_sheets:
