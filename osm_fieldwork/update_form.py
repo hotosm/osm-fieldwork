@@ -1,3 +1,4 @@
+from datetime import datetime
 from io import BytesIO
 
 import pandas as pd
@@ -102,6 +103,14 @@ def update_xls_form(custom_form: BytesIO) -> BytesIO:
     # Append or overwrite the existing entities sheet
     if "entities" in mandatory_sheets:
         custom_sheets["entities"] = mandatory_sheets["entities"]
+    
+    if "settings" in mandatory_sheets:
+        custom_sheets["settings"] = mandatory_sheets["settings"]
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # Set the 'version' column to the current timestamp (if 'version' column exists in 'settings')
+        if "version" in custom_sheets["settings"].columns:
+            custom_sheets["settings"].loc[:, "version"] = current_timestamp
 
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
