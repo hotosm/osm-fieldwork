@@ -50,7 +50,7 @@ def merge_sheets(mandatory_df, custom_df, digitisation_df, is_survey_sheet=False
             "name": ["survey_questions"],
             "label": ["Survey Form"],
             "relevant": [
-                 "(${new_feature} = 'yes') or (${building_exists} = 'yes')"
+                "(${new_feature} = 'yes') or (${building_exists} = 'yes')"
             ],  # Add the relevant condition to display this group only if "Yes" is selected
         }
     )
