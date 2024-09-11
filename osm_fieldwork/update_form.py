@@ -110,6 +110,8 @@ def update_xls_form(custom_form: BytesIO) -> BytesIO:
 
         # Set the 'version' column to the current timestamp (if 'version' column exists in 'settings')
         if "version" in custom_sheets["settings"].columns:
+            # set column type to str
+            custom_sheets["settings"]["version"] = custom_sheets["settings"]["version"].astype(str)
             custom_sheets["settings"].loc[:, "version"] = current_timestamp
 
     output = BytesIO()
