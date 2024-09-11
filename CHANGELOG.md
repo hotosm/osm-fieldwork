@@ -1,3 +1,9 @@
+## 0.16.0 (2024-09-11)
+
+### Feat
+
+- **xlsforms**: created separate group verification for digitisation form (#294)
+
 ## 0.15.0 (2024-08-27)
 
 ### Feat
