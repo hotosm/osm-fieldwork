@@ -1,3 +1,4 @@
+from datetime import datetime
 from io import BytesIO
 
 import pandas as pd
@@ -9,7 +10,7 @@ from osm_fieldwork.xlsforms import xlsforms_path
 pandas_monkeypatch()
 
 
-def merge_sheets(mandatory_df, custom_df, digitisation_df):
+def merge_sheets(mandatory_df, custom_df, digitisation_df, is_survey_sheet=False):
     # Remove rows with None in 'name' column
     if "name" in mandatory_df.columns:
         mandatory_df = mandatory_df.dropna(subset=["name"])
@@ -33,26 +34,51 @@ def merge_sheets(mandatory_df, custom_df, digitisation_df):
     mandatory_df_filtered = mandatory_df[~mandatory_df["name"].isin(common_fields)]
     digitisation_df_filtered = digitisation_df[~digitisation_df["name"].isin(common_fields)]
 
-    group_row = pd.DataFrame(
+    if not is_survey_sheet:
+        return pd.concat(
+            [
+                custom_common_df,
+                mandatory_df_filtered,
+                custom_non_common_df,
+                digitisation_df_filtered,
+            ],
+            ignore_index=True,
+        )
+    survey_group_row = pd.DataFrame(
         {
             "type": ["begin group"],
             "name": ["survey_questions"],
             "label": ["Survey Form"],
             "relevant": [
-                "${building_exists} = 'yes'"
+                "(${new_feature} = 'yes') or (${building_exists} = 'yes')"
             ],  # Add the relevant condition to display this group only if "Yes" is selected
         }
     )
-
-    end_group_row = pd.DataFrame({"type": ["end group"], "name": ["end_survey_questions"], "label": ["End Survey Form"]})
+    survey_end_group_row = pd.DataFrame({"type": ["end group"], "name": ["end_survey_questions"], "label": ["End Survey Form"]})
+    digitisation_group = pd.DataFrame(
+        {
+            "type": ["begin group"],
+            "name": ["verification"],
+            "label": ["Verification Form"],
+            "relevant": ["(${new_feature} = 'yes') or (${building_exists} = 'yes')"],
+        }
+    )
+    digitisation_end_group = pd.DataFrame({"type": ["end group"], "name": ["end_verification"], "label": ["End Verification Form"]})
 
     # Concatenate: mandatory fields at the top, custom common fields, remaining custom fields, and finally append form fields
-    merged_df = pd.concat(
-        [custom_common_df, mandatory_df_filtered, group_row, custom_non_common_df, digitisation_df_filtered, end_group_row],
+    return pd.concat(
+        [
+            custom_common_df,
+            mandatory_df_filtered,
+            survey_group_row,
+            custom_non_common_df,
+            survey_end_group_row,
+            digitisation_group,
+            digitisation_df_filtered,
+            digitisation_end_group,
+        ],
         ignore_index=True,
     )
-
-    return merged_df
 
 
 def update_xls_form(custom_form: BytesIO) -> BytesIO:
@@ -64,7 +90,9 @@ def update_xls_form(custom_form: BytesIO) -> BytesIO:
 
     # Process and merge the 'survey' sheet if present in all forms
     if "survey" in mandatory_sheets and "survey" in digitisation_sheets and "survey" in custom_sheets:
-        custom_sheets["survey"] = merge_sheets(mandatory_sheets["survey"], custom_sheets["survey"], digitisation_sheets["survey"])
+        custom_sheets["survey"] = merge_sheets(
+            mandatory_sheets["survey"], custom_sheets["survey"], digitisation_sheets["survey"], True
+        )
 
     # Process and merge the 'choices' sheet if present in all forms
     if "choices" in mandatory_sheets and "choices" in digitisation_sheets and "choices" in custom_sheets:
@@ -75,6 +103,16 @@ def update_xls_form(custom_form: BytesIO) -> BytesIO:
     # Append or overwrite the existing entities sheet
     if "entities" in mandatory_sheets:
         custom_sheets["entities"] = mandatory_sheets["entities"]
+
+    if "settings" in mandatory_sheets:
+        custom_sheets["settings"] = mandatory_sheets["settings"]
+        current_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # Set the 'version' column to the current timestamp (if 'version' column exists in 'settings')
+        if "version" in custom_sheets["settings"].columns:
+            # set column type to str
+            custom_sheets["settings"]["version"] = custom_sheets["settings"]["version"].astype(str)
+            custom_sheets["settings"].loc[:, "version"] = current_timestamp
 
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
