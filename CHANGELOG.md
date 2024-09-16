@@ -1,3 +1,9 @@
+## 0.16.1 (2024-09-16)
+
+### Fix
+
+- made digitisation_correct read_only field (#297)
+
 ## 0.16.0 (2024-09-11)
 
 ### Feat
