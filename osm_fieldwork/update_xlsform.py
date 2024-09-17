@@ -99,19 +99,21 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
     # Find the row index after 'feature' row
     row_index_to_split_on = select_one_from_file_index[0] + 1
     # Strip the 's' from the end for singular form
-    entity_singular = entity_name.rstrip("s")
+    if entity_name.endswith("s"):
+        # Plural to singular
+        entity_name = entity_name[:-1]
 
     additional_row = pd.DataFrame(
         {
             "type": [f"select_one_from_file {entity_name}.csv"],
-            "name": [entity_singular],
-            "label::English(en)": [entity_singular],
+            "name": [entity_name],
+            "label::English(en)": [entity_name],
             "appearance": ["map"],
             "choice_filter": ["selected(${task_filter}, '') or task_id=${task_filter}"],
             "trigger": ["${task_filter}"],
-            "label::Swahili(sw)": [entity_singular],
-            "label::French(fr)": [entity_singular],
-            "label::Spanish(es)": [entity_singular],
+            "label::Swahili(sw)": [entity_name],
+            "label::French(fr)": [entity_name],
+            "label::Spanish(es)": [entity_name],
         }
     )
 
@@ -167,6 +169,15 @@ def append_mandatory_fields(
         custom_sheets["survey"] = merge_dataframes(
             mandatory_sheets.get("survey"), custom_sheets.get("survey"), digitisation_sheets.get("survey"), True
         )
+        # Hardcode the form_category value for the start instructions
+        if form_category.endswith("s"):
+            # Plural to singular
+            form_category_singular = form_category[:-1]
+        form_category_row = custom_sheets["survey"].loc[custom_sheets["survey"]["name"] == "form_category"]
+        if not form_category_row.empty:
+            custom_sheets["survey"].loc[custom_sheets["survey"]["name"] == "form_category", "calculation"] = (
+                f"once('{form_category_singular}')"
+            )
 
     if "choices" in custom_sheets:
         custom_sheets["choices"] = merge_dataframes(
