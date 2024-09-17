@@ -22,9 +22,13 @@ DIGITISATION_GROUP_NAME = "verification"
 
 
 def filter_df_empty_rows(df, column=NAME_COLUMN):
-    """Remove rows with None values in the specified column."""
+    """Remove rows with None values in the specified column, but retain group rows if they exist."""
     if column in df.columns:
-        return df.dropna(subset=[column])
+        # Only retain 'begin group' and 'end group' if 'type' column exists
+        if "type" in df.columns:
+            return df[(df[column].notna()) | (df["type"].isin([BEGIN_GROUP, END_GROUP]))]
+        else:
+            return df[df[column].notna()]
     return df
 
 
@@ -78,7 +82,7 @@ def merge_dataframes(mandatory_df, custom_df, digitisation_df, is_survey_sheet=F
 def create_group(name: str) -> dict[str, pd.DataFrame]:
     """Helper function to create a start and end group for XLSForm."""
     start_group = pd.DataFrame({"type": [BEGIN_GROUP], "name": [name]})
-    end_group = pd.DataFrame({"type": [END_GROUP], "name": [name]})
+    end_group = pd.DataFrame({"type": [END_GROUP], "name": [f"end of {name}"]})
     return {"start": start_group, "end": end_group}
 
 
