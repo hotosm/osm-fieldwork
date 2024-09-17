@@ -31,7 +31,7 @@ def test_merge_mandatory_fields():
     with open(test_form, "rb") as xlsform:
         form_bytes = BytesIO(xlsform.read())
 
-    updated_form = append_mandatory_fields(form_bytes)
+    updated_form = append_mandatory_fields(form_bytes, "buildings")
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
 
     # Check the 'survey' sheet
@@ -99,6 +99,21 @@ def test_merge_mandatory_fields():
     test_label_present = any(cell.value == "test label" for cell in entities_label_col[1:])
     assert not test_label_present, "'test label' found in the 'label' column of 'entities' sheet."
 
+    # Check that form_title is set correctly
+    if "settings" not in workbook.sheetnames:
+        raise ValueError("The 'settings' sheet was not found in the workbook")
+    settings_sheet = workbook["settings"]
+    # Find the index of the 'form_title' column in the 'settings' sheet
+    form_title_col = None
+    for col in settings_sheet.iter_cols(1, settings_sheet.max_column):
+        if col[0].value == "form_title":
+            form_title_col = col
+            break
+    assert form_title_col is not None, "'form_title' column was not found in the 'settings' sheet."
+    # Check that the 'form_title' value replaced by category type
+    test_title_present = any(cell.value == "buildings" for cell in form_title_col[1:])
+    assert test_title_present, "form_title field is not set to 'buildings'"
+
     # TODO add test to check that digitisation questions come at end of sheet
 
 
@@ -108,7 +123,7 @@ def test_add_extra_select_from_file():
     with open(test_form, "rb") as xlsform:
         form_bytes = BytesIO(xlsform.read())
 
-    updated_form = append_mandatory_fields(form_bytes, additional_entities=["roads", "waterpoints"])
+    updated_form = append_mandatory_fields(form_bytes, "buildings", additional_entities=["roads", "waterpoints"])
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
 
     survey_sheet = workbook["survey"]
@@ -125,7 +140,7 @@ def test_add_task_ids_to_choices():
         form_bytes = BytesIO(xlsform.read())
 
     task_ids = [1, 2, 3, 4, 5, 6, 7]
-    updated_form = append_mandatory_fields(form_bytes, task_ids=task_ids)
+    updated_form = append_mandatory_fields(form_bytes, "buildings", task_ids=task_ids)
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
 
     survey_sheet = workbook["choices"]
