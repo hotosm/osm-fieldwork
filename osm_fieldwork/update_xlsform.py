@@ -12,11 +12,9 @@ from osm_fieldwork.xlsforms import xlsforms_path
 # Monkeypatch pandas to add calamine driver
 pandas_monkeypatch()
 
-# Constants for repeated strings
+# Constants
 FEATURE_COLUMN = "feature"
 NAME_COLUMN = "name"
-BEGIN_GROUP = "begin group"
-END_GROUP = "end group"
 SURVEY_GROUP_NAME = "survey_questions"
 DIGITISATION_GROUP_NAME = "verification"
 
@@ -26,7 +24,7 @@ def filter_df_empty_rows(df, column=NAME_COLUMN):
     if column in df.columns:
         # Only retain 'begin group' and 'end group' if 'type' column exists
         if "type" in df.columns:
-            return df[(df[column].notna()) | (df["type"].isin([BEGIN_GROUP, END_GROUP]))]
+            return df[(df[column].notna()) | (df["type"].isin(["begin group", "end group", "begin_group", "end_group"]))]
         else:
             return df[df[column].notna()]
     return df
@@ -81,8 +79,8 @@ def merge_dataframes(mandatory_df, custom_df, digitisation_df, is_survey_sheet=F
 
 def create_group(name: str) -> dict[str, pd.DataFrame]:
     """Helper function to create a start and end group for XLSForm."""
-    start_group = pd.DataFrame({"type": [BEGIN_GROUP], "name": [name]})
-    end_group = pd.DataFrame({"type": [END_GROUP], "name": [f"end of {name}"]})
+    start_group = pd.DataFrame({"type": ["begin group"], "name": [name]})
+    end_group = pd.DataFrame({"type": ["end group"], "name": [f"end of {name}"]})
     return {"start": start_group, "end": end_group}
 
 
