@@ -144,6 +144,7 @@ def append_mandatory_fields(
     form_category: str,
     additional_entities: list[str] = None,
     task_ids: list[int] = None,
+    existing_id: str = None,
 ) -> BytesIO:
     """Append mandatory fields to the XLSForm for use in FMTM.
 
@@ -156,6 +157,7 @@ def append_mandatory_fields(
             field name.
         task_ids(list[int]): add task ids to choices sheet.
             These are used to filter Entities by task id in ODK Collect.
+        existing_id(str): an existing UUID to use for the form_id, else random uuid4.
 
     Returns:
         BytesIO: the update XLSForm, wrapped in BytesIO.
@@ -190,7 +192,7 @@ def append_mandatory_fields(
     # Set the 'version' column to the current timestamp (if 'version' column exists in 'settings')
     if "settings" in custom_sheets:
         custom_sheets["settings"]["version"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        custom_sheets["settings"]["form_id"] = uuid4()
+        custom_sheets["settings"]["form_id"] = existing_id if existing_id else uuid4()
         custom_sheets["settings"]["form_title"] = form_category
 
     # Append select_one_from_file for additional entities
