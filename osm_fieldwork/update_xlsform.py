@@ -120,8 +120,20 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
     return pd.concat([top_df, additional_row, bottom_df], ignore_index=True)
 
 
-def append_mandatory_fields(custom_form: BytesIO, geometry_fields=["features"]) -> BytesIO:
-    """Append mandatory fields to the XLSForm for use in FMTM."""
+def append_task_ids_to_choices_sheet(df: pd.DataFrame, task_ids: list[int]) -> pd.DataFrame:
+    """Add task id rows to choices sheet (for filtering Entity list)."""
+    additional_rows = pd.DataFrame(
+        {
+            "list_name": ["task_filter"] * len(task_ids),
+            "name": task_ids,
+            "label::English(en)": task_ids,
+            "label::Swahili(sw)": task_ids,
+            "label::French(fr)": task_ids,
+            "label::Spanish(es)": task_ids,
+        }
+    )
+    df = pd.concat([df, additional_rows], ignore_index=True)
+    return df
 
 
 def append_mandatory_fields(
@@ -173,12 +185,9 @@ def append_mandatory_fields(
     for entity_name in additional_entities:
         custom_sheets["survey"] = append_select_one_from_file_row(custom_sheets["survey"], entity_name)
 
-        # Set the 'version' column to the current timestamp (if 'version' column exists in 'settings')
-        if "version" in custom_sheets["settings"].columns:
-            # set column type to str
-            custom_sheets["settings"]["version"] = custom_sheets["settings"]["version"].astype(str)
-            custom_sheets["settings"].loc[:, "version"] = current_timestamp
-
+    # Append task id rows to choices sheet
+    if task_ids:
+        custom_sheets["choices"] = append_task_ids_to_choices_sheet(custom_sheets["choices"], task_ids)
 
     # Return spreadsheet wrapped as BytesIO memory object
     output = BytesIO()
