@@ -41,13 +41,13 @@ def get_row_index(sheet, column_index, value):
     raise ValueError(f"Value '{value}' not found in column {column_index}.")
 
 
-def test_merge_mandatory_fields():
+async def test_merge_mandatory_fields():
     """Merge the mandatory fields XLSForm to a test survey form."""
     test_form = Path(__file__).parent / "testdata" / "test_form_for_mandatory_fields.xls"
     with open(test_form, "rb") as xlsform:
         form_bytes = BytesIO(xlsform.read())
 
-    updated_form = append_mandatory_fields(form_bytes, "buildings")
+    updated_form = await append_mandatory_fields(form_bytes, "buildings")
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
 
     # Check the 'survey' sheet
@@ -112,13 +112,13 @@ def test_merge_mandatory_fields():
     # TODO add test to check that digitisation questions come at end of sheet
 
 
-def test_add_extra_select_from_file():
+async def test_add_extra_select_from_file():
     """Append extra select_one_from_file questions based on Entity list names."""
     test_form = Path(__file__).parent / "testdata" / "test_form_for_mandatory_fields.xls"
     with open(test_form, "rb") as xlsform:
         form_bytes = BytesIO(xlsform.read())
 
-    updated_form = append_mandatory_fields(form_bytes, "buildings", additional_entities=["roads", "waterpoints"])
+    updated_form = await append_mandatory_fields(form_bytes, "buildings", additional_entities=["roads", "waterpoints"])
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
 
     survey_sheet = workbook["survey"]
@@ -128,14 +128,14 @@ def test_add_extra_select_from_file():
     assert "waterpoint" in name_column, "The 'waterpoint' field was not added to the survey sheet."
 
 
-def test_add_task_ids_to_choices():
+async def test_add_task_ids_to_choices():
     """Test appending each task id as a row in choices sheet."""
     test_form = Path(__file__).parent / "testdata" / "test_form_for_mandatory_fields.xls"
     with open(test_form, "rb") as xlsform:
         form_bytes = BytesIO(xlsform.read())
 
     task_count = 7
-    updated_form = append_mandatory_fields(form_bytes, "buildings", task_count=task_count)
+    updated_form = await append_mandatory_fields(form_bytes, "buildings", task_count=task_count)
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
 
     survey_sheet = workbook["choices"]
