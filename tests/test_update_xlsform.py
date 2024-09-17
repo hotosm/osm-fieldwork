@@ -25,6 +25,22 @@ from openpyxl import load_workbook
 from osm_fieldwork.update_xlsform import append_mandatory_fields
 
 
+def get_column_index(sheet, column_name):
+    """Get the column index for the given column name."""
+    for col_idx, col in enumerate(sheet.iter_cols(1, sheet.max_column), start=1):
+        if col[0].value == column_name:
+            return col_idx
+    raise ValueError(f"Column '{column_name}' not found.")
+
+
+def get_row_index(sheet, column_index, value):
+    """Get the row index where the given column has the specified value."""
+    for row_idx, row in enumerate(sheet.iter_rows(min_col=column_index, max_col=column_index), start=1):
+        if row[0].value == value:
+            return row_idx
+    raise ValueError(f"Value '{value}' not found in column {column_index}.")
+
+
 def test_merge_mandatory_fields():
     """Merge the mandatory fields XLSForm to a test survey form."""
     test_form = Path(__file__).parent / "testdata" / "test_form_for_mandatory_fields.xls"
@@ -39,45 +55,34 @@ def test_merge_mandatory_fields():
         raise ValueError("The 'survey' sheet was not found in the workbook")
     survey_sheet = workbook["survey"]
 
-    # Find the index of the 'name' column
-    name_col = None
-    for col in survey_sheet.iter_cols(1, survey_sheet.max_column):
-        if col[0].value == "name":
-            name_col = col
-            break
-    assert name_col is not None, "The 'name' column was not found."
+    name_col_index = get_column_index(survey_sheet, "name")
+    calculation_col_index = get_column_index(survey_sheet, "calculation")
 
-    # Check if certain fields are present in the 'name' column (skip the header)
-    feature_field = any(cell.value == "feature" for cell in name_col[1:])
-    assert feature_field, "'feature' field not found in the 'name' column."
-
-    status_field = any(cell.value == "status" for cell in name_col[1:])
-    assert status_field, "'status' field not found in the 'name' column."
-
-    digitisation_correct_field = any(cell.value == "digitisation_correct" for cell in name_col[1:])
-    assert digitisation_correct_field, "'digitisation_correct' field not found in the 'name' column."
-
-    # Check that the 'name' column does not have a duplicate entry for 'username'
-    username_count = sum(1 for cell in name_col[1:] if cell.value == "username")
-    assert username_count <= 1, "Duplicate 'username' entry found in the 'name' column."
+    form_category_row_index = get_row_index(survey_sheet, name_col_index, "form_category")
+    form_category_calculation = survey_sheet.cell(row=form_category_row_index, column=calculation_col_index).value
+    expected_calculation = "once('building')"
+    assert (
+        form_category_calculation == expected_calculation
+    ), f"Expected 'calculation' value for 'form_category' to be '{expected_calculation}', but got '{form_category_calculation}'."
 
     # Check the 'choices' sheet
     if "choices" not in workbook.sheetnames:
         raise ValueError("The 'choices' sheet was not found in the workbook")
     choices_sheet = workbook["choices"]
 
-    # Find the index of the 'name' column in the 'choices' sheet
-    choices_name_col = None
-    for col in choices_sheet.iter_cols(1, choices_sheet.max_column):
-        if col[0].value == "name":
-            choices_name_col = col
-            break
+    choices_name_col_index = get_column_index(choices_sheet, "name")
 
-    assert choices_name_col is not None, "'name' column was not found in the 'choices' sheet."
-
-    # Test: Check that the 'choices' sheet does not have duplicate entries for 'yes' and 'no'
-    yes_count = sum(1 for cell in choices_name_col[1:] if cell.value == "yes")
-    no_count = sum(1 for cell in choices_name_col[1:] if cell.value == "no")
+    # Check that the 'choices' sheet does not have duplicate entries for 'yes' and 'no'
+    yes_count = sum(
+        1
+        for row in choices_sheet.iter_rows(min_col=choices_name_col_index, max_col=choices_name_col_index, min_row=2)
+        if row[0].value == "yes"
+    )
+    no_count = sum(
+        1
+        for row in choices_sheet.iter_rows(min_col=choices_name_col_index, max_col=choices_name_col_index, min_row=2)
+        if row[0].value == "no"
+    )
     assert yes_count <= 1, "Duplicate 'yes' entry found in the 'value' column of 'choices' sheet."
     assert no_count <= 1, "Duplicate 'no' entry found in the 'value' column of 'choices' sheet."
 
@@ -86,33 +91,23 @@ def test_merge_mandatory_fields():
         raise ValueError("The 'entities' sheet was not found in the workbook")
     entities_sheet = workbook["entities"]
 
-    # Find the index of the 'label' column in the 'entities' sheet
-    entities_label_col = None
-    for col in entities_sheet.iter_cols(1, entities_sheet.max_column):
-        if col[0].value == "label":
-            entities_label_col = col
-            break
-
-    assert entities_label_col is not None, "'label' column was not found in the 'entities' sheet."
+    entities_label_col_index = get_column_index(entities_sheet, "label")
 
     # Check that the 'entities' label value of 'test label' is replaced by required value
-    test_label_present = any(cell.value == "test label" for cell in entities_label_col[1:])
+    test_label_present = any(
+        row[0].value == "test label"
+        for row in entities_sheet.iter_rows(min_col=entities_label_col_index, max_col=entities_label_col_index, min_row=2)
+    )
     assert not test_label_present, "'test label' found in the 'label' column of 'entities' sheet."
 
     # Check that form_title is set correctly
     if "settings" not in workbook.sheetnames:
         raise ValueError("The 'settings' sheet was not found in the workbook")
     settings_sheet = workbook["settings"]
-    # Find the index of the 'form_title' column in the 'settings' sheet
-    form_title_col = None
-    for col in settings_sheet.iter_cols(1, settings_sheet.max_column):
-        if col[0].value == "form_title":
-            form_title_col = col
-            break
-    assert form_title_col is not None, "'form_title' column was not found in the 'settings' sheet."
-    # Check that the 'form_title' value replaced by category type
-    test_title_present = any(cell.value == "buildings" for cell in form_title_col[1:])
-    assert test_title_present, "form_title field is not set to 'buildings'"
+
+    form_title_col_index = get_column_index(settings_sheet, "form_title")
+    form_title_value = settings_sheet.cell(row=2, column=form_title_col_index).value
+    assert form_title_value == "buildings", "form_title field is not set to 'buildings'"
 
     # TODO add test to check that digitisation questions come at end of sheet
 
