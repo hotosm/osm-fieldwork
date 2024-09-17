@@ -123,11 +123,13 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
     return pd.concat([top_df, additional_row, bottom_df], ignore_index=True)
 
 
-def append_task_ids_to_choices_sheet(df: pd.DataFrame, task_ids: list[int]) -> pd.DataFrame:
+def append_task_ids_to_choices_sheet(df: pd.DataFrame, task_count: int) -> pd.DataFrame:
     """Add task id rows to choices sheet (for filtering Entity list)."""
+    task_ids = list(range(1, task_count + 1))
+
     additional_rows = pd.DataFrame(
         {
-            "list_name": ["task_filter"] * len(task_ids),
+            "list_name": ["task_filter"] * task_count,
             "name": task_ids,
             "label::English(en)": task_ids,
             "label::Swahili(sw)": task_ids,
@@ -135,6 +137,7 @@ def append_task_ids_to_choices_sheet(df: pd.DataFrame, task_ids: list[int]) -> p
             "label::Spanish(es)": task_ids,
         }
     )
+
     df = pd.concat([df, additional_rows], ignore_index=True)
     return df
 
@@ -143,7 +146,7 @@ def append_mandatory_fields(
     custom_form: BytesIO,
     form_category: str,
     additional_entities: list[str] = None,
-    task_ids: list[int] = None,
+    task_count: int = None,
     existing_id: str = None,
 ) -> BytesIO:
     """Append mandatory fields to the XLSForm for use in FMTM.
@@ -155,8 +158,8 @@ def append_mandatory_fields(
             reference an additional Entity list (set of geometries).
             The values should be plural, so that 's' will be stripped in the
             field name.
-        task_ids(list[int]): add task ids to choices sheet.
-            These are used to filter Entities by task id in ODK Collect.
+        task_count(int): number of tasks, used to generate task_id entries in choices
+            sheet. These are used to filter Entities by task id in ODK Collect.
         existing_id(str): an existing UUID to use for the form_id, else random uuid4.
 
     Returns:
@@ -201,8 +204,8 @@ def append_mandatory_fields(
             custom_sheets["survey"] = append_select_one_from_file_row(custom_sheets["survey"], entity_name)
 
     # Append task id rows to choices sheet
-    if task_ids:
-        custom_sheets["choices"] = append_task_ids_to_choices_sheet(custom_sheets["choices"], task_ids)
+    if task_count:
+        custom_sheets["choices"] = append_task_ids_to_choices_sheet(custom_sheets["choices"], task_count)
 
     # Return spreadsheet wrapped as BytesIO memory object
     output = BytesIO()
