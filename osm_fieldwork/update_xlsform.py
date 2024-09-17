@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from io import BytesIO
+from uuid import uuid4
 
 import pandas as pd
 from python_calamine.pandas import pandas_monkeypatch
@@ -138,6 +139,7 @@ def append_task_ids_to_choices_sheet(df: pd.DataFrame, task_ids: list[int]) -> p
 
 def append_mandatory_fields(
     custom_form: BytesIO,
+    form_category: str,
     additional_entities: list[str] = None,
     task_ids: list[int] = None,
 ) -> BytesIO:
@@ -145,6 +147,7 @@ def append_mandatory_fields(
 
     Args:
         custom_form(BytesIO): the XLSForm data uploaded, wrapped in BytesIO.
+        form_category(str): the form category name (in form_title and description).
         additional_entities(list[str]): add extra select_one_from_file fields to
             reference an additional Entity list (set of geometries).
             The values should be plural, so that 's' will be stripped in the
@@ -176,14 +179,13 @@ def append_mandatory_fields(
     # Set the 'version' column to the current timestamp (if 'version' column exists in 'settings')
     if "settings" in custom_sheets:
         custom_sheets["settings"]["version"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        custom_sheets["settings"]["form_id"] = uuid4()
+        custom_sheets["settings"]["form_title"] = form_category
 
     # Append select_one_from_file for additional entities
-    for entity_name in additional_entities:
-        custom_sheets["survey"] = append_select_one_from_file_row(custom_sheets["survey"], entity_name)
-
-    # Append select_one_from_file for additional entities
-    for entity_name in additional_entities:
-        custom_sheets["survey"] = append_select_one_from_file_row(custom_sheets["survey"], entity_name)
+    if additional_entities:
+        for entity_name in additional_entities:
+            custom_sheets["survey"] = append_select_one_from_file_row(custom_sheets["survey"], entity_name)
 
     # Append task id rows to choices sheet
     if task_ids:
