@@ -55,8 +55,9 @@ def merge_dataframes(mandatory_df, custom_df, digitisation_df, is_survey_sheet=F
         )
 
     # Create groups for survey and digitisation
-    survey_group = create_group(SURVEY_GROUP_NAME, "Survey Form")
-    digitisation_group = create_group(DIGITISATION_GROUP_NAME, "Verification Form")
+    survey_group = create_group(SURVEY_GROUP_NAME)
+    digitisation_group = create_group(DIGITISATION_GROUP_NAME)
+    digitisation_group["start"]["relevant"] = ["(${new_feature} = 'yes') or (${building_exists} = 'yes')"]
 
     # Concatenate dataframes in the desired order
     return pd.concat(
@@ -74,17 +75,10 @@ def merge_dataframes(mandatory_df, custom_df, digitisation_df, is_survey_sheet=F
     )
 
 
-def create_group(name: str, label: str) -> dict[str, pd.DataFrame]:
+def create_group(name: str) -> dict[str, pd.DataFrame]:
     """Helper function to create a start and end group for XLSForm."""
-    start_group = pd.DataFrame(
-        {
-            "type": [BEGIN_GROUP],
-            "name": [name],
-            "label": [label],
-            "relevant": ["(${new_feature} = 'yes') or (${building_exists} = 'yes')"],
-        }
-    )
-    end_group = pd.DataFrame({"type": [END_GROUP], "name": [f"end_{name}"], "label": [f"End {label}"]})
+    start_group = pd.DataFrame({"type": [BEGIN_GROUP], "name": [name]})
+    end_group = pd.DataFrame({"type": [END_GROUP], "name": [name]})
     return {"start": start_group, "end": end_group}
 
 
