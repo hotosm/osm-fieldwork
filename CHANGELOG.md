@@ -1,3 +1,9 @@
+## 0.16.2 (2024-09-18)
+
+### Fix
+
+- handle all XLSForm manuipulation in update_xlsform.py (#299)
+
 ## 0.16.1 (2024-09-16)
 
 ### Fix
