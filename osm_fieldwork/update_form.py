@@ -10,7 +10,9 @@ from osm_fieldwork.xlsforms import xlsforms_path
 pandas_monkeypatch()
 
 
-def merge_sheets(mandatory_df, custom_df, digitisation_df, is_survey_sheet=False):
+def merge_dataframes(mandatory_df, custom_df, digitisation_df, is_survey_sheet=False):
+    """Merge multiple Pandas dataframes together."""
+
     # Remove rows with None in 'name' column
     if "name" in mandatory_df.columns:
         mandatory_df = mandatory_df.dropna(subset=["name"])
@@ -81,7 +83,9 @@ def merge_sheets(mandatory_df, custom_df, digitisation_df, is_survey_sheet=False
     )
 
 
-def update_xls_form(custom_form: BytesIO) -> BytesIO:
+def append_mandatory_fields(custom_form: BytesIO, geometry_fields=["features"]) -> BytesIO:
+    """Append mandatory fields to the XLSForm for use in FMTM."""
+
     custom_sheets = pd.read_excel(custom_form, sheet_name=None, engine="calamine")
     default_form_path = f"{xlsforms_path}/fmtm/mandatory_fields.xls"
     digitisation_form_path = f"{xlsforms_path}/fmtm/digitisation_fields.xls"
@@ -90,13 +94,13 @@ def update_xls_form(custom_form: BytesIO) -> BytesIO:
 
     # Process and merge the 'survey' sheet if present in all forms
     if "survey" in mandatory_sheets and "survey" in digitisation_sheets and "survey" in custom_sheets:
-        custom_sheets["survey"] = merge_sheets(
+        custom_sheets["survey"] = merge_dataframes(
             mandatory_sheets["survey"], custom_sheets["survey"], digitisation_sheets["survey"], True
         )
 
     # Process and merge the 'choices' sheet if present in all forms
     if "choices" in mandatory_sheets and "choices" in digitisation_sheets and "choices" in custom_sheets:
-        custom_sheets["choices"] = merge_sheets(
+        custom_sheets["choices"] = merge_dataframes(
             mandatory_sheets["choices"], custom_sheets["choices"], digitisation_sheets["choices"]
         )
 

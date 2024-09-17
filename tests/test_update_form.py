@@ -22,7 +22,7 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-from osm_fieldwork.update_form import update_xls_form
+from osm_fieldwork.update_form import append_mandatory_fields
 
 
 def test_merge_mandatory_fields():
@@ -31,7 +31,7 @@ def test_merge_mandatory_fields():
     with open(test_form, "rb") as xlsform:
         form_bytes = BytesIO(xlsform.read())
 
-    updated_form = update_xls_form(form_bytes)
+    updated_form = append_mandatory_fields(form_bytes)
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
 
     # Check the 'survey' sheet
