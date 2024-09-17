@@ -91,6 +91,7 @@ nav:
       - ODKInstance: api/ODKInstance.md
       - ODKForm: api/ODKForm.md
       - filter_data: api/filter_data.md
+      - update_xlsform: api/update_xlsform.md
   - Deep Tech Dives:
       - External Data: about/externaldata.md
       - Data conflation: about/conflation.md
