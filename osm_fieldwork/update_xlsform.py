@@ -138,7 +138,7 @@ def append_task_ids_to_choices_sheet(df: pd.DataFrame, task_count: int) -> pd.Da
     return df
 
 
-def append_mandatory_fields(
+async def append_mandatory_fields(
     custom_form: BytesIO,
     form_category: str,
     additional_entities: list[str] = None,
