@@ -22,7 +22,7 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-from osm_fieldwork.update_form import append_mandatory_fields
+from osm_fieldwork.update_xlsform import append_mandatory_fields
 
 
 def test_merge_mandatory_fields():
@@ -48,8 +48,8 @@ def test_merge_mandatory_fields():
     assert name_col is not None, "The 'name' column was not found."
 
     # Check if certain fields are present in the 'name' column (skip the header)
-    existing_field = any(cell.value == "existing" for cell in name_col[1:])
-    assert existing_field, "'existing' field not found in the 'name' column."
+    feature_field = any(cell.value == "feature" for cell in name_col[1:])
+    assert feature_field, "'feature' field not found in the 'name' column."
 
     status_field = any(cell.value == "status" for cell in name_col[1:])
     assert status_field, "'status' field not found in the 'name' column."
@@ -100,3 +100,38 @@ def test_merge_mandatory_fields():
     assert not test_label_present, "'test label' found in the 'label' column of 'entities' sheet."
 
     # TODO add test to check that digitisation questions come at end of sheet
+
+
+def test_add_extra_select_from_file():
+    """Append extra select_one_from_file questions based on Entity list names."""
+    test_form = Path(__file__).parent / "testdata" / "test_form_for_mandatory_fields.xls"
+    with open(test_form, "rb") as xlsform:
+        form_bytes = BytesIO(xlsform.read())
+
+    updated_form = append_mandatory_fields(form_bytes, additional_entities=["roads", "waterpoints"])
+    workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
+
+    survey_sheet = workbook["survey"]
+    # Assuming 'name' is in column B
+    name_column = [cell.value for cell in survey_sheet["B"]]
+    assert "road" in name_column, "The 'road' field was not added to the survey sheet."
+    assert "waterpoint" in name_column, "The 'waterpoint' field was not added to the survey sheet."
+
+
+def test_add_task_ids_to_choices():
+    """Test appending each task id as a row in choices sheet."""
+    test_form = Path(__file__).parent / "testdata" / "test_form_for_mandatory_fields.xls"
+    with open(test_form, "rb") as xlsform:
+        form_bytes = BytesIO(xlsform.read())
+
+    task_ids = [1, 2, 3, 4, 5, 6, 7]
+    updated_form = append_mandatory_fields(form_bytes, task_ids=task_ids)
+    workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
+
+    survey_sheet = workbook["choices"]
+    # Assuming 'name' is in column B
+    name_column = [cell.value for cell in survey_sheet["B"]]
+
+    # Assert each task_id is in the name_column
+    for task_id in task_ids:
+        assert task_id in name_column, f"Task ID {task_id} not found in the choices sheet."
