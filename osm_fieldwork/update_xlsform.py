@@ -162,8 +162,8 @@ async def append_mandatory_fields(
         BytesIO: the update XLSForm, wrapped in BytesIO.
     """
     custom_sheets = pd.read_excel(custom_form, sheet_name=None, engine="calamine")
-    mandatory_sheets = pd.read_excel(f"{xlsforms_path}/fmtm/mandatory_fields.xls", sheet_name=None, engine="calamine")
-    digitisation_sheets = pd.read_excel(f"{xlsforms_path}/fmtm/digitisation_fields.xls", sheet_name=None, engine="calamine")
+    mandatory_sheets = pd.read_excel(f"{xlsforms_path}/common/mandatory_fields.xls", sheet_name=None, engine="calamine")
+    digitisation_sheets = pd.read_excel(f"{xlsforms_path}/common/digitisation_fields.xls", sheet_name=None, engine="calamine")
 
     # Merge 'survey' and 'choices' sheets
     if "survey" in custom_sheets:
