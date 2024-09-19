@@ -1,3 +1,13 @@
+## 0.16.3 (2024-09-19)
+
+### Fix
+
+- common field xlsforms + library combo fully working
+
+### Refactor
+
+- rename fmtm forms --> common forms
+
 ## 0.16.2 (2024-09-18)
 
 ### Fix
