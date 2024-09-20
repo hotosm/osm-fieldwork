@@ -21,8 +21,10 @@ from io import BytesIO
 from pathlib import Path
 
 from openpyxl import Workbook, load_workbook, worksheet
+from pyxform.xls2xform import convert as xform_convert
 
 from osm_fieldwork.update_xlsform import append_mandatory_fields
+from osm_fieldwork.xlsforms import buildings, healthcare
 
 
 async def test_merge_mandatory_fields():
@@ -34,15 +36,17 @@ async def test_merge_mandatory_fields():
 
     updated_form = await append_mandatory_fields(form_bytes, "buildings")
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
+    # Write merged xlsform to file for debugging
+    with open("merged_xlsform.xlsx", "wb") as merged_xlsform:
+        merged_xlsform.write(updated_form.getvalue())
 
     check_survey_sheet(workbook)
     check_choices_sheet(workbook)
     check_entities_sheet(workbook)
     check_form_title(workbook)
 
-    # Write merged xlsform to file for debugging
-    with open("merged_xlsform.xlsx", "wb") as merged_xlsform:
-        merged_xlsform.write(updated_form.getvalue())
+    # Check it's still a valid xlsform by converting to XML
+    xform_convert(updated_form)
 
 
 async def test_add_extra_select_from_file():
@@ -80,6 +84,24 @@ async def test_add_task_ids_to_choices():
     task_ids = [1, 2, 3, 4, 5, 6, 7]
     for task_id in task_ids:
         assert task_id in name_column, f"Task ID {task_id} not found in the choices sheet."
+
+
+async def test_buildings_xlsform():
+    """Merge and test if buildings form is a valid XLSForm."""
+    with open(buildings, "rb") as xlsform:
+        form_bytes = BytesIO(xlsform.read())
+    updated_form = await append_mandatory_fields(form_bytes, "buildings")
+    # Check it's still a valid xlsform by converting to XML
+    xform_convert(updated_form)
+
+
+async def test_healthcare_xlsform():
+    """Merge and test if buildings form is a valid XLSForm."""
+    with open(healthcare, "rb") as xlsform:
+        form_bytes = BytesIO(xlsform.read())
+    updated_form = await append_mandatory_fields(form_bytes, "healthcare")
+    # Check it's still a valid xlsform by converting to XML
+    xform_convert(updated_form)
 
 
 def check_survey_sheet(workbook: Workbook) -> None:
@@ -126,7 +148,8 @@ def check_form_title(workbook: Workbook) -> None:
     form_title_col_index = get_column_index(settings_sheet, "form_title")
 
     form_title_value = settings_sheet.cell(row=2, column=form_title_col_index).value
-    assert form_title_value == "buildings", "form_title field is not set to 'buildings'"
+    # NOTE the 's' is stripped from 'buildings' to make it singular
+    assert form_title_value == "building", "form_title field is not set to 'building'"
 
 
 def get_sheet(workbook: Workbook, sheet_name: str) -> worksheet.worksheet.Worksheet:
@@ -137,10 +160,13 @@ def get_sheet(workbook: Workbook, sheet_name: str) -> worksheet.worksheet.Worksh
 
 
 def check_for_duplicates(sheet: worksheet.worksheet.Worksheet, col_index: int) -> None:
-    """Check for any duplicate values in a specific column of a sheet."""
+    """Check for any duplicate values in a specific column of a sheet, ignoring None values."""
     seen_values = set()
     for row in sheet.iter_rows(min_col=col_index, max_col=col_index, min_row=2):
         value = row[0].value
+        if value is None:
+            # Skip None values, allowing them to appear multiple times
+            continue
         if value in seen_values:
             raise AssertionError(f"Duplicate value '{value}' found in column '{col_index}' of sheet '{sheet.title}'.")
         seen_values.add(value)
