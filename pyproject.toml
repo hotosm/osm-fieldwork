@@ -87,6 +87,7 @@ debug = [
 test = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.23.6",
+    "pyxform>=2.1.0",
 ]
 docs = [
     "mkdocs>=1.5.2",
