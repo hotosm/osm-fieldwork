@@ -1,3 +1,15 @@
+## 0.16.4 (2024-09-20)
+
+### Fix
+
+- start work matching xlsform translation columns
+- minor fixes to xlsforms, add group to digitisation form
+- append a dummy task_id entry to xlsform if not specified
+
+### Refactor
+
+- refactor update_xlsform for readability + minor bugfixes
+
 ## 0.16.3 (2024-09-19)
 
 ### Fix
