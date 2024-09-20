@@ -18,21 +18,6 @@ NAME_COLUMN = "name"
 SURVEY_GROUP_NAME = "survey_questions"
 
 
-def filter_df_empty_rows(df: pd.DataFrame, column: str = NAME_COLUMN):
-    """Remove rows with None values in the specified column.
-
-    NOTE We retain 'end group' and 'end group' rows even if they have no name.
-    NOTE A generic df.dropna(how="all") would not catch accidental spaces etc.
-    """
-    if column in df.columns:
-        # Only retain 'begin group' and 'end group' if 'type' column exists
-        if "type" in df.columns:
-            return df[(df[column].notna()) | (df["type"].isin(["begin group", "end group", "begin_group", "end_group"]))]
-        else:
-            return df[df[column].notna()]
-    return df
-
-
 def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame, digitisation_df: pd.DataFrame):
     """Merge multiple Pandas dataframes together, removing duplicate fields."""
     # Remove empty rows from dataframes
@@ -40,8 +25,13 @@ def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame,
     user_question_df = filter_df_empty_rows(user_question_df)
     digitisation_df = filter_df_empty_rows(digitisation_df)
 
+    # Handle matching translation fields for label, hint, required_message, etc.
+    # FIXME this isn't working properly yet
+    # mandatory_df, user_question_df, digitisation_df = handle_translations(
+    #     mandatory_df, user_question_df, digitisation_df, fields=["label", "hint", "required_message"]
+    # )
+
     # Find common fields between user_question_df and mandatory_df or digitisation_df
-    # We use this to remove duplicates from the survey, giving our fields priority
     duplicate_fields = set(user_question_df[NAME_COLUMN]).intersection(
         set(mandatory_df[NAME_COLUMN]).union(set(digitisation_df[NAME_COLUMN]))
     )
@@ -82,6 +72,55 @@ def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame,
         ],
         ignore_index=True,
     )
+
+
+def handle_translations(
+    mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame, digitisation_df: pd.DataFrame, fields: list[str]
+):
+    """Handle translations, defaulting to English if no translations are present.
+
+    Handles all field types that can be translated, such as
+    'label', 'hint', 'required_message'.
+    """
+    for field in fields:
+        # Identify translation columns for this field in the user_question_df
+        translation_columns = [col for col in user_question_df.columns if col.startswith(f"{field}::")]
+
+        if field in user_question_df.columns and not translation_columns:
+            # If user_question_df has only the base field (e.g., 'label'), map English translation from mandatory and digitisation
+            mandatory_df[field] = mandatory_df.get(f"{field}::English(en)", mandatory_df.get(field))
+            digitisation_df[field] = digitisation_df.get(f"{field}::English(en)", digitisation_df.get(field))
+
+            # Then drop translation columns
+            mandatory_df = mandatory_df.loc[:, ~mandatory_df.columns.str.startswith("label::")]
+            digitisation_df = digitisation_df.loc[:, ~digitisation_df.columns.str.startswith("label::")]
+
+        else:
+            # If translation columns exist, match them for mandatory and digitisation dataframes
+            for col in translation_columns:
+                mandatory_col = mandatory_df.get(col)
+                digitisation_col = digitisation_df.get(col)
+                if mandatory_col is not None:
+                    mandatory_df[col] = mandatory_col
+                if digitisation_col is not None:
+                    digitisation_df[col] = digitisation_col
+
+    return mandatory_df, user_question_df, digitisation_df
+
+
+def filter_df_empty_rows(df: pd.DataFrame, column: str = NAME_COLUMN):
+    """Remove rows with None values in the specified column.
+
+    NOTE We retain 'end group' and 'end group' rows even if they have no name.
+    NOTE A generic df.dropna(how="all") would not catch accidental spaces etc.
+    """
+    if column in df.columns:
+        # Only retain 'begin group' and 'end group' if 'type' column exists
+        if "type" in df.columns:
+            return df[(df[column].notna()) | (df["type"].isin(["begin group", "end group", "begin_group", "end_group"]))]
+        else:
+            return df[df[column].notna()]
+    return df
 
 
 def create_survey_group(name: str) -> dict[str, pd.DataFrame]:

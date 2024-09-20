@@ -48,6 +48,12 @@ async def test_merge_mandatory_fields():
     # Check it's still a valid xlsform by converting to XML
     xform_convert(updated_form)
 
+    # Check if translations were matched correctly
+    # FIXME enable once code fixed
+    # translation_found, label_field_found = check_translation_fields(workbook)
+    # assert not translation_found, "Translation fields should have been removed during merge."
+    # assert label_field_found, "The 'label' field should be present after merge."
+
 
 async def test_add_extra_select_from_file():
     """Append extra select_one_from_file questions based on Entity list names."""
@@ -93,6 +99,11 @@ async def test_buildings_xlsform():
     updated_form = await append_mandatory_fields(form_bytes, "buildings")
     # Check it's still a valid xlsform by converting to XML
     xform_convert(updated_form)
+
+    workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
+    translation_found, label_field_found = check_translation_fields(workbook)
+    assert translation_found, "'label::English(en)' field not found in the survey sheet."
+    assert not label_field_found, "'label' field should not be present after merging translations."
 
 
 async def test_healthcare_xlsform():
@@ -150,6 +161,26 @@ def check_form_title(workbook: Workbook) -> None:
     form_title_value = settings_sheet.cell(row=2, column=form_title_col_index).value
     # NOTE the 's' is stripped from 'buildings' to make it singular
     assert form_title_value == "building", "form_title field is not set to 'building'"
+
+
+def check_translation_fields(workbook: Workbook):
+    """Check if translation fields were correctly matched."""
+    survey_sheet = workbook["survey"]
+    translation_found = False
+    label_field_found = False
+
+    # Iterate through the survey sheet columns and rows
+    for row in survey_sheet.iter_rows(min_row=1, max_col=survey_sheet.max_column):
+        for cell in row:
+            # Check if the English translation label exists
+            if cell.value == "label::English(en)":
+                translation_found = True
+
+            # Ensure that the base 'label' field is no longer present
+            if cell.value == "label":
+                label_field_found = True
+
+    return translation_found, label_field_found
 
 
 def get_sheet(workbook: Workbook, sheet_name: str) -> worksheet.worksheet.Worksheet:
