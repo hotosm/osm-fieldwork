@@ -202,6 +202,9 @@ async def append_mandatory_fields(
     # Append task id rows to choices sheet
     if task_count:
         custom_sheets["choices"] = append_task_ids_to_choices_sheet(custom_sheets["choices"], task_count)
+    else:
+        # NOTE here we must append a single task_id entry to make it a valid form
+        custom_sheets["choices"] = append_task_ids_to_choices_sheet(custom_sheets["choices"], 1)
 
     # Return spreadsheet wrapped as BytesIO memory object
     output = BytesIO()
