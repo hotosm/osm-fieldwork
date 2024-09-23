@@ -1,3 +1,9 @@
+## 0.16.6 (2024-09-24)
+
+### Fix
+
+- **xlsform**: remove 'does not exist' option from digitisation form
+
 ## 0.16.5 (2024-09-23)
 
 ### Fix
