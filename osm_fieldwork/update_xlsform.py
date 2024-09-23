@@ -136,7 +136,7 @@ def create_survey_group(name: str) -> dict[str, pd.DataFrame]:
             "label::Swahili(sw)": [name],
             "label::French(fr)": [name],
             "label::Spanish(es)": [name],
-            "relevant": "(${new_feature} = 'yes') or (${building_exists} = 'yes')",
+            "relevant": "(${new_feature} != '') or (${building_exists} = 'yes')",
         }
     )
     end_group = pd.DataFrame(
@@ -168,8 +168,6 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
             "name": [entity_name],
             "label::English(en)": [entity_name],
             "appearance": ["map"],
-            "choice_filter": ["selected(${task_filter}, '') or task_id=${task_filter}"],
-            "trigger": ["${task_filter}"],
             "label::Swahili(sw)": [entity_name],
             "label::French(fr)": [entity_name],
             "label::Spanish(es)": [entity_name],
@@ -182,30 +180,10 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
     return pd.concat([top_df, additional_row, bottom_df], ignore_index=True)
 
 
-def append_task_ids_to_choices_sheet(df: pd.DataFrame, task_count: int) -> pd.DataFrame:
-    """Add task id rows to choices sheet (for filtering Entity list)."""
-    task_ids = list(range(1, task_count + 1))
-
-    additional_rows = pd.DataFrame(
-        {
-            "list_name": ["task_filter"] * task_count,
-            "name": task_ids,
-            "label::English(en)": task_ids,
-            "label::Swahili(sw)": task_ids,
-            "label::French(fr)": task_ids,
-            "label::Spanish(es)": task_ids,
-        }
-    )
-
-    df = pd.concat([df, additional_rows], ignore_index=True)
-    return df
-
-
 async def append_mandatory_fields(
     custom_form: BytesIO,
     form_category: str,
     additional_entities: list[str] = None,
-    task_count: int = None,
     existing_id: str = None,
 ) -> tuple[str, BytesIO]:
     """Append mandatory fields to the XLSForm for use in FMTM.
@@ -217,8 +195,6 @@ async def append_mandatory_fields(
             reference an additional Entity list (set of geometries).
             The values should be plural, so that 's' will be stripped in the
             field name.
-        task_count(int): number of tasks, used to generate task_id entries in choices
-            sheet. These are used to filter Entities by task id in ODK Collect.
         existing_id(str): an existing UUID to use for the form_id, else random uuid4.
 
     Returns:
@@ -280,15 +256,6 @@ async def append_mandatory_fields(
         log.debug("Adding additional entity list reference to XLSForm")
         for entity_name in additional_entities:
             custom_sheets["survey"] = append_select_one_from_file_row(custom_sheets["survey"], entity_name)
-
-    # Append task id rows to choices sheet
-    if task_count:
-        log.debug(f"Appending task_id choices from 1 - {task_count}")
-        custom_sheets["choices"] = append_task_ids_to_choices_sheet(custom_sheets["choices"], task_count)
-    else:
-        log.debug("No task IDs provided. Appending a dummy task_id to make form valid")
-        # NOTE here we must append a single task_id entry to make it a valid form
-        custom_sheets["choices"] = append_task_ids_to_choices_sheet(custom_sheets["choices"], 1)
 
     # Return spreadsheet wrapped as BytesIO memory object
     output = BytesIO()
