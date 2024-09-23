@@ -1,3 +1,14 @@
+## 0.16.5rc0 (2024-09-23)
+
+### Fix
+
+- also return the xFormId from append_mandatory_fields, add logs
+- **mandatory-fields-xlsform**: omit questions on entity preselect, make feature selection mandatory
+
+### Refactor
+
+- small tweak to mandatory fields xlsform
+
 ## 0.16.4 (2024-09-20)
 
 ### Fix
