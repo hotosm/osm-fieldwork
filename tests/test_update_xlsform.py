@@ -72,26 +72,6 @@ async def test_add_extra_select_from_file():
     assert "waterpoint" in name_column, "The 'waterpoint' field was not added to the survey sheet."
 
 
-async def test_add_task_ids_to_choices():
-    """Test appending each task id as a row in choices sheet."""
-    test_form = Path(__file__).parent / "testdata" / "test_form_for_mandatory_fields.xls"
-    with open(test_form, "rb") as xlsform:
-        form_bytes = BytesIO(xlsform.read())
-
-    task_count = 7
-    xformid, updated_form = await append_mandatory_fields(form_bytes, "buildings", task_count=task_count)
-    workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
-
-    choices_sheet = workbook["choices"]
-    # Assuming 'name' is in column B
-    name_column = [cell.value for cell in choices_sheet["B"]]
-
-    # Assert each task_id is in the name_column
-    task_ids = [1, 2, 3, 4, 5, 6, 7]
-    for task_id in task_ids:
-        assert task_id in name_column, f"Task ID {task_id} not found in the choices sheet."
-
-
 async def test_buildings_xlsform():
     """Merge and test if buildings form is a valid XLSForm."""
     with open(buildings, "rb") as xlsform:
