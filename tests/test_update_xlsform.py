@@ -34,7 +34,7 @@ async def test_merge_mandatory_fields():
     with open(test_form, "rb") as xlsform:
         form_bytes = BytesIO(xlsform.read())
 
-    updated_form = await append_mandatory_fields(form_bytes, "buildings")
+    xformid, updated_form = await append_mandatory_fields(form_bytes, "buildings")
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
     # Write merged xlsform to file for debugging
     with open("merged_xlsform.xlsx", "wb") as merged_xlsform:
@@ -62,7 +62,7 @@ async def test_add_extra_select_from_file():
     with open(test_form, "rb") as xlsform:
         form_bytes = BytesIO(xlsform.read())
 
-    updated_form = await append_mandatory_fields(form_bytes, "buildings", additional_entities=["roads", "waterpoints"])
+    xformid, updated_form = await append_mandatory_fields(form_bytes, "buildings", additional_entities=["roads", "waterpoints"])
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
 
     survey_sheet = workbook["survey"]
@@ -79,7 +79,7 @@ async def test_add_task_ids_to_choices():
         form_bytes = BytesIO(xlsform.read())
 
     task_count = 7
-    updated_form = await append_mandatory_fields(form_bytes, "buildings", task_count=task_count)
+    xformid, updated_form = await append_mandatory_fields(form_bytes, "buildings", task_count=task_count)
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
 
     choices_sheet = workbook["choices"]
@@ -96,7 +96,7 @@ async def test_buildings_xlsform():
     """Merge and test if buildings form is a valid XLSForm."""
     with open(buildings, "rb") as xlsform:
         form_bytes = BytesIO(xlsform.read())
-    updated_form = await append_mandatory_fields(form_bytes, "buildings")
+    xformid, updated_form = await append_mandatory_fields(form_bytes, "buildings")
     # Check it's still a valid xlsform by converting to XML
     xform_convert(updated_form)
 
@@ -110,7 +110,7 @@ async def test_healthcare_xlsform():
     """Merge and test if buildings form is a valid XLSForm."""
     with open(healthcare, "rb") as xlsform:
         form_bytes = BytesIO(xlsform.read())
-    updated_form = await append_mandatory_fields(form_bytes, "healthcare")
+    xformid, updated_form = await append_mandatory_fields(form_bytes, "healthcare")
     # Check it's still a valid xlsform by converting to XML
     xform_convert(updated_form)
 

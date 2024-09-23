@@ -1,5 +1,6 @@
 """Update an existing XLSForm with additional fields useful for field mapping."""
 
+import logging
 from datetime import datetime
 from io import BytesIO
 from uuid import uuid4
@@ -8,6 +9,8 @@ import pandas as pd
 from python_calamine.pandas import pandas_monkeypatch
 
 from osm_fieldwork.xlsforms import xlsforms_path
+
+log = logging.getLogger(__name__)
 
 # Monkeypatch pandas to add calamine driver
 pandas_monkeypatch()
@@ -204,7 +207,7 @@ async def append_mandatory_fields(
     additional_entities: list[str] = None,
     task_count: int = None,
     existing_id: str = None,
-) -> BytesIO:
+) -> tuple[str, BytesIO]:
     """Append mandatory fields to the XLSForm for use in FMTM.
 
     Args:
@@ -219,50 +222,71 @@ async def append_mandatory_fields(
         existing_id(str): an existing UUID to use for the form_id, else random uuid4.
 
     Returns:
-        BytesIO: the update XLSForm, wrapped in BytesIO.
+        tuple(str, BytesIO): the xFormId + the update XLSForm wrapped in BytesIO.
     """
+    log.info("Appending field mapping questions to XLSForm")
     custom_sheets = pd.read_excel(custom_form, sheet_name=None, engine="calamine")
     mandatory_sheets = pd.read_excel(f"{xlsforms_path}/common/mandatory_fields.xls", sheet_name=None, engine="calamine")
     digitisation_sheets = pd.read_excel(f"{xlsforms_path}/common/digitisation_fields.xls", sheet_name=None, engine="calamine")
 
     # Merge 'survey' and 'choices' sheets
-    if "survey" in custom_sheets:
-        custom_sheets["survey"] = merge_dataframes(
-            mandatory_sheets.get("survey"), custom_sheets.get("survey"), digitisation_sheets.get("survey")
-        )
-        # Hardcode the form_category value for the start instructions
-        if form_category.endswith("s"):
-            # Plural to singular
-            form_category = form_category[:-1]
-        form_category_row = custom_sheets["survey"].loc[custom_sheets["survey"]["name"] == "form_category"]
-        if not form_category_row.empty:
-            custom_sheets["survey"].loc[custom_sheets["survey"]["name"] == "form_category", "calculation"] = (
-                f"once('{form_category}')"
-            )
+    if "survey" not in custom_sheets:
+        msg = "Survey sheet is required in XLSForm!"
+        log.error(msg)
+        raise ValueError(msg)
+    log.debug("Merging survey sheet XLSForm data")
+    custom_sheets["survey"] = merge_dataframes(
+        mandatory_sheets.get("survey"), custom_sheets.get("survey"), digitisation_sheets.get("survey")
+    )
+    # Hardcode the form_category value for the start instructions
+    if form_category.endswith("s"):
+        # Plural to singular
+        form_category = form_category[:-1]
+    form_category_row = custom_sheets["survey"].loc[custom_sheets["survey"]["name"] == "form_category"]
+    if not form_category_row.empty:
+        custom_sheets["survey"].loc[custom_sheets["survey"]["name"] == "form_category", "calculation"] = f"once('{form_category}')"
 
-    if "choices" in custom_sheets:
-        custom_sheets["choices"] = merge_dataframes(
-            mandatory_sheets.get("choices"), custom_sheets.get("choices"), digitisation_sheets.get("choices")
-        )
+    if "choices" not in custom_sheets:
+        msg = "Choices sheet is required in XLSForm!"
+        log.error(msg)
+        raise ValueError(msg)
+    log.debug("Merging choices sheet XLSForm data")
+    custom_sheets["choices"] = merge_dataframes(
+        mandatory_sheets.get("choices"), custom_sheets.get("choices"), digitisation_sheets.get("choices")
+    )
 
     # Append or overwrite 'entities' and 'settings' sheets
+    log.debug("Overwriting entities and settings XLSForm sheets")
     custom_sheets.update({key: mandatory_sheets[key] for key in ["entities", "settings"] if key in mandatory_sheets})
+    if "entities" not in custom_sheets:
+        msg = "Entities sheet is required in XLSForm!"
+        log.error(msg)
+        raise ValueError(msg)
+    if "settings" not in custom_sheets:
+        msg = "Settings sheet is required in XLSForm!"
+        log.error(msg)
+        raise ValueError(msg)
 
     # Set the 'version' column to the current timestamp (if 'version' column exists in 'settings')
-    if "settings" in custom_sheets:
-        custom_sheets["settings"]["version"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        custom_sheets["settings"]["form_id"] = existing_id if existing_id else uuid4()
-        custom_sheets["settings"]["form_title"] = form_category
+    xform_id = existing_id if existing_id else uuid4()
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log.debug(f"Setting xFormId = {xform_id} | form title = {form_category} | version = {current_datetime}")
+    custom_sheets["settings"]["version"] = current_datetime
+    custom_sheets["settings"]["form_id"] = xform_id
+    custom_sheets["settings"]["form_title"] = form_category
 
     # Append select_one_from_file for additional entities
     if additional_entities:
+        log.debug("Adding additional entity list reference to XLSForm")
         for entity_name in additional_entities:
             custom_sheets["survey"] = append_select_one_from_file_row(custom_sheets["survey"], entity_name)
 
     # Append task id rows to choices sheet
     if task_count:
+        log.debug(f"Appending task_id choices from 1 - {task_count}")
         custom_sheets["choices"] = append_task_ids_to_choices_sheet(custom_sheets["choices"], task_count)
     else:
+        log.debug("No task IDs provided. Appending a dummy task_id to make form valid")
         # NOTE here we must append a single task_id entry to make it a valid form
         custom_sheets["choices"] = append_task_ids_to_choices_sheet(custom_sheets["choices"], 1)
 
@@ -273,4 +297,4 @@ async def append_mandatory_fields(
             df.to_excel(writer, sheet_name=sheet_name, index=False)
 
     output.seek(0)
-    return output
+    return (xform_id, output)
