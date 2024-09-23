@@ -1,3 +1,13 @@
+## 0.16.5 (2024-09-23)
+
+### Fix
+
+- mandatory and digitisation xlsform logic
+
+### Refactor
+
+- remove logic for appending task_ids to choices in xlsform
+
 ## 0.16.5rc0 (2024-09-23)
 
 ### Fix
