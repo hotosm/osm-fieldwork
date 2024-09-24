@@ -41,7 +41,7 @@ async def test_merge_mandatory_fields():
         merged_xlsform.write(updated_form.getvalue())
 
     check_survey_sheet(workbook)
-    check_choices_sheet(workbook)
+    # NOTE the choices sheet can have duplicates in the 'name' field without issue
     check_entities_sheet(workbook)
     check_form_title(workbook)
 
@@ -111,14 +111,6 @@ def check_survey_sheet(workbook: Workbook) -> None:
     )
 
     check_for_duplicates(survey_sheet, name_col_index)
-
-
-def check_choices_sheet(workbook: Workbook) -> None:
-    """Check the 'choices' sheet and ensure no duplicates in 'name' column."""
-    choices_sheet = get_sheet(workbook, "choices")
-    name_col_index = get_column_index(choices_sheet, "name")
-
-    check_for_duplicates(choices_sheet, name_col_index)
 
 
 def check_entities_sheet(workbook: Workbook) -> None:

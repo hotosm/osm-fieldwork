@@ -34,25 +34,23 @@ def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame,
     #     mandatory_df, user_question_df, digitisation_df, fields=["label", "hint", "required_message"]
     # )
 
-    # Find common fields between user_question_df and mandatory_df or digitisation_df
-    duplicate_fields = set(user_question_df[NAME_COLUMN]).intersection(
-        set(mandatory_df[NAME_COLUMN]).union(set(digitisation_df[NAME_COLUMN]))
-    )
-
-    # Is choices sheet, return ordered merged choices
+    # If processing the choices sheet, retain all duplicates
     if "list_name" in user_question_df.columns:
-        user_question_df_filtered = user_question_df[~user_question_df[NAME_COLUMN].isin(duplicate_fields)]
-
         return pd.concat(
             [
                 mandatory_df,
-                user_question_df_filtered,
+                user_question_df,
                 digitisation_df,
             ],
             ignore_index=True,
         )
 
     # Else we are processing the survey sheet, continue
+
+    # Find common fields between user_question_df and mandatory_df or digitisation_df
+    duplicate_fields = set(user_question_df[NAME_COLUMN]).intersection(
+        set(mandatory_df[NAME_COLUMN]).union(set(digitisation_df[NAME_COLUMN]))
+    )
 
     # NOTE filter out 'end group' from duplicate check as they have empty NAME_COLUMN
     end_group_rows = user_question_df[user_question_df["type"].isin(["end group", "end_group"])]
