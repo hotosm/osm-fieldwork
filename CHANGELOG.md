@@ -1,3 +1,9 @@
+## 0.16.7 (2024-09-24)
+
+### Fix
+
+- **xlsform**: do not filter duplicates from choices sheet
+
 ## 0.16.6 (2024-09-24)
 
 ### Fix
