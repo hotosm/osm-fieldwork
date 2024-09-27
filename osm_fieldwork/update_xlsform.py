@@ -36,7 +36,7 @@ def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame,
 
     # If processing the choices sheet, retain all duplicates
     if "list_name" in user_question_df.columns:
-        return pd.concat(
+        merged_df = pd.concat(
             [
                 mandatory_df,
                 user_question_df,
@@ -44,6 +44,7 @@ def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame,
             ],
             ignore_index=True,
         )
+        return merged_df.drop_duplicates(subset=["list_name", NAME_COLUMN], ignore_index=True)
 
     # Else we are processing the survey sheet, continue
 
