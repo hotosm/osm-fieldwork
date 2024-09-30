@@ -1,3 +1,9 @@
+## 0.16.8 (2024-09-30)
+
+### Fix
+
+- remove multiple duplicates in choice sheets
+
 ## 0.16.7 (2024-09-24)
 
 ### Fix
