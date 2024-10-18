@@ -1,3 +1,9 @@
+## 0.16.9 (2024-10-18)
+
+### Fix
+
+- create_if and update_if column in entity sheet (#307)
+
 ## 0.16.8 (2024-09-30)
 
 ### Fix
