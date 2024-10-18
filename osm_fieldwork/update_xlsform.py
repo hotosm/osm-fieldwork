@@ -34,7 +34,6 @@ def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame,
     #     mandatory_df, user_question_df, digitisation_df, fields=["label", "hint", "required_message"]
     # )
 
-    # If processing the choices sheet, retain all duplicates
     if "list_name" in user_question_df.columns:
         merged_df = pd.concat(
             [
@@ -44,6 +43,9 @@ def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame,
             ],
             ignore_index=True,
         )
+        # NOTE here we remove duplicate PAIRS based on `list_name` and the name column
+        # we have `allow_duplicate_choices` set in the settings sheet, so it is possible
+        # to have duplicate NAME_COLUMN entries, if they are in different a `list_name`.
         return merged_df.drop_duplicates(subset=["list_name", NAME_COLUMN], ignore_index=True)
 
     # Else we are processing the survey sheet, continue
