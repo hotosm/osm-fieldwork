@@ -1,0 +1,24 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" title=" " alt="" coords="5,437,68,463"/>
+<area shape="rect" id="node2" href="$classosm__fieldwork_1_1ODKForm_1_1ODKForm.html" title=" " alt="" coords="116,51,365,78"/>
+<area shape="rect" id="node3" href="$classosm__fieldwork_1_1ODKInstance_1_1ODKInstance.html" title=" " alt="" coords="136,103,345,144"/>
+<area shape="rect" id="node4" href="$classosm__fieldwork_1_1OdkCentral_1_1OdkCentral.html" title=" " alt="" coords="141,168,340,209"/>
+<area shape="rect" id="node9" href="$classosm__fieldwork_1_1OdkCentralAsync_1_1OdkCentral.html" title=" " alt="" coords="143,233,338,275"/>
+<area shape="rect" id="node12" href="$classosm__fieldwork_1_1basemapper_1_1BaseMapper.html" title=" " alt="" coords="138,299,343,340"/>
+<area shape="rect" id="node13" href="$classosm__fieldwork_1_1filter__data_1_1FilterData.html" title=" " alt="" coords="165,364,316,405"/>
+<area shape="rect" id="node14" href="$classosm__fieldwork_1_1make__data__extract_1_1MakeExtract.html" title=" " alt="" coords="143,429,339,471"/>
+<area shape="rect" id="node15" href="$classosm__fieldwork_1_1odk__client_1_1OdkClient.html" title=" " alt="" coords="145,495,337,536"/>
+<area shape="rect" id="node16" href="$classosm__fieldwork_1_1osmfile_1_1OsmFile.html" title=" " alt="" coords="127,561,354,587"/>
+<area shape="rect" id="node17" href="$classosm__fieldwork_1_1sqlite_1_1DataFile.html" title=" " alt="" coords="133,611,348,638"/>
+<area shape="rect" id="node18" href="$classosm__fieldwork_1_1sqlite_1_1MapTile.html" title=" " alt="" coords="134,662,347,689"/>
+<area shape="rect" id="node19" href="$classosm__fieldwork_1_1support_1_1OutSupport.html" title=" " alt="" coords="142,713,339,755"/>
+<area shape="rect" id="node20" href="$classosm__fieldwork_1_1yamlfile_1_1YamlFile.html" title=" " alt="" coords="125,779,357,806"/>
+<area shape="rect" id="node5" href="$classosm__fieldwork_1_1OdkCentral_1_1OdkAppUser.html" title=" " alt="" coords="427,5,625,47"/>
+<area shape="rect" id="node6" href="$classosm__fieldwork_1_1OdkCentral_1_1OdkDataset.html" title=" " alt="" coords="427,71,625,112"/>
+<area shape="rect" id="node7" href="$classosm__fieldwork_1_1OdkCentral_1_1OdkForm.html" title=" " alt="" coords="427,136,625,177"/>
+<area shape="rect" id="node8" href="$classosm__fieldwork_1_1OdkCentral_1_1OdkProject.html" title=" " alt="" coords="427,201,625,243"/>
+<area shape="rect" id="node10" href="$classosm__fieldwork_1_1OdkCentralAsync_1_1OdkDataset.html" title=" " alt="" coords="429,267,623,308"/>
+<area shape="rect" id="node11" href="$classosm__fieldwork_1_1OdkCentralAsync_1_1OdkProject.html" title=" " alt="" coords="429,332,623,373"/>
+<area shape="rect" id="node21" href="$classosm__fieldwork_1_1convert_1_1Convert.html" title=" " alt="" coords="413,779,639,806"/>
+<area shape="rect" id="node22" href="$classosm__fieldwork_1_1parsers_1_1ODKParsers.html" title=" " alt="" coords="687,779,936,806"/>
+</map>
