@@ -158,10 +158,6 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
 
     # Find the row index after 'feature' row
     row_index_to_split_on = select_one_from_file_index[0] + 1
-    # Strip the 's' from the end for singular form
-    if entity_name.endswith("s"):
-        # Plural to singular
-        entity_name = entity_name[:-1]
 
     additional_row = pd.DataFrame(
         {
@@ -175,10 +171,22 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
         }
     )
 
+    # Prepare the row for calculating coordinates based on the additional entity
+    coordinates_row = pd.DataFrame(
+        {
+            "type": ["calculate"],
+            "name": ["additional_geometry"],
+            "calculation": [f"instance('{entity_name}')/root/item[name=${entity_name}]/geometry"],
+            "label::English(en)": ["additional_geometry"],
+            "label::Swahili(sw)": ["additional_geometry"],
+            "label::French(fr)": ["additional_geometry"],
+            "label::Spanish(es)": ["additional_geometry"],
+        }
+    )
     # Insert the new row into the DataFrame
     top_df = df.iloc[:row_index_to_split_on]
     bottom_df = df.iloc[row_index_to_split_on:]
-    return pd.concat([top_df, additional_row, bottom_df], ignore_index=True)
+    return pd.concat([top_df, additional_row, coordinates_row, bottom_df], ignore_index=True)
 
 
 async def append_mandatory_fields(
