@@ -21,6 +21,36 @@ NAME_COLUMN = "name"
 SURVEY_GROUP_NAME = "survey_questions"
 
 
+def standardize_xlsform_sheets(xlsform: dict) -> dict:
+    """Standardizes column headers in both the 'survey' and 'choices' sheets of an XLSForm.
+
+    - Strips spaces and lowercases all column headers.
+    - Fixes formatting for columns with '::' (e.g., multilingual labels).
+
+    Args:
+        xlsform (dict): A dictionary with keys 'survey' and 'choices', each containing a DataFrame.
+
+    Returns:
+        dict: The updated XLSForm dictionary with standardized column headers.
+    """
+
+    def clean_column_name(col_name):
+        if col_name == "label":
+            return "label::english(en)"
+        if "::" in col_name:
+            # Handle '::' columns (e.g., 'label::english (en)')
+            parts = col_name.split("::")
+            language_part = parts[1].replace(" ", "").lower()  # Remove spaces and lowercase
+            return f"{parts[0]}::{language_part}"
+        return col_name.strip().lower()  # General cleanup
+
+    # Apply cleaning to each sheet
+    for _sheet_name, sheet_df in xlsform.items():
+        sheet_df.columns = [clean_column_name(col) for col in sheet_df.columns]
+
+    return xlsform
+
+
 def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame, digitisation_df: pd.DataFrame):
     """Merge multiple Pandas dataframes together, removing duplicate fields."""
     # Remove empty rows from dataframes
@@ -92,8 +122,8 @@ def handle_translations(
 
         if field in user_question_df.columns and not translation_columns:
             # If user_question_df has only the base field (e.g., 'label'), map English translation from mandatory and digitisation
-            mandatory_df[field] = mandatory_df.get(f"{field}::English(en)", mandatory_df.get(field))
-            digitisation_df[field] = digitisation_df.get(f"{field}::English(en)", digitisation_df.get(field))
+            mandatory_df[field] = mandatory_df.get(f"{field}::english(en)", mandatory_df.get(field))
+            digitisation_df[field] = digitisation_df.get(f"{field}::english(en)", digitisation_df.get(field))
 
             # Then drop translation columns
             mandatory_df = mandatory_df.loc[:, ~mandatory_df.columns.str.startswith("label::")]
@@ -133,10 +163,10 @@ def create_survey_group(name: str) -> dict[str, pd.DataFrame]:
         {
             "type": ["begin group"],
             "name": [name],
-            "label::English(en)": [name],
-            "label::Swahili(sw)": [name],
-            "label::French(fr)": [name],
-            "label::Spanish(es)": [name],
+            "label::english(en)": [name],
+            "label::swahili(sw)": [name],
+            "label::french(fr)": [name],
+            "label::spanish(es)": [name],
             "relevant": "(${new_feature} != '') or (${building_exists} = 'yes')",
         }
     )
@@ -158,20 +188,16 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
 
     # Find the row index after 'feature' row
     row_index_to_split_on = select_one_from_file_index[0] + 1
-    # Strip the 's' from the end for singular form
-    if entity_name.endswith("s"):
-        # Plural to singular
-        entity_name = entity_name[:-1]
 
     additional_row = pd.DataFrame(
         {
             "type": [f"select_one_from_file {entity_name}.csv"],
             "name": [entity_name],
-            "label::English(en)": [entity_name],
+            "label::english(en)": [entity_name],
             "appearance": ["map"],
-            "label::Swahili(sw)": [entity_name],
-            "label::French(fr)": [entity_name],
-            "label::Spanish(es)": [entity_name],
+            "label::swahili(sw)": [entity_name],
+            "label::french(fr)": [entity_name],
+            "label::spanish(es)": [entity_name],
         }
     )
 
@@ -205,12 +231,14 @@ async def append_mandatory_fields(
     custom_sheets = pd.read_excel(custom_form, sheet_name=None, engine="calamine")
     mandatory_sheets = pd.read_excel(f"{xlsforms_path}/common/mandatory_fields.xls", sheet_name=None, engine="calamine")
     digitisation_sheets = pd.read_excel(f"{xlsforms_path}/common/digitisation_fields.xls", sheet_name=None, engine="calamine")
+    custom_sheets = standardize_xlsform_sheets(custom_sheets)
 
     # Merge 'survey' and 'choices' sheets
     if "survey" not in custom_sheets:
         msg = "Survey sheet is required in XLSForm!"
         log.error(msg)
         raise ValueError(msg)
+
     log.debug("Merging survey sheet XLSForm data")
     custom_sheets["survey"] = merge_dataframes(
         mandatory_sheets.get("survey"), custom_sheets.get("survey"), digitisation_sheets.get("survey")
@@ -223,10 +251,10 @@ async def append_mandatory_fields(
     if not form_category_row.empty:
         custom_sheets["survey"].loc[custom_sheets["survey"]["name"] == "form_category", "calculation"] = f"once('{form_category}')"
 
-    if "choices" not in custom_sheets:
-        msg = "Choices sheet is required in XLSForm!"
-        log.error(msg)
-        raise ValueError(msg)
+    # Ensure the 'choices' sheet exists in custom_sheets
+    if "choices" not in custom_sheets or custom_sheets["choices"] is None:
+        custom_sheets["choices"] = pd.DataFrame(columns=["list_name", "name", "label::english(en)"])
+
     log.debug("Merging choices sheet XLSForm data")
     custom_sheets["choices"] = merge_dataframes(
         mandatory_sheets.get("choices"), custom_sheets.get("choices"), digitisation_sheets.get("choices")
