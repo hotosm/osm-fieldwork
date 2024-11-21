@@ -5,10 +5,11 @@ description = "Processing field data from ODK to OpenStreetMap format."
 authors = [
     {name = "Rob Savoye", email = "rob.savoye@hotosm.org"},
     {name = "Sam Woodcock", email = "sam.woodcock@hotosm.org"},
+    {name = "Sujan Adhikari", email = "adhikarisujan.naxa@gmail.com"},
 ]
 dependencies = [
     "codetiming>=1.3.0",
-    "geojson>=2.5.0",
+    "geojson>=3.0.0",
     "progress>=1.6",
     "PyYAML>=6.0.0",
     "segno>=1.5.2",
@@ -46,6 +47,37 @@ homepage = "https://github.com/hotosm/osm-fieldwork/wiki"
 documentation = "https://hotosm.github.io/osm-fieldwork"
 repository = "https://github.com/hotosm/osm-fieldwork"
 
+[dependency-groups]
+test = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.6",
+    "pyxform>=2.1.0",
+    "pyodk>=1.1.0",
+]
+dev = [
+    "commitizen>=3.6.0",
+    "pre-commit>=3.3.3",
+]
+debug = [
+    "debugpy>=1.6.7.post1",
+    "ipdb>=0.13.13",
+    "epdb>=0.15.1",
+]
+docs = [
+    "mkdocs>=1.5.2",
+    "mkdocs-material>=9.2.3",
+    "mkdocstrings-python>=1.5.1",
+    "mkdocs-exclude>=1.0.2",
+    "mdx-truly-sane-lists>=1.3",
+    "mkdocs-git-revision-date-localized-plugin>=1.2.4",
+]
+ui = [
+    "kivy[base]>=2.2.1",
+    "kivymd @ https://github.com/kivymd/KivyMD/archive/master.zip",
+    "plyer>=2.1.0",
+    "androidstorage4kivy>=0.1.1",
+]
+
 [build-system]
 requires = ["pdm-pep517>=1.1.4"]
 build-backend = "pdm.pep517.api"
@@ -74,30 +106,6 @@ version = {from = "osm_fieldwork/__version__.py"}
 includes = ["osm_fieldwork"]
 source-includes = ["LICENSE.md", "README.md"]
 excludes = ["osm_fieldwork/*.db", "osm_fieldwork/*.sql"]
-[tool.pdm.dev-dependencies]
-dev = [
-    "commitizen>=3.6.0",
-    "pre-commit>=3.3.3",
-]
-debug = [
-    "debugpy>=1.6.7.post1",
-    "ipdb>=0.13.13",
-    "epdb>=0.15.1",
-]
-docs = [
-    "mkdocs>=1.5.2",
-    "mkdocs-material>=9.2.3",
-    "mkdocstrings-python>=1.5.1",
-    "mkdocs-exclude>=1.0.2",
-    "mdx-truly-sane-lists>=1.3",
-    "mkdocs-git-revision-date-localized-plugin>=1.2.4",
-]
-ui = [
-    "kivy[base]>=2.2.1",
-    "kivymd @ https://github.com/kivymd/KivyMD/archive/master.zip",
-    "plyer>=2.1.0",
-    "androidstorage4kivy>=0.1.1",
-]
 
 [tool.ruff]
 fix = true
@@ -126,34 +134,3 @@ osm2favorites = "osm_fieldwork.osm2favorities:main"
 odk2osm = "osm_fieldwork.odk2osm:main"
 odk_client = "osm_fieldwork.odk_client:main"
 make_data_extract = "osm_fieldwork.make_data_extract:main"
-
-[dependency-groups]
-test = [
-    "pytest>=7.4.0",
-    "pytest-asyncio>=0.23.6",
-    "pyxform>=2.1.0",
-    "pyodk>=0.3.0",
-]
-dev = [
-    "commitizen>=3.6.0",
-    "pre-commit>=3.3.3",
-]
-debug = [
-    "debugpy>=1.6.7.post1",
-    "ipdb>=0.13.13",
-    "epdb>=0.15.1",
-]
-docs = [
-    "mkdocs>=1.5.2",
-    "mkdocs-material>=9.2.3",
-    "mkdocstrings-python>=1.5.1",
-    "mkdocs-exclude>=1.0.2",
-    "mdx-truly-sane-lists>=1.3",
-    "mkdocs-git-revision-date-localized-plugin>=1.2.4",
-]
-ui = [
-    "kivy[base]>=2.2.1",
-    "kivymd @ https://github.com/kivymd/KivyMD/archive/master.zip",
-    "plyer>=2.1.0",
-    "androidstorage4kivy>=0.1.1",
-]
