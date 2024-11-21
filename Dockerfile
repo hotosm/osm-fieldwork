@@ -17,7 +17,7 @@
 ARG PYTHON_IMG_TAG=3.10
 
 
-FROM docker.io/python:${PYTHON_IMG_TAG}-slim-bookworm as base
+FROM docker.io/python:${PYTHON_IMG_TAG}-slim-bookworm AS base
 ARG COMMIT_REF
 ARG PYTHON_IMG_TAG
 ARG MAINTAINER=admin@hotosm.org
@@ -39,7 +39,7 @@ ENV LC_ALL en_US.UTF-8
 
 
 
-FROM base as extract-deps
+FROM base AS extract-deps
 WORKDIR /opt/python
 COPY pyproject.toml pdm.lock /opt/python/
 RUN pip install --no-cache-dir --upgrade pip \
@@ -52,7 +52,7 @@ RUN pdm export --prod > requirements.txt \
 
 
 
-FROM base as build-wheel
+FROM base AS build-wheel
 WORKDIR /build
 COPY pyproject.toml pdm.lock README.md LICENSE.md ./
 COPY osm_fieldwork ./osm_fieldwork
@@ -60,7 +60,7 @@ RUN pip install pdm==2.6.1 && pdm build
 
 
 
-FROM base as build
+FROM base AS build
 WORKDIR /opt/python
 RUN set -ex \
     && apt-get update \
@@ -86,7 +86,7 @@ RUN whl_file=$(find . -name '*-py3-none-any.whl' -type f) \
 
 
 
-FROM base as runtime
+FROM base AS runtime
 ARG PYTHON_IMG_TAG
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -117,7 +117,7 @@ COPY entrypoint.sh /container-entrypoint.sh
 
 
 
-FROM runtime as ui-base
+FROM runtime AS ui-base
 ARG PYTHON_IMG_TAG
 COPY --from=extract-deps \
     /opt/python/requirements-ui.txt /opt/python/
@@ -151,7 +151,7 @@ RUN requirements_list=$(grep -v '^#' requirements-ci.txt \
 
 
 
-FROM ui-base as ui-debug
+FROM ui-base AS ui-debug
 # Default app storage dir
 VOLUME ["/root/.config/osmfieldwork"]
 VOLUME ["/tmp/.X11-unix"]
@@ -159,7 +159,7 @@ CMD ["python", "main.py", "-m", "webdebugger"]
 
 
 
-FROM ui-base as ui-build
+FROM ui-base AS ui-build
 RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install \
@@ -190,7 +190,7 @@ CMD ["buildozer", "android", "release"]
 
 
 
-FROM runtime as ci
+FROM runtime AS ci
 ARG PYTHON_IMG_TAG
 # Add the SSL cert for debug odkcentral
 COPY nginx/certs/central-fullchain.crt /usr/local/share/ca-certificates/
@@ -216,7 +216,7 @@ RUN cp -r /root/.local/bin/* /usr/local/bin/ \
     # Pre-compile packages to .pyc (init speed gains)
     && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
 # # Squash filesystem (reduce img size) NOTE this breaks PyTest!
-# FROM scratch as ci
+# FROM scratch AS ci
 # COPY --from=ci-prep / /
 # Override entrypoint, as not possible in Github action
 ENTRYPOINT [""]
@@ -224,12 +224,12 @@ CMD [""]
 
 
 
-FROM runtime as prod-prep
+FROM runtime AS prod-prep
 # Pre-compile packages to .pyc (init speed gains)
 RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
     && chmod +x /container-entrypoint.sh
 # Squash filesystem (reduce img size)
-FROM scratch as prod
+FROM scratch AS prod
 COPY --from=prod-prep / /
 ENTRYPOINT ["/container-entrypoint.sh"]
 CMD ["bash"]
