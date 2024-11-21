@@ -52,7 +52,7 @@ test = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.23.6",
     "pyxform>=2.1.0",
-    "pyodk>=1.1.0",
+    "pyodk>=0.3.0",
 ]
 dev = [
     "commitizen>=3.6.0",
