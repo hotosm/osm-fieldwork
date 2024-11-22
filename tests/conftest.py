@@ -23,6 +23,7 @@ import uuid
 from pathlib import Path
 
 import pytest
+from pyodk.client import Client
 
 from osm_fieldwork.OdkCentral import OdkAppUser, OdkForm, OdkProject
 from osm_fieldwork.OdkCentralAsync import OdkDataset
@@ -34,6 +35,7 @@ logging.basicConfig(
     stream=sys.stdout,
 )
 
+odk_config_file = str(Path(__file__).parent / ".pyodk_config.toml")
 testdata_dir = Path(__file__).parent / "testdata"
 
 
@@ -216,6 +218,81 @@ async def odk_dataset_cleanup(odk_dataset):
     async with dataset as odk_dataset:
         entity_deleted = await odk_dataset.deleteEntity(odk_id, dataset_name, entity_uuid)
         assert entity_deleted
+
+
+@pytest.fixture(scope="function")
+async def odk_submission(odk_form_cleanup) -> tuple:
+    """A submission for the project form."""
+    xform_xls_definition = testdata_dir / "buildings.xml"
+    odk_id, form_name, xform = odk_form_cleanup
+
+    # NOTE this submission does not select an existing entity, but creates a new feature
+    submission_id = uuid.uuid4()
+    submission_xml = f"""
+        <data id="{form_name}" version="v1">
+        <meta>
+            <instanceID>uuid:{submission_id}</instanceID>
+        </meta>
+        <start>2024-11-15T12:28:23.641Z</start>
+        <end>2024-11-15T12:29:00.876Z</end>
+        <today>2024-11-15</today>
+        <phonenumber/>
+        <deviceid>collect:OOYOOcNu8uOA2G4b</deviceid>
+        <username>testuser</username>
+        <instructions/>
+        <warmup/>
+        <feature/>
+        <null/>
+        <new_feature>12.750577838121643 -24.776785714285722 0.0 0.0</new_feature>
+        <form_category>building</form_category>
+        <xid/>
+        <xlocation>12.750577838121643 -24.776785714285722 0.0 0.0</xlocation>
+        <task_id/>
+        <status>2</status>
+        <survey_questions>
+            <buildings>
+            <category>housing</category>
+            <name/>
+            <building_material/>
+            <building_levels/>
+            <housing/>
+            <provider/>
+            </buildings>
+            <details>
+            <power/>
+            <water/>
+            <age/>
+            <building_prefab/>
+            <building_floor/>
+            <building_roof/>
+            <condition/>
+            <access_roof/>
+            <levels_underground/>
+            </details>
+            <comment/>
+        </survey_questions>
+        <verification>
+            <digitisation_correct>yes</digitisation_correct>
+            <image>1.jpg</image>
+            <image2>2.jpg</image2>
+            <image3>3.jpg</image3>
+        </verification>
+        </data>
+    """
+
+    with Client(config_path=odk_config_file) as client:
+        # Update the form to ensure we know the version number for submission
+        # for some reason osm_fieldwork.OdkForm.create does not set the version number
+        client.forms.update(form_name, project_id=odk_id, definition=xform_xls_definition)
+        client.submissions.create(
+            project_id=odk_id,
+            form_id=form_name,
+            xml=submission_xml,
+            device_id=None,
+            encoding="utf-8",
+        )
+
+    return odk_id, form_name
 
 
 @pytest.fixture(scope="session", autouse=True)

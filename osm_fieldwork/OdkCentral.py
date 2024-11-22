@@ -22,6 +22,13 @@
 # Author: Ivan Gayton <ivangayton@gmail.com>
 # Author: Reetta Valimaki <reetta.valimaki8@gmail.com>
 
+# NOTE while there is some unique functionality in this module not available
+# NOTE in getodk/pyodk, for most use cases it would be recommended to use
+# NOTE pyodk instead.
+#
+# NOTE If async functionality is required, then OdkCentralAsync is available,
+# NOTE as pyodk does not support async workflows.
+
 import concurrent.futures
 import json
 import logging
@@ -633,7 +640,7 @@ class OdkForm(OdkCentral):
         self,
         projectId: int,
         xform: str,
-    ):
+    ) -> dict:
         """Get all the details for a form on an ODK Central server.
 
         Args:
@@ -646,7 +653,7 @@ class OdkForm(OdkCentral):
         url = f"{self.base}projects/{projectId}/forms/{xform}"
         result = self.session.get(url, verify=self.verify)
         self.data = result.json()
-        return result
+        return result.json()
 
     def getFullDetails(
         self,
@@ -814,6 +821,11 @@ class OdkForm(OdkCentral):
         filename: str,
     ):
         """Fetch a specific attachment by filename from a submission to a form.
+
+        NOTE this function expects the user has not configured external S3 storage.
+        NOTE if S3 storage is configured, the response does not contain the
+        NOTE photo content, but instead an S3 pre-signed URL.
+        NOTE see OdkCentralAsync.OdkForm.getSubmissionAttachmentUrl
 
         Args:
             projectId (int): The ID of the project on ODK Central
@@ -1032,7 +1044,7 @@ class OdkForm(OdkCentral):
 
         Args:
             projectId (int): The ID of the project on ODK Central
-            form_name (str): The XForm to get the details of from ODK Central
+            form_name (str): The user friendly name to provide the form
             data (str, Path, BytesIO): The XForm file path, or BytesIO memory obj
             publish (bool): If the new form should be published.
                 Only valid if form_name is not passed, i.e. a new form.
