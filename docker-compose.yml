@@ -73,6 +73,7 @@ services:
       central-db:
         condition: service_healthy
     environment:
+      - LOG_LEVEL=DEBUG
       - DOMAIN=local
       - SYSADMIN_EMAIL=test@hotosm.org
       - SYSADMIN_PASSWD=Password1234
