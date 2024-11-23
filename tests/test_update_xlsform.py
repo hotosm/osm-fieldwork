@@ -68,8 +68,8 @@ async def test_add_extra_select_from_file():
     survey_sheet = workbook["survey"]
     name_column = [cell.value for cell in survey_sheet["B"]]
 
-    assert "road" in name_column, "The 'road' field was not added to the survey sheet."
-    assert "waterpoint" in name_column, "The 'waterpoint' field was not added to the survey sheet."
+    assert "roads" in name_column, "The 'roads' field was not added to the survey sheet."
+    assert "waterpoints" in name_column, "The 'waterpoints' field was not added to the survey sheet."
 
 
 async def test_buildings_xlsform():
@@ -82,7 +82,7 @@ async def test_buildings_xlsform():
 
     workbook = load_workbook(filename=BytesIO(updated_form.getvalue()))
     translation_found, label_field_found = check_translation_fields(workbook)
-    assert translation_found, "'label::English(en)' field not found in the survey sheet."
+    assert translation_found, "'label::english(en)' field not found in the survey sheet."
     assert not label_field_found, "'label' field should not be present after merging translations."
 
 
@@ -145,7 +145,7 @@ def check_translation_fields(workbook: Workbook):
     for row in survey_sheet.iter_rows(min_row=1, max_col=survey_sheet.max_column):
         for cell in row:
             # Check if the English translation label exists
-            if cell.value == "label::English(en)":
+            if cell.value == "label::english(en)":
                 translation_found = True
 
             # Ensure that the base 'label' field is no longer present
