@@ -1,3 +1,15 @@
+## 0.16.11 (2024-11-28)
+
+### Feat
+
+- XLSForm move photo field outside verification group (#319)
+- calculate coordinates of additional in xlsform entity (#312)
+- sanitize column names to follow defined standards (#313)
+
+### Fix
+
+- update labels and entities name in test cases following recent changes in update_xls_form (#317)
+
 ## 0.16.10 (2024-11-06)
 
 ## 0.16.9 (2024-10-18)
