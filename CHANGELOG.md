@@ -1,3 +1,9 @@
+## 0.16.12 (2024-12-10)
+
+### Fix
+
+- update mandatory xlsform fields logic
+
 ## 0.16.11 (2024-11-28)
 
 ### Feat
