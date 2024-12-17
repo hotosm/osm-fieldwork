@@ -167,6 +167,13 @@ def create_survey_group(name: str) -> dict[str, pd.DataFrame]:
             "label::swahili(sw)": [name],
             "label::french(fr)": [name],
             "label::spanish(es)": [name],
+            "label::italian(it)": [name],
+            "label::nepali(ne)": [name],
+            "label::hindi(hi)": [name],
+            "label::tamil(ta)": [name],
+            "label::bengali(bn)": [name],
+            "label::chinese simplified(zh-hans)": [name],
+            "label::chinese traditional(zh-hant)": [name],
             "relevant": "(${new_feature} != '') or (${building_exists} = 'yes')",
         }
     )
@@ -198,6 +205,13 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
             "label::swahili(sw)": [entity_name],
             "label::french(fr)": [entity_name],
             "label::spanish(es)": [entity_name],
+            "label::italian(it)": [entity_name],
+            "label::nepali(ne)": [entity_name],
+            "label::hindi(hi)": [entity_name],
+            "label::tamil(ta)": [entity_name],
+            "label::bengali(bn)": [entity_name],
+            "label::chinese simplified(zh-hans)": [entity_name],
+            "label::chinese traditional(zh-hant)": [entity_name],
         }
     )
 
@@ -211,6 +225,13 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
             "label::Swahili(sw)": ["additional_geometry"],
             "label::French(fr)": ["additional_geometry"],
             "label::Spanish(es)": ["additional_geometry"],
+            "label::italian(it)": ["additional_geometry"],
+            "label::nepali(ne)": ["additional_geometry"],
+            "label::hindi(hi)": ["additional_geometry"],
+            "label::tamil(ta)": ["additional_geometry"],
+            "label::bengali(bn)": ["additional_geometry"],
+            "label::chinese simplified(zh-hans)": ["additional_geometry"],
+            "label::chinese traditional(zh-hant)": ["additional_geometry"],
         }
     )
     # Insert the new row into the DataFrame
