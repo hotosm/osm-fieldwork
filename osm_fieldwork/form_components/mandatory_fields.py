@@ -133,12 +133,16 @@ mandatory_data = [
     },
     {
         "type": "calculate",
-        "name": "submission_id",
-        "notes": "Update the submission id",
-        "label::english(en)": "Submission id",
+        "name": "submission_ids",
+        "notes": "Update the submission ids",
+        "label::english(en)": "Submission ids",
         "appearance": "minimal",
-        "calculation": "once(${instanceID})",
-        "save_to": "submission_id",
+        "calculation": """if(
+    instance('features')/root/item[name=${feature}]/submission_ids = '',
+    ${instanceID},
+    concat(instance('features')/root/item[name=${feature}]/submission_ids, ',', ${instanceID})
+    )""",
+        "save_to": "submission_ids",
     },
 ]
 
