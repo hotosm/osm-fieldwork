@@ -1,3 +1,20 @@
+## 0.17.0 (2024-12-25)
+
+### Feat
+
+- add nepali translations to default building form
+- add nepali translation to mandatory fields
+- allow multiple submission ids in a single entity
+- generate mandatory XLS forms programmatically
+
+### Fix
+
+- nepali yes no choice
+
+### Refactor
+
+- cleanup ancient unused files (#325)
+
 ## 0.16.12 (2024-12-10)
 
 ### Fix

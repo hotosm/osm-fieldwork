@@ -18,7 +18,7 @@
 
 PACKAGE := org.osm_fieldwork.py
 NAME := osm-fieldwork
-VERSION := 0.16.12
+VERSION := 0.17.0
 
 # All python source files
 FILES := $(wildcard ./osm_fieldwork/*.py)
