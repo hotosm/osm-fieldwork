@@ -33,8 +33,8 @@ import pandas as pd
 
 # Define the choices sheet
 choices_data = [
-    {"list_name": "yes_no", "name": "yes", "label::english(en)": "Yes", "label::nepali(ne)": "हो"},
-    {"list_name": "yes_no", "name": "no", "label::english(en)": "No", "label::nepali(ne)": "होइन"},
+    {"list_name": "yes_no", "name": "yes", "label::english(en)": "Yes", "label::nepali(ne)": "छ"},
+    {"list_name": "yes_no", "name": "no", "label::english(en)": "No", "label::nepali(ne)": "छैन"},
 ]
 
 choices_df = pd.DataFrame(choices_data)
