@@ -66,6 +66,8 @@ mandatory_data = [
         "name": "instructions",
         "label::english(en)": """Welcome ${username}. This survey form was generated
                             by HOT's FMTM to record ${form_category} map features.""",
+        "label::nepali(ne)": """स्वागत छ ${username}। ${form_category} नक्सा Data रेकर्ड गर्न HOT को FMTM द्वारा
+                            यो सर्वेक्षण फारम उत्पन्न भएको थियो।""",
     },
     {"notes": "Fields essential to FMTM"},
     {"type": "start-geopoint", "name": "warmup", "notes": "collects location on form start"},
@@ -74,6 +76,7 @@ mandatory_data = [
         "type": "geopoint",
         "name": "new_feature",
         "label::english(en)": "Alternatively, take a gps coordinates of a new feature",
+        "label::nepali(ne)": "वैकल्पिक रूपमा, नयाँ सुविधाको GPS निर्देशांक लिनुहोस्।",
         "appearance": "placement-map",
         "relevant": "${feature}= ''",
         "required": "yes",
@@ -129,6 +132,7 @@ mandatory_data = [
         "type": "select_one yes_no",
         "name": "building_exists",
         "label::english(en)": "Does this feature exist?",
+        "label::nepali(ne)": "के यो भवन अवस्थित छ?",
         "relevant": "${feature} != '' ",
     },
     {
