@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright (c) 2020, 2021, 2022, 2023, 2024 Humanitarian OpenStreetMap Team
+# Copyright (c) Humanitarian OpenStreetMap Team
 #
 # This file is part of OSM-Fieldwork.
 #
@@ -40,120 +40,147 @@ Modules and functionalities:
 """
 
 from datetime import datetime
+from enum import Enum
 
 import pandas as pd
 
-current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-meta_data = [
-    {"type": "start", "name": "start"},
-    {"type": "end", "name": "end"},
-    {"type": "today", "name": "today"},
-    {"type": "phonenumber", "name": "phonenumber"},
-    {"type": "deviceid", "name": "deviceid"},
-    {"type": "username", "name": "username"},
-    {
-        "type": "email",
-        "name": "email",
-    },
-]
+class DbGeomType(str, Enum):
+    """Type for new geometries collected."""
 
-meta_df = pd.DataFrame(meta_data)
+    POINT = "POINT"
+    POLYGON = "POLYGON"
+    LINESTRING = "LINESTRING"
 
-mandatory_data = [
-    {
-        "type": "note",
-        "name": "instructions",
-        "label::english(en)": """Welcome ${username}. This survey form was generated
-                            by HOT's FMTM to record ${form_category} map features.""",
-        "label::nepali(ne)": """स्वागत छ ${username}। ${form_category} नक्सा Data रेकर्ड गर्न HOT को FMTM द्वारा
-                            यो सर्वेक्षण फारम उत्पन्न भएको थियो।""",
-    },
-    {"notes": "Fields essential to FMTM"},
-    {"type": "start-geopoint", "name": "warmup", "notes": "collects location on form start"},
-    {"type": "select_one_from_file features.csv", "name": "feature", "label::english(en)": "Geometry", "appearance": "map"},
-    {
-        "type": "geopoint",
-        "name": "new_feature",
-        "label::english(en)": "Alternatively, take a gps coordinates of a new feature",
-        "label::nepali(ne)": "वैकल्पिक रूपमा, नयाँ सुविधाको GPS निर्देशांक लिनुहोस्।",
-        "appearance": "placement-map",
-        "relevant": "${feature}= ''",
-        "required": "yes",
-    },
-    {
-        "type": "calculate",
-        "name": "form_category",
-        "label::english(en)": "FMTM form category",
-        "appearance": "minimal",
-        "calculation": "once('Unkown')",
-    },
-    {
-        "type": "calculate",
-        "name": "xid",
-        "notes": "e.g. OSM ID",
-        "label::english(en)": "Feature ID",
-        "appearance": "minimal",
-        "calculation": "if(${feature} != '', instance('features')/root/item[name=${feature}]/osm_id, '')",
-    },
-    {
-        "type": "calculate",
-        "name": "xlocation",
-        "notes": "e.g. OSM Geometry",
-        "label::english(en)": "Feature Geometry",
-        "appearance": "minimal",
-        "calculation": "if(${feature} != '', instance('features')/root/item[name=${feature}]/geometry, ${new_feature})",
-        "save_to": "geometry",
-    },
-    {
-        "type": "calculate",
-        "name": "task_id",
-        "notes": "e.g. FMTM Task ID",
-        "label::english(en)": "Task ID",
-        "appearance": "minimal",
-        "calculation": "if(${feature} != '', instance('features')/root/item[name=${feature}]/task_id, '')",
-        "save_to": "task_id",
-    },
-    {
-        "type": "calculate",
-        "name": "status",
-        "notes": "Update the Entity 'status' field",
-        "label::english(en)": "Mapping Status",
-        "appearance": "minimal",
-        "calculation": """if(${new_feature} != '', 2,
-                        if(${building_exists} = 'no', 5,
-                        if(${digitisation_correct} = 'no', 6,
-                        ${status})))""",
-        "default": "2",
-        "trigger": "${new_feature}",
-        "save_to": "status",
-    },
-    {
-        "type": "select_one yes_no",
-        "name": "building_exists",
-        "label::english(en)": "Does this feature exist?",
-        "label::nepali(ne)": "के यो भवन अवस्थित छ?",
-        "relevant": "${feature} != '' ",
-    },
-    {
-        "type": "calculate",
-        "name": "submission_ids",
-        "notes": "Update the submission ids",
-        "label::english(en)": "Submission ids",
-        "appearance": "minimal",
-        "calculation": """if(
-    instance('features')/root/item[name=${feature}]/submission_ids = '',
-    ${instanceID},
-    concat(instance('features')/root/item[name=${feature}]/submission_ids, ',', ${instanceID})
-    )""",
-        "save_to": "submission_ids",
-    },
-]
 
-mandatory_df = pd.DataFrame(mandatory_data)
+meta_df = pd.DataFrame(
+    [
+        {"type": "start", "name": "start"},
+        {"type": "end", "name": "end"},
+        {"type": "today", "name": "today"},
+        {"type": "phonenumber", "name": "phonenumber"},
+        {"type": "deviceid", "name": "deviceid"},
+        {"type": "username", "name": "username"},
+        {
+            "type": "email",
+            "name": "email",
+        },
+    ]
+)
 
-# Define the survey sheet
-survey_df = pd.concat([meta_df, mandatory_df])
+
+def get_mandatory_fields(new_geom_type: DbGeomType):
+    """Return the mandatory fields data."""
+    if new_geom_type == DbGeomType.POINT:
+        geom_field = "geopoint"
+    elif new_geom_type == DbGeomType.POLYGON:
+        geom_field = "geoshape"
+    elif new_geom_type == DbGeomType.LINESTRING:
+        geom_field = "geotrace"
+    else:
+        raise ValueError(f"Unsupported geometry type: {new_geom_type}")
+
+    return [
+        {
+            "type": "note",
+            "name": "instructions",
+            "label::english(en)": """Welcome ${username}. This survey form was generated
+                                by HOT's FMTM to record ${form_category} map features.""",
+            "label::nepali(ne)": """स्वागत छ ${username}। ${form_category} नक्सा Data रेकर्ड गर्न HOT को FMTM द्वारा
+                                यो सर्वेक्षण फारम उत्पन्न भएको थियो।""",
+        },
+        {"notes": "Fields essential to FMTM"},
+        {"type": "start-geopoint", "name": "warmup", "notes": "collects location on form start"},
+        {"type": "select_one_from_file features.csv", "name": "feature", "label::english(en)": "Geometry", "appearance": "map"},
+        {
+            "type": geom_field,
+            "name": "new_feature",
+            "label::english(en)": "Alternatively, take a gps coordinates of a new feature",
+            "label::nepali(ne)": "वैकल्पिक रूपमा, नयाँ सुविधाको GPS निर्देशांक लिनुहोस्।",
+            "appearance": "placement-map",
+            "relevant": "${feature}= ''",
+            "required": "yes",
+        },
+        {
+            "type": "calculate",
+            "name": "form_category",
+            "label::english(en)": "FMTM form category",
+            "appearance": "minimal",
+            "calculation": "once('Unkown')",
+        },
+        {
+            "type": "calculate",
+            "name": "xid",
+            "notes": "e.g. OSM ID",
+            "label::english(en)": "Feature ID",
+            "appearance": "minimal",
+            "calculation": "if(${feature} != '', instance('features')/root/item[name=${feature}]/osm_id, '')",
+        },
+        {
+            "type": "calculate",
+            "name": "xlocation",
+            "notes": "e.g. OSM Geometry",
+            "label::english(en)": "Feature Geometry",
+            "appearance": "minimal",
+            "calculation": "if(${feature} != '', instance('features')/root/item[name=${feature}]/geometry, ${new_feature})",
+            "save_to": "geometry",
+        },
+        {
+            "type": "calculate",
+            "name": "task_id",
+            "notes": "e.g. FMTM Task ID",
+            "label::english(en)": "Task ID",
+            "appearance": "minimal",
+            "calculation": "if(${feature} != '', instance('features')/root/item[name=${feature}]/task_id, '')",
+            "save_to": "task_id",
+        },
+        {
+            "type": "calculate",
+            "name": "status",
+            "notes": "Update the Entity 'status' field",
+            "label::english(en)": "Mapping Status",
+            "appearance": "minimal",
+            "calculation": """if(${new_feature} != '', 2,
+                            if(${building_exists} = 'no', 5,
+                            if(${digitisation_correct} = 'no', 6,
+                            ${status})))""",
+            "default": "2",
+            "trigger": "${new_feature}",
+            "save_to": "status",
+        },
+        {
+            "type": "select_one yes_no",
+            "name": "building_exists",
+            "label::english(en)": "Does this feature exist?",
+            "label::nepali(ne)": "के यो भवन अवस्थित छ?",
+            "relevant": "${feature} != '' ",
+        },
+        {
+            "type": "calculate",
+            "name": "submission_ids",
+            "notes": "Update the submission ids",
+            "label::english(en)": "Submission ids",
+            "appearance": "minimal",
+            "calculation": """if(
+        instance('features')/root/item[name=${feature}]/submission_ids = '',
+        ${instanceID},
+        concat(instance('features')/root/item[name=${feature}]/submission_ids, ',', ${instanceID})
+        )""",
+            "save_to": "submission_ids",
+        },
+    ]
+
+
+def create_survey_df(new_geom_type: DbGeomType) -> pd.DataFrame:
+    """Create the survey sheet dataframe.
+
+    We do this in a function to allow the geometry type
+    for new data to be specified.
+    """
+    fields = get_mandatory_fields(new_geom_type)
+    mandatory_df = pd.DataFrame(fields)
+    return pd.concat([meta_df, mandatory_df])
+
 
 # Define entities sheet
 entities_data = [
@@ -174,7 +201,7 @@ entities_df = pd.DataFrame(entities_data)
 settings_data = [
     {
         "form_id": "mandatory_fields",
-        "version": current_datetime,
+        "version": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "form_title": "Mandatory Fields Form",
         "allow_choice_duplicates": "yes",
     }
