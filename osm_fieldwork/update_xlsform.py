@@ -1,3 +1,23 @@
+#!/usr/bin/python3
+
+# Copyright (c) Humanitarian OpenStreetMap Team
+#
+# This file is part of OSM-Fieldwork.
+#
+#     This is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with OSM-Fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
+#
+
 """Update an existing XLSForm with additional fields useful for field mapping."""
 
 import logging
@@ -11,7 +31,7 @@ from python_calamine.pandas import pandas_monkeypatch
 
 from osm_fieldwork.form_components.choice_fields import choices_df, digitisation_choices_df
 from osm_fieldwork.form_components.digitisation_fields import digitisation_df
-from osm_fieldwork.form_components.mandatory_fields import entities_df, meta_df, settings_df, survey_df
+from osm_fieldwork.form_components.mandatory_fields import DbGeomType, create_survey_df, entities_df, meta_df, settings_df
 
 log = logging.getLogger(__name__)
 
@@ -254,6 +274,7 @@ async def append_mandatory_fields(
     form_category: str,
     additional_entities: list[str] = None,
     existing_id: str = None,
+    new_geom_type: DbGeomType = DbGeomType.POINT,
 ) -> tuple[str, BytesIO]:
     """Append mandatory fields to the XLSForm for use in FMTM.
 
@@ -265,6 +286,8 @@ async def append_mandatory_fields(
             The values should be plural, so that 's' will be stripped in the
             field name.
         existing_id(str): an existing UUID to use for the form_id, else random uuid4.
+        new_geom_type (DbGeomType): the type of geometry required when collecting
+            new geometry data: point, line, polygon.
 
     Returns:
         tuple(str, BytesIO): the xFormId + the update XLSForm wrapped in BytesIO.
@@ -280,6 +303,7 @@ async def append_mandatory_fields(
     custom_sheets = standardize_xlsform_sheets(custom_sheets)
 
     log.debug("Merging survey sheet XLSForm data")
+    survey_df = create_survey_df(new_geom_type)
     custom_sheets["survey"] = merge_dataframes(survey_df, custom_sheets.get("survey"), digitisation_df)
     # Hardcode the form_category value for the start instructions
     if form_category.endswith("s"):

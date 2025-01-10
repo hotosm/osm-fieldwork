@@ -55,7 +55,7 @@ services:
   #     retries: 3
 
   proxy:
-    image: "docker.io/nginx:1.25.3-bookworm"
+    image: "docker.io/nginx:1.27.0-bookworm"
     depends_on:
       central:
         condition: service_healthy
@@ -68,7 +68,7 @@ services:
     restart: "unless-stopped"
 
   central:
-    image: "ghcr.io/hotosm/fmtm/odkcentral:v2024.1.0"
+    image: "ghcr.io/hotosm/fmtm/odkcentral:v2024.2.1"
     depends_on:
       central-db:
         condition: service_healthy
@@ -98,7 +98,7 @@ services:
     restart: "unless-stopped"
 
   central-db:
-    image: "postgis/postgis:14-3.4-alpine"
+    image: "postgis/postgis:17-3.5-alpine"
     environment:
       - POSTGRES_USER=odk
       - POSTGRES_PASSWORD=odk
