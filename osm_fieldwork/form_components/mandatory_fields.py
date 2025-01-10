@@ -95,8 +95,8 @@ def get_mandatory_fields(new_geom_type: DbGeomType):
         {
             "type": geom_field,
             "name": "new_feature",
-            "label::english(en)": "Alternatively, take a gps coordinates of a new feature",
-            "label::nepali(ne)": "वैकल्पिक रूपमा, नयाँ सुविधाको GPS निर्देशांक लिनुहोस्।",
+            "label::english(en)": "Please draw a new geometry",
+            "label::nepali(ne)": "कृपया नयाँ ज्यामिति कोर्नुहोस्।",
             "appearance": "placement-map",
             "relevant": "${feature}= ''",
             "required": "yes",
