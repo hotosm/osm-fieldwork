@@ -792,6 +792,7 @@ class OdkForm(OdkCentral):
         self,
         projectId: int,
         xform: str,
+        filters: dict = {},
     ):
         """Fetch a ZIP file of the submissions with media to a survey form.
 
@@ -803,7 +804,7 @@ class OdkForm(OdkCentral):
             (list): The media file
         """
         url = self.base + f"projects/{projectId}/forms/{xform}/submissions.csv.zip"
-        result = self.session.get(url, verify=self.verify)
+        result = self.session.get(url, params=filters, verify=self.verify)
         return result
 
     def getSubmissionPhoto(
