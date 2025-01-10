@@ -1,3 +1,10 @@
+## 0.18.0 (2025-01-10)
+
+### Feat
+
+- configurable XLSForm new_feature question geometry type (#329)
+- add support for filters in OdkForm get submission media (#330)
+
 ## 0.17.0 (2024-12-25)
 
 ### Feat
