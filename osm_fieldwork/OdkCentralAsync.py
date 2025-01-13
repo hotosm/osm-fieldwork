@@ -453,7 +453,7 @@ class OdkDataset(OdkCentral):
         Returns:
             dict: the JSON entity details, for a specific dataset.
         """
-        url = f"{self.base}projects/{projectId}/datasets/{datasetName}" f"/entities/{entityUuid}"
+        url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities/{entityUuid}"
         try:
             async with self.session.get(url, ssl=self.verify) as response:
                 return await response.json()
@@ -700,7 +700,7 @@ class OdkDataset(OdkCentral):
         url = f"{self.base}projects/{projectId}/datasets/{datasetName}/entities/{entityUuid}"
         log.debug(f"Deleting dataset ({datasetName}) entity UUID ({entityUuid})")
         try:
-            log.info(f"Deleting Entity ({entityUuid}) for ODK project ({projectId}) " f"and dataset ({datasetName})")
+            log.info(f"Deleting Entity ({entityUuid}) for ODK project ({projectId}) and dataset ({datasetName})")
             async with self.session.delete(url, ssl=self.verify) as response:
                 success = (response_msg := await response.json()).get("success", False)
                 if not success:

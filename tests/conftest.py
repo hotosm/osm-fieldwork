@@ -29,7 +29,7 @@ from osm_fieldwork.OdkCentralAsync import OdkDataset
 
 logging.basicConfig(
     level="DEBUG",
-    format=("%(asctime)s.%(msecs)03d [%(levelname)s] " "%(name)s | %(funcName)s:%(lineno)d | %(message)s"),
+    format=("%(asctime)s.%(msecs)03d [%(levelname)s] %(name)s | %(funcName)s:%(lineno)d | %(message)s"),
     datefmt="%y-%m-%d %H:%M:%S",
     stream=sys.stdout,
 )
