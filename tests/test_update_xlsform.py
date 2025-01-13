@@ -106,8 +106,7 @@ def check_survey_sheet(workbook: Workbook) -> None:
 
     expected_calculation = "once('building')"
     assert form_category_calculation == expected_calculation, (
-        f"Expected 'calculation' value for 'form_category' to be '{expected_calculation}', "
-        f"but got '{form_category_calculation}'."
+        f"Expected 'calculation' value for 'form_category' to be '{expected_calculation}', but got '{form_category_calculation}'."
     )
 
     check_for_duplicates(survey_sheet, name_col_index)
