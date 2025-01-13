@@ -33,8 +33,20 @@ import pandas as pd
 
 # Define the choices sheet
 choices_data = [
-    {"list_name": "yes_no", "name": "yes", "label::english(en)": "Yes", "label::nepali(ne)": "छ"},
-    {"list_name": "yes_no", "name": "no", "label::english(en)": "No", "label::nepali(ne)": "छैन"},
+    {
+        "list_name": "yes_no",
+        "name": "yes",
+        "label::english(en)": "Yes",
+        "label::nepali(ne)": "छ",
+        "label::portuguese(pt-br)": "Sim",
+    },
+    {
+        "list_name": "yes_no",
+        "name": "no",
+        "label::english(en)": "No",
+        "label::nepali(ne)": "छैन",
+        "label::portuguese(pt-br)": "Não",
+    },
 ]
 
 choices_df = pd.DataFrame(choices_data)
@@ -48,6 +60,7 @@ digitisation_choices = [
         "label::swahili(sw)": "Lumped - poligoni moja (zaidi ya jengo moja limewekwa dijiti kuwa moja)",
         "label::french(fr)": "Lumped - un polygone (plus d'un bâtiment numérisé en un seul)",
         "label::spanish(es)": "Agrupado - un polígono (más de un edificio digitalizado como uno)",
+        "label::portuguese(pt-br)": "Agrupado - um polígono (mais de um edifício digitalizado como um só)",
     },
     {
         "list_name": "digitisation_problem",
@@ -57,6 +70,7 @@ digitisation_choices = [
         "label::swahili(sw)": "Mgawanyiko - jengo moja (jengo moja limebadilishwa kuwa zaidi ya poligoni moja)",
         "label::french(fr)": "Fractionnement - un bâtiment (un bâtiment numérisé sous la forme de plusieurs polygones)",
         "label::spanish(es)": "Split - un edificio (un edificio digitalizado como más de un polígono)",
+        "label::portuguese(pt-br)": "Split - um edifício (um edifício digitalizado como mais de um polígono)",
     },
     {
         "list_name": "digitisation_problem",
@@ -66,6 +80,7 @@ digitisation_choices = [
         "label::swahili(sw)": "MENGINEYO",
         "label::french(fr)": "AUTRES",
         "label::spanish(es)": "OTROS",
+        "label::portuguese(pt-br)": "OUTROS",
     },
 ]
 

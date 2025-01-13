@@ -37,6 +37,7 @@ digitisation_fields = [
         "name": "verification",
         "label::english(en)": "Verification",
         "label::nepali(ne)": "प्रमाणीकरण",
+        "label::portuguese(pt-br)": "Verificação",
         "relevant": "(${new_feature} != '') or (${building_exists} = 'yes')",
     },
     {
@@ -44,6 +45,7 @@ digitisation_fields = [
         "name": "digitisation_correct",
         "label::english(en)": "Is the digitized location for this feature correct?",
         "label::nepali(ne)": "के यो डिजिटाइज गरिएको स्थान सही छ?",
+        "label::portuguese(pt-br)": "O local digitalizado para esse recurso está correto?",
         "relevant": "(${new_feature} != '') or (${building_exists} = 'yes')",
         "calculation": "once(if(${new_feature} != '', 'yes', ''))",
         "read_only": "${new_feature} != ''",
@@ -54,6 +56,7 @@ digitisation_fields = [
         "name": "digitisation_problem",
         "label::english(en)": "What is wrong with the digitization?",
         "label::nepali(en)": "डिजिटलाइजेशनमा के गल्ती छ?",
+        "label::portuguese(pt-br)": "O que há de errado com a digitalização?",
         "relevant": "${digitisation_correct}='no'",
     },
     {
@@ -61,6 +64,7 @@ digitisation_fields = [
         "name": "digitisation_problem_other",
         "label::english(en)": "You said “Other.” Please tell us what went wrong with the digitization!",
         "label::nepali(ne)": "तपाईंले 'अरू' भन्नुभयो। डिजिटलाइजेशनमा के गल्ती भयो! कृपया हामीलाई भन्न सक्नुहुन्छ?",
+        "label::portuguese(pt-br)": "Você disse “Outro”. Diga-nos o que deu errado com a digitalização!",
         "relevant": "${digitisation_problem}='other' ",
     },
     {"type": "end group"},
@@ -69,6 +73,7 @@ digitisation_fields = [
         "name": "image",
         "label::english(en)": "Take a Picture",
         "label::nepali(ne)": "तस्विर लिनुहोस्",
+        "label::portuguese(pt-br)": "Tire uma foto",
         "apperance": "minimal",
         "parameters": "max-pixels=1000",
     },
@@ -77,6 +82,7 @@ digitisation_fields = [
         "name": "end_note",
         "label::english(en)": "You can't proceed with data acquisition, if the building doesn't exist.",
         "label::nepali(ne)": "यदि भवन अवस्थित छैन भने, तपाईं डाटा लिन अगाडि बढ्न सक्नुहुन्न।",
+        "label::portuguese(pt-br)": "Não é possível prosseguir com a aquisição de dados se o edifício não existir.",
         "relevant": "${building_exists} = 'no'",
     },
 ]
