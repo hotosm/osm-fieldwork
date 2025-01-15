@@ -88,6 +88,8 @@ def get_mandatory_fields(new_geom_type: DbGeomType):
                                 by HOT's FMTM to record ${form_category} map features.""",
             "label::nepali(ne)": """स्वागत छ ${username}। ${form_category} नक्सा Data रेकर्ड गर्न HOT को FMTM द्वारा
                                 यो सर्वेक्षण फारम उत्पन्न भएको थियो।""",
+            "label::portuguese(pt-br)": """Bem-vindo ${username}. Este formulário de pesquisa foi gerado
+                                pelo FMTM do HOT para registrar os recursos do mapa ${form_category}.""",
         },
         {"notes": "Fields essential to FMTM"},
         {"type": "start-geopoint", "name": "warmup", "notes": "collects location on form start"},
@@ -97,6 +99,7 @@ def get_mandatory_fields(new_geom_type: DbGeomType):
             "name": "new_feature",
             "label::english(en)": "Please draw a new geometry",
             "label::nepali(ne)": "कृपया नयाँ ज्यामिति कोर्नुहोस्।",
+            "label::portuguese(pt-br)": "Por favor, desenhe uma nova geometria",
             "appearance": "placement-map",
             "relevant": "${feature}= ''",
             "required": "yes",
@@ -153,6 +156,7 @@ def get_mandatory_fields(new_geom_type: DbGeomType):
             "name": "building_exists",
             "label::english(en)": "Does this feature exist?",
             "label::nepali(ne)": "के यो भवन अवस्थित छ?",
+            "label::portuguese(pt-br)": "Esse recurso existe?",
             "relevant": "${feature} != '' ",
         },
         {

@@ -49,6 +49,7 @@ DEFAULT_LANGUAGES = {
     "spanish": "es",
     "swahili": "sw",
     "nepali": "ne",
+    "portuguese": "pt-br",
 }
 
 # def handle_translations(
