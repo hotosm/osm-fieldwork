@@ -28,6 +28,7 @@ services:
     volumes:
       # Mount local package
       - ./osm_fieldwork:/usr/local/lib/python3.10/site-packages/osm_fieldwork
+      # - ../odk/pyodk/pyodk:/usr/local/lib/python3.10/site-packages/pyodk
       # Mount local tests
       - ./tests:/data/tests
     depends_on:
