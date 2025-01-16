@@ -93,7 +93,13 @@ def get_mandatory_fields(new_geom_type: DbGeomType):
         },
         {"notes": "Fields essential to FMTM"},
         {"type": "start-geopoint", "name": "warmup", "notes": "collects location on form start"},
-        {"type": "select_one_from_file features.csv", "name": "feature", "label::english(en)": "Geometry", "appearance": "map"},
+        {
+            "type": "select_one_from_file features.csv",
+            "name": "feature",
+            "label::english(en)": "Geometry",
+            "label::portuguese(pt-br)": "geometria",
+            "appearance": "map",
+        },
         {
             "type": geom_field,
             "name": "new_feature",
