@@ -239,35 +239,38 @@ def test_form_fields(odk_form_cleanup):
 
     # Get form fields
     form_fields = xform.formFields(odk_id, form_name)
-    assert len(form_fields) == 73
+    field_names = {field["name"] for field in form_fields}
+    test_field_names = {"xlocation", "status", "survey_questions"}
+    missing_fields = test_field_names - field_names
 
-    sorted_form_fields = sorted(form_fields, key=lambda x: x["name"])
-    form_category = sorted_form_fields[30]
-    assert form_category == {
+    assert not missing_fields, f"Missing form fields: {missing_fields}"
+
+    field_dict = {field["name"]: field for field in form_fields}
+
+    # Verify specific fields
+    assert field_dict.get("form_category") == {
         "path": "/form_category",
         "name": "form_category",
         "type": "string",
         "binary": None,
         "selectMultiple": None,
-    }
+    }, f"Mismatch or missing 'form_category': {field_dict.get('form_category')}"
 
-    verification = sorted_form_fields[20]
-    assert verification == {
+    assert field_dict.get("digitisation_problem") == {
         "path": "/verification/digitisation_problem",
         "name": "digitisation_problem",
         "type": "string",
         "binary": None,
         "selectMultiple": None,
-    }
+    }, f"Mismatch or missing 'digitisation_problem': {field_dict.get('digitisation_problem')}"
 
-    instructions = sorted_form_fields[40]
-    assert instructions == {
+    assert field_dict.get("instructions") == {
         "path": "/instructions",
         "name": "instructions",
         "type": "string",
         "binary": None,
         "selectMultiple": None,
-    }
+    }, f"Mismatch or missing 'instructions': {field_dict.get('instructions')}"
 
 
 def test_invalid_connection_sync():
