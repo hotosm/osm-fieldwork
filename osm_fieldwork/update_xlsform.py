@@ -154,16 +154,16 @@ def standardize_xlsform_sheets(xlsform: dict) -> dict:
     return xlsform
 
 
-def create_survey_group(name: str) -> dict[str, pd.DataFrame]:
+def create_survey_group() -> dict[str, pd.DataFrame]:
     """Helper function to create a begin and end group for XLSForm."""
     begin_group = pd.DataFrame(
         {
             "type": ["begin group"],
-            "name": [name],
-            "label::english(en)": [name],
-            "label::swahili(sw)": [name],
-            "label::french(fr)": [name],
-            "label::spanish(es)": [name],
+            "name": ["survery_questions"],
+            "label::english(en)": ["survery_questions"],
+            "label::swahili(sw)": ["maswali_ya_utafiti"],
+            "label::french(fr)": ["questions_enquête"],
+            "label::spanish(es)": ["preguntas_de_encuesta"],
             "relevant": "(${new_feature} != '') or (${building_exists} = 'yes')",
         }
     )
@@ -214,7 +214,7 @@ def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame,
     ]
 
     # Create survey group wrapper
-    survey_group = create_survey_group(SURVEY_GROUP_NAME)
+    survey_group = create_survey_group()
 
     # Concatenate dataframes in the desired order
     return pd.concat(
