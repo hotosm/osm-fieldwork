@@ -31,7 +31,7 @@ from python_calamine.pandas import pandas_monkeypatch
 
 from osm_fieldwork.form_components.choice_fields import choices_df, digitisation_choices_df
 from osm_fieldwork.form_components.digitisation_fields import digitisation_df
-from osm_fieldwork.form_components.mandatory_fields import DbGeomType, create_survey_df, entities_df, meta_df, settings_df
+from osm_fieldwork.form_components.mandatory_fields import DbGeomType, create_survey_df, entities_df, meta_df
 
 log = logging.getLogger(__name__)
 
@@ -324,7 +324,6 @@ async def append_mandatory_fields(
     # Append or overwrite 'entities' and 'settings' sheets
     log.debug("Overwriting entities and settings XLSForm sheets")
     custom_sheets["entities"] = entities_df
-    custom_sheets["settings"] = settings_df
     if "entities" not in custom_sheets:
         msg = "Entities sheet is required in XLSForm!"
         log.error(msg)
@@ -341,6 +340,8 @@ async def append_mandatory_fields(
     custom_sheets["settings"]["version"] = current_datetime
     custom_sheets["settings"]["form_id"] = xform_id
     custom_sheets["settings"]["form_title"] = form_category
+    if "default_language" not in custom_sheets["settings"]:
+        custom_sheets["settings"]["default_language"] = "en"
 
     # Append select_one_from_file for additional entities
     if additional_entities:
