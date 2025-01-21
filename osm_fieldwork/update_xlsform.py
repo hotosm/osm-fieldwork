@@ -31,7 +31,7 @@ from python_calamine.pandas import pandas_monkeypatch
 
 from osm_fieldwork.form_components.choice_fields import choices_df, digitisation_choices_df
 from osm_fieldwork.form_components.digitisation_fields import digitisation_df
-from osm_fieldwork.form_components.mandatory_fields import DbGeomType, create_survey_df, entities_df, meta_df, settings_df
+from osm_fieldwork.form_components.mandatory_fields import DbGeomType, create_survey_df, entities_df, meta_df
 
 log = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ def standardize_xlsform_sheets(xlsform: dict) -> dict:
             standardized_col = col
             for base_col in base_columns:
                 if col.startswith(f"{base_col}::"):
-                    match = re.match(rf"{base_col}::(\w+)", col)
+                    match = re.match(rf"{base_col}::\s*(\w+)", col)
                     if match:
                         lang_name = match.group(1)
                         if lang_name in DEFAULT_LANGUAGES:
@@ -154,16 +154,17 @@ def standardize_xlsform_sheets(xlsform: dict) -> dict:
     return xlsform
 
 
-def create_survey_group(name: str) -> dict[str, pd.DataFrame]:
+def create_survey_group() -> dict[str, pd.DataFrame]:
     """Helper function to create a begin and end group for XLSForm."""
     begin_group = pd.DataFrame(
         {
             "type": ["begin group"],
-            "name": [name],
-            "label::english(en)": [name],
-            "label::swahili(sw)": [name],
-            "label::french(fr)": [name],
-            "label::spanish(es)": [name],
+            "name": ["survery_questions"],
+            "label::english(en)": ["survery_questions"],
+            "label::swahili(sw)": ["maswali_ya_utafiti"],
+            "label::french(fr)": ["questions_enquête"],
+            "label::spanish(es)": ["preguntas_de_encuesta"],
+            "label::portuguese(pt-br)": ["perguntas_de_pesquisa"],
             "relevant": "(${new_feature} != '') or (${building_exists} = 'yes')",
         }
     )
@@ -214,7 +215,7 @@ def merge_dataframes(mandatory_df: pd.DataFrame, user_question_df: pd.DataFrame,
     ]
 
     # Create survey group wrapper
-    survey_group = create_survey_group(SURVEY_GROUP_NAME)
+    survey_group = create_survey_group()
 
     # Concatenate dataframes in the desired order
     return pd.concat(
@@ -324,7 +325,6 @@ async def append_mandatory_fields(
     # Append or overwrite 'entities' and 'settings' sheets
     log.debug("Overwriting entities and settings XLSForm sheets")
     custom_sheets["entities"] = entities_df
-    custom_sheets["settings"] = settings_df
     if "entities" not in custom_sheets:
         msg = "Entities sheet is required in XLSForm!"
         log.error(msg)
@@ -341,6 +341,8 @@ async def append_mandatory_fields(
     custom_sheets["settings"]["version"] = current_datetime
     custom_sheets["settings"]["form_id"] = xform_id
     custom_sheets["settings"]["form_title"] = form_category
+    if "default_language" not in custom_sheets["settings"]:
+        custom_sheets["settings"]["default_language"] = "en"
 
     # Append select_one_from_file for additional entities
     if additional_entities:
