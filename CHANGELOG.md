@@ -1,3 +1,9 @@
+## 0.18.2 (2025-01-21)
+
+### Fix
+
+- add default language in settings tab if not present (#336)
+
 ## 0.18.1 (2025-01-15)
 
 ### Feat
