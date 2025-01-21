@@ -164,6 +164,7 @@ def create_survey_group() -> dict[str, pd.DataFrame]:
             "label::swahili(sw)": ["maswali_ya_utafiti"],
             "label::french(fr)": ["questions_enquête"],
             "label::spanish(es)": ["preguntas_de_encuesta"],
+            "label::portuguese(pt-br)": ["perguntas_de_pesquisa"],
             "relevant": "(${new_feature} != '') or (${building_exists} = 'yes')",
         }
     )
