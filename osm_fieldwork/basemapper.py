@@ -686,9 +686,7 @@ def main():
         "--boundary",
         nargs="*",
         required=True,
-        help=(
-            "The boundary for the area you want. " "Accepts path to geojson file or bbox string. " "Format min_x min_y max_x max_y"
-        ),
+        help=("The boundary for the area you want. Accepts path to geojson file or bbox string. Format min_x min_y max_x max_y"),
     )
     parser.add_argument("-t", "--tms", help="Custom TMS URL")
     parser.add_argument("--xy", action="store_true", help="Swap the X & Y coordinates when using a custom TMS")

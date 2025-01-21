@@ -1,3 +1,9 @@
+## 0.18.1 (2025-01-15)
+
+### Feat
+
+- add brazilian portguese translation for mandatory fields (#332)
+
 ## 0.18.0 (2025-01-10)
 
 ### Feat

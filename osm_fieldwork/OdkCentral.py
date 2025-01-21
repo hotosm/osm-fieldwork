@@ -1139,7 +1139,7 @@ class OdkForm(OdkCentral):
                 log.warning(json_data)
                 return False
             except json.decoder.JSONDecodeError:
-                log.error("Could not parse response json during form deletion. " f"status_code={result.status_code}")
+                log.error(f"Could not parse response json during form deletion. status_code={result.status_code}")
             finally:
                 return False
 
@@ -1629,7 +1629,7 @@ class OdkDataset(OdkCentral):
 
         if not response.ok:
             if response.status_code == 404:
-                msg = f"Does not exist: project ({projectId}) dataset ({datasetName}) " f"entity ({entityUuid})"
+                msg = f"Does not exist: project ({projectId}) dataset ({datasetName}) entity ({entityUuid})"
                 log.debug(msg)
                 raise requests.exceptions.HTTPError(msg)
             log.debug(f"Failed to delete Entity. Status code: {response.status_code}")
@@ -1701,7 +1701,7 @@ if __name__ == "__main__":
     """
     logging.basicConfig(
         level=log_level,
-        format=("%(asctime)s.%(msecs)03d [%(levelname)s] " "%(name)s | %(funcName)s:%(lineno)d | %(message)s"),
+        format=("%(asctime)s.%(msecs)03d [%(levelname)s] %(name)s | %(funcName)s:%(lineno)d | %(message)s"),
         datefmt="%y-%m-%d %H:%M:%S",
         stream=sys.stdout,
     )
