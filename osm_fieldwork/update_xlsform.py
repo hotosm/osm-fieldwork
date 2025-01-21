@@ -116,7 +116,7 @@ def standardize_xlsform_sheets(xlsform: dict) -> dict:
             standardized_col = col
             for base_col in base_columns:
                 if col.startswith(f"{base_col}::"):
-                    match = re.match(rf"{base_col}::(\w+)", col)
+                    match = re.match(rf"{base_col}::\s*(\w+)", col)
                     if match:
                         lang_name = match.group(1)
                         if lang_name in DEFAULT_LANGUAGES:
