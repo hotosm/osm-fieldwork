@@ -20,6 +20,7 @@
 import logging
 import os
 from asyncio import gather
+from pprint import pprint
 from typing import Any, Optional, TypedDict
 from uuid import uuid4
 
@@ -319,12 +320,8 @@ class OdkForm(OdkCentral):
         projectId: int,
         xform: str,
         submissionUuid: str,
-    ) -> list[str]:
-        """Get all attachment URLs for a single submission.
-
-        The URLs are pre-signed S3 URLs from configured external storage.
-        # https://docs.getodk.org/central-install-
-        # digital-ocean/#using-s3-compatible-storage
+    ) -> dict[str, str]:
+        """Get a dictionary of attachment names and their pre-signed URLs.
 
         Args:
             projectId (int): The ID of the project on ODK Central.
@@ -332,23 +329,25 @@ class OdkForm(OdkCentral):
             submissionUuid (str): The UUID of the submission on ODK Central.
 
         Returns:
-            (list[str]): The pre-signed URLs for download or display.
+            dict[str, str]: A dictionary mapping attachment names to URLs.
         """
         attachments = await self.listSubmissionAttachments(projectId, xform, submissionUuid)
 
-        async def fetch_url(filename: str) -> str:
+        async def fetch_url(attachment: dict) -> tuple[str, str]:
             """Fetch the pre-signed URL for a given attachment filename."""
+            filename = attachment["name"]
             url = f"{self.base}projects/{projectId}/forms/{xform}/submissions/{submissionUuid}/attachments/{filename}"
-            result = await self.session.get(url, verify=self.verify)
-            if result.status_code != 200:
-                log.error(f"Couldn't fetch {filename} from Central: {result.json()['message']}")
-                return None
-            return result.content
 
-        urls = await gather(*(fetch_url(attachment["name"]) for attachment in attachments))
+            result = await self.session.get(url, ssl=self.verify)
+            if result.status != 200:
+                log.error(f"Couldn't fetch {filename} from Central: {await result.text()}")
+                return filename, None
 
-        # Filter out any failed fetches (None values)
-        return [url for url in urls if url is not None]
+            return filename, url
+
+        urls = await gather(*(fetch_url(attachment) for attachment in attachments))
+
+        return {filename: url for filename, url in urls if url is not None}
 
 
 class OdkDataset(OdkCentral):
