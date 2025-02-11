@@ -1,3 +1,9 @@
+## 0.19.0 (2025-02-11)
+
+### Feat
+
+- add sync OdkForm.getXml to get raw form XML
+
 ## 0.18.2 (2025-01-21)
 
 ### Fix
