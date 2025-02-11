@@ -667,6 +667,28 @@ class OdkForm(OdkCentral):
         result = self.session.get(url, verify=self.verify)
         return result.json()
 
+    def getXml(
+        self,
+        projectId: int,
+        xform: str,
+    ):
+        """Get the form XML from the ODK Central server.
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            xform (str): The XForm to get the details of from ODK Central.
+
+        Returns:
+            (str): The raw XML form.
+        """
+        url = f"{self.base}projects/{projectId}/forms/{xform}.xml"
+        result = self.session.get(url, verify=self.verify)
+
+        if result.status_code != 200:
+            result.raise_for_status()
+
+        return result.text
+
     def listSubmissionBasicInfo(
         self,
         projectId: int,
