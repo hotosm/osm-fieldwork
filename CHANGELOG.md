@@ -1,3 +1,9 @@
+## 0.20.0 (2025-02-12)
+
+### Feat
+
+- method to download submission attachment (S3) urls from ODK Central (#342)
+
 ## 0.19.0 (2025-02-11)
 
 ### Feat
