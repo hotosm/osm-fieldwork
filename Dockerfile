@@ -43,12 +43,12 @@ FROM base AS extract-deps
 WORKDIR /opt/python
 COPY pyproject.toml pdm.lock /opt/python/
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir pdm==2.6.1
+    && pip install --no-cache-dir pdm==2.20.1
 RUN pdm export --prod > requirements.txt \
     && pdm export -G debug -G test -G docs \
-        --no-default > requirements-ci.txt \
+        --no-default --no-hashes > requirements-ci.txt \
     && pdm export -G ui \
-        --no-default > requirements-ui.txt
+        --no-default --no-hashes > requirements-ui.txt
 
 
 
@@ -56,7 +56,7 @@ FROM base AS build-wheel
 WORKDIR /build
 COPY pyproject.toml pdm.lock README.md LICENSE.md ./
 COPY osm_fieldwork ./osm_fieldwork
-RUN pip install pdm==2.6.1 && pdm build
+RUN pip install pdm==2.20.1 && pdm build
 
 
 

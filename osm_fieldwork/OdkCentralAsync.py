@@ -154,33 +154,6 @@ class OdkProject(OdkCentral):
             log.error(msg)
             raise aiohttp.ClientError(msg) from e
 
-    async def listSubmissions(self, projectId: int, xform: str, filters: dict = None):
-        """Fetch a list of submission instances for a given form.
-
-        Returns data in format:
-
-        {
-            "value":[],
-            "@odata.context": "URL/v1/projects/52/forms/103.svc/$metadata#Submissions",
-            "@odata.count":0
-        }
-
-        Args:
-            projectId (int): The ID of the project on ODK Central
-            xform (str): The XForm to get the details of from ODK Central
-
-        Returns:
-            (json): The JSON of Submissions.
-        """
-        url = f"{self.base}projects/{projectId}/forms/{xform}.svc/Submissions"
-        try:
-            async with self.session.get(url, params=filters, ssl=self.verify) as response:
-                return await response.json()
-        except aiohttp.ClientError as e:
-            msg = f"Error fetching submissions: {e}"
-            log.error(msg)
-            raise aiohttp.ClientError(msg) from e
-
     async def getAllProjectSubmissions(self, projectId: int, xforms: list = None, filters: dict = None):
         """Fetch a list of submissions in a project on an ODK Central server.
 
@@ -191,11 +164,15 @@ class OdkProject(OdkCentral):
         Returns:
             (json): All of the submissions for all of the XForm in a project
         """
+        # TODO this function needs more testing!
+
         log.info(f"Getting all submissions for ODK project ({projectId}) forms ({xforms})")
         submission_data = []
 
-        submission_tasks = [self.listSubmissions(projectId, task, filters) for task in xforms]
-        submissions = await gather(*submission_tasks, return_exceptions=True)
+        async with OdkForm(self.url, self.user, self.passwd) as odk_form:
+            submission_tasks = [odk_form.listSubmissions(projectId, xform, filters) for xform in xforms or []]
+
+            submissions = await gather(*submission_tasks, return_exceptions=True)
 
         for submission in submissions:
             if isinstance(submission, Exception):
@@ -205,6 +182,171 @@ class OdkProject(OdkCentral):
             submission_data.extend(submission["value"])
 
         return submission_data
+
+
+class OdkForm(OdkCentral):
+    """Class to manipulate a Form on an ODK Central server."""
+
+    def __init__(
+        self,
+        url: Optional[str] = None,
+        user: Optional[str] = None,
+        passwd: Optional[str] = None,
+    ) -> None:
+        """Args:
+            url (str): The URL of the ODK Central
+            user (str): The user's account name on ODK Central
+            passwd (str):  The user's account password on ODK Central.
+
+        Returns:
+            (OdkForm): An instance of this object.
+        """
+        super().__init__(url, user, passwd)
+
+    # NOTE this does not work and has been abandoned for now
+    # Probably best to use pyodk instead
+    # async def createSubmission(
+    #     self,
+    #     projectId: int,
+    #     appuser_token: str,
+    #     submission_xml: str,
+    #     submission_media_name: Optional[str] = None,
+    #     submission_media_bytes: Optional[bytes] = None,
+    # ):
+    #     """Create a new form submission via ODK OpenRosa API.
+
+    #     Args:
+    #         projectId (int): The ODK project ID.
+    #         appuser_token (str): An appuser token with access permissions on the form.
+    #         submission_xml (str): The XML submission, created by JavaRosa,
+    #             web-forms, or similar.
+    #         submission_media_name (str, optional): The name of the media file.
+    #         submission_media_bytes (bytes, optional): Bytes of media (e.g. photo)
+    #             file to upload with the submission.
+
+    #     Returns:
+    #         dict: The submission response metadata.
+    #     """
+    #     url = f"{self.base}key/{appuser_token}/projects/{projectId}/submission"
+    #     headers = {
+    #         "X-OpenRosa-Version": "1.0",
+    #     }
+
+    #     # Prepare multipart form data
+    #     form_data = FormData()
+    #     form_data.add_field(
+    #         "xml_submission_file",
+    #         submission_xml.encode(encoding="utf-8"),
+    #         content_type="text/xml",
+    #     )
+    #     if submission_media_bytes and submission_media_name:
+    #         form_data.add_field(
+    #             submission_media_name,
+    #             submission_media_bytes,
+    #             filename=submission_media_name,
+    #             content_type="image/jpeg",
+    #         )
+
+    #     try:
+    #         async with self.session.post(url, data=form_data, headers=headers, ssl=self.verify) as response:
+    #             if response.status != 201:
+    #                 msg = f"Unexpected response {response.status}: {await response.text()}"
+    #                 log.error(msg)
+    #                 response.raise_for_status()
+    #             return await response.text()
+    #     except aiohttp.ClientError as e:
+    #         msg = f"Error creating submission: {e}"
+    #         log.error(msg)
+    #         raise aiohttp.ClientError(msg) from e
+
+    async def listSubmissions(self, projectId: int, xform: str):
+        """Fetch a list of submission instances for a given form.
+
+        NOTE this does not use the OData endpoint, but instead opts to use the standard
+        Central POST endpoint
+
+        Returns data in format:
+
+        [{
+            instanceId: "uuid:e83db2b4-5e82-4e61-bc32-04750e511aff"
+            ...
+        },]
+
+        Args:
+            projectId (int): The ID of the project on ODK Central
+            xform (str): The XForm to get the details of from ODK Central
+
+        Returns:
+            (list[dict]): The list of submissions.
+        """
+        url = f"{self.base}projects/{projectId}/forms/{xform}/submissions"
+        try:
+            async with self.session.get(url, ssl=self.verify) as response:
+                return await response.json()
+        except aiohttp.ClientError as e:
+            msg = f"Error fetching submissions: {e}"
+            log.error(msg)
+            raise aiohttp.ClientError(msg) from e
+
+    async def listSubmissionAttachments(self, projectId: int, xform: str, submissionUuid: str):
+        """Fetch a list of attachments listed for upload on a given submission.
+
+        Returns data in format:
+
+        [
+            {'name': '1731673738156.jpg', 'exists': False},
+        ]
+
+        Args:
+            projectId (int): The ID of the project on ODK Central
+            xform (str): The XForm to get the details of from ODK Central
+            submissionUuid (str): The submission UUID from ODK Central
+
+        Returns:
+            (list[dict]): The list of submission attachments.
+        """
+        url = f"{self.base}projects/{projectId}/forms/{xform}/submissions/{submissionUuid}/attachments"
+        try:
+            async with self.session.get(url, ssl=self.verify) as response:
+                return await response.json()
+        except aiohttp.ClientError as e:
+            msg = f"Error fetching submissions: {e}"
+            log.error(msg)
+            raise aiohttp.ClientError(msg) from e
+
+    async def getSubmissionAttachmentUrls(
+        self,
+        projectId: int,
+        xform: str,
+        submissionUuid: str,
+    ) -> dict[str, str]:
+        """Get a dictionary of attachment names and their pre-signed URLs.
+
+        Args:
+            projectId (int): The ID of the project on ODK Central.
+            xform (str): The XForm to get the details of from ODK Central.
+            submissionUuid (str): The UUID of the submission on ODK Central.
+
+        Returns:
+            dict[str, str]: A dictionary mapping attachment names to URLs.
+        """
+        attachments = await self.listSubmissionAttachments(projectId, xform, submissionUuid)
+
+        async def fetch_url(attachment: dict) -> tuple[str, str]:
+            """Fetch the pre-signed URL for a given attachment filename."""
+            filename = attachment["name"]
+            url = f"{self.base}projects/{projectId}/forms/{xform}/submissions/{submissionUuid}/attachments/{filename}"
+
+            result = await self.session.get(url, ssl=self.verify)
+            if result.status != 200:
+                log.error(f"Couldn't fetch {filename} from Central: {await result.text()}")
+                return filename, None
+
+            return filename, url
+
+        urls = await gather(*(fetch_url(attachment) for attachment in attachments))
+
+        return {filename: url for filename, url in urls if url is not None}
 
 
 class OdkDataset(OdkCentral):

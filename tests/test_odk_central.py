@@ -1,4 +1,4 @@
-# Copyright (c) 2022, 2023 Humanitarian OpenStreetMap Team
+# Copyright (c) Humanitarian OpenStreetMap Team
 #
 # This file is part of osm_fieldwork.
 #
@@ -15,7 +15,7 @@
 #     You should have received a copy of the GNU General Public License
 #     along with osm_fieldwork.  If not, see <https:#www.gnu.org/licenses/>.
 #
-"""Test functionalty of OdkCentral.py."""
+"""Test functionalty of OdkCentral.py and OdkCentralAsync.py."""
 
 from io import BytesIO
 from pathlib import Path
@@ -156,19 +156,32 @@ def test_create_form_draft(project, odk_form_cleanup):
     assert len(project.listForms(odk_id)) == 1
 
 
-def test_upload_media_filepath(project, odk_form_cleanup):
+def test_upload_media_filepath(project, odk_form):
     """Create form and upload media."""
-    odk_id, form_name, xform = odk_form_cleanup
+    odk_id, xform = odk_form
+    # NOTE here we use an old alternative form for testing geojson media upload
+    test_xform = testdata_dir / "buildings_geojson_upload.xml"
+    with open(test_xform, "rb") as xform_file:
+        xform_bytesio = BytesIO(xform_file.read())
 
-    # Publish form first
-    response_code = xform.publishForm(odk_id, form_name)
-    assert response_code == 200
-    assert xform.published == True
+    # Create form
+    form_name = "test_form_geojson"
+    existing_form = xform.getDetails(odk_id, "test_form_geojson")
+    if existing_form.get("xmlFormId") == "test_form_geojson":
+        pass
+    else:
+        # We only create the form if it does not exist
+        form_name = xform.createForm(odk_id, xform_bytesio)
+        assert form_name == "test_form_geojson"
+        # Publish form first
+        response_code = xform.publishForm(odk_id, form_name)
+        assert response_code == 200
+        assert xform.published == True
 
     # Upload media
     result = xform.uploadMedia(
         odk_id,
-        "test_form",
+        "test_form_geojson",
         str(testdata_dir / "osm_buildings.geojson"),
     )
     assert result.status_code == 200
@@ -177,37 +190,47 @@ def test_upload_media_filepath(project, odk_form_cleanup):
 def test_upload_media_bytesio_publish(project, odk_form):
     """Create form and upload media."""
     odk_id, xform = odk_form
-    test_xform = testdata_dir / "buildings.xml"
+    # NOTE here we use an old alternative form for testing geojson media upload
+    test_xform = testdata_dir / "buildings_geojson_upload.xml"
     with open(test_xform, "rb") as xform_file:
         xform_bytesio = BytesIO(xform_file.read())
 
     # Create form
-    form_name = xform.createForm(odk_id, xform_bytesio)
-    assert form_name == "test_form"
-
-    # Publish form first
-    response_code = xform.publishForm(odk_id, form_name)
-    assert response_code == 200
-    assert xform.published == True
+    form_name = "test_form_geojson"
+    existing_form = xform.getDetails(odk_id, "test_form_geojson")
+    if existing_form.get("xmlFormId") == "test_form_geojson":
+        pass
+    else:
+        # We only create the form if it does not exist
+        form_name = xform.createForm(odk_id, xform_bytesio)
+        assert form_name == "test_form_geojson"
+        # Publish form first
+        response_code = xform.publishForm(odk_id, form_name)
+        assert response_code == 200
+        assert xform.published == True
 
     # Upload media
     with open(testdata_dir / "osm_buildings.geojson", "rb") as geojson:
         geojson_bytesio = BytesIO(geojson.read())
-    result = xform.uploadMedia(odk_id, "test_form", geojson_bytesio, filename="osm_buildings.geojson")
+    result = xform.uploadMedia(odk_id, "test_form_geojson", geojson_bytesio, filename="osm_buildings.geojson")
     assert result.status_code == 200
 
     # Delete form
-    success = xform.deleteForm(odk_id, "test_form")
+    success = xform.deleteForm(odk_id, "test_form_geojson")
     assert success
 
     assert len(project.listForms(odk_id)) == 0
 
 
-def test_form_fields_no_form(odk_form):
-    """Attempt usage of form_fields before form exists."""
-    odk_id, xform = odk_form
+def test_form_fields_no_form(odk_form_cleanup):
+    """Attempt usage of form_fields when form does not exist."""
+    odk_id, form_name, xform = odk_form_cleanup
+    xform.deleteForm(odk_id, form_name)
     with pytest.raises(requests.exceptions.HTTPError):
         xform.formFields(odk_id, "test_form")
+    # NOTE here we create the form again... so cleanup doesnt fail
+    test_xform = testdata_dir / "buildings.xml"
+    xform.createForm(odk_id, str(test_xform))
 
 
 def test_form_fields(odk_form_cleanup):
@@ -216,17 +239,38 @@ def test_form_fields(odk_form_cleanup):
 
     # Get form fields
     form_fields = xform.formFields(odk_id, form_name)
-    assert len(form_fields) == 66
+    field_names = {field["name"] for field in form_fields}
+    test_field_names = {"xlocation", "status", "survey_questions"}
+    missing_fields = test_field_names - field_names
 
-    sorted_form_fields = sorted(form_fields, key=lambda x: x["name"])
-    buildings_heritage = sorted_form_fields[30]
-    assert buildings_heritage == {
-        "path": "/all/buildings/heritage",
-        "name": "heritage",
+    assert not missing_fields, f"Missing form fields: {missing_fields}"
+
+    field_dict = {field["name"]: field for field in form_fields}
+
+    # Verify specific fields
+    assert field_dict.get("form_category") == {
+        "path": "/form_category",
+        "name": "form_category",
         "type": "string",
         "binary": None,
         "selectMultiple": None,
-    }
+    }, f"Mismatch or missing 'form_category': {field_dict.get('form_category')}"
+
+    assert field_dict.get("digitisation_problem") == {
+        "path": "/verification/digitisation_problem",
+        "name": "digitisation_problem",
+        "type": "string",
+        "binary": None,
+        "selectMultiple": None,
+    }, f"Mismatch or missing 'digitisation_problem': {field_dict.get('digitisation_problem')}"
+
+    assert field_dict.get("instructions") == {
+        "path": "/instructions",
+        "name": "instructions",
+        "type": "string",
+        "binary": None,
+        "selectMultiple": None,
+    }, f"Mismatch or missing 'instructions': {field_dict.get('instructions')}"
 
 
 def test_invalid_connection_sync():
