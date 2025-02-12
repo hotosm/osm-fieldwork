@@ -29,25 +29,6 @@ odk_config_file = str(Path(__file__).parent / ".pyodk_config.toml")
 testdata_dir = Path(__file__).parent / "testdata"
 
 
-async def test_list_upload_submission_attachments(odk_submission):
-    """List submission attachments and upload them individually."""
-    odk_id, form_name = odk_submission
-
-    async with OdkFormAsync(
-        url="https://proxy",
-        user="test@hotosm.org",
-        passwd="Password1234",
-    ) as form_async:
-        submissions = await form_async.listSubmissions(odk_id, form_name)
-        submission_id = submissions[0]["instanceId"]
-        attachments = await form_async.listSubmissionAttachments(odk_id, form_name, submission_id)
-        for attachment in attachments:
-            attachment_name = attachment["name"]
-            # TODO upload each attachment
-
-        assert False
-
-
 async def test_list_submission_attachment_urls(odk_submission):
     """Create attachments in bulk, then list the URLs to download."""
     odk_id, form_name = odk_submission
@@ -60,7 +41,7 @@ async def test_list_submission_attachment_urls(odk_submission):
         submissions = await form_async.listSubmissions(odk_id, form_name)
         submission_id = submissions[0]["instanceId"]
         attachments = await form_async.listSubmissionAttachments(odk_id, form_name, submission_id)
-        attachment_names = [attachment["name"] for attachment in attachments]
+        assert len(attachments) == 3
 
     # Use predefined submission photo bytes
     submission_photo_bytes = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00\x60\x00\x60\x00\x00\xff\xdb\x00C\x00"
@@ -82,12 +63,16 @@ async def test_list_submission_attachment_urls(odk_submission):
         photo_2_path = str(Path(temp_photo_2.name).absolute())
         photo_3_path = str(Path(temp_photo_3.name).absolute())
 
+        temp_photo_1_name = Path(temp_photo_1.name).name
+        temp_photo_2_name = Path(temp_photo_2.name).name
+        temp_photo_3_name = Path(temp_photo_3.name).name
+
         # NOTE this submission does not select an existing entity, but creates a new feature
-        submission_id = uuid.uuid4()
+        submission_id = str(uuid.uuid4())
         submission_xml = f"""
             <data id="{form_name}" version="v1">
             <meta>
-                <instanceID>uuid:{submission_id}</instanceID>
+                <instanceID>{submission_id}</instanceID>
             </meta>
             <start>2024-11-15T12:28:23.641Z</start>
             <end>2024-11-15T12:29:00.876Z</end>
@@ -129,9 +114,9 @@ async def test_list_submission_attachment_urls(odk_submission):
             </survey_questions>
             <verification>
                 <digitisation_correct>yes</digitisation_correct>
-                <image>{temp_photo_1.name}</image>
-                <image2>{temp_photo_2.name}</image2>
-                <image3>{temp_photo_3.name}</image3>
+                <image>{temp_photo_1_name}</image>
+                <image2>{temp_photo_2_name}</image2>
+                <image3>{temp_photo_3_name}</image3>
             </verification>
             </data>
         """

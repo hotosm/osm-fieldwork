@@ -227,11 +227,11 @@ async def odk_submission(odk_form_cleanup) -> tuple:
     odk_id, form_name, xform = odk_form_cleanup
 
     # NOTE this submission does not select an existing entity, but creates a new feature
-    submission_id = uuid.uuid4()
+    submission_id = str(uuid.uuid4())
     submission_xml = f"""
         <data id="{form_name}" version="v1">
         <meta>
-            <instanceID>uuid:{submission_id}</instanceID>
+            <instanceID>{submission_id}</instanceID>
         </meta>
         <start>2024-11-15T12:28:23.641Z</start>
         <end>2024-11-15T12:29:00.876Z</end>
