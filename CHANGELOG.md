@@ -1,3 +1,9 @@
+## 0.20.1 (2025-02-14)
+
+### Fix
+
+- rename additional_geometry to be dynamic to allow multiple extra datasets
+
 ## 0.20.0 (2025-02-12)
 
 ### Feat
