@@ -109,6 +109,7 @@ def get_mandatory_fields(new_geom_type: DbGeomType):
             "appearance": "placement-map",
             "relevant": "${feature}= ''",
             "required": "yes",
+            "save_to": "geometry",
         },
         {
             "type": "calculate",
