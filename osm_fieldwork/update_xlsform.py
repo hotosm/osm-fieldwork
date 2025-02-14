@@ -245,8 +245,8 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
         {
             "type": [f"select_one_from_file {entity_name}.csv"],
             "name": [entity_name],
-            "label::english(en)": [entity_name],
             "appearance": ["map"],
+            "label::english(en)": [entity_name],
             "label::swahili(sw)": [entity_name],
             "label::french(fr)": [entity_name],
             "label::spanish(es)": [entity_name],
@@ -257,12 +257,9 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
     coordinates_row = pd.DataFrame(
         {
             "type": ["calculate"],
-            "name": ["additional_geometry"],
+            "name": [f"{entity_name}_geom"],
             "calculation": [f"instance('{entity_name}')/root/item[name=${{{entity_name}}}]/geometry"],
-            "label::english(en)": ["additional_geometry"],
-            "label::swahili(sw)": ["additional_geometry"],
-            "label::french(fr)": ["additional_geometry"],
-            "label::spanish(es)": ["additional_geometry"],
+            "label::english(en)": [f"{entity_name}_geom"],  # translations not needed, calculated field
         }
     )
     # Insert the new row into the DataFrame
