@@ -1,3 +1,11 @@
+## 0.20.3 (2025-02-17)
+
+### Fix
+
+- **OdkCentralAsync**: return pre-signed S3 URLs instead of ODK URL or blob
+- save new_feature geometry to 'geometry' entity field
+- pt-br --> pt-BR correct two letter iana code
+
 ## 0.20.2 (2025-02-14)
 
 ### Fix
