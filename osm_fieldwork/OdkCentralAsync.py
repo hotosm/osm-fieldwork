@@ -331,18 +331,27 @@ class OdkForm(OdkCentral):
             dict[str, str]: A dictionary mapping attachment names to URLs.
         """
         attachments = await self.listSubmissionAttachments(projectId, xform, submissionUuid)
+        if not attachments:
+            return {}
 
-        async def fetch_url(attachment: dict) -> tuple[str, str]:
+        async def fetch_url(attachment: dict) -> tuple[str, Optional[str]]:
             """Fetch the pre-signed URL for a given attachment filename."""
             filename = attachment["name"]
             url = f"{self.base}projects/{projectId}/forms/{xform}/submissions/{submissionUuid}/attachments/{filename}"
 
-            result = await self.session.get(url, ssl=self.verify)
-            if result.status != 200:
+            # Prevent the redirect and blob download, instead get the S3 URL
+            result = await self.session.get(url, ssl=self.verify, allow_redirects=False)
+
+            if result.status in (301, 302, 303, 307, 308):  # is a redirect to the S3 URL
+                s3_url = result.headers.get("Location")
+                if not s3_url:
+                    log.error(f"Couldn't fetch {filename} from Central: {await result.text()}")
+                    return filename, None
+            else:
                 log.error(f"Couldn't fetch {filename} from Central: {await result.text()}")
                 return filename, None
 
-            return filename, url
+            return filename, s3_url
 
         urls = await gather(*(fetch_url(attachment) for attachment in attachments))
 
