@@ -1,3 +1,9 @@
+## 0.20.4 (2025-02-18)
+
+### Fix
+
+- **xlsform**: remove duplicate save_to field for new_feature + xlocation
+
 ## 0.20.3 (2025-02-17)
 
 ### Fix
