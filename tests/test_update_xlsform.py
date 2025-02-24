@@ -100,15 +100,6 @@ def check_survey_sheet(workbook: Workbook) -> None:
     survey_sheet = get_sheet(workbook, "survey")
     name_col_index = get_column_index(survey_sheet, "name")
     calculation_col_index = get_column_index(survey_sheet, "calculation")
-
-    form_category_row_index = get_row_index(survey_sheet, name_col_index, "form_category")
-    form_category_calculation = survey_sheet.cell(row=form_category_row_index, column=calculation_col_index).value
-
-    expected_calculation = "once('building')"
-    assert form_category_calculation == expected_calculation, (
-        f"Expected 'calculation' value for 'form_category' to be '{expected_calculation}', but got '{form_category_calculation}'."
-    )
-
     check_for_duplicates(survey_sheet, name_col_index)
 
 

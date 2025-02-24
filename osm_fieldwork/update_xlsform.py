@@ -270,7 +270,7 @@ def append_select_one_from_file_row(df: pd.DataFrame, entity_name: str) -> pd.Da
 
 async def append_mandatory_fields(
     custom_form: BytesIO,
-    form_category: str,
+    form_name: str = f"fmtm_{uuid4()}",
     additional_entities: list[str] = None,
     existing_id: str = None,
     new_geom_type: DbGeomType = DbGeomType.POINT,
@@ -279,7 +279,7 @@ async def append_mandatory_fields(
 
     Args:
         custom_form(BytesIO): the XLSForm data uploaded, wrapped in BytesIO.
-        form_category(str): the form category name (in form_title and description).
+        form_name(str): the friendly form name in ODK web view.
         additional_entities(list[str]): add extra select_one_from_file fields to
             reference an additional Entity list (set of geometries).
             The values should be plural, so that 's' will be stripped in the
@@ -304,13 +304,6 @@ async def append_mandatory_fields(
     log.debug("Merging survey sheet XLSForm data")
     survey_df = create_survey_df(new_geom_type)
     custom_sheets["survey"] = merge_dataframes(survey_df, custom_sheets.get("survey"), digitisation_df)
-    # Hardcode the form_category value for the start instructions
-    if form_category.endswith("s"):
-        # Plural to singular
-        form_category = form_category[:-1]
-    form_category_row = custom_sheets["survey"].loc[custom_sheets["survey"]["name"] == "form_category"]
-    if not form_category_row.empty:
-        custom_sheets["survey"].loc[custom_sheets["survey"]["name"] == "form_category", "calculation"] = f"once('{form_category}')"
 
     # Ensure the 'choices' sheet exists in custom_sheets
     if "choices" not in custom_sheets or custom_sheets["choices"] is None:
@@ -334,10 +327,10 @@ async def append_mandatory_fields(
     # Set the 'version' column to the current timestamp (if 'version' column exists in 'settings')
     xform_id = existing_id if existing_id else uuid4()
     current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log.debug(f"Setting xFormId = {xform_id} | form title = {form_category} | version = {current_datetime}")
+    log.debug(f"Setting xFormId = {xform_id} | version = {current_datetime}")
     custom_sheets["settings"]["version"] = current_datetime
     custom_sheets["settings"]["form_id"] = xform_id
-    custom_sheets["settings"]["form_title"] = form_category
+    custom_sheets["settings"]["form_title"] = form_name
     if "default_language" not in custom_sheets["settings"]:
         custom_sheets["settings"]["default_language"] = "en"
 

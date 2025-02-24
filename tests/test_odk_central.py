@@ -247,15 +247,6 @@ def test_form_fields(odk_form_cleanup):
 
     field_dict = {field["name"]: field for field in form_fields}
 
-    # Verify specific fields
-    assert field_dict.get("form_category") == {
-        "path": "/form_category",
-        "name": "form_category",
-        "type": "string",
-        "binary": None,
-        "selectMultiple": None,
-    }, f"Mismatch or missing 'form_category': {field_dict.get('form_category')}"
-
     assert field_dict.get("digitisation_problem") == {
         "path": "/verification/digitisation_problem",
         "name": "digitisation_problem",

@@ -85,7 +85,6 @@ async def test_list_submission_attachment_urls(odk_submission):
             <feature/>
             <null/>
             <new_feature>12.750577838121643 -24.776785714285722 0.0 0.0</new_feature>
-            <form_category>building</form_category>
             <xid/>
             <xlocation>12.750577838121643 -24.776785714285722 0.0 0.0</xlocation>
             <task_id/>
