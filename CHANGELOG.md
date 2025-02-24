@@ -1,3 +1,13 @@
+## 0.21.0 (2025-02-24)
+
+### Feat
+
+- **xlsform**: replace form_category with simple form_name
+
+### Refactor
+
+- remove temp kivy ui (simplify this package)
+
 ## 0.20.4 (2025-02-18)
 
 ### Fix
