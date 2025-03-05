@@ -87,7 +87,6 @@ class OdkCentral(object):
         # Header enables persistent connection, creates a cookie for this session
         self.session = aiohttp.ClientSession(
             raise_for_status=True,
-            headers={"accept": "odkcentral"},
         )
         await self.authenticate()
         return self

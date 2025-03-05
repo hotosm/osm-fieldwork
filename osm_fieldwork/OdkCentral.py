@@ -188,8 +188,6 @@ class OdkCentral(object):
             self.user = user
         if not self.passwd:
             self.passwd = passwd
-        # Enable persistent connection, create a cookie for this session
-        self.session.headers.update({"accept": "odkcentral"})
 
         # Get a session token
         try:
@@ -798,7 +796,7 @@ class OdkForm(OdkCentral):
         # log.debug(f'Getting submissions for {projectId}, Form {xform}')
         result = self.session.get(
             url,
-            headers=dict({"Content-Type": "application/json", "accept": "odkcentral"}, **self.session.headers),
+            headers=dict({"Content-Type": "application/json"}, **self.session.headers),
             verify=self.verify,
         )
         if result.status_code == 200:
