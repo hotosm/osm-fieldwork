@@ -1,3 +1,9 @@
+## 0.21.1 (2025-03-05)
+
+### Fix
+
+- remove invalid Accept: "odkcentral" header (triggers ModSec 920600) (#348)
+
 ## 0.21.0 (2025-02-24)
 
 ### Feat
