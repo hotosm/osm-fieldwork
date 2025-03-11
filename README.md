@@ -6,8 +6,14 @@
 </p>
 
 > [!WARNING]
-> This repo was moved to be a package in a monorepo:
-> https://github.com/hotosm/fmtm
+>
+> Archived.
+>
+> This repo was moved to be a package in a monorepo.
+>
+> https://github.com/hotosm/fmtm/tree/development/src/backend/packages/osm-fieldwork
+>
+> See: https://github.com/hotosm/fmtm/pull/2265
 
 <p align="center">
   <em>Processing field data from ODK to OpenStreetMap format, and other field utils.</em>
