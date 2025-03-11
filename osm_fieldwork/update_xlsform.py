@@ -20,10 +20,14 @@
 
 """Update an existing XLSForm with additional fields useful for field mapping."""
 
+import argparse
+import asyncio
 import logging
 import re
+import sys
 from datetime import datetime
 from io import BytesIO
+from pathlib import Path
 from uuid import uuid4
 
 import pandas as pd
@@ -32,6 +36,7 @@ from python_calamine.pandas import pandas_monkeypatch
 from osm_fieldwork.form_components.choice_fields import choices_df, digitisation_choices_df
 from osm_fieldwork.form_components.digitisation_fields import digitisation_df
 from osm_fieldwork.form_components.mandatory_fields import DbGeomType, create_survey_df, entities_df, meta_df
+from osm_fieldwork.xlsforms import xlsforms_path
 
 log = logging.getLogger(__name__)
 
@@ -330,10 +335,7 @@ async def append_mandatory_fields(
         xform_id = str(uuid4())
 
     current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log.debug(
-        f"Setting xFormId = {xform_id} | version = {current_datetime} "
-        f"| form_name = {form_name}"
-    )
+    log.debug(f"Setting xFormId = {xform_id} | version = {current_datetime} | form_name = {form_name}")
 
     # Set the 'version' column to the current timestamp
     custom_sheets["settings"]["version"] = current_datetime
@@ -355,3 +357,67 @@ async def append_mandatory_fields(
             df.to_excel(writer, sheet_name=sheet_name, index=False)
     output.seek(0)
     return (xform_id, output)
+
+
+async def main():
+    """Used for the `fmtm_xlsform` CLI command."""
+    parser = argparse.ArgumentParser(description="Append field mapping fields to XLSForm")
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
+    parser.add_argument("-i", "--input", help="Input XLSForm file")
+    parser.add_argument("-c", "--category", help="A category of demo form to use instead")
+    parser.add_argument("-o", "--output", help="Output merged XLSForm filename")
+    parser.add_argument("-a", "--additional-dataset-names", help="Names of additional entity lists to append")
+    parser.add_argument(
+        "-n",
+        "--new-geom-type",
+        type=DbGeomType,
+        choices=list(DbGeomType),
+        help="The type of new geometry",
+        default=DbGeomType.POINT,
+    )
+    args = parser.parse_args()
+
+    # If verbose, dump to the terminal
+    if args.verbose is not None:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=("%(threadName)10s - %(name)s - %(levelname)s - %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S",
+            stream=sys.stdout,
+        )
+
+    if not args.output:
+        log.error("You must provide an output file with the '-o' flag")
+        parser.print_help()
+
+    if args.input:
+        input_file = Path(args.input)
+    elif args.category:
+        input_file = Path(f"{xlsforms_path}/{args.category}.yaml")
+    else:
+        log.error("Must choose one of '-i' for file input, or '-c' for category selection")
+        parser.print_help()
+        sys.exit(1)
+
+    if not input_file.exists():
+        log.error(f"The file does not exist: {str(input_file)}")
+        sys.exit(1)
+
+    with open(input_file, "rb") as file_handle:
+        input_xlsform = BytesIO(file_handle.read())
+
+    form_id, form_bytes = await append_mandatory_fields(
+        custom_form=input_xlsform,
+        form_name=f"fmtm_{uuid4()}",
+        additional_entities=args.additional_dataset_names,
+        new_geom_type=args.new_geom_type,
+    )
+
+    log.info(f"Form ({form_id}) created successfully")
+    with open(args.output, "wb") as file_handle:
+        file_handle.write(form_bytes.getvalue())
+
+
+if __name__ == "__main__":
+    """Wrap for running the file directly."""
+    asyncio.run(main())
