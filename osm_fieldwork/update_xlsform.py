@@ -272,7 +272,6 @@ async def append_mandatory_fields(
     custom_form: BytesIO,
     form_name: str = f"fmtm_{uuid4()}",
     additional_entities: list[str] = None,
-    existing_id: str = None,
     new_geom_type: DbGeomType = DbGeomType.POINT,
 ) -> tuple[str, BytesIO]:
     """Append mandatory fields to the XLSForm for use in FMTM.
@@ -284,7 +283,6 @@ async def append_mandatory_fields(
             reference an additional Entity list (set of geometries).
             The values should be plural, so that 's' will be stripped in the
             field name.
-        existing_id(str): an existing UUID to use for the form_id, else random uuid4.
         new_geom_type (DbGeomType): the type of geometry required when collecting
             new geometry data: point, line, polygon.
 
@@ -324,10 +322,20 @@ async def append_mandatory_fields(
         log.error(msg)
         raise ValueError(msg)
 
-    # Set the 'version' column to the current timestamp (if 'version' column exists in 'settings')
-    xform_id = existing_id if existing_id else uuid4()
+    # Extract existing form id if present, else set to random uuid
+    if "form_id" in custom_sheets["settings"]:
+        xform_id = custom_sheets["settings"]["form_id"]
+        log.debug(f"Extracted existing form_id field: {xform_id}")
+    else:
+        xform_id = str(uuid4())
+
     current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log.debug(f"Setting xFormId = {xform_id} | version = {current_datetime}")
+    log.debug(
+        f"Setting xFormId = {xform_id} | version = {current_datetime} "
+        f"| form_name = {form_name}"
+    )
+
+    # Set the 'version' column to the current timestamp
     custom_sheets["settings"]["version"] = current_datetime
     custom_sheets["settings"]["form_id"] = xform_id
     custom_sheets["settings"]["form_title"] = form_name
