@@ -1,0 +1,14 @@
+<map id="osm_fieldwork.update_xlsform.main" name="osm_fieldwork.update_xlsform.main">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,85,172,125"/>
+<area shape="poly" id="edge6_Node000001_Node000001" title=" " alt="" coords="45,85,42,75,49,66,65,60,89,58,116,61,131,68,129,73,115,66,89,63,66,65,52,70,47,76,50,84"/>
+<area shape="rect" id="Node000002" href="$namespaceosm__fieldwork_1_1update__xlsform.html#ae549fe8f3ad53c59aef34269eeee2ce8" title=" " alt="" coords="220,77,429,132"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,102,206,102,206,107,172,107"/>
+<area shape="rect" id="Node000003" href="$namespaceosm__fieldwork_1_1update__xlsform.html#aa265d96745c9498171449b3284460154" title=" " alt="" coords="492,5,669,60"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="422,75,478,59,479,64,423,80"/>
+<area shape="rect" id="Node000004" href="$namespaceosm__fieldwork_1_1update__xlsform.html#aec74436d33569fb33fb82c019efb47eb" title=" " alt="" coords="477,85,684,125"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="429,102,464,102,464,107,429,107"/>
+<area shape="rect" id="Node000006" href="$namespaceosm__fieldwork_1_1update__xlsform.html#ac0bca69ae017a15b10129a5513fc2f44" title=" " alt="" coords="497,149,664,204"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="423,130,485,147,483,152,422,135"/>
+<area shape="rect" id="Node000005" href="$namespaceosm__fieldwork_1_1update__xlsform.html#a2d89899a9e55c60d6cdbd0e48bbf92f6" title=" " alt="" coords="732,85,951,125"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="684,102,718,102,718,107,684,107"/>
+</map>

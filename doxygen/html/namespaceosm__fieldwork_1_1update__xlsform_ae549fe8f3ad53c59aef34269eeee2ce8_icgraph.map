@@ -1,0 +1,6 @@
+<map id="osm_fieldwork.update_xlsform.append_mandatory_fields" name="osm_fieldwork.update_xlsform.append_mandatory_fields">
+<area shape="rect" id="Node000001" title=" " alt="" coords="220,22,429,77"/>
+<area shape="rect" id="Node000002" href="$namespaceosm__fieldwork_1_1update__xlsform.html#ad2ec8eb67cdf8e7c3c3fd52a987bc5ab" title=" " alt="" coords="5,29,172,69"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="206,52,172,52,172,47,206,47"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="129,18,115,11,89,8,66,10,52,15,47,21,50,28,45,30,42,20,49,10,65,5,89,3,116,6,131,13"/>
+</map>
